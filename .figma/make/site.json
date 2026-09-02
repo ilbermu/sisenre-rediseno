@@ -1,0 +1,10 @@
+{
+  "description": "Facilitates efficient management and search of interruption records within an internal desktop web app using a clear two-column layout and structured filters.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
