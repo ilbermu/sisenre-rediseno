@@ -1,52 +1,56 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
 
-@font-face {
-  font-family: 'Roboto:Regular';
-  src: url('https://static.figma.com/font/Roboto_wdth_wght__3') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Asap:SemiBold';
-  src: url('https://static.figma.com/font/Asap_wdth_wght__2') format('woff2');
-  font-weight: 600;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Nunito:Regular';
-  src: url('https://static.figma.com/font/Nunito_wght__1') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Poppins:Regular';
-  src: url('https://static.figma.com/font/Poppins-Regular_6') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Maven Pro:Regular';
-  src: url('https://static.figma.com/font/MavenPro_wght__3') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Maven Pro:Medium';
-  src: url('https://static.figma.com/font/MavenPro_wght__3') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Maven Pro:SemiBold';
-  src: url('https://static.figma.com/font/MavenPro_wght__3') format('woff2');
-  font-weight: 600;
-  font-style: normal;
-}
-
+/*
+ * Design tokens — SISENRE_REDISEÑO
+ * Consolidado de los valores ya implementados en la app, alineados a la
+ * marca Edenor. Fuente de verdad única: nada de hex sueltos por pantalla.
+ */
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Marca */
+  --color-primary: #4D97FA;
+  --color-primary-hover: #2F82F0;
+  --color-primary-tint: #EBF4FF;
+  --color-secondary: #1D558C;
+  --color-secondary-hover: #163F69;
+
+  /* Neutros (grises-azulados) */
+  --color-gray-50: #F8FAFD;
+  --color-gray-100: #F0F4FB;
+  --color-gray-200: #E8EEF7;
+  --color-gray-300: #DDE5F0;
+  --color-gray-400: #C9D4E6;
+  --color-gray-500: #9AAABF;
+  --color-gray-600: #7A8FAD;
+  --color-gray-700: #3D4F6B;
+  --color-gray-800: #1A2B4A;
+  --color-gray-900: #1A202C;
+
+  /* Semánticos */
+  --color-error: #DC2626;
+  --color-success: #16A34A;
+
+  /* Escala tipográfica semántica */
+  --text-micro: 10px;
+  --text-caption: 11px;
+  --text-body-sm: 12px;
+  --text-body: 13px;
+  --text-label: 15px;
+  --text-title-sm: 22px;
+  --text-title: 26px;
+
+  /* Radios */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Sombras */
+  --shadow-low: 0 1px 4px rgba(21,40,80,.07);
+  --shadow-mid: 0 8px 24px rgba(21,40,80,.13);
+  --shadow-high: 0 12px 32px rgba(21,40,80,.18);
 }
 
 html, body, #root {

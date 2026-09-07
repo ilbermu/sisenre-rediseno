@@ -204,12 +204,12 @@ const CDS4_TOTAL = 1;
 // ─── Shared input classes ─────────────────────────────────────────────────────
 
 const inputCls =
-  "w-full h-8 px-2.5 text-[12.5px] bg-white border border-[#C9D4E6] rounded-[4px] text-[#1A202C] " +
-  "placeholder:text-[#9AAABF] focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 " +
+  "w-full h-8 px-2.5 text-[12.5px] bg-white border border-gray-400 rounded-sm text-gray-900 " +
+  "placeholder:text-gray-500 focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 " +
   "transition-all duration-150";
 
 const selectCls =
-  "w-full h-8 px-2.5 pr-7 text-[12.5px] bg-white border border-[#C9D4E6] rounded-[4px] text-[#1A202C] " +
+  "w-full h-8 px-2.5 pr-7 text-[12.5px] bg-white border border-gray-400 rounded-sm text-gray-900 " +
   "appearance-none cursor-pointer focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 " +
   "transition-all duration-150";
 
@@ -226,7 +226,7 @@ function SelectWrap({ children, className = "" }: { children: React.ReactNode; c
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="block mb-1 text-[11.5px] font-medium text-[#3D4F6B] select-none tracking-wide">
+    <label className="block mb-1 text-[11.5px] font-medium text-gray-700 select-none tracking-wide">
       {children}
     </label>
   );
@@ -235,7 +235,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 function SectionDivider({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-2.5 mb-3 mt-1">
-      <span className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-[#7A8FAD] whitespace-nowrap select-none">
+      <span className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-gray-600 whitespace-nowrap select-none">
         {title}
       </span>
       <div className="flex-1 h-px bg-[#E4EAF4]" />
@@ -254,11 +254,11 @@ function NavItem({
     <button
       onClick={onClick}
       style={{ position: "relative" }}
-      className={`sidebar-item-btn w-full flex items-center gap-2 rounded-[4px] transition-all duration-150 group
+      className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm transition-all duration-150 group
         ${collapsed ? "justify-center px-0 py-2.5 mx-auto w-9" : "px-2.5 py-[7px]"}
         ${active
           ? "bg-[#1565C0] text-white shadow-[0_1px_6px_rgba(21,101,192,0.25)]"
-          : "text-[#4A6080] hover:text-[#1A2B4A] hover:bg-[#EBF1FB]"
+          : "text-[#4A6080] hover:text-gray-800 hover:bg-[#EBF1FB]"
         }`}
     >
       <span className="shrink-0">{icon}</span>
@@ -267,7 +267,7 @@ function NavItem({
           <span className="flex-1 text-[12.5px] text-left leading-snug">{label}</span>
           {code && (
             <span
-              className={`text-[10px] font-mono shrink-0 tabular-nums ${active ? "text-white/60" : "text-[#97AFC8] group-hover:text-[#6A8AAD]"}`}
+              className={`text-micro font-mono shrink-0 tabular-nums ${active ? "text-white/60" : "text-[#97AFC8] group-hover:text-[#6A8AAD]"}`}
               style={{ fontFamily: "'JetBrains Mono', monospace" }}
             >
               {code}
@@ -299,10 +299,10 @@ function PeriodSelector() {
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 h-8 px-3 rounded-[4px] border text-[12.5px] font-medium transition-all duration-150
-          ${open ? "bg-white border-[#4D97FA] text-[#1D558C] ring-2 ring-[#4D97FA]/10" : "bg-white border-[#C9D4E6] text-[#3D4F6B] hover:border-[#97B0CF]"}`}
+        className={`flex items-center gap-1.5 h-8 px-3 rounded-sm border text-[12.5px] font-medium transition-all duration-150
+          ${open ? "bg-white border-primary text-secondary ring-2 ring-primary/10" : "bg-white border-gray-400 text-gray-700 hover:border-[#97B0CF]"}`}
       >
-        <span className={`transition-colors ${open ? "text-[#4D97FA]" : "text-[#97B0CF]"}`}><IcoCalendar /></span>
+        <span className={`transition-colors ${open ? "text-primary" : "text-[#97B0CF]"}`}><IcoCalendar /></span>
         <span>{selected}</span>
         <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
           <ChevronDown />
@@ -310,11 +310,11 @@ function PeriodSelector() {
       </button>
       {open && (
         <div
-          className="absolute right-0 top-[calc(100%+5px)] w-48 bg-white rounded-[5px] border border-[#D8E4F0] z-50 overflow-hidden"
-          style={{ boxShadow: "0 8px 24px rgba(21,40,80,0.13)" }}
+          className="absolute right-0 top-[calc(100%+5px)] w-48 bg-white rounded-sm border border-[#D8E4F0] z-50 overflow-hidden"
+          style={{ boxShadow: "var(--shadow-mid)" }}
         >
           <div className="px-3 py-2.5 border-b border-[#EEF2F8]">
-            <p className="text-[11px] font-semibold text-[#7A95B8] uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
+            <p className="text-caption font-semibold text-[#7A95B8] uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
           </div>
           <div className="py-1">
           {PERIODS.map((p) => (
@@ -322,7 +322,7 @@ function PeriodSelector() {
               key={p}
               onClick={() => { setSelected(p); setOpen(false); }}
               className={`w-full px-3 py-1.5 text-left text-[12.5px] transition-colors
-                ${p === selected ? "bg-[#EBF4FF] text-[#1D558C] font-semibold" : "text-[#3D4F6B] hover:bg-[#F4F6F9]"}`}
+                ${p === selected ? "bg-primary-tint text-secondary font-semibold" : "text-gray-700 hover:bg-[#F4F6F9]"}`}
             >
               {p}
             </button>
@@ -348,10 +348,10 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center gap-2 rounded-[4px] px-1.5 py-1.5 transition-colors hover:bg-[#EBF1FB] ${open ? "bg-[#EBF1FB]" : ""}`}
+        className={`w-full flex items-center gap-2 rounded-sm px-1.5 py-1.5 transition-colors hover:bg-[#EBF1FB] ${open ? "bg-[#EBF1FB]" : ""}`}
       >
         <div
-          className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-semibold text-white"
+          className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-body-sm font-semibold text-white"
           style={{ background: "linear-gradient(135deg,#1565C0,#1E3A8A)" }}
         >
           R
@@ -359,10 +359,10 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
         {!collapsed && (
           <>
             <div className="flex-1 text-left overflow-hidden">
-              <p className="text-[12.5px] font-medium text-[#1A2B4A] leading-none truncate">Rdellamagiora</p>
-              <p className="text-[11px] text-[#7A95B8] mt-0.5 truncate">Operador</p>
+              <p className="text-[12.5px] font-medium text-gray-800 leading-none truncate">Rdellamagiora</p>
+              <p className="text-caption text-[#7A95B8] mt-0.5 truncate">Operador</p>
             </div>
-            <span className={`text-[#9AAABF] transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
+            <span className={`text-gray-500 transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
               <ChevronDown />
             </span>
           </>
@@ -370,19 +370,19 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
       </button>
       {open && (
         <div
-          className={`absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "bottom-[calc(100%+6px)] left-0 right-0"} bg-white rounded-[5px] border border-[#DDE5F0] py-1 z-50 min-w-[160px]`}
-          style={{ boxShadow: "0 8px 24px rgba(21,40,80,0.13)" }}
+          className={`absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "bottom-[calc(100%+6px)] left-0 right-0"} bg-white rounded-sm border border-gray-300 py-1 z-50 min-w-[160px]`}
+          style={{ boxShadow: "var(--shadow-mid)" }}
         >
-          <button className="w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-[#3D4F6B] hover:bg-[#F4F7FC] transition-colors">
+          <button className="w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-gray-700 hover:bg-[#F4F7FC] transition-colors">
             <IcoUser /> Mi perfil
           </button>
-          <button className="w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-[#3D4F6B] hover:bg-[#F4F7FC] transition-colors">
+          <button className="w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-gray-700 hover:bg-[#F4F7FC] transition-colors">
             <IcoSettings /> Configuración
           </button>
           <div className="my-1 border-t border-[#E4EBF5]" />
           <button
             onClick={() => { setOpen(false); onLogout(); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-[#DC2626] hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-error hover:bg-red-50 transition-colors"
           >
             <IcoLogOut /> Cerrar sesión
           </button>
@@ -413,8 +413,8 @@ function ResultsTable({
 
   return (
     <div
-      className="flex-1 flex flex-col border border-[#DDE5F0] rounded-[5px] bg-white overflow-hidden"
-      style={{ boxShadow: "0 1px 4px rgba(21,40,80,0.06)" }}
+      className="flex-1 flex flex-col border border-gray-300 rounded-sm bg-white overflow-hidden"
+      style={{ boxShadow: "var(--shadow-low)" }}
     >
       {/* Table toolbar — buscador / exportar */}
       {hasData && (
@@ -433,7 +433,7 @@ function ResultsTable({
       )}
 
       {/* Header */}
-      <div className="flex items-center border-b border-[#DDE5F0] bg-[#F8FAFD] px-4 shrink-0">
+      <div className="flex items-center border-b border-gray-300 bg-gray-50 px-4 shrink-0">
         {columns.map((c, ci) => (
           <SortableHeaderCell
             key={c}
@@ -441,7 +441,7 @@ function ResultsTable({
             active={sortIdx === ci}
             dir={sortDir}
             onClick={() => toggleSort(ci)}
-            className="flex-1 py-2.5 text-[11px]"
+            className="flex-1 py-2.5 text-caption"
           />
         ))}
       </div>
@@ -454,9 +454,9 @@ function ResultsTable({
             <p className="text-[13.5px] font-medium text-[#6B7E9A] mt-1">
               No hay resultados para los filtros aplicados
             </p>
-            <p className="text-[12px] text-[#9AAABF]">
+            <p className="text-body-sm text-gray-500">
               Completá los filtros y presioná{" "}
-              <span className="font-semibold text-[#4D97FA]">Buscar</span>
+              <span className="font-semibold text-primary">Buscar</span>
             </p>
           </div>
         ) : (
@@ -470,27 +470,27 @@ function ResultsTable({
                 onClick={() => onSelect(isSelected ? null : i)}
                 onMouseEnter={() => setHoveredRow(i)}
                 onMouseLeave={() => setHoveredRow(null)}
-                className="relative flex items-center px-4 border-b border-[#F0F4FB] cursor-pointer transition-colors duration-100"
+                className="relative flex items-center px-4 border-b border-gray-100 cursor-pointer transition-colors duration-100"
                 style={{
                   backgroundColor: isSelected
-                    ? "#EBF4FF"
+                    ? "var(--color-primary-tint)"
                     : isHovered
                     ? "#F5F8FD"
                     : "#fff",
-                  borderLeft: isSelected ? "3px solid #4D97FA" : "3px solid transparent",
+                  borderLeft: isSelected ? "3px solid var(--color-primary)" : "3px solid transparent",
                 }}
               >
                 <div
                   className="flex-1 min-w-0 py-2.5 text-[12.5px] tabular-nums"
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
-                    color: isSelected ? "#1D558C" : "#1F2D40",
+                    color: isSelected ? "var(--color-secondary)" : "#1F2D40",
                     fontWeight: isSelected ? 600 : 400,
                   }}
                 >
                   {row.referencia}
                 </div>
-                <div className={`flex-1 min-w-0 py-2.5 text-[12.5px] ${isSelected ? "text-[#1D558C] font-medium" : "text-[#3D4F6B]"}`}>
+                <div className={`flex-1 min-w-0 py-2.5 text-[12.5px] ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
                   {row.fecha}
                 </div>
               </div>
@@ -501,20 +501,20 @@ function ResultsTable({
 
       {/* Footer */}
       {hasData && (
-        <div className="px-4 py-2 border-t border-[#DDE5F0] bg-[#F8FAFD] shrink-0 flex items-center justify-between">
-          <span className="text-[11.5px] text-[#3D4F6B]">
+        <div className="px-4 py-2 border-t border-gray-300 bg-gray-50 shrink-0 flex items-center justify-between">
+          <span className="text-[11.5px] text-gray-700">
             Registros encontrados:{" "}
-            <span className="font-semibold text-[#1D558C]">
+            <span className="font-semibold text-secondary">
               {TOTAL_REGISTROS.toLocaleString("es-AR")}
             </span>
           </span>
-          <div className="flex items-center gap-2 text-[11.5px] text-[#7A8FAD]">
+          <div className="flex items-center gap-2 text-[11.5px] text-gray-600">
             <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] disabled:opacity-40 transition-colors" disabled>
               Anterior
             </button>
             <span>
-              Pág. <span className="font-medium text-[#1A2B4A]">1</span> de{" "}
-              <span className="font-medium text-[#1A2B4A]">2.284</span>
+              Pág. <span className="font-medium text-gray-800">1</span> de{" "}
+              <span className="font-medium text-gray-800">2.284</span>
             </span>
             <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] transition-colors">
               Siguiente
@@ -536,9 +536,9 @@ type ActionItem = {
 
 function actionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return "h-8 px-4 rounded-[4px] text-[12px] font-medium border border-[#FCA5A5] bg-white text-[#DC2626] hover:bg-red-50 hover:border-[#F87171] transition-all active:scale-[0.98] whitespace-nowrap";
+    return "h-8 px-4 rounded-sm text-body-sm font-medium border border-[#FCA5A5] bg-white text-error hover:bg-red-50 hover:border-[#F87171] transition-all active:scale-[0.98] whitespace-nowrap";
   }
-  return "h-8 px-4 rounded-[4px] text-[12px] font-medium border border-[#C9D4E6] bg-white text-[#3D4F6B] hover:bg-[#EBF4FF] hover:border-[#4D97FA] hover:text-[#1D558C] transition-all active:scale-[0.98] whitespace-nowrap";
+  return "h-8 px-4 rounded-sm text-body-sm font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.98] whitespace-nowrap";
 }
 
 // Barra de acciones contextual — patron unico reusado en CDS2, CDS3, CDS4 y
@@ -553,14 +553,14 @@ function SelectionActionBar({
   actions: ActionItem[];
 }) {
   return (
-    <div className="px-4 py-3 border-b border-[#E8EEF7] bg-white shrink-0 flex flex-col gap-2.5">
+    <div className="px-4 py-3 border-b border-gray-200 bg-white shrink-0 flex flex-col gap-2.5">
       <div className="flex items-center gap-2.5">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#4D97FA] shrink-0" />
-        <span className="text-[11px] font-semibold text-[#1D558C] uppercase tracking-wide select-none">
+        <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+        <span className="text-caption font-semibold text-secondary uppercase tracking-wide select-none">
           Registro seleccionado
         </span>
         <span
-          className="text-[12px] font-medium text-[#1A2B4A] tabular-nums"
+          className="text-body-sm font-medium text-gray-800 tabular-nums"
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
         >
           {recordLabel}
@@ -644,7 +644,7 @@ function exportRowsToCsv(filename: string, headers: string[], rows: string[][]) 
 
 function SortIndicator({ dir }: { dir: SortDir }) {
   return (
-    <span className="text-[#4D97FA]" style={{ fontSize: 8, lineHeight: 1 }}>
+    <span className="text-primary" style={{ fontSize: 8, lineHeight: 1 }}>
       {dir === "asc" ? "▲" : "▼"}
     </span>
   );
@@ -668,8 +668,8 @@ function SortableHeaderCell({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1 font-semibold uppercase tracking-[0.07em] select-none cursor-pointer transition-colors hover:text-[#3D4F6B] ${
-        active ? "text-[#1D558C]" : "text-[#6B7E9A]"
+      className={`flex items-center gap-1 font-semibold uppercase tracking-[0.07em] select-none cursor-pointer transition-colors hover:text-gray-700 ${
+        active ? "text-secondary" : "text-[#6B7E9A]"
       } ${className}`}
     >
       <span className="truncate">{label}</span>
@@ -695,8 +695,8 @@ function SortableTh({
       <button
         type="button"
         onClick={onClick}
-        className={`flex items-center gap-1 cursor-pointer transition-colors hover:text-[#3D4F6B] ${
-          active ? "text-[#1D558C]" : "text-[#6B7E9A]"
+        className={`flex items-center gap-1 cursor-pointer transition-colors hover:text-gray-700 ${
+          active ? "text-secondary" : "text-[#6B7E9A]"
         }`}
       >
         {label}
@@ -726,16 +726,16 @@ function TableToolbar({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="px-4 py-2.5 border-b border-[#E8EEF7] bg-white shrink-0 flex items-center justify-between gap-3">
+    <div className="px-4 py-2.5 border-b border-gray-200 bg-white shrink-0 flex items-center justify-between gap-3">
       <div className="relative flex-1 max-w-[320px]">
-        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 text-[#9AAABF]">
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 text-gray-500">
           <IcoSearch />
         </span>
         <input
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={searchPlaceholder}
-          className="w-full h-8 pl-8 pr-2.5 text-[12.5px] bg-white border border-[#C9D4E6] rounded-[4px] text-[#1A202C] placeholder:text-[#9AAABF] focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 transition-all duration-150"
+          className="w-full h-8 pl-8 pr-2.5 text-[12.5px] bg-white border border-gray-400 rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 transition-all duration-150"
         />
       </div>
       <div className="flex items-center gap-2 shrink-0">
@@ -757,9 +757,9 @@ function TableToolbar({
 // outline para cancelar, azul solido para la accion primaria). Cierra con X,
 // click en el overlay o Escape.
 const modalPrimaryBtnCls =
-  "h-9 px-5 rounded-[6px] text-[13px] font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-9 px-5 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 const modalNeutralBtnCls =
-  "h-9 px-5 rounded-[6px] text-[13px] font-medium border-2 border-[#4D97FA] bg-white hover:bg-[#EBF4FF] transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-9 px-5 rounded-md text-body font-medium border-2 border-primary bg-white hover:bg-primary-tint transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 
 function Modal({
   title,
@@ -793,7 +793,7 @@ function Modal({
     <>
       <div className="fixed inset-0 z-40 bg-black/25" onClick={onClose} />
       <div
-        className="fixed z-50 flex flex-col bg-white rounded-[8px] overflow-hidden"
+        className="fixed z-50 flex flex-col bg-white rounded-lg overflow-hidden"
         style={{
           top: "50%",
           left: "50%",
@@ -801,16 +801,16 @@ function Modal({
           width: size === "sm" ? 480 : size === "xl" ? 1120 : 920,
           maxWidth: "calc(100vw - 40px)",
           maxHeight: "calc(100vh - 40px)",
-          boxShadow: "0 8px 24px rgba(21,40,80,0.18)",
+          boxShadow: "var(--shadow-high)",
         }}
       >
         {/* Header */}
-        <div className="px-5 py-4 border-b border-[#E8EEF7] shrink-0 flex items-center justify-between gap-3">
-          <p className="min-w-0 truncate text-[15px] font-semibold text-[#1A202C]">
+        <div className="px-5 py-4 border-b border-gray-200 shrink-0 flex items-center justify-between gap-3">
+          <p className="min-w-0 truncate text-label font-semibold text-gray-900">
             {title}
             {subtitle && (
               <span
-                className="ml-2 font-normal text-[13px] text-[#7A95B8]"
+                className="ml-2 font-normal text-body text-[#7A95B8]"
                 style={{ fontFamily: "'JetBrains Mono', monospace" }}
               >
                 {subtitle}
@@ -820,7 +820,7 @@ function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-[4px] text-[#7A8FAD] hover:bg-[#EEF2F8] hover:text-[#1A2B4A] transition-all"
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-[#EEF2F8] hover:text-gray-800 transition-all"
           >
             <IcoX />
           </button>
@@ -831,7 +831,7 @@ function Modal({
 
         {/* Footer */}
         {footer && (
-          <div className="px-5 py-4 border-t border-[#E8EEF7] shrink-0 flex items-center justify-end gap-3">
+          <div className="px-5 py-4 border-t border-gray-200 shrink-0 flex items-center justify-end gap-3">
             {footer}
           </div>
         )}
@@ -844,8 +844,8 @@ function Modal({
 // "Interrupción/Reclamo" / "Errores".
 function ListBox({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="flex flex-col border border-[#DDE5F0] rounded-[5px] overflow-hidden" style={{ height: 160 }}>
-      <div className="px-3 py-2 border-b border-[#DDE5F0] bg-[#F8FAFD] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] shrink-0">
+    <div className="flex flex-col border border-gray-300 rounded-sm overflow-hidden" style={{ height: 160 }}>
+      <div className="px-3 py-2 border-b border-gray-300 bg-gray-50 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] shrink-0">
         {title}
       </div>
       <div className="flex-1 overflow-y-auto p-2">{children}</div>
@@ -854,7 +854,7 @@ function ListBox({ title, children }: { title: string; children?: React.ReactNod
 }
 
 // Checkbox custom (no accent-color nativo) — mismo lenguaje que el resto de
-// la app: borde #C9D4E6 en reposo, relleno #4D97FA + check blanco al marcar.
+// la app: borde var(--color-gray-400) en reposo, relleno var(--color-primary) + check blanco al marcar.
 // El <input> real queda oculto (sr-only) para mantener accesibilidad/teclado;
 // el estado visual lo maneja React, nunca CSS nativo del navegador.
 // Sin "checked"/"onChange" queda no-controlado (estado propio, como en
@@ -879,7 +879,7 @@ function ModalCheckbox({
     onChange?.(v);
   };
   return (
-    <label className="inline-flex items-center gap-2 text-[12.5px] text-[#3D4F6B] cursor-pointer select-none">
+    <label className="inline-flex items-center gap-2 text-[12.5px] text-gray-700 cursor-pointer select-none">
       <input
         type="checkbox"
         checked={checked}
@@ -888,7 +888,7 @@ function ModalCheckbox({
       />
       <span
         className={`w-4 h-4 rounded-[3px] border flex items-center justify-center shrink-0 transition-colors duration-150 ${
-          checked ? "bg-[#4D97FA] border-[#4D97FA]" : "bg-white border-[#C9D4E6] hover:border-[#97B0CF]"
+          checked ? "bg-primary border-primary" : "bg-white border-gray-400 hover:border-[#97B0CF]"
         }`}
       >
         {checked && (
@@ -909,14 +909,14 @@ function ModalRadio({ label, checked, onSelect }: { label: string; checked: bool
   return (
     <label
       onClick={onSelect}
-      className="inline-flex items-center gap-1.5 text-[12.5px] text-[#3D4F6B] cursor-pointer select-none"
+      className="inline-flex items-center gap-1.5 text-[12.5px] text-gray-700 cursor-pointer select-none"
     >
       <span
         className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-150 ${
-          checked ? "border-[#4D97FA]" : "border-[#C9D4E6] hover:border-[#97B0CF]"
+          checked ? "border-primary" : "border-gray-400 hover:border-[#97B0CF]"
         }`}
       >
-        <span className={`w-2 h-2 rounded-full bg-[#4D97FA] transition-transform duration-150 ${checked ? "scale-100" : "scale-0"}`} />
+        <span className={`w-2 h-2 rounded-full bg-primary transition-transform duration-150 ${checked ? "scale-100" : "scale-0"}`} />
       </span>
       {label}
     </label>
@@ -943,10 +943,10 @@ function DesarmeModal({
       onClose={onClose}
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "#1D558C" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "#4D97FA" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
             Procesar
           </button>
         </>
@@ -955,7 +955,7 @@ function DesarmeModal({
       <div className="grid grid-cols-2 gap-4">
         <ListBox title="Interrupción/Reclamo">
           <div
-            className="px-2 py-1.5 text-[12.5px] tabular-nums text-[#1A2B4A]"
+            className="px-2 py-1.5 text-[12.5px] tabular-nums text-gray-800"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}
           >
             {referencia}
@@ -974,7 +974,7 @@ function DesarmeModal({
           <div className="flex items-center gap-2">
             <ModalCheckbox label="Reasigna por proximidad" />
             <input defaultValue="250" className={MOD_FIELD_CLS} style={{ width: 64 }} />
-            <span className="text-[12.5px] text-[#3D4F6B]">Mts.</span>
+            <span className="text-[12.5px] text-gray-700">Mts.</span>
           </div>
           <div className="flex items-center gap-5">
             <ModalCheckbox label="Desarmo" defaultChecked />
@@ -1009,7 +1009,7 @@ function DesarmeModal({
             >
               Elegir archivo
             </label>
-            <span className="text-[12px] text-[#7A8FAD] truncate">{fileName}</span>
+            <span className="text-body-sm text-gray-600 truncate">{fileName}</span>
           </div>
           <div>
             <button type="button" className={actionBtnCls("neutral")}>
@@ -1034,10 +1034,10 @@ function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void 
       size="sm"
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "#1D558C" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "#4D97FA" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
             Generar
           </button>
         </>
@@ -1066,7 +1066,7 @@ function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
-          <div className="w-full h-8 px-2.5 flex items-center text-[12.5px] bg-[#F4F6F9] border border-[#DDE5F0] rounded-[4px] text-[#B8C8DC] select-none cursor-not-allowed">
+          <div className="w-full h-8 px-2.5 flex items-center text-[12.5px] bg-[#F4F6F9] border border-gray-300 rounded-sm text-[#B8C8DC] select-none cursor-not-allowed">
             —
           </div>
         </div>
@@ -1098,10 +1098,10 @@ function ReplicarModal({
       size="sm"
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "#1D558C" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "#4D97FA" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
             Generar
           </button>
         </>
@@ -1121,7 +1121,7 @@ function ReplicarModal({
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
-          <div className="w-full h-8 px-2.5 flex items-center text-[12.5px] bg-[#F4F6F9] border border-[#DDE5F0] rounded-[4px] text-[#B8C8DC] select-none cursor-not-allowed">
+          <div className="w-full h-8 px-2.5 flex items-center text-[12.5px] bg-[#F4F6F9] border border-gray-300 rounded-sm text-[#B8C8DC] select-none cursor-not-allowed">
             —
           </div>
         </div>
@@ -1167,15 +1167,15 @@ function CambiaFasesModal({
       open={open}
       onClose={onClose}
       footer={
-        <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "#1D558C" }}>
+        <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
           Salir
         </button>
       }
     >
-      <div className="border border-[#DDE5F0] rounded-[5px] overflow-hidden">
+      <div className="border border-gray-300 rounded-sm overflow-hidden">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-[#F8FAFD] border-b border-[#E8EEF7]">
+            <tr className="bg-gray-50 border-b border-gray-200">
               {["Fase", "Fecha", "Id elemento", "Tipo elemento", "Cadena", "Cliente"].map((c) => (
                 <th key={c} className="px-4 py-3 text-left text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] select-none whitespace-nowrap">
                   {c}
@@ -1186,24 +1186,24 @@ function CambiaFasesModal({
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={r.idElemento} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.fase}</td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] whitespace-nowrap">{r.fecha}</td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <tr key={r.idElemento} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.fase}</td>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 whitespace-nowrap">{r.fecha}</td>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   {r.idElemento}
                 </td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] whitespace-nowrap">{r.tipoElemento}</td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 whitespace-nowrap">{r.tipoElemento}</td>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-caption)" }}>
                   {r.cadena}
                 </td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.cliente}</td>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.cliente}</td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => move(i, -1)}
                       disabled={i === 0}
-                      className="w-6 h-6 flex items-center justify-center rounded-[4px] text-[#7A8FAD] hover:bg-[#EBF4FF] hover:text-[#1D558C] disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-primary-tint hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
                     >
                       <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                         <path d="M5.5 8.5V2.5M5.5 2.5L2.5 5.5M5.5 2.5l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -1213,7 +1213,7 @@ function CambiaFasesModal({
                       type="button"
                       onClick={() => move(i, 1)}
                       disabled={i === rows.length - 1}
-                      className="w-6 h-6 flex items-center justify-center rounded-[4px] text-[#7A8FAD] hover:bg-[#EBF4FF] hover:text-[#1D558C] disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-primary-tint hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
                     >
                       <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                         <path d="M5.5 2.5v6M5.5 8.5l-3-3M5.5 8.5l3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -1255,32 +1255,32 @@ function AltaClientesModal({
       onClose={onClose}
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "#1D558C" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "#4D97FA" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
             Procesar
           </button>
         </>
       }
     >
       <div className="flex items-center justify-end gap-2 mb-3">
-        <span className="text-[11.5px] text-[#7A8FAD]">Filtro</span>
+        <span className="text-[11.5px] text-gray-600">Filtro</span>
         <button
           type="button"
           onClick={() => setFiltroActivo((v) => !v)}
-          className={`h-7 px-3 rounded-[4px] text-[11.5px] font-medium border transition-colors ${
-            filtroActivo ? "bg-[#EBF4FF] border-[#4D97FA] text-[#1D558C]" : "bg-white border-[#C9D4E6] text-[#3D4F6B] hover:border-[#97B0CF]"
+          className={`h-7 px-3 rounded-sm text-[11.5px] font-medium border transition-colors ${
+            filtroActivo ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-[#97B0CF]"
           }`}
         >
           {filtroActivo ? "Activo" : "Inactivo"}
         </button>
       </div>
 
-      <div className="border border-[#DDE5F0] rounded-[5px] overflow-hidden">
+      <div className="border border-gray-300 rounded-sm overflow-hidden">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-[#F8FAFD] border-b border-[#E8EEF7]">
+            <tr className="bg-gray-50 border-b border-gray-200">
               {["Interrupción", "Repo", "Cadena/Cuenta", "Clientes T4", "Clientes T6", "Clientes T9", "Clientes T10"].map((c) => (
                 <th key={c} className="px-4 py-3 text-left text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] select-none whitespace-nowrap">
                   {c}
@@ -1291,18 +1291,18 @@ function AltaClientesModal({
           </thead>
           <tbody>
             {ALTA_CLIENTES_ROWS.map((r) => (
-              <tr key={r.interrupcion} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
-                <td className="px-4 py-3 text-[12.5px] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", color: "#1A2B4A" }}>
+              <tr key={r.interrupcion} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <td className="px-4 py-3 text-[12.5px] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", color: "var(--color-gray-800)" }}>
                   {r.interrupcion}
                 </td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.repo}</td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.repo}</td>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-caption)" }}>
                   {r.cadenaCuenta}
                 </td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.t4}</td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.t6}</td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.t9}</td>
-                <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.t10}</td>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.t4}</td>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.t6}</td>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.t9}</td>
+                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.t10}</td>
                 <td className="px-3 py-3">
                   <ModalCheckbox label="" />
                 </td>
@@ -1313,12 +1313,12 @@ function AltaClientesModal({
       </div>
 
       <div className="flex items-center justify-between mt-4">
-        <div className="inline-flex rounded-[6px] border border-[#C9D4E6] overflow-hidden">
+        <div className="inline-flex rounded-md border border-gray-400 overflow-hidden">
           <button
             type="button"
             onClick={() => setPeriodicidad("mensual")}
             className={`h-8 px-4 text-[12.5px] font-medium transition-colors ${
-              periodicidad === "mensual" ? "bg-[#4D97FA] text-white" : "bg-white text-[#3D4F6B] hover:bg-[#F4F7FC]"
+              periodicidad === "mensual" ? "bg-primary text-white" : "bg-white text-gray-700 hover:bg-[#F4F7FC]"
             }`}
           >
             Mensual
@@ -1326,8 +1326,8 @@ function AltaClientesModal({
           <button
             type="button"
             onClick={() => setPeriodicidad("semestral")}
-            className={`h-8 px-4 text-[12.5px] font-medium border-l border-[#C9D4E6] transition-colors ${
-              periodicidad === "semestral" ? "bg-[#4D97FA] text-white" : "bg-white text-[#3D4F6B] hover:bg-[#F4F7FC]"
+            className={`h-8 px-4 text-[12.5px] font-medium border-l border-gray-400 transition-colors ${
+              periodicidad === "semestral" ? "bg-primary text-white" : "bg-white text-gray-700 hover:bg-[#F4F7FC]"
             }`}
           >
             Semestral
@@ -1450,10 +1450,10 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       size="xl"
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "#1D558C" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "#4D97FA" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
             Procesar
           </button>
         </>
@@ -1462,8 +1462,8 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       <div className="grid grid-cols-2 gap-6">
         {/* Izquierda: archivo + porcentajes */}
         <div className="flex flex-col gap-4">
-          <div className="border border-[#DDE5F0] rounded-[5px] overflow-hidden" style={{ height: 160 }}>
-            <div className="grid grid-cols-3 bg-[#F8FAFD] border-b border-[#DDE5F0]">
+          <div className="border border-gray-300 rounded-sm overflow-hidden" style={{ height: 160 }}>
+            <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-300">
               {["Campo 1", "Campo 2", "Campo 3"].map((c) => (
                 <div key={c} className="px-3 py-2 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A]">
                   {c}
@@ -1486,7 +1486,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
             >
               Elegir archivo
             </label>
-            <span className="text-[12px] text-[#7A8FAD] truncate">{fileName}</span>
+            <span className="text-body-sm text-gray-600 truncate">{fileName}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -1494,21 +1494,21 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               <FieldLabel>Porcentaje 1</FieldLabel>
               <div className="flex items-center gap-2">
                 <input defaultValue="10" className={MOD_FIELD_CLS} style={{ width: 60 }} />
-                <span className="text-[11.5px] text-[#7A8FAD]">Intervalo mayor a 48hs</span>
+                <span className="text-[11.5px] text-gray-600">Intervalo mayor a 48hs</span>
               </div>
             </div>
             <div>
               <FieldLabel>Distancia del reclamo</FieldLabel>
               <div className="flex items-center gap-2">
                 <input defaultValue="100" className={MOD_FIELD_CLS} style={{ width: 60 }} />
-                <span className="text-[11.5px] text-[#7A8FAD]">Mts.</span>
+                <span className="text-[11.5px] text-gray-600">Mts.</span>
               </div>
             </div>
             <div>
               <FieldLabel>Porcentaje 2</FieldLabel>
               <div className="flex items-center gap-2">
                 <input defaultValue="10" className={MOD_FIELD_CLS} style={{ width: 60 }} />
-                <span className="text-[11.5px] text-[#7A8FAD]">Intervalo menor a 48hs</span>
+                <span className="text-[11.5px] text-gray-600">Intervalo menor a 48hs</span>
               </div>
             </div>
           </div>
@@ -1519,14 +1519,14 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           <ListBox title="Errores" />
 
           <div>
-            <div className="flex items-center gap-1 border-b border-[#E8EEF7] overflow-x-auto">
+            <div className="flex items-center gap-1 border-b border-gray-200 overflow-x-auto">
               {LOTES_TIPOS.map((t) => (
                 <button
                   key={t.key}
                   type="button"
                   onClick={() => setActiveTipo(t.key)}
-                  className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap ${
-                    activeTipo === t.key ? "border-[#4D97FA] text-[#1D558C]" : "border-transparent text-[#7A8FAD] hover:text-[#3D4F6B]"
+                  className={`px-3 py-2 text-body-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    activeTipo === t.key ? "border-primary text-secondary" : "border-transparent text-gray-600 hover:text-gray-700"
                   }`}
                 >
                   Tipo {t.key}
@@ -1569,7 +1569,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               ))}
             </div>
 
-            <div className="w-full h-8 px-2.5 flex items-center text-[12px] bg-[#F4F6F9] border border-[#DDE5F0] rounded-[4px] text-[#7A8FAD] select-none">
+            <div className="w-full h-8 px-2.5 flex items-center text-body-sm bg-[#F4F6F9] border border-gray-300 rounded-sm text-gray-600 select-none">
               {tipoData.desc}
             </div>
           </div>
@@ -1645,7 +1645,7 @@ function IntercambioModal({
       onClose={onClose}
       size="xl"
       footer={
-        <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "#4D97FA" }}>
+        <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
           Salir
         </button>
       }
@@ -1653,10 +1653,10 @@ function IntercambioModal({
       <div className="flex gap-5">
         {/* Sidebar izquierda */}
         <div className="flex flex-col gap-4 shrink-0" style={{ width: 190 }}>
-          <div className="border border-[#DDE5F0] rounded-[5px] divide-y divide-[#F0F4FB] overflow-hidden">
+          <div className="border border-gray-300 rounded-sm divide-y divide-gray-100 overflow-hidden">
             <div className="flex items-center justify-between gap-2 px-3 py-2">
               <span
-                className="text-[11.5px] tabular-nums text-[#1A2B4A] truncate"
+                className="text-[11.5px] tabular-nums text-gray-800 truncate"
                 style={{ fontFamily: "'JetBrains Mono', monospace" }}
               >
                 {referencia}
@@ -1664,7 +1664,7 @@ function IntercambioModal({
               <ModalCheckbox label="" defaultChecked />
             </div>
             <div className="flex items-center justify-between gap-2 px-3 py-2">
-              <span className="text-[12px] text-[#3D4F6B]">Reposición 1</span>
+              <span className="text-body-sm text-gray-700">Reposición 1</span>
               <ModalCheckbox label="" defaultChecked />
             </div>
           </div>
@@ -1691,10 +1691,10 @@ function IntercambioModal({
 
         {/* Tabla origen */}
         <div className="flex-1 flex flex-col gap-2 min-w-0">
-          <div className="border border-[#DDE5F0] rounded-[5px] overflow-y-auto" style={{ height: 240 }}>
+          <div className="border border-gray-300 rounded-sm overflow-y-auto" style={{ height: 240 }}>
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-[#F8FAFD] border-b border-[#E8EEF7]">
+                <tr className="bg-gray-50 border-b border-gray-200">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
                     <th key={c} className="px-3 py-2 text-left text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] whitespace-nowrap">
                       {c}
@@ -1710,7 +1710,7 @@ function IntercambioModal({
                     </div>
                   </th>
                 </tr>
-                <tr className="border-b border-[#E8EEF7]">
+                <tr className="border-b border-gray-200">
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
@@ -1722,17 +1722,17 @@ function IntercambioModal({
                   <tr>
                     <td colSpan={4}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                        <span className="text-[#C9D4E6]"><IcoInbox /></span>
-                        <p className="text-[12.5px] font-medium text-[#7A8FAD]">No hay registros</p>
+                        <span className="text-gray-400"><IcoInbox /></span>
+                        <p className="text-[12.5px] font-medium text-gray-600">No hay registros</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   leftRows.map((r, i) => (
-                    <tr key={r.id} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
-                      <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] whitespace-nowrap">{r.fecha}</td>
-                      <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.clientes}</td>
-                      <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.repo}</td>
+                    <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="px-3 py-2 text-[12.5px] text-gray-700 whitespace-nowrap">{r.fecha}</td>
+                      <td className="px-3 py-2 text-[12.5px] text-gray-700 tabular-nums">{r.clientes}</td>
+                      <td className="px-3 py-2 text-[12.5px] text-gray-700 tabular-nums">{r.repo}</td>
                       <td className="px-2 py-2">
                         <div className="flex justify-center">
                           <ModalCheckbox label="" checked={leftChecked.has(i)} onChange={(c) => toggleLeftChecked(i, c)} />
@@ -1744,9 +1744,9 @@ function IntercambioModal({
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between text-[11.5px] text-[#7A8FAD]">
+          <div className="flex items-center justify-between text-[11.5px] text-gray-600">
             <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white disabled:opacity-40" disabled>Anterior</button>
-            <span>Página <span className="font-medium text-[#1A2B4A]">1</span> de <span className="font-medium text-[#1A2B4A]">1</span></span>
+            <span>Página <span className="font-medium text-gray-800">1</span> de <span className="font-medium text-gray-800">1</span></span>
             <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white disabled:opacity-40" disabled>Siguiente</button>
           </div>
           <ModalCheckbox label="Ocultar existentes en ambas interrupciones" checked={ocultarExistentes} onChange={setOcultarExistentes} />
@@ -1766,24 +1766,24 @@ function IntercambioModal({
           <button type="button" className={actionBtnCls("neutral")}>
             Modifica en destino
           </button>
-          <button type="button" onClick={swap} className={modalNeutralBtnCls} style={{ color: "#1D558C" }}>
+          <button type="button" onClick={swap} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
             {"<< - >>"}
           </button>
         </div>
 
         {/* Tabla destino */}
         <div className="flex-1 flex flex-col gap-2 min-w-0">
-          <div className="border border-[#DDE5F0] rounded-[5px] overflow-y-auto" style={{ height: 240 }}>
+          <div className="border border-gray-300 rounded-sm overflow-y-auto" style={{ height: 240 }}>
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-[#F8FAFD] border-b border-[#E8EEF7]">
+                <tr className="bg-gray-50 border-b border-gray-200">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
                     <th key={c} className="px-3 py-2 text-left text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] whitespace-nowrap">
                       {c}
                     </th>
                   ))}
                 </tr>
-                <tr className="border-b border-[#E8EEF7]">
+                <tr className="border-b border-gray-200">
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
@@ -1794,31 +1794,31 @@ function IntercambioModal({
                   <tr>
                     <td colSpan={3}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                        <span className="text-[#C9D4E6]"><IcoInbox /></span>
-                        <p className="text-[12.5px] font-medium text-[#7A8FAD]">No hay registros</p>
+                        <span className="text-gray-400"><IcoInbox /></span>
+                        <p className="text-[12.5px] font-medium text-gray-600">No hay registros</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   rightRows.map((r) => (
-                    <tr key={r.id} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
-                      <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] whitespace-nowrap">{r.fecha}</td>
-                      <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.clientes}</td>
-                      <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.repo}</td>
+                    <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="px-3 py-2 text-[12.5px] text-gray-700 whitespace-nowrap">{r.fecha}</td>
+                      <td className="px-3 py-2 text-[12.5px] text-gray-700 tabular-nums">{r.clientes}</td>
+                      <td className="px-3 py-2 text-[12.5px] text-gray-700 tabular-nums">{r.repo}</td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between text-[11.5px] text-[#7A8FAD]">
+          <div className="flex items-center justify-between text-[11.5px] text-gray-600">
             <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white disabled:opacity-40" disabled>Anterior</button>
-            <span>Página <span className="font-medium text-[#1A2B4A]">1</span> de <span className="font-medium text-[#1A2B4A]">1</span></span>
+            <span>Página <span className="font-medium text-gray-800">1</span> de <span className="font-medium text-gray-800">1</span></span>
             <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white disabled:opacity-40" disabled>Siguiente</button>
           </div>
           <div className="relative">
             <input placeholder="Buscar destino" className={MOD_FIELD_CLS} style={{ paddingRight: 36 }} />
-            <span className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center text-[#7A8FAD]">
+            <span className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center text-gray-600">
               <IcoSearch />
             </span>
           </div>
@@ -1845,9 +1845,9 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     }
   }
 
-  const inputCls = "w-full px-[8px] py-[12px] border border-[#a1a1aa] rounded-[4px] bg-white focus:outline-none focus:border-[#4D97FA] focus:ring-2 focus:ring-[#4D97FA]/15 transition-all";
-  const inputStyle: React.CSSProperties = { fontFamily: "'Poppins:Regular', sans-serif", fontSize: 14, color: "#27272a", lineHeight: "20px", letterSpacing: "0.14px" };
-  const labelStyle: React.CSSProperties = { fontFamily: "'Maven Pro:Regular', sans-serif", fontWeight: 400, fontSize: 14, color: "#52525b", lineHeight: "20px", letterSpacing: "0.14px" };
+  const inputCls = "w-full px-[8px] py-[12px] border border-[#a1a1aa] rounded-sm bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
+  const inputStyle: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: "#27272a", lineHeight: "20px", letterSpacing: "0.14px" };
+  const labelStyle: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: "#52525b", lineHeight: "20px", letterSpacing: "0.14px" };
 
   return (
     <div className="relative w-full h-screen overflow-hidden flex">
@@ -1860,8 +1860,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           <Logo />
         </div>
         <div style={{ marginTop: 50 }}>
-          <p style={{ fontFamily: "'Maven Pro:SemiBold', sans-serif", fontWeight: 600, fontSize: "39.06px", color: "white", lineHeight: "46.87px" }}>SISENRE</p>
-          <p style={{ fontFamily: "'Maven Pro:SemiBold', sans-serif", fontWeight: 600, fontSize: "39.06px", color: "white", lineHeight: "46.87px" }}>Calidad de servicio</p>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "39.06px", color: "white", lineHeight: "46.87px" }}>SISENRE</p>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "39.06px", color: "white", lineHeight: "46.87px" }}>Calidad de servicio</p>
         </div>
       </div>
 
@@ -1871,8 +1871,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0" style={{ paddingTop: 60, paddingLeft: 32, paddingRight: 32, paddingBottom: 32 }}>
             {/* Header */}
             <div className="flex flex-col gap-[8px] shrink-0">
-              <p style={{ fontFamily: "'Asap:SemiBold', sans-serif", fontVariationSettings: '"wdth" 100', fontWeight: 600, fontSize: 40, color: "#1d558c", lineHeight: "40px" }}>Bienvenido </p>
-              <p style={{ fontFamily: "'Nunito:Regular', sans-serif", fontWeight: 400, fontSize: 16, color: "#52525b", lineHeight: "20px", letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 40, color: "var(--color-secondary)", lineHeight: "40px" }}>Bienvenido </p>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 16, color: "#52525b", lineHeight: "20px", letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
             </div>
 
             {/* Inputs */}
@@ -1888,7 +1888,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             </div>
 
             {error && (
-              <p className="mt-3 shrink-0 text-[12px] text-[#DC2626] bg-red-50 border border-red-200 rounded-[4px] px-3 py-2">{error}</p>
+              <p className="mt-3 shrink-0 text-body-sm text-error bg-red-50 border border-red-200 rounded-sm px-3 py-2">{error}</p>
             )}
 
             {/* Button */}
@@ -1896,8 +1896,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-[4px] text-white hover:brightness-110 disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all"
-                style={{ backgroundColor: "#4d97fa", fontFamily: "'Maven Pro:Medium', sans-serif", fontWeight: 500, fontSize: 16, lineHeight: "20px", padding: "12px 24px", boxShadow: "0px 1px 2px 0px rgba(16,24,40,0.05)" }}
+                className="w-full rounded-sm text-white hover:brightness-110 disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all"
+                style={{ backgroundColor: "var(--color-primary)", fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 16, lineHeight: "20px", padding: "12px 24px", boxShadow: "0px 1px 2px 0px rgba(16,24,40,0.05)" }}
               >
                 {loading ? "Ingresando…" : "Confirmar"}
               </button>
@@ -1908,7 +1908,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
             {/* Footer */}
             <div className="shrink-0 text-center">
-              <p style={{ fontFamily: "'Maven Pro:Regular', sans-serif", fontWeight: 400, fontSize: 12, lineHeight: "16px", letterSpacing: "1px", color: "#000" }}>© Desarrollos propios 2026</p>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: "var(--text-body-sm)", lineHeight: "16px", letterSpacing: "1px", color: "#000" }}>© Desarrollos propios 2026</p>
             </div>
           </form>
         </div>
@@ -1944,8 +1944,8 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
     >
       <div className="w-full max-w-[520px] px-6">
         {/* Header */}
-        <div className="mb-6 pb-5 border-b border-[#DDE5F0]">
-          <h1 className="text-[22px] font-bold text-[#1A202C] mb-1">Bienvenido a SISENRE</h1>
+        <div className="mb-6 pb-5 border-b border-gray-300">
+          <h1 className="text-title-sm font-bold text-gray-900 mb-1">Bienvenido a SISENRE</h1>
           <p className="text-[13.5px] text-[#6B7E9A]">Seleccioná con qué herramienta comenzarás a trabajar</p>
         </div>
 
@@ -1960,10 +1960,10 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
                 onClick={() => !opt.disabled && onSelect(opt.id)}
                 onMouseEnter={() => setHovered(opt.id)}
                 onMouseLeave={() => setHovered(null)}
-                className="w-full text-left px-5 py-4 rounded-[8px] border transition-all duration-150"
+                className="w-full text-left px-5 py-4 rounded-lg border transition-all duration-150"
                 style={{
                   backgroundColor: isHov ? "#fff" : "#fff",
-                  borderColor: isHov ? "#4D97FA" : "#DDE5F0",
+                  borderColor: isHov ? "var(--color-primary)" : "var(--color-gray-300)",
                   boxShadow: isHov ? "0 4px 16px rgba(77,151,250,0.12)" : "0 1px 3px rgba(21,40,80,0.05)",
                   cursor: opt.disabled ? "not-allowed" : "pointer",
                   opacity: opt.disabled ? 0.55 : 1,
@@ -1971,14 +1971,14 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[15px] font-semibold text-[#1A202C] mb-0.5">{opt.title}</p>
+                    <p className="text-label font-semibold text-gray-900 mb-0.5">{opt.title}</p>
                     <p className="text-[12.5px] text-[#6B7E9A]">{opt.desc}</p>
                   </div>
                   {!opt.disabled && (
                     <span
                       className="shrink-0 ml-4 transition-transform duration-150"
                       style={{
-                        color: isHov ? "#4D97FA" : "#B8C8DC",
+                        color: isHov ? "var(--color-primary)" : "#B8C8DC",
                         transform: isHov ? "translateX(3px)" : "none",
                       }}
                     >
@@ -1991,7 +1991,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
           })}
         </div>
 
-        <p className="text-center text-[11px] text-[#B0BAC9] mt-8">© Desarrollos propios 2026</p>
+        <p className="text-center text-caption text-[#B0BAC9] mt-8">© Desarrollos propios 2026</p>
       </div>
     </div>
   );
@@ -2011,32 +2011,32 @@ function WelcomeContent() {
     <div className="flex-1 overflow-y-auto px-10 py-10">
       {/* Greeting */}
       <div className="mb-8">
-        <p className="text-[12px] font-medium uppercase tracking-widest text-[#9AAABF] mb-1">SISENRE 2.0 · Agosto 2026</p>
-        <h2 className="text-[26px] font-bold text-[#1A202C] leading-tight">Buenos días, Rdellamagiora</h2>
+        <p className="text-body-sm font-medium uppercase tracking-widest text-gray-500 mb-1">SISENRE 2.0 · Agosto 2026</p>
+        <h2 className="text-title font-bold text-gray-900 leading-tight">Buenos días, Rdellamagiora</h2>
         <p className="text-[14px] text-[#6B7E9A] mt-1">Seleccioná una sección del menú o usá los accesos rápidos para comenzar.</p>
       </div>
 
       {/* Quick access */}
-      <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#9AAABF] mb-3">Accesos frecuentes</p>
+      <p className="text-caption font-semibold uppercase tracking-[0.09em] text-gray-500 mb-3">Accesos frecuentes</p>
       <div className="grid grid-cols-2 gap-4" style={{ maxWidth: 760 }}>
         {quickLinks.map((item) => (
           <div
             key={item.code}
-            className="group bg-white rounded-[7px] border border-[#DDE5F0] px-5 py-4 cursor-pointer transition-all duration-150 hover:border-[#4D97FA] hover:shadow-[0_4px_16px_rgba(77,151,250,0.1)]"
+            className="group bg-white rounded-[7px] border border-gray-300 px-5 py-4 cursor-pointer transition-all duration-150 hover:border-primary hover:shadow-[0_4px_16px_rgba(77,151,250,0.1)]"
           >
             <div className="flex items-start gap-3">
-              <span className="mt-0.5 text-[#4D97FA] shrink-0">{item.icon}</span>
+              <span className="mt-0.5 text-primary shrink-0">{item.icon}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-[13.5px] font-semibold text-[#1A202C]">{item.label}</p>
+                  <p className="text-[13.5px] font-semibold text-gray-900">{item.label}</p>
                   <span
-                    className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded-[3px] border border-[#C9D4E6] text-[#7A95B8]"
+                    className="text-micro font-mono font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-[#7A95B8]"
                     style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
                     {item.code}
                   </span>
                 </div>
-                <p className="text-[12px] text-[#7A95B8] leading-snug">{item.desc}</p>
+                <p className="text-body-sm text-[#7A95B8] leading-snug">{item.desc}</p>
               </div>
             </div>
           </div>
@@ -2057,8 +2057,8 @@ function WelcomeContent() {
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-[#7A8FAD] mb-1 truncate">{label}</p>
-      <div className="h-7 px-2 flex items-center text-[11.5px] bg-[#F4F6F9] border border-[#DDE5F0] rounded-[4px] text-[#3D4F6B] truncate">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-gray-600 mb-1 truncate">{label}</p>
+      <div className="h-7 px-2 flex items-center text-[11.5px] bg-[#F4F6F9] border border-gray-300 rounded-sm text-gray-700 truncate">
         {value || " "}
       </div>
     </div>
@@ -2151,10 +2151,10 @@ function DatosInterrupcionModal({
       size="xl"
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "#1D558C" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "#4D97FA" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
             Procesar
           </button>
         </>
@@ -2186,11 +2186,11 @@ function DatosInterrupcionModal({
 const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
 
 const MOD_FIELD_CLS =
-  "w-full h-8 px-2.5 text-[12.5px] bg-white border border-[#C9D4E6] rounded-[4px] text-[#1A202C] " +
-  "placeholder:text-[#9AAABF] focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 transition-all duration-150";
+  "w-full h-8 px-2.5 text-[12.5px] bg-white border border-gray-400 rounded-sm text-gray-900 " +
+  "placeholder:text-gray-500 focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 transition-all duration-150";
 
 const MOD_SELECT_CLS =
-  "h-8 px-2.5 pr-7 text-[12.5px] bg-white border border-[#C9D4E6] rounded-[4px] text-[#1A202C] appearance-none " +
+  "h-8 px-2.5 pr-7 text-[12.5px] bg-white border border-gray-400 rounded-sm text-gray-900 appearance-none " +
   "cursor-pointer focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 transition-all duration-150 shrink-0";
 
 // Campos del flyout "Más filtros" de la Card A. Cada uno se puede aplicar,
@@ -2287,10 +2287,10 @@ const DRAWER_TABS = [
 
 function CardHeader({ title, tag }: { title: string; tag?: string }) {
   return (
-    <div className="px-5 py-2.5 border-b border-[#E8EEF7] bg-[#F8FAFD] shrink-0 flex items-center gap-2">
-      <span className="text-[11.5px] font-semibold text-[#3D4F6B]">{title}</span>
+    <div className="px-5 py-2.5 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center gap-2">
+      <span className="text-[11.5px] font-semibold text-gray-700">{title}</span>
       {tag && (
-        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-[3px] border border-[#C9D4E6] text-[#7A95B8]"
+        <span className="text-micro font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-[#7A95B8]"
           style={{ fontFamily: "'JetBrains Mono', monospace" }}>{tag}</span>
       )}
     </div>
@@ -2324,12 +2324,12 @@ function ButtonSelectGroup({
             disabled={disabled}
             aria-pressed={isSel}
             onClick={() => onToggle(opt)}
-            className={`h-8 px-2.5 text-[12px] rounded-[4px] font-medium border transition-all duration-150 shrink-0 ${
+            className={`h-8 px-2.5 text-body-sm rounded-sm font-medium border transition-all duration-150 shrink-0 ${
               disabled
-                ? "bg-[#F4F6F9] border-[#DDE5F0] text-[#B8C8DC] cursor-not-allowed"
+                ? "bg-[#F4F6F9] border-gray-300 text-[#B8C8DC] cursor-not-allowed"
                 : isSel
-                ? "bg-[#EBF4FF] border-[#4D97FA] text-[#1D558C]"
-                : "bg-white border-[#C9D4E6] text-[#3D4F6B] hover:border-[#97B0CF] hover:bg-[#F4F7FC] active:scale-[0.98]"
+                ? "bg-primary-tint border-primary text-secondary"
+                : "bg-white border-gray-400 text-gray-700 hover:border-[#97B0CF] hover:bg-[#F4F7FC] active:scale-[0.98]"
             }`}
           >
             {opt}
@@ -2350,7 +2350,7 @@ function ButtonSelectGroup({
 // SelectionActionBar en sí no se toca y sigue igual en CDS2/CDS3/CDS4.
 function CompactSelectionActionBar({ actions }: { actions: ActionItem[] }) {
   return (
-    <div className="px-4 py-2 border-b border-[#E8EEF7] bg-white shrink-0 flex items-center gap-2 overflow-x-auto">
+    <div className="px-4 py-2 border-b border-gray-200 bg-white shrink-0 flex items-center gap-2 overflow-x-auto">
       {actions.map((a) => (
         <button key={a.label} onClick={a.onClick} className={actionBtnCls(a.variant) + " shrink-0"}>
           {a.label}
@@ -2389,7 +2389,7 @@ function ModificarContent() {
     setFlyoutFilters((prev) => ({ ...prev, [key]: "" }));
   }
 
-  const CARD_SHADOW = { boxShadow: "0 1px 4px rgba(21,40,80,0.07)" };
+  const CARD_SHADOW = { boxShadow: "var(--shadow-low)" };
 
   // Tabla Referencia / Fecha (columna derecha)
   const modColumns = ["Referencia", "Fecha"];
@@ -2452,7 +2452,7 @@ function ModificarContent() {
         {/* Card A — filter bar compacta, una sola fila, + flyout "Más filtros" */}
         <div className="relative shrink-0">
           <div
-            className="relative z-30 flex items-center gap-2 rounded-[5px] border border-[#D8E4F0] bg-white px-3 py-2.5"
+            className="relative z-30 flex items-center gap-2 rounded-sm border border-[#D8E4F0] bg-white px-3 py-2.5"
             style={CARD_SHADOW}
           >
             <SelectWrap className="w-[60px] shrink-0">
@@ -2475,9 +2475,9 @@ function ModificarContent() {
               </select>
             </SelectWrap>
 
-            <div className="w-px h-5 bg-[#DDE5F0] shrink-0" />
+            <div className="w-px h-5 bg-gray-300 shrink-0" />
 
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9AAABF] shrink-0">Origen</span>
+            <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500 shrink-0">Origen</span>
             <ButtonSelectGroup
               options={["Interno", "Externo"]}
               selected={origenSel ? [origenSel] : []}
@@ -2485,7 +2485,7 @@ function ModificarContent() {
               disabled={modShowData}
             />
 
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9AAABF] shrink-0">Tipo</span>
+            <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500 shrink-0">Tipo</span>
             <ButtonSelectGroup
               options={["Forzado", "Programado"]}
               selected={tipoSel ? [tipoSel] : []}
@@ -2497,16 +2497,16 @@ function ModificarContent() {
               <button
                 type="button"
                 onClick={() => setFlyoutOpen((v) => !v)}
-                className={`h-8 px-2.5 rounded-[4px] text-[12px] font-medium border flex items-center gap-1.5 transition-all duration-150 ${
+                className={`h-8 px-2.5 rounded-sm text-body-sm font-medium border flex items-center gap-1.5 transition-all duration-150 ${
                   activeFlyoutFields.length > 0
-                    ? "bg-[#EBF4FF] border-[#4D97FA] text-[#1D558C]"
-                    : "bg-white border-[#C9D4E6] text-[#3D4F6B] hover:border-[#97B0CF] hover:bg-[#F4F7FC]"
+                    ? "bg-primary-tint border-primary text-secondary"
+                    : "bg-white border-gray-400 text-gray-700 hover:border-[#97B0CF] hover:bg-[#F4F7FC]"
                 }`}
               >
                 <IcoFilter />
                 Más filtros
                 {activeFlyoutFields.length > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-[#4D97FA] text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center">
                     {activeFlyoutFields.length}
                   </span>
                 )}
@@ -2521,29 +2521,29 @@ function ModificarContent() {
                   setFlyoutFilters(EMPTY_FLYOUT_FILTERS);
                 }}
                 disabled={!modShowData}
-                className="h-8 px-3.5 rounded-[4px] text-[12px] font-medium border-2 border-[#4D97FA] bg-white hover:bg-[#EBF4FF] transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                style={{ color: "#1D558C" }}
+                className="h-8 px-3.5 rounded-sm text-body-sm font-medium border-2 border-primary bg-white hover:bg-primary-tint transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                style={{ color: "var(--color-secondary)" }}
               >Limpiar</button>
               <button
                 type="button"
                 onClick={() => { setModShowData(true); setModSelectedRow(null); }}
                 disabled={modShowData}
-                className="h-8 px-4 rounded-[4px] text-[12px] font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                style={{ backgroundColor: "#4D97FA" }}
+                className="h-8 px-4 rounded-sm text-body-sm font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                style={{ backgroundColor: "var(--color-primary)" }}
               >Buscar</button>
             </div>
           </div>
 
           {/* Chips de filtros aplicados (flyout) — franja propia, no texto suelto */}
           {activeFlyoutFields.length > 0 && (
-            <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-[5px] border border-[#E4EAF4] bg-[#F8FAFD]">
-              <span className="text-[10.5px] font-semibold uppercase tracking-[0.06em] text-[#7A8FAD] shrink-0">
+            <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-sm border border-[#E4EAF4] bg-gray-50">
+              <span className="text-[10.5px] font-semibold uppercase tracking-[0.06em] text-gray-600 shrink-0">
                 Filtros aplicados:
               </span>
               {activeFlyoutFields.map((f) => (
                 <span
                   key={f.key}
-                  className="inline-flex items-center gap-1.5 h-7 pl-3 pr-1.5 rounded-full bg-[#EBF4FF] border border-[#B9D2FB] text-[#1D558C] text-[12px] font-semibold"
+                  className="inline-flex items-center gap-1.5 h-7 pl-3 pr-1.5 rounded-full bg-primary-tint border border-[#B9D2FB] text-secondary text-body-sm font-semibold"
                 >
                   {f.label}: {flyoutFilters[f.key]}
                   <button
@@ -2568,15 +2568,15 @@ function ModificarContent() {
           {/* Flyout "Más filtros" */}
           {flyoutOpen && (
             <div
-              className="absolute right-0 z-30 bg-white border border-[#D8E4F0] rounded-[8px] p-4"
-              style={{ top: "calc(100% + 6px)", width: 520, boxShadow: "0 12px 32px rgba(21,40,80,0.16)" }}
+              className="absolute right-0 z-30 bg-white border border-[#D8E4F0] rounded-lg p-4"
+              style={{ top: "calc(100% + 6px)", width: 520, boxShadow: "var(--shadow-high)" }}
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[13px] font-semibold text-[#1A202C]">Más filtros</span>
+                <span className="text-body font-semibold text-gray-900">Más filtros</span>
                 <button
                   type="button"
                   onClick={() => setFlyoutOpen(false)}
-                  className="w-6 h-6 flex items-center justify-center rounded-[4px] text-[#9AAABF] hover:bg-[#EEF2F8] hover:text-[#1A2B4A] transition-all"
+                  className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-500 hover:bg-[#EEF2F8] hover:text-gray-800 transition-all"
                 >
                   <IcoX />
                 </button>
@@ -2594,11 +2594,11 @@ function ModificarContent() {
                   </div>
                 ))}
               </div>
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#E8EEF7]">
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setFlyoutFilters(EMPTY_FLYOUT_FILTERS)}
-                  className="text-[12px] font-medium text-[#4D97FA] hover:text-[#1D558C] transition-colors"
+                  className="text-body-sm font-medium text-primary hover:text-secondary transition-colors"
                 >
                   Limpiar filtros
                 </button>
@@ -2606,15 +2606,15 @@ function ModificarContent() {
                   <button
                     type="button"
                     onClick={() => setFlyoutOpen(false)}
-                    className="h-8 px-3.5 rounded-[4px] text-[12px] font-medium border border-[#C9D4E6] bg-white text-[#3D4F6B] hover:bg-[#F4F7FC] transition-colors"
+                    className="h-8 px-3.5 rounded-sm text-body-sm font-medium border border-gray-400 bg-white text-gray-700 hover:bg-[#F4F7FC] transition-colors"
                   >
                     Cerrar
                   </button>
                   <button
                     type="button"
                     onClick={() => setFlyoutOpen(false)}
-                    className="h-8 px-4 rounded-[4px] text-[12px] font-semibold text-white hover:brightness-105 transition-all"
-                    style={{ backgroundColor: "#4D97FA" }}
+                    className="h-8 px-4 rounded-sm text-body-sm font-semibold text-white hover:brightness-105 transition-all"
+                    style={{ backgroundColor: "var(--color-primary)" }}
                   >
                     Aplicar
                   </button>
@@ -2632,7 +2632,7 @@ function ModificarContent() {
       {/* ── Tabla de datos — navegador de referencias, mismo alto y mismo
           tratamiento de card que Card B ── */}
       <div
-        className="flex-1 flex flex-col rounded-[5px] border border-[#D8E4F0] bg-white overflow-hidden"
+        className="flex-1 flex flex-col rounded-sm border border-[#D8E4F0] bg-white overflow-hidden"
         style={CARD_SHADOW}
       >
 
@@ -2689,13 +2689,13 @@ function ModificarContent() {
           ref={modListRef}
           tabIndex={modShowData ? 0 : -1}
           onKeyDown={handleModListKeyDown}
-          className="flex-1 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#4D97FA]/30"
+          className="flex-1 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
         >
           {!modShowData ? (
             <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
               <span className="text-[#D5DEEC] scale-90"><IcoInbox /></span>
-              <p className="text-[12px] font-medium text-[#9AAABF]">Sin resultados</p>
-              <p className="text-[11px] text-[#B0BCCE]">Completá los filtros y presioná Buscar</p>
+              <p className="text-body-sm font-medium text-gray-500">Sin resultados</p>
+              <p className="text-caption text-[#B0BCCE]">Completá los filtros y presioná Buscar</p>
             </div>
           ) : modVisibleIndices.map((i) => {
             const row = SAMPLE_ROWS[i];
@@ -2705,28 +2705,28 @@ function ModificarContent() {
                 key={i}
                 data-row-index={i}
                 className="grid grid-cols-2 px-4 border-b border-[#F4F7FC] transition-colors cursor-pointer hover:bg-[#F7F9FC]"
-                style={{ backgroundColor: selected ? "#EBF4FF" : undefined, borderLeft: selected ? "3px solid #4D97FA" : "3px solid transparent" }}
+                style={{ backgroundColor: selected ? "var(--color-primary-tint)" : undefined, borderLeft: selected ? "3px solid var(--color-primary)" : "3px solid transparent" }}
                 onClick={() => setModSelectedRow(selected ? null : i)}
               >
-                <div className="py-1.5 text-[11px] tabular-nums pr-3"
-                  style={{ fontFamily: "'JetBrains Mono', monospace", color: selected ? "#1D558C" : "#4A5C78", fontWeight: selected ? 600 : 400 }}>
+                <div className="py-1.5 text-caption tabular-nums pr-3"
+                  style={{ fontFamily: "'JetBrains Mono', monospace", color: selected ? "var(--color-secondary)" : "#4A5C78", fontWeight: selected ? 600 : 400 }}>
                   {row.referencia}
                 </div>
-                <div className={`py-1.5 text-[11px] ${selected ? "text-[#1D558C] font-medium" : "text-[#8394AC]"}`}>{row.fecha}</div>
+                <div className={`py-1.5 text-caption ${selected ? "text-secondary font-medium" : "text-[#8394AC]"}`}>{row.fecha}</div>
               </div>
             );
           })}
         </div>
         <div className="px-4 py-1.5 border-t border-[#EEF2F8] bg-[#FAFBFD] shrink-0 flex items-center justify-between">
-          <button className="px-2 py-0.5 rounded border border-[#DDE5F0] bg-white text-[10.5px] text-[#9AAABF] disabled:opacity-40" disabled>Anterior</button>
-          <span className="text-[10.5px] text-[#9AAABF]">Página <span className="font-medium text-[#4A5C78]">1</span> de <span className="font-medium text-[#4A5C78]">2.213</span></span>
-          <button className="px-2 py-0.5 rounded border border-[#DDE5F0] bg-white text-[10.5px] text-[#9AAABF] hover:bg-[#F4F7FC] transition-colors">Siguiente</button>
+          <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-[10.5px] text-gray-500 disabled:opacity-40" disabled>Anterior</button>
+          <span className="text-[10.5px] text-gray-500">Página <span className="font-medium text-[#4A5C78]">1</span> de <span className="font-medium text-[#4A5C78]">2.213</span></span>
+          <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-[10.5px] text-gray-500 hover:bg-[#F4F7FC] transition-colors">Siguiente</button>
         </div>
       </div>
 
         {/* Card B — Reposiciones (CDS4) */}
         <div
-          className="flex-1 flex flex-col rounded-[5px] border border-[#D8E4F0] bg-white overflow-hidden"
+          className="flex-1 flex flex-col rounded-sm border border-[#D8E4F0] bg-white overflow-hidden"
           style={CARD_SHADOW}
         >
           <CardHeader title="Reposiciones (CDS4)" />
@@ -2734,9 +2734,9 @@ function ModificarContent() {
 
             {/* Interrupción seleccionada — se actualiza en vivo con la fila activa de la derecha */}
             <div className="px-5 py-2.5 border-b border-[#EEF2F8] flex items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9AAABF]">Interrupción</span>
+              <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Interrupción</span>
               <span
-                className="text-[12px] font-medium text-[#1A2B4A] tabular-nums"
+                className="text-body-sm font-medium text-gray-800 tabular-nums"
                 style={{ fontFamily: "'JetBrains Mono', monospace" }}
               >
                 {selectedRecord ? selectedRecord.referencia : "—"}
@@ -2745,15 +2745,15 @@ function ModificarContent() {
 
             {/* Tabla 4 — siempre visible, nunca detrás de un modal/drawer */}
             <div className="px-5 py-3 border-b border-[#EEF2F8]">
-              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#7A8FAD] mb-2">
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">
                 {tabla4Data.subtitle}
               </p>
-              <div className="border border-[#E8EEF7] rounded-[4px] overflow-hidden overflow-x-auto">
+              <div className="border border-gray-200 rounded-sm overflow-hidden overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr className="bg-[#F8FAFD] border-b border-[#E8EEF7]">
+                    <tr className="bg-gray-50 border-b border-gray-200">
                       {tabla4Data.cols.map((c) => (
-                        <th key={c} className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-[#6B7E9A] whitespace-nowrap">
+                        <th key={c} className="px-3 py-2 text-left text-micro font-semibold uppercase tracking-[0.06em] text-[#6B7E9A] whitespace-nowrap">
                           {c}
                         </th>
                       ))}
@@ -2764,8 +2764,8 @@ function ModificarContent() {
                       <tr>
                         <td colSpan={tabla4Data.cols.length}>
                           <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
-                            <span className="text-[#C9D4E6]"><IcoInbox /></span>
-                            <p className="text-[11.5px] text-[#9AAABF]">Sin reposiciones registradas</p>
+                            <span className="text-gray-400"><IcoInbox /></span>
+                            <p className="text-[11.5px] text-gray-500">Sin reposiciones registradas</p>
                           </div>
                         </td>
                       </tr>
@@ -2775,11 +2775,11 @@ function ModificarContent() {
                           key={ri}
                           onMouseEnter={() => setHovFase(ri)}
                           onMouseLeave={() => setHovFase(null)}
-                          className="border-b border-[#F0F4FB] last:border-b-0 transition-colors"
-                          style={{ backgroundColor: hovFase === ri ? "#F8FAFD" : undefined }}
+                          className="border-b border-gray-100 last:border-b-0 transition-colors"
+                          style={{ backgroundColor: hovFase === ri ? "var(--color-gray-50)" : undefined }}
                         >
                           {row.map((cell, ci) => (
-                            <td key={ci} className="px-3 py-2.5 text-[12px] text-[#3D4F6B] whitespace-nowrap">{cell}</td>
+                            <td key={ci} className="px-3 py-2.5 text-body-sm text-gray-700 whitespace-nowrap">{cell}</td>
                           ))}
                         </tr>
                       ))
@@ -2791,7 +2791,7 @@ function ModificarContent() {
 
             {/* Indicadores de las tablas relacionadas — siguen abriendo el drawer */}
             <div className="px-5 py-3 border-b border-[#EEF2F8]">
-              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#7A8FAD] mb-2">Tablas relacionadas</p>
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">Tablas relacionadas</p>
               <div className="grid grid-cols-3 gap-2">
                 {STATUS_ITEMS.map((item) => (
                   <button
@@ -2799,14 +2799,14 @@ function ModificarContent() {
                     type="button"
                     disabled={!modShowData}
                     onClick={() => setDrawerTab(item.tabKey)}
-                    className={`rounded-[5px] border px-2 py-2 flex flex-col gap-1 text-left transition-all duration-150 ${
+                    className={`rounded-sm border px-2 py-2 flex flex-col gap-1 text-left transition-all duration-150 ${
                       !modShowData
-                        ? "bg-[#F4F6F9] border-[#DDE5F0] cursor-not-allowed"
-                        : `hover:ring-2 hover:ring-[#4D97FA]/30 active:scale-[0.97] ${item.alert ? "bg-[#FFFBEB] border-[#FCD34D]" : "bg-[#F8FAFD] border-[#DDE5F0]"}`
+                        ? "bg-[#F4F6F9] border-gray-300 cursor-not-allowed"
+                        : `hover:ring-2 hover:ring-primary/30 active:scale-[0.97] ${item.alert ? "bg-[#FFFBEB] border-[#FCD34D]" : "bg-gray-50 border-gray-300"}`
                     }`}
                   >
-                    <span className="text-[9.5px] text-[#7A8FAD] leading-tight">{item.label}</span>
-                    <span className={`text-[15px] font-semibold leading-none ${!modShowData ? "text-[#B8C8DC]" : item.alert ? "text-[#B45309]" : "text-[#1A202C]"}`}>
+                    <span className="text-[9.5px] text-gray-600 leading-tight">{item.label}</span>
+                    <span className={`text-label font-semibold leading-none ${!modShowData ? "text-[#B8C8DC]" : item.alert ? "text-[#B45309]" : "text-gray-900"}`}>
                       {modShowData ? item.value : "–"}
                     </span>
                   </button>
@@ -2816,11 +2816,11 @@ function ModificarContent() {
 
             {/* Datos de la Interrupción — abre el modal del mismo nombre */}
             <div className="px-5 py-4">
-              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#7A8FAD] mb-2.5">Datos de la Interrupción</p>
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2.5">Datos de la Interrupción</p>
               <button
                 type="button"
                 onClick={() => setDatosInterrupcionOpen(true)}
-                className="group w-full text-left rounded-[5px] border border-[#DDE5F0] overflow-hidden cursor-pointer transition-all duration-150 hover:border-[#4D97FA] hover:shadow-[0_2px_10px_rgba(77,151,250,0.1)]"
+                className="group w-full text-left rounded-sm border border-gray-300 overflow-hidden cursor-pointer transition-all duration-150 hover:border-primary hover:shadow-[0_2px_10px_rgba(77,151,250,0.1)]"
               >
                 {/* Sparkline: ticks de reposición + apertura/cierre */}
                 <div className="relative bg-white" style={{ height: 34 }}>
@@ -2834,7 +2834,7 @@ function ModificarContent() {
                           left: `${pct}%`,
                           width: isEdge ? 3 : 1.5,
                           height: isEdge ? 22 : 15,
-                          backgroundColor: isEdge ? "#1A202C" : "#4D97FA",
+                          backgroundColor: isEdge ? "var(--color-gray-900)" : "var(--color-primary)",
                           transform: "translate(-50%, -50%)",
                         }}
                       />
@@ -2842,9 +2842,9 @@ function ModificarContent() {
                   })}
                 </div>
                 {/* Barra de resumen */}
-                <div className="px-3 py-2 text-center" style={{ backgroundColor: "#3D4F6B" }}>
+                <div className="px-3 py-2 text-center" style={{ backgroundColor: "var(--color-gray-700)" }}>
                   <span
-                    className="text-[11px] font-medium text-white whitespace-nowrap"
+                    className="text-caption font-medium text-white whitespace-nowrap"
                     style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
                     {timelineFechaInicio}  -  {timelineReferencia}  -  {timelineFechaUltRepo}  -  {timelineDuracion}
@@ -2915,31 +2915,31 @@ function ModificarContent() {
         }}
       >
         {/* Drawer header */}
-        <div className="px-6 py-4 border-b border-[#E8EEF7] bg-[#F8FAFD] shrink-0 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center justify-between">
           <div>
-            <p className="text-[10.5px] text-[#7A8FAD] uppercase tracking-[0.08em] font-semibold mb-0.5">Interrupción</p>
-            <p className="text-[14px] font-semibold text-[#1A202C]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            <p className="text-[10.5px] text-gray-600 uppercase tracking-[0.08em] font-semibold mb-0.5">Interrupción</p>
+            <p className="text-[14px] font-semibold text-gray-900" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
             </p>
           </div>
           <button
             onClick={() => setDrawerTab(null)}
-            className="w-8 h-8 flex items-center justify-center rounded-[4px] text-[#7A8FAD] hover:bg-[#EEF2F8] hover:text-[#1A2B4A] transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-[#EEF2F8] hover:text-gray-800 transition-all"
           >
             <IcoX />
           </button>
         </div>
 
         {/* Tabs — Tabla 4 vive ahora siempre visible en la Card B, ya no acá */}
-        <div className="flex border-b border-[#E8EEF7] px-6 shrink-0">
+        <div className="flex border-b border-gray-200 px-6 shrink-0">
           {DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => (
             <button
               key={tab.key}
               onClick={() => setDrawerTab(tab.key)}
               className={`px-4 py-3 text-[12.5px] font-medium border-b-2 transition-colors ${
                 drawerTab === tab.key
-                  ? "border-[#4D97FA] text-[#1D558C]"
-                  : "border-transparent text-[#7A8FAD] hover:text-[#3D4F6B]"
+                  ? "border-primary text-secondary"
+                  : "border-transparent text-gray-600 hover:text-gray-700"
               }`}
             >
               {tab.label}
@@ -2954,7 +2954,7 @@ function ModificarContent() {
               {/* Subtitle */}
               {activeTabData.subtitle && (
                 <div className="px-5 py-2.5 border-b border-[#EEF2F8] shrink-0">
-                  <p className="text-[11.5px] text-[#7A8FAD] leading-snug">{activeTabData.subtitle}</p>
+                  <p className="text-[11.5px] text-gray-600 leading-snug">{activeTabData.subtitle}</p>
                 </div>
               )}
 
@@ -2969,11 +2969,11 @@ function ModificarContent() {
                     >
                       {existe ? (
                         <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                          <path d="M8 18l7 7 13-13" stroke="#16A34A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M8 18l7 7 13-13" stroke="var(--color-success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       ) : (
                         <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                          <path d="M10 10l16 16M26 10L10 26" stroke="#DC2626" strokeWidth="3" strokeLinecap="round" />
+                          <path d="M10 10l16 16M26 10L10 26" stroke="var(--color-error)" strokeWidth="3" strokeLinecap="round" />
                         </svg>
                       )}
                     </div>
@@ -2981,7 +2981,7 @@ function ModificarContent() {
                       <p className="text-[16px] font-semibold mb-1" style={{ color: existe ? "#15803D" : "#B91C1C" }}>
                         {existe ? "SÍ existe en Tabla 3" : "NO existe en Tabla 3"}
                       </p>
-                      <p className="text-[12px] text-[#9AAABF]">
+                      <p className="text-body-sm text-gray-500">
                         {existe
                           ? "Esta interrupción tiene registro en la tabla"
                           : "Esta interrupción no tiene registro en la tabla"}
@@ -3008,7 +3008,7 @@ function ModificarContent() {
                   <div className="flex-1 overflow-x-auto overflow-y-auto">
                     <table className="w-full border-collapse">
                       <thead>
-                        <tr className="bg-[#F8FAFD] border-b border-[#E8EEF7]">
+                        <tr className="bg-gray-50 border-b border-gray-200">
                           {activeTabData.cols.map((col, ci) => (
                             <SortableTh
                               key={col}
@@ -3025,16 +3025,16 @@ function ModificarContent() {
                           <tr>
                             <td colSpan={activeTabData.cols.length}>
                               <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-                                <span className="text-[#C9D4E6]"><IcoInbox /></span>
-                                <p className="text-[13px] font-medium text-[#7A8FAD]">Sin registros</p>
-                                <p className="text-[12px] text-[#9AAABF]">Esta tabla no tiene datos para esta interrupción</p>
+                                <span className="text-gray-400"><IcoInbox /></span>
+                                <p className="text-body font-medium text-gray-600">Sin registros</p>
+                                <p className="text-body-sm text-gray-500">Esta tabla no tiene datos para esta interrupción</p>
                               </div>
                             </td>
                           </tr>
                         ) : drawerVisibleIndices.map((ri) => (
-                          <tr key={ri} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
+                          <tr key={ri} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                             {activeTabData.rows[ri].map((cell, ci) => (
-                              <td key={ci} className="px-4 py-3.5 text-[12.5px] text-[#3D4F6B] whitespace-nowrap">{cell}</td>
+                              <td key={ci} className="px-4 py-3.5 text-[12.5px] text-gray-700 whitespace-nowrap">{cell}</td>
                             ))}
                           </tr>
                         ))}
@@ -3069,8 +3069,8 @@ function CDS3Content() {
 
       {/* ── Left column: form ── */}
       <div
-        className="flex flex-col rounded-[5px] border border-[#D8E4F0] bg-white shrink-0 overflow-hidden"
-        style={{ width: "41%", boxShadow: "0 1px 4px rgba(21,40,80,0.07)" }}
+        className="flex flex-col rounded-sm border border-[#D8E4F0] bg-white shrink-0 overflow-hidden"
+        style={{ width: "41%", boxShadow: "var(--shadow-low)" }}
       >
         <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
 
@@ -3103,26 +3103,26 @@ function CDS3Content() {
 
         </div>
 
-        <div className="shrink-0 border-t border-[#E8EEF7] px-5 py-4 flex gap-3">
+        <div className="shrink-0 border-t border-gray-200 px-5 py-4 flex gap-3">
           <button
             onClick={() => { setShowData(false); setSelectedRow(null); }}
             disabled={!showData}
-            className="flex-1 h-9 rounded-[6px] text-[13px] font-medium border-2 border-[#4D97FA] bg-white hover:bg-[#EBF4FF] transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-            style={{ color: "#1D558C" }}
+            className="flex-1 h-9 rounded-md text-body font-medium border-2 border-primary bg-white hover:bg-primary-tint transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            style={{ color: "var(--color-secondary)" }}
           >Limpiar</button>
           <button
             onClick={() => { setShowData(true); setSelectedRow(null); }}
             disabled={showData}
-            className="flex-1 h-9 rounded-[6px] text-[13px] font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-            style={{ backgroundColor: "#4D97FA" }}
+            className="flex-1 h-9 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            style={{ backgroundColor: "var(--color-primary)" }}
           >Buscar</button>
         </div>
       </div>
 
       {/* ── Right column ── */}
       <div
-        className="flex-1 flex flex-col border border-[#DDE5F0] rounded-[5px] bg-white overflow-hidden"
-        style={{ boxShadow: "0 1px 4px rgba(21,40,80,0.06)" }}
+        className="flex-1 flex flex-col border border-gray-300 rounded-sm bg-white overflow-hidden"
+        style={{ boxShadow: "var(--shadow-low)" }}
       >
         {/* Table toolbar — buscador / exportar */}
         {showData && (
@@ -3152,20 +3152,20 @@ function CDS3Content() {
         )}
 
         {/* Header */}
-        <div className="flex items-center border-b border-[#DDE5F0] bg-[#F8FAFD] px-4 shrink-0">
+        <div className="flex items-center border-b border-gray-300 bg-gray-50 px-4 shrink-0">
           <SortableHeaderCell
             label="Referencia"
             active={cds3SortIdx === 0}
             dir={cds3SortDir}
             onClick={() => cds3ToggleSort(0)}
-            className="flex-1 py-2.5 text-[11px]"
+            className="flex-1 py-2.5 text-caption"
           />
           <SortableHeaderCell
             label="Fase"
             active={cds3SortIdx === 1}
             dir={cds3SortDir}
             onClick={() => cds3ToggleSort(1)}
-            className="w-20 py-2.5 text-[11px] justify-center"
+            className="w-20 py-2.5 text-caption justify-center"
           />
         </div>
 
@@ -3177,9 +3177,9 @@ function CDS3Content() {
               <p className="text-[13.5px] font-medium text-[#6B7E9A] mt-1">
                 No hay resultados para los filtros aplicados
               </p>
-              <p className="text-[12px] text-[#9AAABF]">
+              <p className="text-body-sm text-gray-500">
                 Completá los filtros y presioná{" "}
-                <span className="font-semibold text-[#4D97FA]">Buscar</span>
+                <span className="font-semibold text-primary">Buscar</span>
               </p>
             </div>
           ) : cds3VisibleIndices.map((i) => {
@@ -3192,23 +3192,23 @@ function CDS3Content() {
                 onClick={() => setSelectedRow(isSelected ? null : i)}
                 onMouseEnter={() => setHoveredRow(i)}
                 onMouseLeave={() => setHoveredRow(null)}
-                className="flex items-center px-4 border-b border-[#F0F4FB] cursor-pointer transition-colors duration-100"
+                className="flex items-center px-4 border-b border-gray-100 cursor-pointer transition-colors duration-100"
                 style={{
-                  backgroundColor: isSelected ? "#EBF4FF" : isHovered ? "#F5F8FD" : "#fff",
-                  borderLeft: isSelected ? "3px solid #4D97FA" : "3px solid transparent",
+                  backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "#F5F8FD" : "#fff",
+                  borderLeft: isSelected ? "3px solid var(--color-primary)" : "3px solid transparent",
                 }}
               >
                 <div
                   className="flex-1 py-2.5 text-[12.5px] tabular-nums"
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
-                    color: isSelected ? "#1D558C" : "#1F2D40",
+                    color: isSelected ? "var(--color-secondary)" : "#1F2D40",
                     fontWeight: isSelected ? 600 : 400,
                   }}
                 >
                   {row.referencia}
                 </div>
-                <div className={`w-20 py-2.5 text-[12.5px] text-center ${isSelected ? "text-[#1D558C] font-medium" : "text-[#3D4F6B]"}`}>
+                <div className={`w-20 py-2.5 text-[12.5px] text-center ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
                   {row.fase}
                 </div>
               </div>
@@ -3218,20 +3218,20 @@ function CDS3Content() {
 
         {/* Footer */}
         {showData && (
-          <div className="px-4 py-2 border-t border-[#DDE5F0] bg-[#F8FAFD] shrink-0 flex items-center justify-between">
-            <span className="text-[11.5px] text-[#3D4F6B]">
+          <div className="px-4 py-2 border-t border-gray-300 bg-gray-50 shrink-0 flex items-center justify-between">
+            <span className="text-[11.5px] text-gray-700">
               Registros encontrados:{" "}
-              <span className="font-semibold text-[#1D558C]">
+              <span className="font-semibold text-secondary">
                 {CDS3_TOTAL.toLocaleString("es-AR")}
               </span>
             </span>
-            <div className="flex items-center gap-2 text-[11.5px] text-[#7A8FAD]">
+            <div className="flex items-center gap-2 text-[11.5px] text-gray-600">
               <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] disabled:opacity-40 transition-colors" disabled>
                 Anterior
               </button>
               <span>
-                Pág. <span className="font-medium text-[#1A2B4A]">1</span> de{" "}
-                <span className="font-medium text-[#1A2B4A]">101</span>
+                Pág. <span className="font-medium text-gray-800">1</span> de{" "}
+                <span className="font-medium text-gray-800">101</span>
               </span>
               <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] transition-colors">
                 Siguiente
@@ -3261,8 +3261,8 @@ function CDS4Content() {
 
       {/* ── Left column: form ── */}
       <div
-        className="flex flex-col rounded-[5px] border border-[#D8E4F0] bg-white shrink-0 overflow-hidden"
-        style={{ width: "41%", boxShadow: "0 1px 4px rgba(21,40,80,0.07)" }}
+        className="flex flex-col rounded-sm border border-[#D8E4F0] bg-white shrink-0 overflow-hidden"
+        style={{ width: "41%", boxShadow: "var(--shadow-low)" }}
       >
         <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
 
@@ -3330,26 +3330,26 @@ function CDS4Content() {
 
         </div>
 
-        <div className="shrink-0 border-t border-[#E8EEF7] px-5 py-4 flex gap-3">
+        <div className="shrink-0 border-t border-gray-200 px-5 py-4 flex gap-3">
           <button
             onClick={() => { setShowData(false); setSelectedRow(null); }}
             disabled={!showData}
-            className="flex-1 h-9 rounded-[6px] text-[13px] font-medium border-2 border-[#4D97FA] bg-white hover:bg-[#EBF4FF] transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-            style={{ color: "#1D558C" }}
+            className="flex-1 h-9 rounded-md text-body font-medium border-2 border-primary bg-white hover:bg-primary-tint transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            style={{ color: "var(--color-secondary)" }}
           >Limpiar</button>
           <button
             onClick={() => { setShowData(true); setSelectedRow(null); }}
             disabled={showData}
-            className="flex-1 h-9 rounded-[6px] text-[13px] font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-            style={{ backgroundColor: "#4D97FA" }}
+            className="flex-1 h-9 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            style={{ backgroundColor: "var(--color-primary)" }}
           >Buscar</button>
         </div>
       </div>
 
       {/* ── Right column ── */}
       <div
-        className="flex-1 flex flex-col border border-[#DDE5F0] rounded-[5px] bg-white overflow-hidden"
-        style={{ boxShadow: "0 1px 4px rgba(21,40,80,0.06)" }}
+        className="flex-1 flex flex-col border border-gray-300 rounded-sm bg-white overflow-hidden"
+        style={{ boxShadow: "var(--shadow-low)" }}
       >
         {/* Table toolbar — buscador / exportar */}
         {showData && (
@@ -3375,27 +3375,27 @@ function CDS4Content() {
         )}
 
         {/* Header */}
-        <div className="flex items-center border-b border-[#DDE5F0] bg-[#F8FAFD] px-4 shrink-0">
+        <div className="flex items-center border-b border-gray-300 bg-gray-50 px-4 shrink-0">
           <SortableHeaderCell
             label="Referencia"
             active={cds4SortIdx === 0}
             dir={cds4SortDir}
             onClick={() => cds4ToggleSort(0)}
-            className="flex-1 py-2.5 text-[11px]"
+            className="flex-1 py-2.5 text-caption"
           />
           <SortableHeaderCell
             label="Fase"
             active={cds4SortIdx === 1}
             dir={cds4SortDir}
             onClick={() => cds4ToggleSort(1)}
-            className="w-16 py-2.5 text-[11px] justify-center"
+            className="w-16 py-2.5 text-caption justify-center"
           />
           <SortableHeaderCell
             label="Fecha"
             active={cds4SortIdx === 2}
             dir={cds4SortDir}
             onClick={() => cds4ToggleSort(2)}
-            className="w-40 py-2.5 text-[11px]"
+            className="w-40 py-2.5 text-caption"
           />
         </div>
 
@@ -3407,9 +3407,9 @@ function CDS4Content() {
               <p className="text-[13.5px] font-medium text-[#6B7E9A] mt-1">
                 No hay resultados para los filtros aplicados
               </p>
-              <p className="text-[12px] text-[#9AAABF]">
+              <p className="text-body-sm text-gray-500">
                 Completá los filtros y presioná{" "}
-                <span className="font-semibold text-[#4D97FA]">Buscar</span>
+                <span className="font-semibold text-primary">Buscar</span>
               </p>
             </div>
           ) : cds4VisibleIndices.map((i) => {
@@ -3422,26 +3422,26 @@ function CDS4Content() {
                 onClick={() => setSelectedRow(isSelected ? null : i)}
                 onMouseEnter={() => setHoveredRow(i)}
                 onMouseLeave={() => setHoveredRow(null)}
-                className="flex items-center px-4 border-b border-[#F0F4FB] cursor-pointer transition-colors duration-100"
+                className="flex items-center px-4 border-b border-gray-100 cursor-pointer transition-colors duration-100"
                 style={{
-                  backgroundColor: isSelected ? "#EBF4FF" : isHovered ? "#F5F8FD" : "#fff",
-                  borderLeft: isSelected ? "3px solid #4D97FA" : "3px solid transparent",
+                  backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "#F5F8FD" : "#fff",
+                  borderLeft: isSelected ? "3px solid var(--color-primary)" : "3px solid transparent",
                 }}
               >
                 <div
                   className="flex-1 py-2.5 text-[12.5px] tabular-nums"
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
-                    color: isSelected ? "#1D558C" : "#1F2D40",
+                    color: isSelected ? "var(--color-secondary)" : "#1F2D40",
                     fontWeight: isSelected ? 600 : 400,
                   }}
                 >
                   {row.referencia}
                 </div>
-                <div className={`w-16 py-2.5 text-[12.5px] text-center ${isSelected ? "text-[#1D558C] font-medium" : "text-[#3D4F6B]"}`}>
+                <div className={`w-16 py-2.5 text-[12.5px] text-center ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
                   {row.fase}
                 </div>
-                <div className={`w-40 py-2.5 text-[12.5px] ${isSelected ? "text-[#1D558C] font-medium" : "text-[#3D4F6B]"}`}>
+                <div className={`w-40 py-2.5 text-[12.5px] ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
                   {row.fecha}
                 </div>
               </div>
@@ -3451,20 +3451,20 @@ function CDS4Content() {
 
         {/* Footer */}
         {showData && (
-          <div className="px-4 py-2 border-t border-[#DDE5F0] bg-[#F8FAFD] shrink-0 flex items-center justify-between">
-            <span className="text-[11.5px] text-[#3D4F6B]">
+          <div className="px-4 py-2 border-t border-gray-300 bg-gray-50 shrink-0 flex items-center justify-between">
+            <span className="text-[11.5px] text-gray-700">
               Registros encontrados:{" "}
-              <span className="font-semibold text-[#1D558C]">
+              <span className="font-semibold text-secondary">
                 {CDS4_TOTAL.toLocaleString("es-AR")}
               </span>
             </span>
-            <div className="flex items-center gap-2 text-[11.5px] text-[#7A8FAD]">
+            <div className="flex items-center gap-2 text-[11.5px] text-gray-600">
               <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] disabled:opacity-40 transition-colors" disabled>
                 Anterior
               </button>
               <span>
-                Pág. <span className="font-medium text-[#1A2B4A]">1</span> de{" "}
-                <span className="font-medium text-[#1A2B4A]">1</span>
+                Pág. <span className="font-medium text-gray-800">1</span> de{" "}
+                <span className="font-medium text-gray-800">1</span>
               </span>
               <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] disabled:opacity-40 transition-colors" disabled>
                 Siguiente
@@ -3509,10 +3509,10 @@ export default function App() {
         backgroundColor: "#F7F9FC",
         display: "flex", flexDirection: "column",
         flexShrink: 0, overflow: "hidden",
-        borderRight: "1px solid #DDE5F0",
+        borderRight: "1px solid var(--color-gray-300)",
       }}>
         {/* Logo + collapse */}
-        <div className="flex items-center gap-2 px-3 border-b border-[#DDE5F0]" style={{ minHeight: 60, paddingTop: 10, paddingBottom: 10 }}>
+        <div className="flex items-center gap-2 px-3 border-b border-gray-300" style={{ minHeight: 60, paddingTop: 10, paddingBottom: 10 }}>
           {!collapsed ? (
             <>
               <div
@@ -3525,7 +3525,7 @@ export default function App() {
               </div>
               <button
                 onClick={() => setCollapsed(true)}
-                className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-[#7A95B8] hover:text-[#1A2B4A] hover:bg-[#E4EBF7] transition-colors"
+                className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-[#7A95B8] hover:text-gray-800 hover:bg-[#E4EBF7] transition-colors"
                 title="Colapsar"
               >
                 <ChevronLeft />
@@ -3539,7 +3539,7 @@ export default function App() {
               title="Expandir"
             >
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[13px] text-white"
+                className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-body text-white"
                 style={{ background: "linear-gradient(135deg,#1565C0,#1E3A8A)" }}
               >E</div>
             </button>
@@ -3550,7 +3550,7 @@ export default function App() {
         <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2" style={{ scrollbarWidth: "none" }}>
           {/* ABM group label */}
           {!collapsed
-            ? <p className="px-1 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#9AAABF] select-none">ABM</p>
+            ? <p className="px-1 pt-4 pb-1.5 text-micro font-semibold uppercase tracking-[0.1em] text-gray-500 select-none">ABM</p>
             : <div className="h-4" />
           }
 
@@ -3569,7 +3569,7 @@ export default function App() {
           </div>
 
           {/* Modificar interrupción — separated */}
-          <div className={`my-2 border-t border-[#DDE5F0] ${collapsed ? "mx-auto w-8" : "mx-1"}`} />
+          <div className={`my-2 border-t border-gray-300 ${collapsed ? "mx-auto w-8" : "mx-1"}`} />
           <NavItem
             label="Modificar interrupción"
             icon={<IcoEdit />}
@@ -3580,8 +3580,8 @@ export default function App() {
 
           {/* Otros group */}
           {!collapsed
-            ? <p className="px-1 pt-5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#9AAABF] select-none">Otros</p>
-            : <div className="my-3 border-t border-[#DDE5F0] mx-auto w-8" />
+            ? <p className="px-1 pt-5 pb-1.5 text-micro font-semibold uppercase tracking-[0.1em] text-gray-500 select-none">Otros</p>
+            : <div className="my-3 border-t border-gray-300 mx-auto w-8" />
           }
           <div className="flex flex-col gap-0.5">
             {OTROS_ITEMS.map((item) => (
@@ -3597,7 +3597,7 @@ export default function App() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-[#DDE5F0] px-2 py-2.5">
+        <div className="border-t border-gray-300 px-2 py-2.5">
           <UserMenu collapsed={collapsed} onLogout={() => setScreen("login")} />
         </div>
       </aside>
@@ -3613,30 +3613,30 @@ export default function App() {
           <div className="flex items-center gap-2.5 flex-1">
             {screen === "cds2" && (
               <>
-                <h1 className="text-[15px] font-semibold text-[#1A202C] leading-none">Interrupciones</h1>
-                <span className="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[3px] border border-[#BDD4EF] text-[#1565C0]"
+                <h1 className="text-label font-semibold text-gray-900 leading-none">Interrupciones</h1>
+                <span className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-[#BDD4EF] text-[#1565C0]"
                   style={{ backgroundColor: "#EBF2FC", fontFamily: "'JetBrains Mono', monospace" }}>CDS2</span>
               </>
             )}
             {screen === "cds3" && (
               <>
-                <h1 className="text-[15px] font-semibold text-[#1A202C] leading-none">Interrupciones no computables</h1>
-                <span className="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[3px] border border-[#BDD4EF] text-[#1565C0]"
+                <h1 className="text-label font-semibold text-gray-900 leading-none">Interrupciones no computables</h1>
+                <span className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-[#BDD4EF] text-[#1565C0]"
                   style={{ backgroundColor: "#EBF2FC", fontFamily: "'JetBrains Mono', monospace" }}>CDS3</span>
               </>
             )}
             {screen === "cds4" && (
               <>
-                <h1 className="text-[15px] font-semibold text-[#1A202C] leading-none">Reposiciones</h1>
-                <span className="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[3px] border border-[#BDD4EF] text-[#1565C0]"
+                <h1 className="text-label font-semibold text-gray-900 leading-none">Reposiciones</h1>
+                <span className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-[#BDD4EF] text-[#1565C0]"
                   style={{ backgroundColor: "#EBF2FC", fontFamily: "'JetBrains Mono', monospace" }}>CDS4</span>
               </>
             )}
             {screen === "modificar" && (
-              <h1 className="text-[15px] font-semibold text-[#1A202C] leading-none">Modificar interrupción</h1>
+              <h1 className="text-label font-semibold text-gray-900 leading-none">Modificar interrupción</h1>
             )}
             {screen === "welcome" && (
-              <h1 className="text-[15px] font-semibold text-[#1A202C] leading-none">Inicio</h1>
+              <h1 className="text-label font-semibold text-gray-900 leading-none">Inicio</h1>
             )}
           </div>
           <PeriodSelector />
@@ -3653,8 +3653,8 @@ export default function App() {
 
           {/* ── Left column: form ── */}
           <div
-            className="flex flex-col rounded-[5px] border border-[#D8E4F0] bg-white shrink-0 overflow-hidden"
-            style={{ width: "41%", boxShadow: "0 1px 4px rgba(21,40,80,0.07)" }}
+            className="flex flex-col rounded-sm border border-[#D8E4F0] bg-white shrink-0 overflow-hidden"
+            style={{ width: "41%", boxShadow: "var(--shadow-low)" }}
           >
             <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
 
@@ -3680,10 +3680,10 @@ export default function App() {
                             key={nivel}
                             type="button"
                             onClick={() => setNivelTension(active ? null : nivel)}
-                            className={`flex-1 flex items-center justify-center h-8 rounded-[5px] border cursor-pointer select-none text-[12.5px] font-medium transition-all duration-150 ${
+                            className={`flex-1 flex items-center justify-center h-8 rounded-sm border cursor-pointer select-none text-[12.5px] font-medium transition-all duration-150 ${
                               active
-                                ? "border-[#4D97FA] bg-[#EBF4FF] text-[#1D558C]"
-                                : "border-[#C9D4E6] bg-white text-[#4A6080] hover:border-[#97B0CF] hover:bg-[#F5F8FD]"
+                                ? "border-primary bg-primary-tint text-secondary"
+                                : "border-gray-400 bg-white text-[#4A6080] hover:border-[#97B0CF] hover:bg-[#F5F8FD]"
                             }`}
                           >
                             {nivel}
@@ -3777,18 +3777,18 @@ export default function App() {
             </div>
 
             {/* Form footer — Limpiar / Buscar */}
-            <div className="shrink-0 border-t border-[#E8EEF7] px-5 py-4 flex gap-3">
+            <div className="shrink-0 border-t border-gray-200 px-5 py-4 flex gap-3">
               <button
                 onClick={handleLimpiar}
                 disabled={!showData}
-                className="flex-1 h-9 rounded-[6px] text-[13px] font-medium border-2 border-[#4D97FA] bg-white transition-colors duration-150 active:scale-[0.99] hover:bg-[#EBF4FF] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                style={{ color: "#1D558C" }}
+                className="flex-1 h-9 rounded-md text-body font-medium border-2 border-primary bg-white transition-colors duration-150 active:scale-[0.99] hover:bg-primary-tint disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                style={{ color: "var(--color-secondary)" }}
               >Limpiar</button>
               <button
                 onClick={() => { setShowData(true); setSelectedRow(null); }}
                 disabled={showData}
-                className="flex-1 h-9 rounded-[6px] text-[13px] font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                style={{ backgroundColor: "#4D97FA" }}
+                className="flex-1 h-9 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                style={{ backgroundColor: "var(--color-primary)" }}
               >Buscar</button>
             </div>
           </div>
