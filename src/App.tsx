@@ -2211,12 +2211,11 @@ const EMPTY_FLYOUT_FILTERS: FlyoutFilters = {
 };
 
 const FLYOUT_FIELDS: { key: keyof FlyoutFilters; label: string; placeholder: string }[] = [
-  { key: "fecha", label: "Fecha", placeholder: "dd/mm/aaaa hh:mm" },
-  { key: "codigoEquipo", label: "Código equipo", placeholder: "@27947890" },
-  { key: "descEquipo", label: "Descripción equipo operado", placeholder: "PROTECCION DE SUMINISTRO" },
   { key: "cadenaElectrica", label: "Cadena eléctrica", placeholder: "NCBT" },
   { key: "alimentadorMT", label: "Alimentador MT", placeholder: "NCBT" },
   { key: "centroTransf", label: "Centro de transformación", placeholder: "52705#B1#52705-TR1#1#3" },
+  { key: "codigoEquipo", label: "Código equipo", placeholder: "@27947890" },
+  { key: "descEquipo", label: "Descripción equipo operado", placeholder: "PROTECCION DE SUMINISTRO" },
   { key: "divisionRed", label: "División red normal", placeholder: "S" },
 ];
 
@@ -2474,6 +2473,14 @@ function ModificarContent() {
                 <option>RS</option><option>RT</option><option>ST</option><option>RST</option>
               </select>
             </SelectWrap>
+
+            <input
+              placeholder="dd/mm/aaaa hh:mm"
+              value={flyoutFilters.fecha}
+              onChange={(e) => setFlyoutFilters((prev) => ({ ...prev, fecha: e.target.value }))}
+              className={MOD_FIELD_CLS}
+              style={{ width: 170, flexShrink: 0 }}
+            />
 
             <div className="w-px h-5 bg-gray-300 shrink-0" />
 
