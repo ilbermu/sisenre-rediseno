@@ -759,7 +759,7 @@ function TableToolbar({
 const modalPrimaryBtnCls =
   "h-9 px-5 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 const modalNeutralBtnCls =
-  "h-9 px-5 rounded-md text-body font-medium border-2 border-secondary bg-white hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-9 px-5 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 
 function Modal({
   title,
@@ -943,7 +943,7 @@ function DesarmeModal({
       onClose={onClose}
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
           <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
@@ -1034,7 +1034,7 @@ function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void 
       size="sm"
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
           <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
@@ -1098,7 +1098,7 @@ function ReplicarModal({
       size="sm"
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
           <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
@@ -1167,7 +1167,7 @@ function CambiaFasesModal({
       open={open}
       onClose={onClose}
       footer={
-        <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
+        <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
           Salir
         </button>
       }
@@ -1255,7 +1255,7 @@ function AltaClientesModal({
       onClose={onClose}
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
           <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
@@ -1450,7 +1450,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       size="xl"
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
           <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
@@ -1766,7 +1766,7 @@ function IntercambioModal({
           <button type="button" className={actionBtnCls("neutral")}>
             Modifica en destino
           </button>
-          <button type="button" onClick={swap} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
+          <button type="button" onClick={swap} className={modalNeutralBtnCls}>
             {"<< - >>"}
           </button>
         </div>
@@ -2151,7 +2151,7 @@ function DatosInterrupcionModal({
       size="xl"
       footer={
         <>
-          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "var(--color-secondary)" }}>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
           <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
@@ -2521,8 +2521,7 @@ function ModificarContent() {
                   setFlyoutFilters(EMPTY_FLYOUT_FILTERS);
                 }}
                 disabled={!modShowData}
-                className="h-8 px-3.5 rounded-sm text-body-sm font-medium border-2 border-secondary bg-white hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                style={{ color: "var(--color-secondary)" }}
+                className="h-8 px-3.5 rounded-sm text-body-sm font-medium border border-gray-400 bg-white text-gray-700 hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
               >Limpiar</button>
               <button
                 type="button"
@@ -3107,8 +3106,7 @@ function CDS3Content() {
           <button
             onClick={() => { setShowData(false); setSelectedRow(null); }}
             disabled={!showData}
-            className="flex-1 h-9 rounded-md text-body font-medium border-2 border-secondary bg-white hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-            style={{ color: "var(--color-secondary)" }}
+            className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >Limpiar</button>
           <button
             onClick={() => { setShowData(true); setSelectedRow(null); }}
@@ -3334,8 +3332,7 @@ function CDS4Content() {
           <button
             onClick={() => { setShowData(false); setSelectedRow(null); }}
             disabled={!showData}
-            className="flex-1 h-9 rounded-md text-body font-medium border-2 border-secondary bg-white hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-            style={{ color: "var(--color-secondary)" }}
+            className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >Limpiar</button>
           <button
             onClick={() => { setShowData(true); setSelectedRow(null); }}
@@ -3781,8 +3778,7 @@ export default function App() {
               <button
                 onClick={handleLimpiar}
                 disabled={!showData}
-                className="flex-1 h-9 rounded-md text-body font-medium border-2 border-secondary bg-white transition-colors duration-150 active:scale-[0.99] hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                style={{ color: "var(--color-secondary)" }}
+                className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 transition-colors duration-150 active:scale-[0.99] hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
               >Limpiar</button>
               <button
                 onClick={() => { setShowData(true); setSelectedRow(null); }}
