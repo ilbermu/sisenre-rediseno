@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { DayPicker, type ChevronProps } from "react-day-picker";
+import { es } from "react-day-picker/locale";
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
 
@@ -419,6 +420,7 @@ function DateTimeField({ value, onChange }: { value: string; onChange: (v: strin
           <DayPicker
             mode="single"
             navLayout="around"
+            locale={es}
             selected={selectedDate}
             onSelect={setSelectedDate}
             components={{ Chevron: DateTimeChevron }}
