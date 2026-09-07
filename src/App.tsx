@@ -204,20 +204,20 @@ const CDS4_TOTAL = 1;
 // ─── Shared input classes ─────────────────────────────────────────────────────
 
 const inputCls =
-  "w-full h-8 px-2.5 text-[12.5px] bg-white border border-gray-400 rounded-sm text-gray-900 " +
-  "placeholder:text-gray-500 focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 " +
+  "w-full h-8 px-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 " +
+  "placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 " +
   "transition-all duration-150";
 
 const selectCls =
-  "w-full h-8 px-2.5 pr-7 text-[12.5px] bg-white border border-gray-400 rounded-sm text-gray-900 " +
-  "appearance-none cursor-pointer focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 " +
+  "w-full h-8 px-2.5 pr-7 text-body bg-white border border-gray-400 rounded-sm text-gray-900 " +
+  "appearance-none cursor-pointer focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 " +
   "transition-all duration-150";
 
 function SelectWrap({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`relative ${className}`}>
       {children}
-      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-[#8FA8CC]">
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
         <ChevronDown />
       </div>
     </div>
@@ -226,7 +226,7 @@ function SelectWrap({ children, className = "" }: { children: React.ReactNode; c
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="block mb-1 text-[11.5px] font-medium text-gray-700 select-none tracking-wide">
+    <label className="block mb-1 text-body-sm font-medium text-gray-700 select-none tracking-wide">
       {children}
     </label>
   );
@@ -235,10 +235,10 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 function SectionDivider({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-2.5 mb-3 mt-1">
-      <span className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-gray-600 whitespace-nowrap select-none">
+      <span className="text-caption font-semibold uppercase tracking-[0.09em] text-gray-600 whitespace-nowrap select-none">
         {title}
       </span>
-      <div className="flex-1 h-px bg-[#E4EAF4]" />
+      <div className="flex-1 h-px bg-gray-200" />
     </div>
   );
 }
@@ -258,16 +258,16 @@ function NavItem({
         ${collapsed ? "justify-center px-0 py-2.5 mx-auto w-9" : "px-2.5 py-[7px]"}
         ${active
           ? "bg-[#1565C0] text-white shadow-[0_1px_6px_rgba(21,101,192,0.25)]"
-          : "text-[#4A6080] hover:text-gray-800 hover:bg-[#EBF1FB]"
+          : "text-gray-700 hover:text-gray-800 hover:bg-gray-100"
         }`}
     >
       <span className="shrink-0">{icon}</span>
       {!collapsed && (
         <>
-          <span className="flex-1 text-[12.5px] text-left leading-snug">{label}</span>
+          <span className="flex-1 text-body text-left leading-snug">{label}</span>
           {code && (
             <span
-              className={`text-micro font-mono shrink-0 tabular-nums ${active ? "text-white/60" : "text-[#97AFC8] group-hover:text-[#6A8AAD]"}`}
+              className={`text-micro font-mono shrink-0 tabular-nums ${active ? "text-white/60" : "text-gray-500 group-hover:text-gray-600"}`}
               style={{ fontFamily: "'JetBrains Mono', monospace" }}
             >
               {code}
@@ -299,10 +299,10 @@ function PeriodSelector() {
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 h-8 px-3 rounded-sm border text-[12.5px] font-medium transition-all duration-150
-          ${open ? "bg-white border-primary text-secondary ring-2 ring-primary/10" : "bg-white border-gray-400 text-gray-700 hover:border-[#97B0CF]"}`}
+        className={`flex items-center gap-1.5 h-8 px-3 rounded-sm border text-body font-medium transition-all duration-150
+          ${open ? "bg-white border-primary text-secondary ring-2 ring-primary/10" : "bg-white border-gray-400 text-gray-700 hover:border-gray-500"}`}
       >
-        <span className={`transition-colors ${open ? "text-primary" : "text-[#97B0CF]"}`}><IcoCalendar /></span>
+        <span className={`transition-colors ${open ? "text-primary" : "text-gray-500"}`}><IcoCalendar /></span>
         <span>{selected}</span>
         <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
           <ChevronDown />
@@ -310,19 +310,19 @@ function PeriodSelector() {
       </button>
       {open && (
         <div
-          className="absolute right-0 top-[calc(100%+5px)] w-48 bg-white rounded-sm border border-[#D8E4F0] z-50 overflow-hidden"
+          className="absolute right-0 top-[calc(100%+5px)] w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
           style={{ boxShadow: "var(--shadow-mid)" }}
         >
-          <div className="px-3 py-2.5 border-b border-[#EEF2F8]">
-            <p className="text-caption font-semibold text-[#7A95B8] uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
+          <div className="px-3 py-2.5 border-b border-gray-100">
+            <p className="text-caption font-semibold text-gray-600 uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
           </div>
           <div className="py-1">
           {PERIODS.map((p) => (
             <button
               key={p}
               onClick={() => { setSelected(p); setOpen(false); }}
-              className={`w-full px-3 py-1.5 text-left text-[12.5px] transition-colors
-                ${p === selected ? "bg-primary-tint text-secondary font-semibold" : "text-gray-700 hover:bg-[#F4F6F9]"}`}
+              className={`w-full px-3 py-1.5 text-left text-body transition-colors
+                ${p === selected ? "bg-primary-tint text-secondary font-semibold" : "text-gray-700 hover:bg-gray-100"}`}
             >
               {p}
             </button>
@@ -348,7 +348,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center gap-2 rounded-sm px-1.5 py-1.5 transition-colors hover:bg-[#EBF1FB] ${open ? "bg-[#EBF1FB]" : ""}`}
+        className={`w-full flex items-center gap-2 rounded-sm px-1.5 py-1.5 transition-colors hover:bg-gray-100 ${open ? "bg-gray-100" : ""}`}
       >
         <div
           className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-body-sm font-semibold text-white"
@@ -359,8 +359,8 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
         {!collapsed && (
           <>
             <div className="flex-1 text-left overflow-hidden">
-              <p className="text-[12.5px] font-medium text-gray-800 leading-none truncate">Rdellamagiora</p>
-              <p className="text-caption text-[#7A95B8] mt-0.5 truncate">Operador</p>
+              <p className="text-body font-medium text-gray-800 leading-none truncate">Rdellamagiora</p>
+              <p className="text-caption text-gray-600 mt-0.5 truncate">Operador</p>
             </div>
             <span className={`text-gray-500 transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
               <ChevronDown />
@@ -373,16 +373,16 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
           className={`absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "bottom-[calc(100%+6px)] left-0 right-0"} bg-white rounded-sm border border-gray-300 py-1 z-50 min-w-[160px]`}
           style={{ boxShadow: "var(--shadow-mid)" }}
         >
-          <button className="w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-gray-700 hover:bg-[#F4F7FC] transition-colors">
+          <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-gray-50 transition-colors">
             <IcoUser /> Mi perfil
           </button>
-          <button className="w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-gray-700 hover:bg-[#F4F7FC] transition-colors">
+          <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-gray-50 transition-colors">
             <IcoSettings /> Configuración
           </button>
-          <div className="my-1 border-t border-[#E4EBF5]" />
+          <div className="my-1 border-t border-gray-200" />
           <button
             onClick={() => { setOpen(false); onLogout(); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-error hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-body text-error hover:bg-red-50 transition-colors"
           >
             <IcoLogOut /> Cerrar sesión
           </button>
@@ -449,9 +449,9 @@ function ResultsTable({
       {/* Body */}
       <div className="flex-1 overflow-y-auto">
         {!hasData ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-[#B8C8DC]">
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400">
             <IcoInbox />
-            <p className="text-[13.5px] font-medium text-[#6B7E9A] mt-1">
+            <p className="text-label font-medium text-gray-600 mt-1">
               No hay resultados para los filtros aplicados
             </p>
             <p className="text-body-sm text-gray-500">
@@ -475,22 +475,22 @@ function ResultsTable({
                   backgroundColor: isSelected
                     ? "var(--color-primary-tint)"
                     : isHovered
-                    ? "#F5F8FD"
+                    ? "var(--color-gray-50)"
                     : "#fff",
                   borderLeft: isSelected ? "3px solid var(--color-primary)" : "3px solid transparent",
                 }}
               >
                 <div
-                  className="flex-1 min-w-0 py-2.5 text-[12.5px] tabular-nums"
+                  className="flex-1 min-w-0 py-2.5 text-body tabular-nums"
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
-                    color: isSelected ? "var(--color-secondary)" : "#1F2D40",
+                    color: isSelected ? "var(--color-secondary)" : "var(--color-gray-800)",
                     fontWeight: isSelected ? 600 : 400,
                   }}
                 >
                   {row.referencia}
                 </div>
-                <div className={`flex-1 min-w-0 py-2.5 text-[12.5px] ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
+                <div className={`flex-1 min-w-0 py-2.5 text-body ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
                   {row.fecha}
                 </div>
               </div>
@@ -502,21 +502,21 @@ function ResultsTable({
       {/* Footer */}
       {hasData && (
         <div className="px-4 py-2 border-t border-gray-300 bg-gray-50 shrink-0 flex items-center justify-between">
-          <span className="text-[11.5px] text-gray-700">
+          <span className="text-body-sm text-gray-700">
             Registros encontrados:{" "}
             <span className="font-semibold text-secondary">
               {TOTAL_REGISTROS.toLocaleString("es-AR")}
             </span>
           </span>
-          <div className="flex items-center gap-2 text-[11.5px] text-gray-600">
-            <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] disabled:opacity-40 transition-colors" disabled>
+          <div className="flex items-center gap-2 text-body-sm text-gray-600">
+            <button className="px-2.5 py-1 rounded border border-gray-400 bg-white hover:bg-gray-50 disabled:opacity-40 transition-colors" disabled>
               Anterior
             </button>
             <span>
               Pág. <span className="font-medium text-gray-800">1</span> de{" "}
               <span className="font-medium text-gray-800">2.284</span>
             </span>
-            <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] transition-colors">
+            <button className="px-2.5 py-1 rounded border border-gray-400 bg-white hover:bg-gray-50 transition-colors">
               Siguiente
             </button>
           </div>
@@ -536,7 +536,7 @@ type ActionItem = {
 
 function actionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return "h-8 px-4 rounded-sm text-body-sm font-medium border border-[#FCA5A5] bg-white text-error hover:bg-red-50 hover:border-[#F87171] transition-all active:scale-[0.98] whitespace-nowrap";
+    return "h-8 px-4 rounded-sm text-body-sm font-medium border border-error-border bg-white text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.98] whitespace-nowrap";
   }
   return "h-8 px-4 rounded-sm text-body-sm font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.98] whitespace-nowrap";
 }
@@ -669,7 +669,7 @@ function SortableHeaderCell({
       type="button"
       onClick={onClick}
       className={`flex items-center gap-1 font-semibold uppercase tracking-[0.07em] select-none cursor-pointer transition-colors hover:text-gray-700 ${
-        active ? "text-secondary" : "text-[#6B7E9A]"
+        active ? "text-secondary" : "text-gray-600"
       } ${className}`}
     >
       <span className="truncate">{label}</span>
@@ -691,12 +691,12 @@ function SortableTh({
   onClick: () => void;
 }) {
   return (
-    <th className="px-4 py-3 text-left text-[10.5px] font-semibold uppercase tracking-[0.07em] select-none whitespace-nowrap">
+    <th className="px-4 py-3 text-left text-caption font-semibold uppercase tracking-[0.07em] select-none whitespace-nowrap">
       <button
         type="button"
         onClick={onClick}
         className={`flex items-center gap-1 cursor-pointer transition-colors hover:text-gray-700 ${
-          active ? "text-secondary" : "text-[#6B7E9A]"
+          active ? "text-secondary" : "text-gray-600"
         }`}
       >
         {label}
@@ -735,7 +735,7 @@ function TableToolbar({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={searchPlaceholder}
-          className="w-full h-8 pl-8 pr-2.5 text-[12.5px] bg-white border border-gray-400 rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 transition-all duration-150"
+          className="w-full h-8 pl-8 pr-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150"
         />
       </div>
       <div className="flex items-center gap-2 shrink-0">
@@ -810,7 +810,7 @@ function Modal({
             {title}
             {subtitle && (
               <span
-                className="ml-2 font-normal text-body text-[#7A95B8]"
+                className="ml-2 font-normal text-body text-gray-600"
                 style={{ fontFamily: "'JetBrains Mono', monospace" }}
               >
                 {subtitle}
@@ -820,7 +820,7 @@ function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-[#EEF2F8] hover:text-gray-800 transition-all"
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
           >
             <IcoX />
           </button>
@@ -845,7 +845,7 @@ function Modal({
 function ListBox({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col border border-gray-300 rounded-sm overflow-hidden" style={{ height: 160 }}>
-      <div className="px-3 py-2 border-b border-gray-300 bg-gray-50 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] shrink-0">
+      <div className="px-3 py-2 border-b border-gray-300 bg-gray-50 text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 shrink-0">
         {title}
       </div>
       <div className="flex-1 overflow-y-auto p-2">{children}</div>
@@ -879,7 +879,7 @@ function ModalCheckbox({
     onChange?.(v);
   };
   return (
-    <label className="inline-flex items-center gap-2 text-[12.5px] text-gray-700 cursor-pointer select-none">
+    <label className="inline-flex items-center gap-2 text-body text-gray-700 cursor-pointer select-none">
       <input
         type="checkbox"
         checked={checked}
@@ -888,7 +888,7 @@ function ModalCheckbox({
       />
       <span
         className={`w-4 h-4 rounded-[3px] border flex items-center justify-center shrink-0 transition-colors duration-150 ${
-          checked ? "bg-primary border-primary" : "bg-white border-gray-400 hover:border-[#97B0CF]"
+          checked ? "bg-primary border-primary" : "bg-white border-gray-400 hover:border-gray-500"
         }`}
       >
         {checked && (
@@ -909,11 +909,11 @@ function ModalRadio({ label, checked, onSelect }: { label: string; checked: bool
   return (
     <label
       onClick={onSelect}
-      className="inline-flex items-center gap-1.5 text-[12.5px] text-gray-700 cursor-pointer select-none"
+      className="inline-flex items-center gap-1.5 text-body text-gray-700 cursor-pointer select-none"
     >
       <span
         className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-150 ${
-          checked ? "border-primary" : "border-gray-400 hover:border-[#97B0CF]"
+          checked ? "border-primary" : "border-gray-400 hover:border-gray-500"
         }`}
       >
         <span className={`w-2 h-2 rounded-full bg-primary transition-transform duration-150 ${checked ? "scale-100" : "scale-0"}`} />
@@ -955,7 +955,7 @@ function DesarmeModal({
       <div className="grid grid-cols-2 gap-4">
         <ListBox title="Interrupción/Reclamo">
           <div
-            className="px-2 py-1.5 text-[12.5px] tabular-nums text-gray-800"
+            className="px-2 py-1.5 text-body tabular-nums text-gray-800"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}
           >
             {referencia}
@@ -974,7 +974,7 @@ function DesarmeModal({
           <div className="flex items-center gap-2">
             <ModalCheckbox label="Reasigna por proximidad" />
             <input defaultValue="250" className={MOD_FIELD_CLS} style={{ width: 64 }} />
-            <span className="text-[12.5px] text-gray-700">Mts.</span>
+            <span className="text-body text-gray-700">Mts.</span>
           </div>
           <div className="flex items-center gap-5">
             <ModalCheckbox label="Desarmo" defaultChecked />
@@ -1066,7 +1066,7 @@ function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
-          <div className="w-full h-8 px-2.5 flex items-center text-[12.5px] bg-[#F4F6F9] border border-gray-300 rounded-sm text-[#B8C8DC] select-none cursor-not-allowed">
+          <div className="w-full h-8 px-2.5 flex items-center text-body bg-gray-100 border border-gray-300 rounded-sm text-gray-400 select-none cursor-not-allowed">
             —
           </div>
         </div>
@@ -1121,7 +1121,7 @@ function ReplicarModal({
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
-          <div className="w-full h-8 px-2.5 flex items-center text-[12.5px] bg-[#F4F6F9] border border-gray-300 rounded-sm text-[#B8C8DC] select-none cursor-not-allowed">
+          <div className="w-full h-8 px-2.5 flex items-center text-body bg-gray-100 border border-gray-300 rounded-sm text-gray-400 select-none cursor-not-allowed">
             —
           </div>
         </div>
@@ -1177,7 +1177,7 @@ function CambiaFasesModal({
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               {["Fase", "Fecha", "Id elemento", "Tipo elemento", "Cadena", "Cliente"].map((c) => (
-                <th key={c} className="px-4 py-3 text-left text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] select-none whitespace-nowrap">
+                <th key={c} className="px-4 py-3 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 select-none whitespace-nowrap">
                   {c}
                 </th>
               ))}
@@ -1187,16 +1187,16 @@ function CambiaFasesModal({
           <tbody>
             {rows.map((r, i) => (
               <tr key={r.idElemento} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.fase}</td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 whitespace-nowrap">{r.fecha}</td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.fase}</td>
+                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
+                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   {r.idElemento}
                 </td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 whitespace-nowrap">{r.tipoElemento}</td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-caption)" }}>
+                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap">{r.tipoElemento}</td>
+                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-caption)" }}>
                   {r.cadena}
                 </td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.cliente}</td>
+                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.cliente}</td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-1">
                     <button
@@ -1265,12 +1265,12 @@ function AltaClientesModal({
       }
     >
       <div className="flex items-center justify-end gap-2 mb-3">
-        <span className="text-[11.5px] text-gray-600">Filtro</span>
+        <span className="text-body-sm text-gray-600">Filtro</span>
         <button
           type="button"
           onClick={() => setFiltroActivo((v) => !v)}
-          className={`h-7 px-3 rounded-sm text-[11.5px] font-medium border transition-colors ${
-            filtroActivo ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-[#97B0CF]"
+          className={`h-7 px-3 rounded-sm text-body-sm font-medium border transition-colors ${
+            filtroActivo ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-gray-500"
           }`}
         >
           {filtroActivo ? "Activo" : "Inactivo"}
@@ -1282,7 +1282,7 @@ function AltaClientesModal({
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               {["Interrupción", "Repo", "Cadena/Cuenta", "Clientes T4", "Clientes T6", "Clientes T9", "Clientes T10"].map((c) => (
-                <th key={c} className="px-4 py-3 text-left text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] select-none whitespace-nowrap">
+                <th key={c} className="px-4 py-3 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 select-none whitespace-nowrap">
                   {c}
                 </th>
               ))}
@@ -1292,17 +1292,17 @@ function AltaClientesModal({
           <tbody>
             {ALTA_CLIENTES_ROWS.map((r) => (
               <tr key={r.interrupcion} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3 text-[12.5px] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", color: "var(--color-gray-800)" }}>
+                <td className="px-4 py-3 text-body tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", color: "var(--color-gray-800)" }}>
                   {r.interrupcion}
                 </td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.repo}</td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-caption)" }}>
+                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.repo}</td>
+                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-caption)" }}>
                   {r.cadenaCuenta}
                 </td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.t4}</td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.t6}</td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.t9}</td>
-                <td className="px-4 py-3 text-[12.5px] text-gray-700 tabular-nums">{r.t10}</td>
+                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.t4}</td>
+                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.t6}</td>
+                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.t9}</td>
+                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.t10}</td>
                 <td className="px-3 py-3">
                   <ModalCheckbox label="" />
                 </td>
@@ -1317,8 +1317,8 @@ function AltaClientesModal({
           <button
             type="button"
             onClick={() => setPeriodicidad("mensual")}
-            className={`h-8 px-4 text-[12.5px] font-medium transition-colors ${
-              periodicidad === "mensual" ? "bg-primary text-white" : "bg-white text-gray-700 hover:bg-[#F4F7FC]"
+            className={`h-8 px-4 text-body font-medium transition-colors ${
+              periodicidad === "mensual" ? "bg-primary text-white" : "bg-white text-gray-700 hover:bg-gray-50"
             }`}
           >
             Mensual
@@ -1326,8 +1326,8 @@ function AltaClientesModal({
           <button
             type="button"
             onClick={() => setPeriodicidad("semestral")}
-            className={`h-8 px-4 text-[12.5px] font-medium border-l border-gray-400 transition-colors ${
-              periodicidad === "semestral" ? "bg-primary text-white" : "bg-white text-gray-700 hover:bg-[#F4F7FC]"
+            className={`h-8 px-4 text-body font-medium border-l border-gray-400 transition-colors ${
+              periodicidad === "semestral" ? "bg-primary text-white" : "bg-white text-gray-700 hover:bg-gray-50"
             }`}
           >
             Semestral
@@ -1465,7 +1465,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="border border-gray-300 rounded-sm overflow-hidden" style={{ height: 160 }}>
             <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-300">
               {["Campo 1", "Campo 2", "Campo 3"].map((c) => (
-                <div key={c} className="px-3 py-2 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A]">
+                <div key={c} className="px-3 py-2 text-caption font-semibold uppercase tracking-[0.07em] text-gray-600">
                   {c}
                 </div>
               ))}
@@ -1494,21 +1494,21 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               <FieldLabel>Porcentaje 1</FieldLabel>
               <div className="flex items-center gap-2">
                 <input defaultValue="10" className={MOD_FIELD_CLS} style={{ width: 60 }} />
-                <span className="text-[11.5px] text-gray-600">Intervalo mayor a 48hs</span>
+                <span className="text-body-sm text-gray-600">Intervalo mayor a 48hs</span>
               </div>
             </div>
             <div>
               <FieldLabel>Distancia del reclamo</FieldLabel>
               <div className="flex items-center gap-2">
                 <input defaultValue="100" className={MOD_FIELD_CLS} style={{ width: 60 }} />
-                <span className="text-[11.5px] text-gray-600">Mts.</span>
+                <span className="text-body-sm text-gray-600">Mts.</span>
               </div>
             </div>
             <div>
               <FieldLabel>Porcentaje 2</FieldLabel>
               <div className="flex items-center gap-2">
                 <input defaultValue="10" className={MOD_FIELD_CLS} style={{ width: 60 }} />
-                <span className="text-[11.5px] text-gray-600">Intervalo menor a 48hs</span>
+                <span className="text-body-sm text-gray-600">Intervalo menor a 48hs</span>
               </div>
             </div>
           </div>
@@ -1569,7 +1569,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               ))}
             </div>
 
-            <div className="w-full h-8 px-2.5 flex items-center text-body-sm bg-[#F4F6F9] border border-gray-300 rounded-sm text-gray-600 select-none">
+            <div className="w-full h-8 px-2.5 flex items-center text-body-sm bg-gray-100 border border-gray-300 rounded-sm text-gray-600 select-none">
               {tipoData.desc}
             </div>
           </div>
@@ -1656,7 +1656,7 @@ function IntercambioModal({
           <div className="border border-gray-300 rounded-sm divide-y divide-gray-100 overflow-hidden">
             <div className="flex items-center justify-between gap-2 px-3 py-2">
               <span
-                className="text-[11.5px] tabular-nums text-gray-800 truncate"
+                className="text-body-sm tabular-nums text-gray-800 truncate"
                 style={{ fontFamily: "'JetBrains Mono', monospace" }}
               >
                 {referencia}
@@ -1696,7 +1696,7 @@ function IntercambioModal({
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
-                    <th key={c} className="px-3 py-2 text-left text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] whitespace-nowrap">
+                    <th key={c} className="px-3 py-2 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 whitespace-nowrap">
                       {c}
                     </th>
                   ))}
@@ -1723,16 +1723,16 @@ function IntercambioModal({
                     <td colSpan={4}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
                         <span className="text-gray-400"><IcoInbox /></span>
-                        <p className="text-[12.5px] font-medium text-gray-600">No hay registros</p>
+                        <p className="text-body font-medium text-gray-600">No hay registros</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   leftRows.map((r, i) => (
                     <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <td className="px-3 py-2 text-[12.5px] text-gray-700 whitespace-nowrap">{r.fecha}</td>
-                      <td className="px-3 py-2 text-[12.5px] text-gray-700 tabular-nums">{r.clientes}</td>
-                      <td className="px-3 py-2 text-[12.5px] text-gray-700 tabular-nums">{r.repo}</td>
+                      <td className="px-3 py-2 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
+                      <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.clientes}</td>
+                      <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.repo}</td>
                       <td className="px-2 py-2">
                         <div className="flex justify-center">
                           <ModalCheckbox label="" checked={leftChecked.has(i)} onChange={(c) => toggleLeftChecked(i, c)} />
@@ -1744,10 +1744,10 @@ function IntercambioModal({
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between text-[11.5px] text-gray-600">
-            <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white disabled:opacity-40" disabled>Anterior</button>
+          <div className="flex items-center justify-between text-body-sm text-gray-600">
+            <button className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40" disabled>Anterior</button>
             <span>Página <span className="font-medium text-gray-800">1</span> de <span className="font-medium text-gray-800">1</span></span>
-            <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white disabled:opacity-40" disabled>Siguiente</button>
+            <button className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40" disabled>Siguiente</button>
           </div>
           <ModalCheckbox label="Ocultar existentes en ambas interrupciones" checked={ocultarExistentes} onChange={setOcultarExistentes} />
         </div>
@@ -1778,7 +1778,7 @@ function IntercambioModal({
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
-                    <th key={c} className="px-3 py-2 text-left text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#6B7E9A] whitespace-nowrap">
+                    <th key={c} className="px-3 py-2 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 whitespace-nowrap">
                       {c}
                     </th>
                   ))}
@@ -1795,26 +1795,26 @@ function IntercambioModal({
                     <td colSpan={3}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
                         <span className="text-gray-400"><IcoInbox /></span>
-                        <p className="text-[12.5px] font-medium text-gray-600">No hay registros</p>
+                        <p className="text-body font-medium text-gray-600">No hay registros</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   rightRows.map((r) => (
                     <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <td className="px-3 py-2 text-[12.5px] text-gray-700 whitespace-nowrap">{r.fecha}</td>
-                      <td className="px-3 py-2 text-[12.5px] text-gray-700 tabular-nums">{r.clientes}</td>
-                      <td className="px-3 py-2 text-[12.5px] text-gray-700 tabular-nums">{r.repo}</td>
+                      <td className="px-3 py-2 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
+                      <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.clientes}</td>
+                      <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.repo}</td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between text-[11.5px] text-gray-600">
-            <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white disabled:opacity-40" disabled>Anterior</button>
+          <div className="flex items-center justify-between text-body-sm text-gray-600">
+            <button className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40" disabled>Anterior</button>
             <span>Página <span className="font-medium text-gray-800">1</span> de <span className="font-medium text-gray-800">1</span></span>
-            <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white disabled:opacity-40" disabled>Siguiente</button>
+            <button className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40" disabled>Siguiente</button>
           </div>
           <div className="relative">
             <input placeholder="Buscar destino" className={MOD_FIELD_CLS} style={{ paddingRight: 36 }} />
@@ -1845,9 +1845,9 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     }
   }
 
-  const inputCls = "w-full px-[8px] py-[12px] border border-[#a1a1aa] rounded-sm bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
-  const inputStyle: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: "#27272a", lineHeight: "20px", letterSpacing: "0.14px" };
-  const labelStyle: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: "#52525b", lineHeight: "20px", letterSpacing: "0.14px" };
+  const inputCls = "w-full px-[8px] py-[12px] border border-gray-500 rounded-sm bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
+  const inputStyle: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: "var(--color-gray-900)", lineHeight: "20px", letterSpacing: "0.14px" };
+  const labelStyle: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: "var(--color-gray-700)", lineHeight: "20px", letterSpacing: "0.14px" };
 
   return (
     <div className="relative w-full h-screen overflow-hidden flex">
@@ -1867,12 +1867,12 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
       {/* Right half: 600px card, top aligned ~15px below logo */}
       <div className="relative flex-1 flex flex-col" style={{ paddingTop: "calc(38vh + 15px)" }}>
-        <div className="bg-[#fafafa] rounded-tl-[12px] rounded-tr-[12px] flex flex-col overflow-hidden flex-1 min-h-0" style={{ width: 600, margin: "0 auto" }}>
+        <div className="bg-gray-50 rounded-tl-[12px] rounded-tr-[12px] flex flex-col overflow-hidden flex-1 min-h-0" style={{ width: 600, margin: "0 auto" }}>
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0" style={{ paddingTop: 60, paddingLeft: 32, paddingRight: 32, paddingBottom: 32 }}>
             {/* Header */}
             <div className="flex flex-col gap-[8px] shrink-0">
               <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 40, color: "var(--color-secondary)", lineHeight: "40px" }}>Bienvenido </p>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 16, color: "#52525b", lineHeight: "20px", letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 16, color: "var(--color-gray-700)", lineHeight: "20px", letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
             </div>
 
             {/* Inputs */}
@@ -1940,13 +1940,13 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
   return (
     <div
       className="w-full h-screen flex items-center justify-center"
-      style={{ fontFamily: "'Inter', system-ui, sans-serif", backgroundColor: "#F2F5FA" }}
+      style={{ fontFamily: "'Inter', system-ui, sans-serif", backgroundColor: "var(--color-gray-100)" }}
     >
       <div className="w-full max-w-[520px] px-6">
         {/* Header */}
         <div className="mb-6 pb-5 border-b border-gray-300">
           <h1 className="text-title-sm font-bold text-gray-900 mb-1">Bienvenido a SISENRE</h1>
-          <p className="text-[13.5px] text-[#6B7E9A]">Seleccioná con qué herramienta comenzarás a trabajar</p>
+          <p className="text-label text-gray-600">Seleccioná con qué herramienta comenzarás a trabajar</p>
         </div>
 
         {/* Options */}
@@ -1972,13 +1972,13 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-label font-semibold text-gray-900 mb-0.5">{opt.title}</p>
-                    <p className="text-[12.5px] text-[#6B7E9A]">{opt.desc}</p>
+                    <p className="text-body text-gray-600">{opt.desc}</p>
                   </div>
                   {!opt.disabled && (
                     <span
                       className="shrink-0 ml-4 transition-transform duration-150"
                       style={{
-                        color: isHov ? "var(--color-primary)" : "#B8C8DC",
+                        color: isHov ? "var(--color-primary)" : "var(--color-gray-400)",
                         transform: isHov ? "translateX(3px)" : "none",
                       }}
                     >
@@ -1991,7 +1991,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
           })}
         </div>
 
-        <p className="text-center text-caption text-[#B0BAC9] mt-8">© Desarrollos propios 2026</p>
+        <p className="text-center text-caption text-gray-500 mt-8">© Desarrollos propios 2026</p>
       </div>
     </div>
   );
@@ -2013,7 +2013,7 @@ function WelcomeContent() {
       <div className="mb-8">
         <p className="text-body-sm font-medium uppercase tracking-widest text-gray-500 mb-1">SISENRE 2.0 · Agosto 2026</p>
         <h2 className="text-title font-bold text-gray-900 leading-tight">Buenos días, Rdellamagiora</h2>
-        <p className="text-[14px] text-[#6B7E9A] mt-1">Seleccioná una sección del menú o usá los accesos rápidos para comenzar.</p>
+        <p className="text-[14px] text-gray-600 mt-1">Seleccioná una sección del menú o usá los accesos rápidos para comenzar.</p>
       </div>
 
       {/* Quick access */}
@@ -2028,15 +2028,15 @@ function WelcomeContent() {
               <span className="mt-0.5 text-primary shrink-0">{item.icon}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-[13.5px] font-semibold text-gray-900">{item.label}</p>
+                  <p className="text-label font-semibold text-gray-900">{item.label}</p>
                   <span
-                    className="text-micro font-mono font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-[#7A95B8]"
+                    className="text-micro font-mono font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600"
                     style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
                     {item.code}
                   </span>
                 </div>
-                <p className="text-body-sm text-[#7A95B8] leading-snug">{item.desc}</p>
+                <p className="text-body-sm text-gray-600 leading-snug">{item.desc}</p>
               </div>
             </div>
           </div>
@@ -2058,7 +2058,7 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-gray-600 mb-1 truncate">{label}</p>
-      <div className="h-7 px-2 flex items-center text-[11.5px] bg-[#F4F6F9] border border-gray-300 rounded-sm text-gray-700 truncate">
+      <div className="h-7 px-2 flex items-center text-body-sm bg-gray-100 border border-gray-300 rounded-sm text-gray-700 truncate">
         {value || " "}
       </div>
     </div>
@@ -2186,12 +2186,12 @@ function DatosInterrupcionModal({
 const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
 
 const MOD_FIELD_CLS =
-  "w-full h-8 px-2.5 text-[12.5px] bg-white border border-gray-400 rounded-sm text-gray-900 " +
-  "placeholder:text-gray-500 focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 transition-all duration-150";
+  "w-full h-8 px-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 " +
+  "placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150";
 
 const MOD_SELECT_CLS =
-  "h-8 px-2.5 pr-7 text-[12.5px] bg-white border border-gray-400 rounded-sm text-gray-900 appearance-none " +
-  "cursor-pointer focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 transition-all duration-150 shrink-0";
+  "h-8 px-2.5 pr-7 text-body bg-white border border-gray-400 rounded-sm text-gray-900 appearance-none " +
+  "cursor-pointer focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150 shrink-0";
 
 // Campos del flyout "Más filtros" de la Card A. Cada uno se puede aplicar,
 // mostrar como chip removible debajo de la filter bar, y contar para el
@@ -2288,9 +2288,9 @@ const DRAWER_TABS = [
 function CardHeader({ title, tag }: { title: string; tag?: string }) {
   return (
     <div className="px-5 py-2.5 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center gap-2">
-      <span className="text-[11.5px] font-semibold text-gray-700">{title}</span>
+      <span className="text-body-sm font-semibold text-gray-700">{title}</span>
       {tag && (
-        <span className="text-micro font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-[#7A95B8]"
+        <span className="text-micro font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600"
           style={{ fontFamily: "'JetBrains Mono', monospace" }}>{tag}</span>
       )}
     </div>
@@ -2326,10 +2326,10 @@ function ButtonSelectGroup({
             onClick={() => onToggle(opt)}
             className={`h-8 px-2.5 text-body-sm rounded-sm font-medium border transition-all duration-150 shrink-0 ${
               disabled
-                ? "bg-[#F4F6F9] border-gray-300 text-[#B8C8DC] cursor-not-allowed"
+                ? "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
                 : isSel
                 ? "bg-primary-tint border-primary text-secondary"
-                : "bg-white border-gray-400 text-gray-700 hover:border-[#97B0CF] hover:bg-[#F4F7FC] active:scale-[0.98]"
+                : "bg-white border-gray-400 text-gray-700 hover:border-gray-500 hover:bg-gray-50 active:scale-[0.98]"
             }`}
           >
             {opt}
@@ -2452,7 +2452,7 @@ function ModificarContent() {
         {/* Card A — filter bar compacta, una sola fila, + flyout "Más filtros" */}
         <div className="relative shrink-0">
           <div
-            className="relative z-30 flex items-center gap-2 rounded-sm border border-[#D8E4F0] bg-white px-3 py-2.5"
+            className="relative z-30 flex items-center gap-2 rounded-sm border border-gray-300 bg-white px-3 py-2.5"
             style={CARD_SHADOW}
           >
             <SelectWrap className="w-[60px] shrink-0">
@@ -2464,7 +2464,7 @@ function ModificarContent() {
             <input
               placeholder={`Ej: ${RECORD.referencia}`}
               className={MOD_FIELD_CLS}
-              style={{ width: 190, flexShrink: 0, fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5 }}
+              style={{ width: 190, flexShrink: 0, fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-body-sm)" }}
             />
 
             <SelectWrap className="w-[110px] shrink-0">
@@ -2500,7 +2500,7 @@ function ModificarContent() {
                 className={`h-8 px-2.5 rounded-sm text-body-sm font-medium border flex items-center gap-1.5 transition-all duration-150 ${
                   activeFlyoutFields.length > 0
                     ? "bg-primary-tint border-primary text-secondary"
-                    : "bg-white border-gray-400 text-gray-700 hover:border-[#97B0CF] hover:bg-[#F4F7FC]"
+                    : "bg-white border-gray-400 text-gray-700 hover:border-gray-500 hover:bg-gray-50"
                 }`}
               >
                 <IcoFilter />
@@ -2536,8 +2536,8 @@ function ModificarContent() {
 
           {/* Chips de filtros aplicados (flyout) — franja propia, no texto suelto */}
           {activeFlyoutFields.length > 0 && (
-            <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-sm border border-[#E4EAF4] bg-gray-50">
-              <span className="text-[10.5px] font-semibold uppercase tracking-[0.06em] text-gray-600 shrink-0">
+            <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-sm border border-gray-200 bg-gray-50">
+              <span className="text-caption font-semibold uppercase tracking-[0.06em] text-gray-600 shrink-0">
                 Filtros aplicados:
               </span>
               {activeFlyoutFields.map((f) => (
@@ -2568,7 +2568,7 @@ function ModificarContent() {
           {/* Flyout "Más filtros" */}
           {flyoutOpen && (
             <div
-              className="absolute right-0 z-30 bg-white border border-[#D8E4F0] rounded-lg p-4"
+              className="absolute right-0 z-30 bg-white border border-gray-300 rounded-lg p-4"
               style={{ top: "calc(100% + 6px)", width: 520, boxShadow: "var(--shadow-high)" }}
             >
               <div className="flex items-center justify-between mb-3">
@@ -2576,7 +2576,7 @@ function ModificarContent() {
                 <button
                   type="button"
                   onClick={() => setFlyoutOpen(false)}
-                  className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-500 hover:bg-[#EEF2F8] hover:text-gray-800 transition-all"
+                  className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-all"
                 >
                   <IcoX />
                 </button>
@@ -2606,7 +2606,7 @@ function ModificarContent() {
                   <button
                     type="button"
                     onClick={() => setFlyoutOpen(false)}
-                    className="h-8 px-3.5 rounded-sm text-body-sm font-medium border border-gray-400 bg-white text-gray-700 hover:bg-[#F4F7FC] transition-colors"
+                    className="h-8 px-3.5 rounded-sm text-body-sm font-medium border border-gray-400 bg-white text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     Cerrar
                   </button>
@@ -2632,7 +2632,7 @@ function ModificarContent() {
       {/* ── Tabla de datos — navegador de referencias, mismo alto y mismo
           tratamiento de card que Card B ── */}
       <div
-        className="flex-1 flex flex-col rounded-sm border border-[#D8E4F0] bg-white overflow-hidden"
+        className="flex-1 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
         style={CARD_SHADOW}
       >
 
@@ -2669,20 +2669,20 @@ function ModificarContent() {
           />
         )}
         {/* Tabla Referencia / Fecha */}
-        <div className="grid grid-cols-2 px-4 border-b border-[#EEF2F8] bg-[#FAFBFD] shrink-0">
+        <div className="grid grid-cols-2 px-4 border-b border-gray-100 bg-gray-50 shrink-0">
           <SortableHeaderCell
             label="Referencia"
             active={modSortIdx === 0}
             dir={modSortDir}
             onClick={() => modToggleSort(0)}
-            className="py-1.5 text-[9.5px]"
+            className="py-1.5 text-micro"
           />
           <SortableHeaderCell
             label="Fecha"
             active={modSortIdx === 1}
             dir={modSortDir}
             onClick={() => modToggleSort(1)}
-            className="py-1.5 text-[9.5px]"
+            className="py-1.5 text-micro"
           />
         </div>
         <div
@@ -2693,9 +2693,9 @@ function ModificarContent() {
         >
           {!modShowData ? (
             <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
-              <span className="text-[#D5DEEC] scale-90"><IcoInbox /></span>
+              <span className="text-gray-300 scale-90"><IcoInbox /></span>
               <p className="text-body-sm font-medium text-gray-500">Sin resultados</p>
-              <p className="text-caption text-[#B0BCCE]">Completá los filtros y presioná Buscar</p>
+              <p className="text-caption text-gray-500">Completá los filtros y presioná Buscar</p>
             </div>
           ) : modVisibleIndices.map((i) => {
             const row = SAMPLE_ROWS[i];
@@ -2704,36 +2704,36 @@ function ModificarContent() {
               <div
                 key={i}
                 data-row-index={i}
-                className="grid grid-cols-2 px-4 border-b border-[#F4F7FC] transition-colors cursor-pointer hover:bg-[#F7F9FC]"
+                className="grid grid-cols-2 px-4 border-b border-gray-50 transition-colors cursor-pointer hover:bg-gray-50"
                 style={{ backgroundColor: selected ? "var(--color-primary-tint)" : undefined, borderLeft: selected ? "3px solid var(--color-primary)" : "3px solid transparent" }}
                 onClick={() => setModSelectedRow(selected ? null : i)}
               >
                 <div className="py-1.5 text-caption tabular-nums pr-3"
-                  style={{ fontFamily: "'JetBrains Mono', monospace", color: selected ? "var(--color-secondary)" : "#4A5C78", fontWeight: selected ? 600 : 400 }}>
+                  style={{ fontFamily: "'JetBrains Mono', monospace", color: selected ? "var(--color-secondary)" : "var(--color-gray-700)", fontWeight: selected ? 600 : 400 }}>
                   {row.referencia}
                 </div>
-                <div className={`py-1.5 text-caption ${selected ? "text-secondary font-medium" : "text-[#8394AC]"}`}>{row.fecha}</div>
+                <div className={`py-1.5 text-caption ${selected ? "text-secondary font-medium" : "text-gray-600"}`}>{row.fecha}</div>
               </div>
             );
           })}
         </div>
-        <div className="px-4 py-1.5 border-t border-[#EEF2F8] bg-[#FAFBFD] shrink-0 flex items-center justify-between">
-          <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-[10.5px] text-gray-500 disabled:opacity-40" disabled>Anterior</button>
-          <span className="text-[10.5px] text-gray-500">Página <span className="font-medium text-[#4A5C78]">1</span> de <span className="font-medium text-[#4A5C78]">2.213</span></span>
-          <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-[10.5px] text-gray-500 hover:bg-[#F4F7FC] transition-colors">Siguiente</button>
+        <div className="px-4 py-1.5 border-t border-gray-100 bg-gray-50 shrink-0 flex items-center justify-between">
+          <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-caption text-gray-500 disabled:opacity-40" disabled>Anterior</button>
+          <span className="text-caption text-gray-500">Página <span className="font-medium text-gray-700">1</span> de <span className="font-medium text-gray-700">2.213</span></span>
+          <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-caption text-gray-500 hover:bg-gray-50 transition-colors">Siguiente</button>
         </div>
       </div>
 
         {/* Card B — Reposiciones (CDS4) */}
         <div
-          className="flex-1 flex flex-col rounded-sm border border-[#D8E4F0] bg-white overflow-hidden"
+          className="flex-1 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
           style={CARD_SHADOW}
         >
           <CardHeader title="Reposiciones (CDS4)" />
           <div>
 
             {/* Interrupción seleccionada — se actualiza en vivo con la fila activa de la derecha */}
-            <div className="px-5 py-2.5 border-b border-[#EEF2F8] flex items-center gap-2">
+            <div className="px-5 py-2.5 border-b border-gray-100 flex items-center gap-2">
               <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Interrupción</span>
               <span
                 className="text-body-sm font-medium text-gray-800 tabular-nums"
@@ -2744,8 +2744,8 @@ function ModificarContent() {
             </div>
 
             {/* Tabla 4 — siempre visible, nunca detrás de un modal/drawer */}
-            <div className="px-5 py-3 border-b border-[#EEF2F8]">
-              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">
+            <div className="px-5 py-3 border-b border-gray-100">
+              <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">
                 {tabla4Data.subtitle}
               </p>
               <div className="border border-gray-200 rounded-sm overflow-hidden overflow-x-auto">
@@ -2753,7 +2753,7 @@ function ModificarContent() {
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-200">
                       {tabla4Data.cols.map((c) => (
-                        <th key={c} className="px-3 py-2 text-left text-micro font-semibold uppercase tracking-[0.06em] text-[#6B7E9A] whitespace-nowrap">
+                        <th key={c} className="px-3 py-2 text-left text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 whitespace-nowrap">
                           {c}
                         </th>
                       ))}
@@ -2765,7 +2765,7 @@ function ModificarContent() {
                         <td colSpan={tabla4Data.cols.length}>
                           <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
                             <span className="text-gray-400"><IcoInbox /></span>
-                            <p className="text-[11.5px] text-gray-500">Sin reposiciones registradas</p>
+                            <p className="text-body-sm text-gray-500">Sin reposiciones registradas</p>
                           </div>
                         </td>
                       </tr>
@@ -2790,8 +2790,8 @@ function ModificarContent() {
             </div>
 
             {/* Indicadores de las tablas relacionadas — siguen abriendo el drawer */}
-            <div className="px-5 py-3 border-b border-[#EEF2F8]">
-              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">Tablas relacionadas</p>
+            <div className="px-5 py-3 border-b border-gray-100">
+              <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">Tablas relacionadas</p>
               <div className="grid grid-cols-3 gap-2">
                 {STATUS_ITEMS.map((item) => (
                   <button
@@ -2801,12 +2801,12 @@ function ModificarContent() {
                     onClick={() => setDrawerTab(item.tabKey)}
                     className={`rounded-sm border px-2 py-2 flex flex-col gap-1 text-left transition-all duration-150 ${
                       !modShowData
-                        ? "bg-[#F4F6F9] border-gray-300 cursor-not-allowed"
-                        : `hover:ring-2 hover:ring-primary/30 active:scale-[0.97] ${item.alert ? "bg-[#FFFBEB] border-[#FCD34D]" : "bg-gray-50 border-gray-300"}`
+                        ? "bg-gray-100 border-gray-300 cursor-not-allowed"
+                        : `hover:ring-2 hover:ring-primary/30 active:scale-[0.97] ${item.alert ? "bg-warning-bg border-warning-border" : "bg-gray-50 border-gray-300"}`
                     }`}
                   >
-                    <span className="text-[9.5px] text-gray-600 leading-tight">{item.label}</span>
-                    <span className={`text-label font-semibold leading-none ${!modShowData ? "text-[#B8C8DC]" : item.alert ? "text-[#B45309]" : "text-gray-900"}`}>
+                    <span className="text-micro text-gray-600 leading-tight">{item.label}</span>
+                    <span className={`text-label font-semibold leading-none ${!modShowData ? "text-gray-400" : item.alert ? "text-warning-text" : "text-gray-900"}`}>
                       {modShowData ? item.value : "–"}
                     </span>
                   </button>
@@ -2816,7 +2816,7 @@ function ModificarContent() {
 
             {/* Datos de la Interrupción — abre el modal del mismo nombre */}
             <div className="px-5 py-4">
-              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2.5">Datos de la Interrupción</p>
+              <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2.5">Datos de la Interrupción</p>
               <button
                 type="button"
                 onClick={() => setDatosInterrupcionOpen(true)}
@@ -2917,14 +2917,14 @@ function ModificarContent() {
         {/* Drawer header */}
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center justify-between">
           <div>
-            <p className="text-[10.5px] text-gray-600 uppercase tracking-[0.08em] font-semibold mb-0.5">Interrupción</p>
+            <p className="text-caption text-gray-600 uppercase tracking-[0.08em] font-semibold mb-0.5">Interrupción</p>
             <p className="text-[14px] font-semibold text-gray-900" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
             </p>
           </div>
           <button
             onClick={() => setDrawerTab(null)}
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-[#EEF2F8] hover:text-gray-800 transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
           >
             <IcoX />
           </button>
@@ -2936,7 +2936,7 @@ function ModificarContent() {
             <button
               key={tab.key}
               onClick={() => setDrawerTab(tab.key)}
-              className={`px-4 py-3 text-[12.5px] font-medium border-b-2 transition-colors ${
+              className={`px-4 py-3 text-body font-medium border-b-2 transition-colors ${
                 drawerTab === tab.key
                   ? "border-primary text-secondary"
                   : "border-transparent text-gray-600 hover:text-gray-700"
@@ -2953,8 +2953,8 @@ function ModificarContent() {
             <>
               {/* Subtitle */}
               {activeTabData.subtitle && (
-                <div className="px-5 py-2.5 border-b border-[#EEF2F8] shrink-0">
-                  <p className="text-[11.5px] text-gray-600 leading-snug">{activeTabData.subtitle}</p>
+                <div className="px-5 py-2.5 border-b border-gray-100 shrink-0">
+                  <p className="text-body-sm text-gray-600 leading-snug">{activeTabData.subtitle}</p>
                 </div>
               )}
 
@@ -2965,7 +2965,7 @@ function ModificarContent() {
                   <div className="flex flex-col items-center justify-center flex-1 gap-4 py-16">
                     <div
                       className="w-20 h-20 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: existe ? "#DCFCE7" : "#FEE2E2" }}
+                      style={{ backgroundColor: existe ? "var(--color-success-bg)" : "var(--color-error-bg)" }}
                     >
                       {existe ? (
                         <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
@@ -2978,7 +2978,7 @@ function ModificarContent() {
                       )}
                     </div>
                     <div className="text-center">
-                      <p className="text-[16px] font-semibold mb-1" style={{ color: existe ? "#15803D" : "#B91C1C" }}>
+                      <p className="text-[16px] font-semibold mb-1" style={{ color: existe ? "var(--color-success-text-strong)" : "var(--color-error-text-strong)" }}>
                         {existe ? "SÍ existe en Tabla 3" : "NO existe en Tabla 3"}
                       </p>
                       <p className="text-body-sm text-gray-500">
@@ -3034,7 +3034,7 @@ function ModificarContent() {
                         ) : drawerVisibleIndices.map((ri) => (
                           <tr key={ri} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                             {activeTabData.rows[ri].map((cell, ci) => (
-                              <td key={ci} className="px-4 py-3.5 text-[12.5px] text-gray-700 whitespace-nowrap">{cell}</td>
+                              <td key={ci} className="px-4 py-3.5 text-body text-gray-700 whitespace-nowrap">{cell}</td>
                             ))}
                           </tr>
                         ))}
@@ -3069,7 +3069,7 @@ function CDS3Content() {
 
       {/* ── Left column: form ── */}
       <div
-        className="flex flex-col rounded-sm border border-[#D8E4F0] bg-white shrink-0 overflow-hidden"
+        className="flex flex-col rounded-sm border border-gray-300 bg-white shrink-0 overflow-hidden"
         style={{ width: "41%", boxShadow: "var(--shadow-low)" }}
       >
         <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
@@ -3172,9 +3172,9 @@ function CDS3Content() {
         {/* Body */}
         <div className="flex-1 overflow-y-auto">
           {!showData ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-[#B8C8DC]">
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400">
               <IcoInbox />
-              <p className="text-[13.5px] font-medium text-[#6B7E9A] mt-1">
+              <p className="text-label font-medium text-gray-600 mt-1">
                 No hay resultados para los filtros aplicados
               </p>
               <p className="text-body-sm text-gray-500">
@@ -3194,21 +3194,21 @@ function CDS3Content() {
                 onMouseLeave={() => setHoveredRow(null)}
                 className="flex items-center px-4 border-b border-gray-100 cursor-pointer transition-colors duration-100"
                 style={{
-                  backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "#F5F8FD" : "#fff",
+                  backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-gray-50)" : "#fff",
                   borderLeft: isSelected ? "3px solid var(--color-primary)" : "3px solid transparent",
                 }}
               >
                 <div
-                  className="flex-1 py-2.5 text-[12.5px] tabular-nums"
+                  className="flex-1 py-2.5 text-body tabular-nums"
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
-                    color: isSelected ? "var(--color-secondary)" : "#1F2D40",
+                    color: isSelected ? "var(--color-secondary)" : "var(--color-gray-800)",
                     fontWeight: isSelected ? 600 : 400,
                   }}
                 >
                   {row.referencia}
                 </div>
-                <div className={`w-20 py-2.5 text-[12.5px] text-center ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
+                <div className={`w-20 py-2.5 text-body text-center ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
                   {row.fase}
                 </div>
               </div>
@@ -3219,21 +3219,21 @@ function CDS3Content() {
         {/* Footer */}
         {showData && (
           <div className="px-4 py-2 border-t border-gray-300 bg-gray-50 shrink-0 flex items-center justify-between">
-            <span className="text-[11.5px] text-gray-700">
+            <span className="text-body-sm text-gray-700">
               Registros encontrados:{" "}
               <span className="font-semibold text-secondary">
                 {CDS3_TOTAL.toLocaleString("es-AR")}
               </span>
             </span>
-            <div className="flex items-center gap-2 text-[11.5px] text-gray-600">
-              <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] disabled:opacity-40 transition-colors" disabled>
+            <div className="flex items-center gap-2 text-body-sm text-gray-600">
+              <button className="px-2.5 py-1 rounded border border-gray-400 bg-white hover:bg-gray-50 disabled:opacity-40 transition-colors" disabled>
                 Anterior
               </button>
               <span>
                 Pág. <span className="font-medium text-gray-800">1</span> de{" "}
                 <span className="font-medium text-gray-800">101</span>
               </span>
-              <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] transition-colors">
+              <button className="px-2.5 py-1 rounded border border-gray-400 bg-white hover:bg-gray-50 transition-colors">
                 Siguiente
               </button>
             </div>
@@ -3261,7 +3261,7 @@ function CDS4Content() {
 
       {/* ── Left column: form ── */}
       <div
-        className="flex flex-col rounded-sm border border-[#D8E4F0] bg-white shrink-0 overflow-hidden"
+        className="flex flex-col rounded-sm border border-gray-300 bg-white shrink-0 overflow-hidden"
         style={{ width: "41%", boxShadow: "var(--shadow-low)" }}
       >
         <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
@@ -3402,9 +3402,9 @@ function CDS4Content() {
         {/* Body */}
         <div className="flex-1 overflow-y-auto">
           {!showData ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-[#B8C8DC]">
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400">
               <IcoInbox />
-              <p className="text-[13.5px] font-medium text-[#6B7E9A] mt-1">
+              <p className="text-label font-medium text-gray-600 mt-1">
                 No hay resultados para los filtros aplicados
               </p>
               <p className="text-body-sm text-gray-500">
@@ -3424,24 +3424,24 @@ function CDS4Content() {
                 onMouseLeave={() => setHoveredRow(null)}
                 className="flex items-center px-4 border-b border-gray-100 cursor-pointer transition-colors duration-100"
                 style={{
-                  backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "#F5F8FD" : "#fff",
+                  backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-gray-50)" : "#fff",
                   borderLeft: isSelected ? "3px solid var(--color-primary)" : "3px solid transparent",
                 }}
               >
                 <div
-                  className="flex-1 py-2.5 text-[12.5px] tabular-nums"
+                  className="flex-1 py-2.5 text-body tabular-nums"
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
-                    color: isSelected ? "var(--color-secondary)" : "#1F2D40",
+                    color: isSelected ? "var(--color-secondary)" : "var(--color-gray-800)",
                     fontWeight: isSelected ? 600 : 400,
                   }}
                 >
                   {row.referencia}
                 </div>
-                <div className={`w-16 py-2.5 text-[12.5px] text-center ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
+                <div className={`w-16 py-2.5 text-body text-center ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
                   {row.fase}
                 </div>
-                <div className={`w-40 py-2.5 text-[12.5px] ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
+                <div className={`w-40 py-2.5 text-body ${isSelected ? "text-secondary font-medium" : "text-gray-700"}`}>
                   {row.fecha}
                 </div>
               </div>
@@ -3452,21 +3452,21 @@ function CDS4Content() {
         {/* Footer */}
         {showData && (
           <div className="px-4 py-2 border-t border-gray-300 bg-gray-50 shrink-0 flex items-center justify-between">
-            <span className="text-[11.5px] text-gray-700">
+            <span className="text-body-sm text-gray-700">
               Registros encontrados:{" "}
               <span className="font-semibold text-secondary">
                 {CDS4_TOTAL.toLocaleString("es-AR")}
               </span>
             </span>
-            <div className="flex items-center gap-2 text-[11.5px] text-gray-600">
-              <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] disabled:opacity-40 transition-colors" disabled>
+            <div className="flex items-center gap-2 text-body-sm text-gray-600">
+              <button className="px-2.5 py-1 rounded border border-gray-400 bg-white hover:bg-gray-50 disabled:opacity-40 transition-colors" disabled>
                 Anterior
               </button>
               <span>
                 Pág. <span className="font-medium text-gray-800">1</span> de{" "}
                 <span className="font-medium text-gray-800">1</span>
               </span>
-              <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white hover:bg-[#F4F7FC] disabled:opacity-40 transition-colors" disabled>
+              <button className="px-2.5 py-1 rounded border border-gray-400 bg-white hover:bg-gray-50 disabled:opacity-40 transition-colors" disabled>
                 Siguiente
               </button>
             </div>
@@ -3498,7 +3498,7 @@ export default function App() {
     <div style={{
       width: "100%", height: "100vh", display: "flex",
       fontFamily: "'Inter', system-ui, sans-serif",
-      backgroundColor: "#EEF2F8",
+      backgroundColor: "var(--color-gray-100)",
       overflow: "hidden",
     }}>
 
@@ -3506,7 +3506,7 @@ export default function App() {
       <aside style={{
         width: collapsed ? 60 : 256,
         transition: "width 220ms cubic-bezier(0.4,0,0.2,1)",
-        backgroundColor: "#F7F9FC",
+        backgroundColor: "var(--color-gray-50)",
         display: "flex", flexDirection: "column",
         flexShrink: 0, overflow: "hidden",
         borderRight: "1px solid var(--color-gray-300)",
@@ -3525,7 +3525,7 @@ export default function App() {
               </div>
               <button
                 onClick={() => setCollapsed(true)}
-                className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-[#7A95B8] hover:text-gray-800 hover:bg-[#E4EBF7] transition-colors"
+                className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-gray-600 hover:text-gray-800 hover:bg-gray-200 transition-colors"
                 title="Colapsar"
               >
                 <ChevronLeft />
@@ -3535,7 +3535,7 @@ export default function App() {
             /* Collapsed: small E monogram matching brand blue */
             <button
               onClick={() => setCollapsed(false)}
-              className="mx-auto w-8 h-8 flex items-center justify-center rounded transition-colors hover:bg-[#E4EBF7]"
+              className="mx-auto w-8 h-8 flex items-center justify-center rounded transition-colors hover:bg-gray-200"
               title="Expandir"
             >
               <div
@@ -3607,29 +3607,29 @@ export default function App() {
 
         {/* Top bar */}
         <header
-          className="flex items-center px-6 border-b border-[#D5DEEE] shrink-0"
-          style={{ minHeight: 52, backgroundColor: "#FFFFFF", boxShadow: "0 1px 0 #D5DEEE" }}
+          className="flex items-center px-6 border-b border-gray-300 shrink-0"
+          style={{ minHeight: 52, backgroundColor: "var(--color-gray-50)", boxShadow: "0 1px 0 var(--color-gray-300)" }}
         >
           <div className="flex items-center gap-2.5 flex-1">
             {screen === "cds2" && (
               <>
                 <h1 className="text-label font-semibold text-gray-900 leading-none">Interrupciones</h1>
-                <span className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-[#BDD4EF] text-[#1565C0]"
-                  style={{ backgroundColor: "#EBF2FC", fontFamily: "'JetBrains Mono', monospace" }}>CDS2</span>
+                <span className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-gray-400 text-[#1565C0]"
+                  style={{ backgroundColor: "var(--color-gray-100)", fontFamily: "'JetBrains Mono', monospace" }}>CDS2</span>
               </>
             )}
             {screen === "cds3" && (
               <>
                 <h1 className="text-label font-semibold text-gray-900 leading-none">Interrupciones no computables</h1>
-                <span className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-[#BDD4EF] text-[#1565C0]"
-                  style={{ backgroundColor: "#EBF2FC", fontFamily: "'JetBrains Mono', monospace" }}>CDS3</span>
+                <span className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-gray-400 text-[#1565C0]"
+                  style={{ backgroundColor: "var(--color-gray-100)", fontFamily: "'JetBrains Mono', monospace" }}>CDS3</span>
               </>
             )}
             {screen === "cds4" && (
               <>
                 <h1 className="text-label font-semibold text-gray-900 leading-none">Reposiciones</h1>
-                <span className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-[#BDD4EF] text-[#1565C0]"
-                  style={{ backgroundColor: "#EBF2FC", fontFamily: "'JetBrains Mono', monospace" }}>CDS4</span>
+                <span className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-gray-400 text-[#1565C0]"
+                  style={{ backgroundColor: "var(--color-gray-100)", fontFamily: "'JetBrains Mono', monospace" }}>CDS4</span>
               </>
             )}
             {screen === "modificar" && (
@@ -3653,7 +3653,7 @@ export default function App() {
 
           {/* ── Left column: form ── */}
           <div
-            className="flex flex-col rounded-sm border border-[#D8E4F0] bg-white shrink-0 overflow-hidden"
+            className="flex flex-col rounded-sm border border-gray-300 bg-white shrink-0 overflow-hidden"
             style={{ width: "41%", boxShadow: "var(--shadow-low)" }}
           >
             <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
@@ -3680,10 +3680,10 @@ export default function App() {
                             key={nivel}
                             type="button"
                             onClick={() => setNivelTension(active ? null : nivel)}
-                            className={`flex-1 flex items-center justify-center h-8 rounded-sm border cursor-pointer select-none text-[12.5px] font-medium transition-all duration-150 ${
+                            className={`flex-1 flex items-center justify-center h-8 rounded-sm border cursor-pointer select-none text-body font-medium transition-all duration-150 ${
                               active
                                 ? "border-primary bg-primary-tint text-secondary"
-                                : "border-gray-400 bg-white text-[#4A6080] hover:border-[#97B0CF] hover:bg-[#F5F8FD]"
+                                : "border-gray-400 bg-white text-gray-700 hover:border-gray-500 hover:bg-gray-50"
                             }`}
                           >
                             {nivel}

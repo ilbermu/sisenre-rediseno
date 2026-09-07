@@ -33,6 +33,24 @@
   --color-error: #DC2626;
   --color-success: #16A34A;
 
+  /* Foco */
+  --color-focus: #1565C0;
+
+  /* Warning / alert */
+  --color-warning-bg: #FFFBEB;
+  --color-warning-border: #FCD34D;
+  --color-warning-text: #B45309;
+
+  /* Borde del botón destructivo (outline rojo) */
+  --color-error-border: #FCA5A5;
+  --color-error-border-hover: #F87171;
+
+  /* Pares "existe / no existe" */
+  --color-success-bg: #DCFCE7;
+  --color-success-text-strong: #15803D;
+  --color-error-bg: #FEE2E2;
+  --color-error-text-strong: #B91C1C;
+
   /* Escala tipográfica semántica */
   --text-micro: 10px;
   --text-caption: 11px;
