@@ -361,11 +361,11 @@ function DateTimeChevron({ orientation }: ChevronProps) {
 }
 
 const DAY_PICKER_CLASSNAMES = {
-  month: "flex items-center justify-between mb-2",
-  month_caption: "flex-1 flex items-center justify-center",
+  month: "relative flex flex-col",
+  month_caption: "flex items-center justify-center h-6 mb-2",
   caption_label: "text-body font-semibold text-gray-900",
-  button_previous: "w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
-  button_next: "w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
+  button_previous: "absolute left-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
+  button_next: "absolute right-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
   month_grid: "w-full border-collapse",
   weekdays: "",
   weekday: "text-micro font-semibold uppercase text-gray-500 pb-1",
