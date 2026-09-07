@@ -759,7 +759,7 @@ function TableToolbar({
 const modalPrimaryBtnCls =
   "h-9 px-5 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 const modalNeutralBtnCls =
-  "h-9 px-5 rounded-md text-body font-medium border-2 border-primary bg-white hover:bg-primary-tint transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-9 px-5 rounded-md text-body font-medium border-2 border-secondary bg-white hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 
 function Modal({
   title,
@@ -2521,7 +2521,7 @@ function ModificarContent() {
                   setFlyoutFilters(EMPTY_FLYOUT_FILTERS);
                 }}
                 disabled={!modShowData}
-                className="h-8 px-3.5 rounded-sm text-body-sm font-medium border-2 border-primary bg-white hover:bg-primary-tint transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                className="h-8 px-3.5 rounded-sm text-body-sm font-medium border-2 border-secondary bg-white hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 style={{ color: "var(--color-secondary)" }}
               >Limpiar</button>
               <button
@@ -3107,7 +3107,7 @@ function CDS3Content() {
           <button
             onClick={() => { setShowData(false); setSelectedRow(null); }}
             disabled={!showData}
-            className="flex-1 h-9 rounded-md text-body font-medium border-2 border-primary bg-white hover:bg-primary-tint transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className="flex-1 h-9 rounded-md text-body font-medium border-2 border-secondary bg-white hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
             style={{ color: "var(--color-secondary)" }}
           >Limpiar</button>
           <button
@@ -3334,7 +3334,7 @@ function CDS4Content() {
           <button
             onClick={() => { setShowData(false); setSelectedRow(null); }}
             disabled={!showData}
-            className="flex-1 h-9 rounded-md text-body font-medium border-2 border-primary bg-white hover:bg-primary-tint transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className="flex-1 h-9 rounded-md text-body font-medium border-2 border-secondary bg-white hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
             style={{ color: "var(--color-secondary)" }}
           >Limpiar</button>
           <button
@@ -3781,7 +3781,7 @@ export default function App() {
               <button
                 onClick={handleLimpiar}
                 disabled={!showData}
-                className="flex-1 h-9 rounded-md text-body font-medium border-2 border-primary bg-white transition-colors duration-150 active:scale-[0.99] hover:bg-primary-tint disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                className="flex-1 h-9 rounded-md text-body font-medium border-2 border-secondary bg-white transition-colors duration-150 active:scale-[0.99] hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 style={{ color: "var(--color-secondary)" }}
               >Limpiar</button>
               <button
