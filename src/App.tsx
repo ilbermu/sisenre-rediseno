@@ -414,7 +414,7 @@ function DateTimeField({ value, onChange }: { value: string; onChange: (v: strin
       {open && (
         <div
           className="absolute z-30 bg-white border border-gray-300 rounded-lg p-4"
-          style={{ top: "calc(100% + 6px)", width: 300, boxShadow: "var(--shadow-high)" }}
+          style={{ top: "calc(100% + 6px)", width: "max-content", boxShadow: "var(--shadow-high)" }}
         >
           <DayPicker
             mode="single"
