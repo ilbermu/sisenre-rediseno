@@ -2521,7 +2521,7 @@ function ModificarContent() {
                   setFlyoutFilters(EMPTY_FLYOUT_FILTERS);
                 }}
                 disabled={!modShowData}
-                className="h-8 px-3.5 rounded-sm text-body-sm font-medium border border-gray-400 bg-white text-gray-700 hover:border-secondary hover:text-secondary hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                className="h-8 px-3.5 rounded-sm text-body-sm font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
               >Limpiar</button>
               <button
                 type="button"
@@ -3106,7 +3106,7 @@ function CDS3Content() {
           <button
             onClick={() => { setShowData(false); setSelectedRow(null); }}
             disabled={!showData}
-            className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:border-secondary hover:text-secondary hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >Limpiar</button>
           <button
             onClick={() => { setShowData(true); setSelectedRow(null); }}
@@ -3332,7 +3332,7 @@ function CDS4Content() {
           <button
             onClick={() => { setShowData(false); setSelectedRow(null); }}
             disabled={!showData}
-            className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:border-secondary hover:text-secondary hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >Limpiar</button>
           <button
             onClick={() => { setShowData(true); setSelectedRow(null); }}
@@ -3778,7 +3778,7 @@ export default function App() {
               <button
                 onClick={handleLimpiar}
                 disabled={!showData}
-                className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:border-secondary hover:text-secondary transition-colors duration-150 active:scale-[0.99] hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
               >Limpiar</button>
               <button
                 onClick={() => { setShowData(true); setSelectedRow(null); }}
