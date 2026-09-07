@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { DayPicker, type ChevronProps } from "react-day-picker";
-import { es } from "react-day-picker/locale";
+import { DayPicker, useDayPicker, type ChevronProps } from "react-day-picker";
+import { es } from "date-fns/locale";
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
 
@@ -364,7 +364,6 @@ function DateTimeChevron({ orientation }: ChevronProps) {
 const DAY_PICKER_CLASSNAMES = {
   month: "relative flex flex-col",
   month_caption: "flex items-center justify-center h-6 mb-2",
-  caption_label: "text-body font-semibold text-gray-900",
   button_previous: "absolute left-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
   button_next: "absolute right-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
   month_grid: "w-full border-collapse",
@@ -376,6 +375,83 @@ const DAY_PICKER_CLASSNAMES = {
   today: "text-secondary font-semibold",
   outside: "text-gray-400",
 };
+
+const MESES_ES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+function MiniCaptionDropdown({
+  label,
+  options,
+  onSelect,
+}: {
+  label: string;
+  options: { value: number; label: string; selected: boolean }[];
+  onSelect: (value: number) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="h-6 px-1.5 rounded-sm text-body font-semibold text-gray-900 hover:bg-primary-tint hover:text-secondary transition-colors"
+      >
+        {label}
+      </button>
+      {open && (
+        <div
+          className="absolute left-1/2 z-40 bg-white border border-gray-300 rounded-lg py-1 overflow-y-auto"
+          style={{ top: "calc(100% + 4px)", transform: "translateX(-50%)", minWidth: 96, maxHeight: 224, boxShadow: "var(--shadow-mid)" }}
+        >
+          {options.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => { onSelect(o.value); setOpen(false); }}
+              className={`block w-full text-left px-3 py-1.5 text-body-sm transition-colors ${
+                o.selected ? "bg-primary-tint text-secondary font-semibold" : "text-gray-700 hover:bg-primary-tint hover:text-secondary"
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DateTimeCaptionLabel(props: React.HTMLAttributes<HTMLSpanElement>) {
+  const { months, goToMonth, dayPickerProps } = useDayPicker();
+  const current = months[0].date;
+  const startYear = dayPickerProps.startMonth?.getFullYear() ?? 2018;
+  const endYear = dayPickerProps.endMonth?.getFullYear() ?? new Date().getFullYear();
+  const years: number[] = [];
+  for (let y = endYear; y >= startYear; y--) years.push(y);
+
+  return (
+    <span {...props} className="flex items-center gap-1">
+      <MiniCaptionDropdown
+        label={MESES_ES[current.getMonth()]}
+        options={MESES_ES.map((m, i) => ({ value: i, label: m, selected: i === current.getMonth() }))}
+        onSelect={(m) => goToMonth(new Date(current.getFullYear(), m, 1))}
+      />
+      <MiniCaptionDropdown
+        label={String(current.getFullYear())}
+        options={years.map((y) => ({ value: y, label: String(y), selected: y === current.getFullYear() }))}
+        onSelect={(y) => goToMonth(new Date(y, current.getMonth(), 1))}
+      />
+    </span>
+  );
+}
 
 function DateTimeField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
@@ -421,9 +497,11 @@ function DateTimeField({ value, onChange }: { value: string; onChange: (v: strin
             mode="single"
             navLayout="around"
             locale={es}
+            startMonth={new Date(2018, 0)}
+            endMonth={new Date()}
             selected={selectedDate}
             onSelect={setSelectedDate}
-            components={{ Chevron: DateTimeChevron }}
+            components={{ Chevron: DateTimeChevron, CaptionLabel: DateTimeCaptionLabel }}
             classNames={DAY_PICKER_CLASSNAMES}
           />
           <div className="mt-3">
