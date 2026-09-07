@@ -299,10 +299,10 @@ function PeriodSelector() {
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 h-8 px-3 rounded-sm border text-body font-medium transition-all duration-150
-          ${open ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-gray-500"}`}
+        className={`group flex items-center gap-1.5 h-8 px-3 rounded-sm border text-body font-medium transition-all duration-150
+          ${open ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"}`}
       >
-        <span className={`transition-colors ${open ? "text-secondary" : "text-gray-500"}`}><IcoCalendar /></span>
+        <span className={`transition-colors ${open ? "text-secondary" : "text-gray-500 group-hover:text-secondary"}`}><IcoCalendar /></span>
         <span>{selected}</span>
         <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
           <ChevronDown />
@@ -1270,7 +1270,7 @@ function AltaClientesModal({
           type="button"
           onClick={() => setFiltroActivo((v) => !v)}
           className={`h-7 px-3 rounded-sm text-body-sm font-medium border transition-colors ${
-            filtroActivo ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-gray-500"
+            filtroActivo ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"
           }`}
         >
           {filtroActivo ? "Activo" : "Inactivo"}
@@ -2329,7 +2329,7 @@ function ButtonSelectGroup({
                 ? "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
                 : isSel
                 ? "bg-primary-tint border-primary text-secondary"
-                : "bg-white border-gray-400 text-gray-700 hover:border-gray-500 hover:bg-gray-50 active:scale-[0.98]"
+                : "bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]"
             }`}
           >
             {opt}
@@ -2500,7 +2500,7 @@ function ModificarContent() {
                 className={`h-8 px-2.5 rounded-sm text-body-sm font-medium border flex items-center gap-1.5 transition-all duration-150 ${
                   activeFlyoutFields.length > 0
                     ? "bg-primary-tint border-primary text-secondary"
-                    : "bg-white border-gray-400 text-gray-700 hover:border-gray-500 hover:bg-gray-50"
+                    : "bg-white border-gray-400 text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
                 }`}
               >
                 <IcoFilter />
@@ -3680,7 +3680,7 @@ export default function App() {
                             className={`flex-1 flex items-center justify-center h-8 rounded-sm border cursor-pointer select-none text-body font-medium transition-all duration-150 ${
                               active
                                 ? "border-primary bg-primary-tint text-secondary"
-                                : "border-gray-400 bg-white text-gray-700 hover:border-gray-500 hover:bg-gray-50"
+                                : "border-gray-400 bg-white text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"
                             }`}
                           >
                             {nivel}
