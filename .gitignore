@@ -11,6 +11,11 @@ logs/
 *.log
 .claude-replay.*
 .tmp-*
+.claude/settings.local.json
+
+# Project uses pnpm (see packageManager in package.json / pnpm-lock.yaml);
+# an npm-generated lockfile would drift from it.
+package-lock.json
 
 # Platform-managed agentplat state, not project source. In the
 # client-initiated single-repo workspace layout (make's `Path: "."` spec) the

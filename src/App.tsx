@@ -147,10 +147,10 @@ const IcoExternalLink = () => (
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const ABM_ITEMS = [
-  { code: "CDS2",  label: "Interrupciones",               icon: <IcoZap /> },
-  { code: "CDS3",  label: "Interrupciones no computables",icon: <IcoZapOff /> },
-  { code: "CDS4",  label: "Reposiciones",                 icon: <IcoRefresh /> },
+const ABM_ITEMS: { code: string; label: string; icon: React.ReactNode; screen?: Screen; key?: string }[] = [
+  { code: "CDS2",  label: "Interrupciones",               icon: <IcoZap />,     screen: "cds2" },
+  { code: "CDS3",  label: "Interrupciones no computables",icon: <IcoZapOff />,  screen: "cds3" },
+  { code: "CDS4",  label: "Reposiciones",                 icon: <IcoRefresh />, screen: "cds4" },
   { code: "CDS5",  label: "Trafos repuestos",             icon: <IcoCpu /> },
   { code: "CDS6",  label: "Clientes MT afectados",        icon: <IcoUsers /> },
   { code: "CDS7",  label: "Instalaciones",                icon: <IcoBuilding /> },
@@ -1186,7 +1186,7 @@ function CambiaFasesModal({
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={i} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
+              <tr key={r.idElemento} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
                 <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.fase}</td>
                 <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] whitespace-nowrap">{r.fecha}</td>
                 <td className="px-4 py-3 text-[12.5px] text-[#3D4F6B] whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
@@ -1290,8 +1290,8 @@ function AltaClientesModal({
             </tr>
           </thead>
           <tbody>
-            {ALTA_CLIENTES_ROWS.map((r, i) => (
-              <tr key={i} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
+            {ALTA_CLIENTES_ROWS.map((r) => (
+              <tr key={r.interrupcion} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
                 <td className="px-4 py-3 text-[12.5px] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", color: "#1A2B4A" }}>
                   {r.interrupcion}
                 </td>
@@ -1580,7 +1580,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 }
 
 // ─── Modal: Intercambio ─────────────────────────────────────────────────────
-type IntercambioRow = { fecha: string; clientes: number; repo: number };
+type IntercambioRow = { id: number; fecha: string; clientes: number; repo: number };
 
 function IntercambioModal({
   open,
@@ -1591,12 +1591,13 @@ function IntercambioModal({
   onClose: () => void;
   referencia: string;
 }) {
-  const [leftRows, setLeftRows] = useState<IntercambioRow[]>([{ fecha: "01/07/2026 00:43", clientes: 1, repo: 1 }]);
+  const [leftRows, setLeftRows] = useState<IntercambioRow[]>([{ id: 1, fecha: "01/07/2026 00:43", clientes: 1, repo: 1 }]);
   const [rightRows, setRightRows] = useState<IntercambioRow[]>([]);
   const [leftChecked, setLeftChecked] = useState<Set<number>>(new Set());
   const [seleccion, setSeleccion] = useState<"interrupcion" | "reclamos" | "cts" | "clientes">("interrupcion");
   const [tarifa, setTarifa] = useState<"todas" | "mtat" | "bt">("todas");
   const [ocultarExistentes, setOcultarExistentes] = useState(false);
+  const nextRowId = useRef(2);
 
   function toggleLeftChecked(i: number, checked: boolean) {
     setLeftChecked((prev) => {
@@ -1614,13 +1615,13 @@ function IntercambioModal({
   function copiar() {
     const selected = leftRows.filter((_, i) => leftChecked.has(i));
     if (selected.length === 0) return;
-    setRightRows((prev) => [...prev, ...selected]);
+    setRightRows((prev) => [...prev, ...selected.map((r) => ({ ...r, id: nextRowId.current++ }))]);
   }
 
   function mover() {
     const selected = leftRows.filter((_, i) => leftChecked.has(i));
     if (selected.length === 0) return;
-    setRightRows((prev) => [...prev, ...selected]);
+    setRightRows((prev) => [...prev, ...selected.map((r) => ({ ...r, id: nextRowId.current++ }))]);
     setLeftRows((prev) => prev.filter((_, i) => !leftChecked.has(i)));
     setLeftChecked(new Set());
   }
@@ -1728,7 +1729,7 @@ function IntercambioModal({
                   </tr>
                 ) : (
                   leftRows.map((r, i) => (
-                    <tr key={i} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
+                    <tr key={r.id} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
                       <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] whitespace-nowrap">{r.fecha}</td>
                       <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.clientes}</td>
                       <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.repo}</td>
@@ -1799,8 +1800,8 @@ function IntercambioModal({
                     </td>
                   </tr>
                 ) : (
-                  rightRows.map((r, i) => (
-                    <tr key={i} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
+                  rightRows.map((r) => (
+                    <tr key={r.id} className="border-b border-[#F0F4FB] hover:bg-[#F8FAFD] transition-colors">
                       <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] whitespace-nowrap">{r.fecha}</td>
                       <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.clientes}</td>
                       <td className="px-3 py-2 text-[12.5px] text-[#3D4F6B] tabular-nums">{r.repo}</td>
@@ -1895,10 +1896,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-[4px] text-white disabled:opacity-70 active:scale-[0.99] transition-all"
+                className="w-full rounded-[4px] text-white hover:brightness-110 disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all"
                 style={{ backgroundColor: "#4d97fa", fontFamily: "'Maven Pro:Medium', sans-serif", fontWeight: 500, fontSize: 16, lineHeight: "20px", padding: "12px 24px", boxShadow: "0px 1px 2px 0px rgba(16,24,40,0.05)" }}
-                onMouseEnter={e => { if (!loading) e.currentTarget.style.filter = "brightness(1.08)"; }}
-                onMouseLeave={e => { e.currentTarget.style.filter = ""; }}
               >
                 {loading ? "Ingresando…" : "Confirmar"}
               </button>
@@ -2434,7 +2433,11 @@ function ModificarContent() {
     if (!modShowData || modVisibleIndices.length === 0) return;
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
     e.preventDefault();
-    const currentPos = modSelectedRow !== null ? modVisibleIndices.indexOf(modSelectedRow) : -1;
+    if (modSelectedRow === null) {
+      setModSelectedRow(e.key === "ArrowDown" ? modVisibleIndices[0] : modVisibleIndices[modVisibleIndices.length - 1]);
+      return;
+    }
+    const currentPos = modVisibleIndices.indexOf(modSelectedRow);
     const nextPos =
       e.key === "ArrowDown"
         ? Math.min(currentPos + 1, modVisibleIndices.length - 1)
@@ -2449,7 +2452,7 @@ function ModificarContent() {
         {/* Card A — filter bar compacta, una sola fila, + flyout "Más filtros" */}
         <div className="relative shrink-0">
           <div
-            className="flex items-center gap-2 rounded-[5px] border border-[#D8E4F0] bg-white px-3 py-2.5"
+            className="relative z-30 flex items-center gap-2 rounded-[5px] border border-[#D8E4F0] bg-white px-3 py-2.5"
             style={CARD_SHADOW}
           >
             <SelectWrap className="w-[60px] shrink-0">
@@ -2479,6 +2482,7 @@ function ModificarContent() {
               options={["Interno", "Externo"]}
               selected={origenSel ? [origenSel] : []}
               onToggle={(opt) => setOrigenSel(origenSel === opt ? null : opt)}
+              disabled={modShowData}
             />
 
             <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9AAABF] shrink-0">Tipo</span>
@@ -2486,6 +2490,7 @@ function ModificarContent() {
               options={["Forzado", "Programado"]}
               selected={tipoSel ? [tipoSel] : []}
               onToggle={(opt) => setTipoSel(tipoSel === opt ? null : opt)}
+              disabled={modShowData}
             />
 
             <div className="ml-auto flex items-center gap-2 shrink-0">
@@ -3484,8 +3489,6 @@ export default function App() {
   if (screen === "login") return <LoginScreen onLogin={() => setScreen("select")} />;
   if (screen === "select") return <SelectScreen onSelect={(v) => setScreen(v === "nuevo" ? "welcome" : "select")} />;
 
-  const ACTIVE_CODE = screen === "cds2" ? "CDS2" : screen === "cds3" ? "CDS3" : screen === "cds4" ? "CDS4" : null;
-
   function handleLimpiar() {
     setShowData(false);
     setSelectedRow(null);
@@ -3558,14 +3561,9 @@ export default function App() {
                 label={item.label}
                 code={item.code}
                 icon={item.icon}
-                active={item.code === ACTIVE_CODE}
+                active={item.screen !== undefined && item.screen === screen}
                 collapsed={collapsed}
-                onClick={
-                  item.code === "CDS2" && i === 0 ? () => setScreen("cds2") :
-                  item.code === "CDS3" ? () => setScreen("cds3") :
-                  item.code === "CDS4" ? () => setScreen("cds4") :
-                  undefined
-                }
+                onClick={item.screen ? () => setScreen(item.screen!) : undefined}
               />
             ))}
           </div>
@@ -3682,13 +3680,11 @@ export default function App() {
                             key={nivel}
                             type="button"
                             onClick={() => setNivelTension(active ? null : nivel)}
-                            className="flex-1 flex items-center justify-center h-8 rounded-[5px] border cursor-pointer select-none text-[12.5px] font-medium transition-all duration-150"
-                            style={active
-                              ? { borderColor: "#4D97FA", backgroundColor: "#EBF4FF", color: "#1D558C" }
-                              : { borderColor: "#C9D4E6", backgroundColor: "#fff", color: "#4A6080" }
-                            }
-                            onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = "#97B0CF"; e.currentTarget.style.backgroundColor = "#F5F8FD"; } }}
-                            onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = "#C9D4E6"; e.currentTarget.style.backgroundColor = "#fff"; } }}
+                            className={`flex-1 flex items-center justify-center h-8 rounded-[5px] border cursor-pointer select-none text-[12.5px] font-medium transition-all duration-150 ${
+                              active
+                                ? "border-[#4D97FA] bg-[#EBF4FF] text-[#1D558C]"
+                                : "border-[#C9D4E6] bg-white text-[#4A6080] hover:border-[#97B0CF] hover:bg-[#F5F8FD]"
+                            }`}
                           >
                             {nivel}
                           </button>
