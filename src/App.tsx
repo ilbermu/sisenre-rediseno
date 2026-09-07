@@ -257,7 +257,7 @@ function NavItem({
       className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm transition-all duration-150 group
         ${collapsed ? "justify-center px-0 py-2.5 mx-auto w-9" : "px-2.5 py-[7px]"}
         ${active
-          ? "bg-[#1565C0] text-white shadow-[0_1px_6px_rgba(21,101,192,0.25)]"
+          ? "bg-[var(--color-secondary)] text-white shadow-[0_1px_6px_rgba(29,85,140,0.25)]"
           : "text-gray-700 hover:text-gray-800 hover:bg-gray-100"
         }`}
     >
@@ -300,9 +300,9 @@ function PeriodSelector() {
       <button
         onClick={() => setOpen(!open)}
         className={`flex items-center gap-1.5 h-8 px-3 rounded-sm border text-body font-medium transition-all duration-150
-          ${open ? "bg-white border-primary text-secondary ring-2 ring-primary/10" : "bg-white border-gray-400 text-gray-700 hover:border-gray-500"}`}
+          ${open ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-gray-500"}`}
       >
-        <span className={`transition-colors ${open ? "text-primary" : "text-gray-500"}`}><IcoCalendar /></span>
+        <span className={`transition-colors ${open ? "text-secondary" : "text-gray-500"}`}><IcoCalendar /></span>
         <span>{selected}</span>
         <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
           <ChevronDown />
@@ -759,7 +759,7 @@ function TableToolbar({
 const modalPrimaryBtnCls =
   "h-9 px-5 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 const modalNeutralBtnCls =
-  "h-9 px-5 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:border-secondary hover:text-secondary hover:bg-gray-100 transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-9 px-5 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 
 function Modal({
   title,
@@ -2226,8 +2226,8 @@ const STATUS_ITEMS = [
   { label: "TABLA 3", value: "NO", alert: false, tabKey: "tabla3" },
   { label: "TABLA 5", value: "0", alert: false, tabKey: "tabla5" },
   { label: "TABLA 6", value: "0", alert: false, tabKey: "tabla6" },
-  { label: "TABLA 8", value: "1", alert: true,  tabKey: "tabla8" },
-  { label: "TABLA 9", value: "8", alert: true,  tabKey: "tabla9" },
+  { label: "TABLA 8", value: "1", alert: false, tabKey: "tabla8" },
+  { label: "TABLA 9", value: "8", alert: false, tabKey: "tabla9" },
 ];
 
 // Fases de reposición de la interrupción seleccionada — hoy vive en
