@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { DayPicker, type ChevronProps } from "react-day-picker";
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
 
@@ -327,6 +328,122 @@ function PeriodSelector() {
               {p}
             </button>
           ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Date/time field ──────────────────────────────────────────────────────────
+// Mismo patrón de dropdown que PeriodSelector (ref + click-outside), pero el
+// popover aloja un DayPicker + input de hora en vez de una lista. La interfaz
+// pública es la de un input de texto (value/onChange de "dd/mm/aaaa hh:mm")
+// para no tocar el tipo FlyoutFilters ni la lógica de chips/badge existente.
+
+function parseDateTimeStr(v: string): { date: Date | undefined; time: string } {
+  const [datePart, timePart] = v.split(" ");
+  const [dd, mm, yyyy] = (datePart ?? "").split("/").map(Number);
+  const date = dd && mm && yyyy ? new Date(yyyy, mm - 1, dd) : undefined;
+  return { date, time: timePart ?? "" };
+}
+
+function formatDateTimeStr(date: Date | undefined, time: string): string {
+  if (!date) return "";
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  return `${dd}/${mm}/${yyyy} ${time || "00:00"}`;
+}
+
+function DateTimeChevron({ orientation }: ChevronProps) {
+  return orientation === "right" ? <ChevronRight /> : <ChevronLeft />;
+}
+
+const DAY_PICKER_CLASSNAMES = {
+  month: "flex items-center justify-between mb-2",
+  month_caption: "flex-1 flex items-center justify-center",
+  caption_label: "text-body font-semibold text-gray-900",
+  button_previous: "w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
+  button_next: "w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
+  month_grid: "w-full border-collapse",
+  weekdays: "",
+  weekday: "text-micro font-semibold uppercase text-gray-500 pb-1",
+  day: "p-0.5 text-center",
+  day_button: "w-8 h-8 rounded-full bg-transparent flex items-center justify-center text-body-sm font-medium text-gray-700 transition-colors hover:bg-primary-tint hover:text-secondary",
+  selected: "rounded-full bg-primary-tint border border-primary text-secondary",
+  today: "text-secondary font-semibold",
+  outside: "text-gray-400",
+};
+
+function DateTimeField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [hora, setHora] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const { date, time } = parseDateTimeStr(value);
+    setSelectedDate(date);
+    setHora(time);
+  }, [open, value]);
+
+  function aplicar() {
+    onChange(formatDateTimeStr(selectedDate, hora));
+    setOpen(false);
+  }
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={MOD_FIELD_CLS + " flex items-center justify-between gap-2 text-left"}
+        style={{ width: 170, flexShrink: 0 }}
+      >
+        {value ? <span className="text-gray-900 truncate">{value}</span> : <span className="text-gray-500 truncate">dd/mm/aaaa hh:mm</span>}
+        <span className="shrink-0 text-gray-500"><IcoCalendar /></span>
+      </button>
+      {open && (
+        <div
+          className="absolute z-30 bg-white border border-gray-300 rounded-lg p-4"
+          style={{ top: "calc(100% + 6px)", width: 300, boxShadow: "var(--shadow-high)" }}
+        >
+          <DayPicker
+            mode="single"
+            navLayout="around"
+            selected={selectedDate}
+            onSelect={setSelectedDate}
+            components={{ Chevron: DateTimeChevron }}
+            classNames={DAY_PICKER_CLASSNAMES}
+          />
+          <div className="mt-3">
+            <FieldLabel>Hora</FieldLabel>
+            <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} className={MOD_FIELD_CLS} />
+          </div>
+          <div className="flex items-center justify-end gap-2.5 mt-4 pt-3 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="h-8 px-3.5 rounded-sm text-body-sm font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all"
+            >
+              Cerrar
+            </button>
+            <button
+              type="button"
+              onClick={aplicar}
+              className="h-8 px-4 rounded-sm text-body-sm font-semibold text-white hover:brightness-105 transition-all"
+              style={{ backgroundColor: "var(--color-primary)" }}
+            >
+              Aplicar
+            </button>
           </div>
         </div>
       )}
@@ -2474,12 +2591,9 @@ function ModificarContent() {
               </select>
             </SelectWrap>
 
-            <input
-              placeholder="dd/mm/aaaa hh:mm"
+            <DateTimeField
               value={flyoutFilters.fecha}
-              onChange={(e) => setFlyoutFilters((prev) => ({ ...prev, fecha: e.target.value }))}
-              className={MOD_FIELD_CLS}
-              style={{ width: 170, flexShrink: 0 }}
+              onChange={(v) => setFlyoutFilters((prev) => ({ ...prev, fecha: v }))}
             />
 
             <div className="w-px h-5 bg-gray-300 shrink-0" />
