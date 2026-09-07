@@ -2583,6 +2583,11 @@ function ModificarContent() {
               style={{ width: 190, flexShrink: 0, fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-body-sm)" }}
             />
 
+            <DateTimeField
+              value={flyoutFilters.fecha}
+              onChange={(v) => setFlyoutFilters((prev) => ({ ...prev, fecha: v }))}
+            />
+
             <SelectWrap className="w-[110px] shrink-0">
               <select className={MOD_SELECT_CLS + " w-full"} defaultValue="">
                 <option value="" disabled>Fase</option>
@@ -2590,11 +2595,6 @@ function ModificarContent() {
                 <option>RS</option><option>RT</option><option>ST</option><option>RST</option>
               </select>
             </SelectWrap>
-
-            <DateTimeField
-              value={flyoutFilters.fecha}
-              onChange={(v) => setFlyoutFilters((prev) => ({ ...prev, fecha: v }))}
-            />
 
             <div className="w-px h-5 bg-gray-300 shrink-0" />
 
