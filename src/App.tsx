@@ -110,6 +110,11 @@ const IcoX = () => (
     <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
+const IcoFilter = () => (
+  <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+    <path d="M4 5h12M6.5 10h7M9 15h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
 const IcoInbox = () => (
   <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
     <rect x="6" y="12" width="32" height="24" rx="3" stroke="currentColor" strokeWidth="1.4" />
@@ -2044,6 +2049,139 @@ function WelcomeContent() {
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
+// ─── Modal: Datos de la interrupción ───────────────────────────────────────
+// Mismo chrome que el resto de los modales de la app (Modal genérico:
+// header claro, X, footer con modalNeutralBtnCls/modalPrimaryBtnCls), sin
+// excepciones de color — "Procesar" usa el mismo azul primario que el botón
+// principal de cualquier otro modal.
+
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-[#7A8FAD] mb-1 truncate">{label}</p>
+      <div className="h-7 px-2 flex items-center text-[11.5px] bg-[#F4F6F9] border border-[#DDE5F0] rounded-[4px] text-[#3D4F6B] truncate">
+        {value || " "}
+      </div>
+    </div>
+  );
+}
+
+const DATOS_INTERRUPCION_COLUMNS: { label: string; value: string }[][] = [
+  [
+    { label: "Repos", value: "1" },
+    { label: "Usu_BT", value: "0" },
+    { label: "Usu_MT", value: "0" },
+    { label: "Pot Cont", value: "0" },
+    { label: "CT", value: "0" },
+    { label: "CT en 0", value: "0" },
+    { label: "Usu BT CT", value: "0" },
+    { label: "Rec", value: "0" },
+    { label: "Reit", value: "0" },
+    { label: "Rec ENRE", value: "0" },
+  ],
+  [
+    { label: "Rec ATF", value: "0" },
+    { label: "Rec ATP", value: "0" },
+    { label: "Rec MTF", value: "0" },
+    { label: "Rec MTP", value: "0" },
+    { label: "Rec BTF", value: "0" },
+    { label: "Rec BTP", value: "0" },
+    { label: "Rec Otros", value: "0" },
+    { label: "Hue Ini", value: "" },
+    { label: "Max Fin", value: "" },
+    { label: "Hue Fin", value: "" },
+  ],
+  [
+    { label: "Hue Rec 180", value: "" },
+    { label: "Rec 12", value: "0" },
+    { label: "Rec AU", value: "0" },
+    { label: "Hue Ini SR", value: "" },
+    { label: "Max Med SR", value: "" },
+    { label: "Hue Fin SR", value: "" },
+    { label: "Hue Rec 180 SR", value: "" },
+    { label: "Rec 12 SR", value: "0" },
+    { label: "Rec Au SR", value: "0" },
+    { label: "Cli T9", value: "0" },
+  ],
+  [
+    { label: "T9 T3 MT", value: "0" },
+    { label: "T9 T3 BT", value: "0" },
+    { label: "Cli T9 no T3", value: "0" },
+    { label: "Cli T9 AP", value: "0" },
+    { label: "Dura Max", value: "" },
+    { label: "Cli Int", value: "0" },
+    { label: "Cli Min", value: "0" },
+  ],
+  [
+    { label: "SAIFI", value: "0.00" },
+    { label: "SAIDI", value: "0.00" },
+    { label: "Energ no Suminist", value: "0" },
+    { label: "Marginal", value: "0" },
+    { label: "Marginal Aj", value: "0" },
+  ],
+];
+
+function DatosInterrupcionModal({
+  open,
+  onClose,
+  referencia,
+  fechaInicio,
+  fechaUltRepo,
+}: {
+  open: boolean;
+  onClose: () => void;
+  referencia: string;
+  fechaInicio: string;
+  fechaUltRepo: string;
+}) {
+  const topFields = [
+    { label: "Interrupción", value: referencia },
+    { label: "Fecha inicio", value: fechaInicio },
+    { label: "Fecha ult. repo.", value: fechaUltRepo },
+    { label: "Inicio del proceso", value: fechaInicio },
+    { label: "Fin del proceso", value: fechaUltRepo },
+    { label: "Usuario del proceso", value: "RDELLAMAGIORA" },
+  ];
+
+  return (
+    <Modal
+      title="Datos de la Interrupción"
+      subtitle={referencia}
+      open={open}
+      onClose={onClose}
+      size="xl"
+      footer={
+        <>
+          <button type="button" onClick={onClose} className={modalNeutralBtnCls} style={{ color: "#1D558C" }}>
+            Salir
+          </button>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "#4D97FA" }}>
+            Procesar
+          </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-6 gap-3">
+          {topFields.map((f) => (
+            <ReadOnlyField key={f.label} label={f.label} value={f.value} />
+          ))}
+        </div>
+
+        <div className="grid grid-cols-5 gap-4">
+          {DATOS_INTERRUPCION_COLUMNS.map((col, ci) => (
+            <div key={ci} className="flex flex-col gap-2.5">
+              {col.map((f) => (
+                <ReadOnlyField key={f.label} label={f.label} value={f.value} />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 // ─── Modificar content ────────────────────────────────────────────────────────
 
 const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
@@ -2056,10 +2194,36 @@ const MOD_SELECT_CLS =
   "h-8 px-2.5 pr-7 text-[12.5px] bg-white border border-[#C9D4E6] rounded-[4px] text-[#1A202C] appearance-none " +
   "cursor-pointer focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 transition-all duration-150 shrink-0";
 
+// Campos del flyout "Más filtros" de la Card A. Cada uno se puede aplicar,
+// mostrar como chip removible debajo de la filter bar, y contar para el
+// badge del botón "Más filtros".
+type FlyoutFilters = {
+  fecha: string;
+  codigoEquipo: string;
+  descEquipo: string;
+  cadenaElectrica: string;
+  alimentadorMT: string;
+  centroTransf: string;
+  divisionRed: string;
+};
+
+const EMPTY_FLYOUT_FILTERS: FlyoutFilters = {
+  fecha: "", codigoEquipo: "", descEquipo: "", cadenaElectrica: "", alimentadorMT: "", centroTransf: "", divisionRed: "",
+};
+
+const FLYOUT_FIELDS: { key: keyof FlyoutFilters; label: string; placeholder: string }[] = [
+  { key: "fecha", label: "Fecha", placeholder: "dd/mm/aaaa hh:mm" },
+  { key: "codigoEquipo", label: "Código equipo", placeholder: "@27947890" },
+  { key: "descEquipo", label: "Descripción equipo operado", placeholder: "PROTECCION DE SUMINISTRO" },
+  { key: "cadenaElectrica", label: "Cadena eléctrica", placeholder: "NCBT" },
+  { key: "alimentadorMT", label: "Alimentador MT", placeholder: "NCBT" },
+  { key: "centroTransf", label: "Centro de transformación", placeholder: "52705#B1#52705-TR1#1#3" },
+  { key: "divisionRed", label: "División red normal", placeholder: "S" },
+];
+
 const ACTION_LABELS = ["Desarmes", "Nivel/Tipo", "Replicar", "Cambia fases", "Alta clientes", "Lotes", "Intercambio"];
 
 const STATUS_ITEMS = [
-  { label: "TABLA 4", value: "0", alert: false, tabKey: "tabla4" },
   { label: "TABLA 3", value: "NO", alert: false, tabKey: "tabla3" },
   { label: "TABLA 5", value: "0", alert: false, tabKey: "tabla5" },
   { label: "TABLA 6", value: "0", alert: false, tabKey: "tabla6" },
@@ -2067,12 +2231,19 @@ const STATUS_ITEMS = [
   { label: "TABLA 9", value: "8", alert: true,  tabKey: "tabla9" },
 ];
 
+// Fases de reposición de la interrupción seleccionada — hoy vive en
+// DRAWER_TABS.tabla4, mostrada siempre visible en la Card B de Modificar
+// interrupción (ya no detrás de un tab del drawer).
+const FASES = [
+  { nro: 1, horaRep: "01/07/2026 00:43", clientes: 1, clientesTA: 1 },
+];
+
 const DRAWER_TABS = [
   {
     key: "tabla4", label: "Tabla 4",
     subtitle: "Reposiciones",
     cols: ["Reposición", "Hora reposición", "Cant. clientes", "Cant. clientes T5"],
-    rows: [] as string[][],
+    rows: FASES.map((f) => [String(f.nro), f.horaRep, String(f.clientes), String(f.clientesTA)]),
   },
   {
     key: "tabla3", label: "Tabla 3",
@@ -2115,10 +2286,6 @@ const DRAWER_TABS = [
   },
 ];
 
-const FASES = [
-  { nro: 1, horaRep: "01/07/2026 00:43", clientes: 1, clientesTA: 1 },
-];
-
 function CardHeader({ title, tag }: { title: string; tag?: string }) {
   return (
     <div className="px-5 py-2.5 border-b border-[#E8EEF7] bg-[#F8FAFD] shrink-0 flex items-center gap-2">
@@ -2131,11 +2298,78 @@ function CardHeader({ title, tag }: { title: string; tag?: string }) {
   );
 }
 
+// Selector tipo botón (single-select) — usado en el formulario de Modificar
+// interrupción para Origen y Tipo. El estado seleccionado se marca con
+// borde + relleno claro (mismo lenguaje que el toggle "Filtro" de
+// AltaClientesModal), nunca el azul relleno reservado para botones de
+// acción primarios.
+function ButtonSelectGroup({
+  options,
+  selected,
+  onToggle,
+  disabled = false,
+}: {
+  options: string[];
+  selected: string[];
+  onToggle: (opt: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex gap-1.5 flex-wrap">
+      {options.map((opt) => {
+        const isSel = selected.includes(opt);
+        return (
+          <button
+            key={opt}
+            type="button"
+            disabled={disabled}
+            aria-pressed={isSel}
+            onClick={() => onToggle(opt)}
+            className={`h-8 px-2.5 text-[12px] rounded-[4px] font-medium border transition-all duration-150 shrink-0 ${
+              disabled
+                ? "bg-[#F4F6F9] border-[#DDE5F0] text-[#B8C8DC] cursor-not-allowed"
+                : isSel
+                ? "bg-[#EBF4FF] border-[#4D97FA] text-[#1D558C]"
+                : "bg-white border-[#C9D4E6] text-[#3D4F6B] hover:border-[#97B0CF] hover:bg-[#F4F7FC] active:scale-[0.98]"
+            }`}
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Barra de acciones contextual de la tabla "Interrupciones" (navegador
+// compacto) en Modificar interrupción. Reusa actionBtnCls/ActionItem tal
+// cual — mismos botones/variantes/colores que SelectionActionBar — pero en
+// una única línea de altura fija: si los botones no entran en el ancho de
+// la card, scrollean horizontalmente en vez de wrappear a varias líneas y
+// comerse el espacio de la lista de referencias. Sin label/referencia — esa
+// info ya se ve en el header "Interrupción" de la Card B de al lado.
+// SelectionActionBar en sí no se toca y sigue igual en CDS2/CDS3/CDS4.
+function CompactSelectionActionBar({ actions }: { actions: ActionItem[] }) {
+  return (
+    <div className="px-4 py-2 border-b border-[#E8EEF7] bg-white shrink-0 flex items-center gap-2 overflow-x-auto">
+      {actions.map((a) => (
+        <button key={a.label} onClick={a.onClick} className={actionBtnCls(a.variant) + " shrink-0"}>
+          {a.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function ModificarContent() {
   const [hovFase, setHovFase] = useState<number | null>(null);
   const [modShowData, setModShowData] = useState(false);
   const [modSelectedRow, setModSelectedRow] = useState<number | null>(null);
   const [drawerTab, setDrawerTab] = useState<string | null>(null);
+  const [origenSel, setOrigenSel] = useState<string | null>(null);
+  const [tipoSel, setTipoSel] = useState<string | null>(null);
+  const [flyoutOpen, setFlyoutOpen] = useState(false);
+  const [flyoutFilters, setFlyoutFilters] = useState<FlyoutFilters>(EMPTY_FLYOUT_FILTERS);
   const [desarmeOpen, setDesarmeOpen] = useState(false);
   const [nivelTipoOpen, setNivelTipoOpen] = useState(false);
   const [replicarOpen, setReplicarOpen] = useState(false);
@@ -2143,9 +2377,18 @@ function ModificarContent() {
   const [altaClientesOpen, setAltaClientesOpen] = useState(false);
   const [lotesOpen, setLotesOpen] = useState(false);
   const [intercambioOpen, setIntercambioOpen] = useState(false);
+  const [datosInterrupcionOpen, setDatosInterrupcionOpen] = useState(false);
   const hasSelection = modSelectedRow !== null;
   const activeTabData = DRAWER_TABS.find(t => t.key === drawerTab);
   const selectedRecord = modSelectedRow !== null ? SAMPLE_ROWS[modSelectedRow] : null;
+
+  // Filtros del flyout "Más filtros" con valor cargado — alimentan el badge
+  // del botón y los chips removibles debajo de la filter bar.
+  const activeFlyoutFields = FLYOUT_FIELDS.filter((f) => flyoutFilters[f.key].trim() !== "");
+
+  function clearFlyoutField(key: keyof FlyoutFilters) {
+    setFlyoutFilters((prev) => ({ ...prev, [key]: "" }));
+  }
 
   const CARD_SHADOW = { boxShadow: "0 1px 4px rgba(21,40,80,0.07)" };
 
@@ -2161,115 +2404,389 @@ function ModificarContent() {
   const { search: drawerSearch, setSearch: setDrawerSearch, sortIdx: drawerSortIdx, sortDir: drawerSortDir, toggleSort: drawerToggleSort, visibleIndices: drawerVisibleIndices } =
     useTableToolbar(drawerRows, drawerGetCells, drawerTab);
 
+  // Tabla 4 (Reposiciones) — siempre visible en la Card B, ya no vive detrás
+  // de un tab del drawer.
+  const tabla4Data = DRAWER_TABS.find(t => t.key === "tabla4")!;
+
+  // Datos de la Interrupción (widget + modal, Card B) — usa la interrupción
+  // seleccionada y la última reposición ya cargada en tabla4Data cuando hay
+  // datos disponibles.
+  const timelineReferencia = selectedRecord?.referencia ?? "MFZ202401000051";
+  const timelineFechaInicio = selectedRecord?.fecha ?? "01/01/2024 00:27";
+  const lastRepoRow = tabla4Data.rows[tabla4Data.rows.length - 1];
+  const timelineFechaUltRepo = lastRepoRow ? lastRepoRow[1] : "01/01/2024 02:35";
+  const timelineDuracion = "0 dias, 2 hs, 8 min";
+  const timelineTicks = [0, 14, 22, 38, 47, 63, 81, 100];
+
+  // Navegación por teclado en la tabla de Interrupciones: flecha abajo/arriba
+  // mueve la selección entre filas visibles y actualiza en vivo la Card B,
+  // igual que un click sobre la fila.
+  const modListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (modSelectedRow === null || !modListRef.current) return;
+    modListRef.current
+      .querySelector<HTMLElement>(`[data-row-index="${modSelectedRow}"]`)
+      ?.scrollIntoView({ block: "nearest" });
+  }, [modSelectedRow]);
+
+  function handleModListKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (!modShowData || modVisibleIndices.length === 0) return;
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    const currentPos = modSelectedRow !== null ? modVisibleIndices.indexOf(modSelectedRow) : -1;
+    const nextPos =
+      e.key === "ArrowDown"
+        ? Math.min(currentPos + 1, modVisibleIndices.length - 1)
+        : Math.max(currentPos - 1, 0);
+    setModSelectedRow(modVisibleIndices[Math.max(nextPos, 0)]);
+  }
+
   return (
-    <div className="flex-1 flex overflow-hidden p-5 gap-5 relative">
+    <div className="flex-1 overflow-y-auto p-5 relative">
+    <div className="flex flex-col gap-5">
 
-      {/* ── LEFT COLUMN ─────────────────────────────────────── */}
-      <div className="flex flex-col shrink-0" style={{ width: "41%" }}>
+        {/* Card A — filter bar compacta, una sola fila, + flyout "Más filtros" */}
+        <div className="relative shrink-0">
+          <div
+            className="flex items-center gap-2 rounded-[5px] border border-[#D8E4F0] bg-white px-3 py-2.5"
+            style={CARD_SHADOW}
+          >
+            <SelectWrap className="w-[60px] shrink-0">
+              <select className={MOD_SELECT_CLS + " w-full"} style={{ fontWeight: 600 }}>
+                <option>BT</option><option>MT</option><option>AT</option>
+              </select>
+            </SelectWrap>
 
-        {/* Formulario */}
-        <div className="flex flex-col flex-1 rounded-[5px] border border-[#D8E4F0] bg-white overflow-hidden" style={CARD_SHADOW}>
-          <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
+            <input
+              placeholder={`Ej: ${RECORD.referencia}`}
+              className={MOD_FIELD_CLS}
+              style={{ width: 190, flexShrink: 0, fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5 }}
+            />
 
-            {/* IDENTIFICACIÓN */}
-            <div>
-              <SectionDivider title="Identificación" />
-              <div className="flex flex-col gap-3">
-                <div>
-                  <FieldLabel>Interrupción</FieldLabel>
-                  <div className="flex gap-1.5">
-                    <SelectWrap className="w-16">
-                      <select className={MOD_SELECT_CLS + " w-full"}>
-                        <option>BT</option><option>MT</option><option>AT</option>
-                      </select>
-                    </SelectWrap>
-                    <input placeholder={`Ej: ${RECORD.referencia}`} className={MOD_FIELD_CLS}
-                      style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5 }} />
+            <SelectWrap className="w-[110px] shrink-0">
+              <select className={MOD_SELECT_CLS + " w-full"} defaultValue="">
+                <option value="" disabled>Fase</option>
+                <option>R</option><option>S</option><option>T</option>
+                <option>RS</option><option>RT</option><option>ST</option><option>RST</option>
+              </select>
+            </SelectWrap>
+
+            <div className="w-px h-5 bg-[#DDE5F0] shrink-0" />
+
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9AAABF] shrink-0">Origen</span>
+            <ButtonSelectGroup
+              options={["Interno", "Externo"]}
+              selected={origenSel ? [origenSel] : []}
+              onToggle={(opt) => setOrigenSel(origenSel === opt ? null : opt)}
+            />
+
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9AAABF] shrink-0">Tipo</span>
+            <ButtonSelectGroup
+              options={["Forzado", "Programado"]}
+              selected={tipoSel ? [tipoSel] : []}
+              onToggle={(opt) => setTipoSel(tipoSel === opt ? null : opt)}
+            />
+
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setFlyoutOpen((v) => !v)}
+                className={`h-8 px-2.5 rounded-[4px] text-[12px] font-medium border flex items-center gap-1.5 transition-all duration-150 ${
+                  activeFlyoutFields.length > 0
+                    ? "bg-[#EBF4FF] border-[#4D97FA] text-[#1D558C]"
+                    : "bg-white border-[#C9D4E6] text-[#3D4F6B] hover:border-[#97B0CF] hover:bg-[#F4F7FC]"
+                }`}
+              >
+                <IcoFilter />
+                Más filtros
+                {activeFlyoutFields.length > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-[#4D97FA] text-white text-[9px] font-bold flex items-center justify-center">
+                    {activeFlyoutFields.length}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setModShowData(false);
+                  setModSelectedRow(null);
+                  setOrigenSel(null);
+                  setTipoSel(null);
+                  setFlyoutFilters(EMPTY_FLYOUT_FILTERS);
+                }}
+                disabled={!modShowData}
+                className="h-8 px-3.5 rounded-[4px] text-[12px] font-medium border-2 border-[#4D97FA] bg-white hover:bg-[#EBF4FF] transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                style={{ color: "#1D558C" }}
+              >Limpiar</button>
+              <button
+                type="button"
+                onClick={() => { setModShowData(true); setModSelectedRow(null); }}
+                disabled={modShowData}
+                className="h-8 px-4 rounded-[4px] text-[12px] font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                style={{ backgroundColor: "#4D97FA" }}
+              >Buscar</button>
+            </div>
+          </div>
+
+          {/* Chips de filtros aplicados (flyout) — franja propia, no texto suelto */}
+          {activeFlyoutFields.length > 0 && (
+            <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-[5px] border border-[#E4EAF4] bg-[#F8FAFD]">
+              <span className="text-[10.5px] font-semibold uppercase tracking-[0.06em] text-[#7A8FAD] shrink-0">
+                Filtros aplicados:
+              </span>
+              {activeFlyoutFields.map((f) => (
+                <span
+                  key={f.key}
+                  className="inline-flex items-center gap-1.5 h-7 pl-3 pr-1.5 rounded-full bg-[#EBF4FF] border border-[#B9D2FB] text-[#1D558C] text-[12px] font-semibold"
+                >
+                  {f.label}: {flyoutFilters[f.key]}
+                  <button
+                    type="button"
+                    onClick={() => clearFlyoutField(f.key)}
+                    className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-[#D9E9FF] transition-colors"
+                  >
+                    <svg width="8" height="8" viewBox="0 0 14 14" fill="none">
+                      <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Backdrop — no bloqueante, sólo cierra el flyout al click afuera */}
+          {flyoutOpen && (
+            <div className="fixed inset-0 z-20" onClick={() => setFlyoutOpen(false)} />
+          )}
+
+          {/* Flyout "Más filtros" */}
+          {flyoutOpen && (
+            <div
+              className="absolute right-0 z-30 bg-white border border-[#D8E4F0] rounded-[8px] p-4"
+              style={{ top: "calc(100% + 6px)", width: 520, boxShadow: "0 12px 32px rgba(21,40,80,0.16)" }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[13px] font-semibold text-[#1A202C]">Más filtros</span>
+                <button
+                  type="button"
+                  onClick={() => setFlyoutOpen(false)}
+                  className="w-6 h-6 flex items-center justify-center rounded-[4px] text-[#9AAABF] hover:bg-[#EEF2F8] hover:text-[#1A2B4A] transition-all"
+                >
+                  <IcoX />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-x-3.5 gap-y-3">
+                {FLYOUT_FIELDS.map((f) => (
+                  <div key={f.key}>
+                    <FieldLabel>{f.label}</FieldLabel>
+                    <input
+                      placeholder={f.placeholder}
+                      value={flyoutFilters[f.key]}
+                      onChange={(e) => setFlyoutFilters((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                      className={MOD_FIELD_CLS}
+                    />
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <FieldLabel>Fecha</FieldLabel>
-                    <input placeholder="dd/mm/aaaa hh:mm" className={MOD_FIELD_CLS} />
-                  </div>
-                  <div>
-                    <FieldLabel>Fase eléctrica</FieldLabel>
-                    <input placeholder="RST" className={MOD_FIELD_CLS} />
-                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#E8EEF7]">
+                <button
+                  type="button"
+                  onClick={() => setFlyoutFilters(EMPTY_FLYOUT_FILTERS)}
+                  className="text-[12px] font-medium text-[#4D97FA] hover:text-[#1D558C] transition-colors"
+                >
+                  Limpiar filtros
+                </button>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setFlyoutOpen(false)}
+                    className="h-8 px-3.5 rounded-[4px] text-[12px] font-medium border border-[#C9D4E6] bg-white text-[#3D4F6B] hover:bg-[#F4F7FC] transition-colors"
+                  >
+                    Cerrar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFlyoutOpen(false)}
+                    className="h-8 px-4 rounded-[4px] text-[12px] font-semibold text-white hover:brightness-105 transition-all"
+                    style={{ backgroundColor: "#4D97FA" }}
+                  >
+                    Aplicar
+                  </button>
                 </div>
               </div>
             </div>
+          )}
+        </div>
 
-            {/* CLASIFICACIÓN */}
-            <div>
-              <SectionDivider title="Clasificación" />
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <FieldLabel>Origen</FieldLabel>
-                  {modShowData ? (
-                    <div className="w-full h-8 px-2.5 flex items-center text-[12.5px] bg-[#F4F6F9] border border-[#DDE5F0] rounded-[4px] text-[#B8C8DC] select-none cursor-not-allowed">
-                      Seleccione
-                    </div>
-                  ) : (
-                    <SelectWrap>
-                      <select className={MOD_SELECT_CLS + " w-full"}>
-                        <option>Interno</option><option>Externo</option>
-                      </select>
-                    </SelectWrap>
-                  )}
+      {/* ── FILA INFERIOR — tabla de datos y Reposiciones (CDS4), una al lado de
+          la otra, misma altura (stretch: ninguna de las dos fuerza una altura
+          propia, ambas quedan del alto de la más alta) ── */}
+      <div className={`flex items-stretch gap-5 transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
+
+      {/* ── Tabla de datos — navegador de referencias, mismo alto y mismo
+          tratamiento de card que Card B ── */}
+      <div
+        className="flex-1 flex flex-col rounded-[5px] border border-[#D8E4F0] bg-white overflow-hidden"
+        style={CARD_SHADOW}
+      >
+
+        {/* Header — mismo componente/tratamiento que el de Card B (Reposiciones) */}
+        <CardHeader title="Interrupciones" />
+
+        {/* Table toolbar — buscador / exportar */}
+        {modShowData && (
+          <TableToolbar
+            search={modSearch}
+            onSearchChange={setModSearch}
+            onExport={() =>
+              exportRowsToCsv("interrupciones", modColumns, modVisibleIndices.map((i) => modGetCells(SAMPLE_ROWS[i])))
+            }
+          />
+        )}
+
+        {/* Contextual action bar — visible only when a row is selected. Altura
+            fija de una sola línea (ver CompactSelectionActionBar) para no
+            comerse el espacio de la lista de referencias de abajo. Sin label
+            de referencia: ya se ve en el header "Interrupción" de Card B. */}
+        {hasSelection && (
+          <CompactSelectionActionBar
+            actions={ACTION_LABELS.map((label) => {
+              if (label === "Desarmes") return { label, onClick: () => setDesarmeOpen(true) };
+              if (label === "Nivel/Tipo") return { label, onClick: () => setNivelTipoOpen(true) };
+              if (label === "Replicar") return { label, onClick: () => setReplicarOpen(true) };
+              if (label === "Cambia fases") return { label, onClick: () => setCambiaFasesOpen(true) };
+              if (label === "Alta clientes") return { label, onClick: () => setAltaClientesOpen(true) };
+              if (label === "Lotes") return { label, onClick: () => setLotesOpen(true) };
+              if (label === "Intercambio") return { label, onClick: () => setIntercambioOpen(true) };
+              return { label };
+            })}
+          />
+        )}
+        {/* Tabla Referencia / Fecha */}
+        <div className="grid grid-cols-2 px-4 border-b border-[#EEF2F8] bg-[#FAFBFD] shrink-0">
+          <SortableHeaderCell
+            label="Referencia"
+            active={modSortIdx === 0}
+            dir={modSortDir}
+            onClick={() => modToggleSort(0)}
+            className="py-1.5 text-[9.5px]"
+          />
+          <SortableHeaderCell
+            label="Fecha"
+            active={modSortIdx === 1}
+            dir={modSortDir}
+            onClick={() => modToggleSort(1)}
+            className="py-1.5 text-[9.5px]"
+          />
+        </div>
+        <div
+          ref={modListRef}
+          tabIndex={modShowData ? 0 : -1}
+          onKeyDown={handleModListKeyDown}
+          className="flex-1 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#4D97FA]/30"
+        >
+          {!modShowData ? (
+            <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
+              <span className="text-[#D5DEEC] scale-90"><IcoInbox /></span>
+              <p className="text-[12px] font-medium text-[#9AAABF]">Sin resultados</p>
+              <p className="text-[11px] text-[#B0BCCE]">Completá los filtros y presioná Buscar</p>
+            </div>
+          ) : modVisibleIndices.map((i) => {
+            const row = SAMPLE_ROWS[i];
+            const selected = modSelectedRow === i;
+            return (
+              <div
+                key={i}
+                data-row-index={i}
+                className="grid grid-cols-2 px-4 border-b border-[#F4F7FC] transition-colors cursor-pointer hover:bg-[#F7F9FC]"
+                style={{ backgroundColor: selected ? "#EBF4FF" : undefined, borderLeft: selected ? "3px solid #4D97FA" : "3px solid transparent" }}
+                onClick={() => setModSelectedRow(selected ? null : i)}
+              >
+                <div className="py-1.5 text-[11px] tabular-nums pr-3"
+                  style={{ fontFamily: "'JetBrains Mono', monospace", color: selected ? "#1D558C" : "#4A5C78", fontWeight: selected ? 600 : 400 }}>
+                  {row.referencia}
                 </div>
-                <div>
-                  <FieldLabel>Tipo</FieldLabel>
-                  {modShowData ? (
-                    <div className="w-full h-8 px-2.5 flex items-center text-[12.5px] bg-[#F4F6F9] border border-[#DDE5F0] rounded-[4px] text-[#B8C8DC] select-none cursor-not-allowed">
-                      Seleccione
-                    </div>
-                  ) : (
-                    <SelectWrap>
-                      <select className={MOD_SELECT_CLS + " w-full"}>
-                        <option>Forzado</option><option>Programado</option>
-                      </select>
-                    </SelectWrap>
-                  )}
-                </div>
+                <div className={`py-1.5 text-[11px] ${selected ? "text-[#1D558C] font-medium" : "text-[#8394AC]"}`}>{row.fecha}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="px-4 py-1.5 border-t border-[#EEF2F8] bg-[#FAFBFD] shrink-0 flex items-center justify-between">
+          <button className="px-2 py-0.5 rounded border border-[#DDE5F0] bg-white text-[10.5px] text-[#9AAABF] disabled:opacity-40" disabled>Anterior</button>
+          <span className="text-[10.5px] text-[#9AAABF]">Página <span className="font-medium text-[#4A5C78]">1</span> de <span className="font-medium text-[#4A5C78]">2.213</span></span>
+          <button className="px-2 py-0.5 rounded border border-[#DDE5F0] bg-white text-[10.5px] text-[#9AAABF] hover:bg-[#F4F7FC] transition-colors">Siguiente</button>
+        </div>
+      </div>
+
+        {/* Card B — Reposiciones (CDS4) */}
+        <div
+          className="flex-1 flex flex-col rounded-[5px] border border-[#D8E4F0] bg-white overflow-hidden"
+          style={CARD_SHADOW}
+        >
+          <CardHeader title="Reposiciones (CDS4)" />
+          <div>
+
+            {/* Interrupción seleccionada — se actualiza en vivo con la fila activa de la derecha */}
+            <div className="px-5 py-2.5 border-b border-[#EEF2F8] flex items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9AAABF]">Interrupción</span>
+              <span
+                className="text-[12px] font-medium text-[#1A2B4A] tabular-nums"
+                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+              >
+                {selectedRecord ? selectedRecord.referencia : "—"}
+              </span>
+            </div>
+
+            {/* Tabla 4 — siempre visible, nunca detrás de un modal/drawer */}
+            <div className="px-5 py-3 border-b border-[#EEF2F8]">
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#7A8FAD] mb-2">
+                {tabla4Data.subtitle}
+              </p>
+              <div className="border border-[#E8EEF7] rounded-[4px] overflow-hidden overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-[#F8FAFD] border-b border-[#E8EEF7]">
+                      {tabla4Data.cols.map((c) => (
+                        <th key={c} className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-[#6B7E9A] whitespace-nowrap">
+                          {c}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tabla4Data.rows.length === 0 ? (
+                      <tr>
+                        <td colSpan={tabla4Data.cols.length}>
+                          <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
+                            <span className="text-[#C9D4E6]"><IcoInbox /></span>
+                            <p className="text-[11.5px] text-[#9AAABF]">Sin reposiciones registradas</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      tabla4Data.rows.map((row, ri) => (
+                        <tr
+                          key={ri}
+                          onMouseEnter={() => setHovFase(ri)}
+                          onMouseLeave={() => setHovFase(null)}
+                          className="border-b border-[#F0F4FB] last:border-b-0 transition-colors"
+                          style={{ backgroundColor: hovFase === ri ? "#F8FAFD" : undefined }}
+                        >
+                          {row.map((cell, ci) => (
+                            <td key={ci} className="px-3 py-2.5 text-[12px] text-[#3D4F6B] whitespace-nowrap">{cell}</td>
+                          ))}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            {/* DATOS DE RED */}
-            <div>
-              <SectionDivider title="Datos de red" />
-              <div className="flex flex-col gap-3">
-                <div>
-                  <FieldLabel>Código y descripción equipo operado</FieldLabel>
-                  <div className="flex gap-1.5">
-                    <input placeholder="@27947890" className={MOD_FIELD_CLS} style={{ width: 130, flexShrink: 0 }} />
-                    <input placeholder="PROTECCION DE SUMINISTRO" className={MOD_FIELD_CLS} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <FieldLabel>Cadena eléctrica</FieldLabel>
-                    <input placeholder="NCBT" className={MOD_FIELD_CLS} />
-                  </div>
-                  <div>
-                    <FieldLabel>Alimentador MT</FieldLabel>
-                    <input placeholder="NCBT" className={MOD_FIELD_CLS} />
-                  </div>
-                  <div>
-                    <FieldLabel>Centro de transformación</FieldLabel>
-                    <input placeholder="52705#B1#52705-TR1#1#3" className={MOD_FIELD_CLS} style={{ fontSize: 11 }} />
-                  </div>
-                  <div>
-                    <FieldLabel>División red normal</FieldLabel>
-                    <input placeholder="S" className={MOD_FIELD_CLS} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* INDICADORES — franja de badges clicables */}
-            <div>
-              <SectionDivider title="Indicadores" />
+            {/* Indicadores de las tablas relacionadas — siguen abriendo el drawer */}
+            <div className="px-5 py-3 border-b border-[#EEF2F8]">
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#7A8FAD] mb-2">Tablas relacionadas</p>
               <div className="grid grid-cols-3 gap-2">
                 {STATUS_ITEMS.map((item) => (
                   <button
@@ -2292,109 +2809,50 @@ function ModificarContent() {
               </div>
             </div>
 
-          </div>
+            {/* Datos de la Interrupción — abre el modal del mismo nombre */}
+            <div className="px-5 py-4">
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#7A8FAD] mb-2.5">Datos de la Interrupción</p>
+              <button
+                type="button"
+                onClick={() => setDatosInterrupcionOpen(true)}
+                className="group w-full text-left rounded-[5px] border border-[#DDE5F0] overflow-hidden cursor-pointer transition-all duration-150 hover:border-[#4D97FA] hover:shadow-[0_2px_10px_rgba(77,151,250,0.1)]"
+              >
+                {/* Sparkline: ticks de reposición + apertura/cierre */}
+                <div className="relative bg-white" style={{ height: 34 }}>
+                  {timelineTicks.map((pct, i) => {
+                    const isEdge = i === 0 || i === timelineTicks.length - 1;
+                    return (
+                      <div
+                        key={i}
+                        className="absolute top-1/2"
+                        style={{
+                          left: `${pct}%`,
+                          width: isEdge ? 3 : 1.5,
+                          height: isEdge ? 22 : 15,
+                          backgroundColor: isEdge ? "#1A202C" : "#4D97FA",
+                          transform: "translate(-50%, -50%)",
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+                {/* Barra de resumen */}
+                <div className="px-3 py-2 text-center" style={{ backgroundColor: "#3D4F6B" }}>
+                  <span
+                    className="text-[11px] font-medium text-white whitespace-nowrap"
+                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  >
+                    {timelineFechaInicio}  -  {timelineReferencia}  -  {timelineFechaUltRepo}  -  {timelineDuracion}
+                  </span>
+                </div>
+              </button>
+            </div>
 
-          {/* Footer: Limpiar / Buscar */}
-          <div className="shrink-0 border-t border-[#E8EEF7] px-5 py-4 flex gap-3">
-            <button
-              type="button"
-              onClick={() => { setModShowData(false); setModSelectedRow(null); }}
-              disabled={!modShowData}
-              className="flex-1 h-9 rounded-[6px] text-[13px] font-medium border-2 border-[#4D97FA] bg-white hover:bg-[#EBF4FF] transition-colors duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-              style={{ color: "#1D558C" }}
-            >Limpiar</button>
-            <button
-              type="button"
-              onClick={() => { setModShowData(true); setModSelectedRow(null); }}
-              disabled={modShowData}
-              className="flex-1 h-9 rounded-[6px] text-[13px] font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-              style={{ backgroundColor: "#4D97FA" }}
-            >Buscar</button>
           </div>
         </div>
 
       </div>
 
-      {/* ── RIGHT COLUMN — Acciones + tabla ─────────────────────── */}
-      <div className="flex-1 flex flex-col rounded-[5px] border border-[#D8E4F0] bg-white overflow-hidden" style={CARD_SHADOW}>
-
-        <CardHeader title="Interrupciones" tag="CDS2" />
-
-        {/* Table toolbar — buscador / exportar */}
-        {modShowData && (
-          <TableToolbar
-            search={modSearch}
-            onSearchChange={setModSearch}
-            onExport={() =>
-              exportRowsToCsv("interrupciones", modColumns, modVisibleIndices.map((i) => modGetCells(SAMPLE_ROWS[i])))
-            }
-          />
-        )}
-
-        {/* Contextual action bar — visible only when a row is selected */}
-        {hasSelection && (
-          <SelectionActionBar
-            recordLabel={selectedRecord!.referencia}
-            actions={ACTION_LABELS.map((label) => {
-              if (label === "Desarmes") return { label, onClick: () => setDesarmeOpen(true) };
-              if (label === "Nivel/Tipo") return { label, onClick: () => setNivelTipoOpen(true) };
-              if (label === "Replicar") return { label, onClick: () => setReplicarOpen(true) };
-              if (label === "Cambia fases") return { label, onClick: () => setCambiaFasesOpen(true) };
-              if (label === "Alta clientes") return { label, onClick: () => setAltaClientesOpen(true) };
-              if (label === "Lotes") return { label, onClick: () => setLotesOpen(true) };
-              if (label === "Intercambio") return { label, onClick: () => setIntercambioOpen(true) };
-              return { label };
-            })}
-          />
-        )}
-        {/* Tabla Referencia / Fecha */}
-        <div className="grid grid-cols-2 px-5 border-b border-[#E8EEF7] bg-[#F8FAFD] shrink-0">
-          <SortableHeaderCell
-            label="Referencia"
-            active={modSortIdx === 0}
-            dir={modSortDir}
-            onClick={() => modToggleSort(0)}
-            className="py-3 text-[10.5px]"
-          />
-          <SortableHeaderCell
-            label="Fecha"
-            active={modSortIdx === 1}
-            dir={modSortDir}
-            onClick={() => modToggleSort(1)}
-            className="py-3 text-[10.5px]"
-          />
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {!modShowData ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-8">
-              <span className="text-[#C9D4E6]"><IcoInbox /></span>
-              <p className="text-[13px] font-medium text-[#7A8FAD]">Sin resultados</p>
-              <p className="text-[12px] text-[#9AAABF]">Completá los filtros y presioná Buscar</p>
-            </div>
-          ) : modVisibleIndices.map((i) => {
-            const row = SAMPLE_ROWS[i];
-            const selected = modSelectedRow === i;
-            return (
-              <div
-                key={i}
-                className="grid grid-cols-2 px-5 border-b border-[#F0F4FB] transition-colors cursor-pointer hover:bg-[#F4F7FC]"
-                style={{ backgroundColor: selected ? "#EBF4FF" : undefined, borderLeft: selected ? "3px solid #4D97FA" : "3px solid transparent" }}
-                onClick={() => setModSelectedRow(selected ? null : i)}
-              >
-                <div className="py-3.5 text-[12.5px] tabular-nums pr-3"
-                  style={{ fontFamily: "'JetBrains Mono', monospace", color: selected ? "#1D558C" : "#3D4F6B", fontWeight: selected ? 600 : 400 }}>
-                  {row.referencia}
-                </div>
-                <div className={`py-3.5 text-[12.5px] ${selected ? "text-[#1D558C] font-medium" : "text-[#6B7E9A]"}`}>{row.fecha}</div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="px-5 py-2.5 border-t border-[#DDE5F0] bg-[#F8FAFD] shrink-0 flex items-center justify-between">
-          <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white text-[11.5px] text-[#7A8FAD] disabled:opacity-40" disabled>Anterior</button>
-          <span className="text-[11.5px] text-[#7A8FAD]">Página <span className="font-medium text-[#1A2B4A]">1</span> de <span className="font-medium text-[#1A2B4A]">2.213</span></span>
-          <button className="px-2.5 py-1 rounded border border-[#D0DAE8] bg-white text-[11.5px] text-[#7A8FAD] hover:bg-[#F4F7FC] transition-colors">Siguiente</button>
-        </div>
       </div>
 
       {/* ── MODALES DE ACCIÓN ───────────────────────────────────── */}
@@ -2424,6 +2882,13 @@ function ModificarContent() {
         open={intercambioOpen}
         onClose={() => setIntercambioOpen(false)}
         referencia={selectedRecord?.referencia ?? ""}
+      />
+      <DatosInterrupcionModal
+        open={datosInterrupcionOpen}
+        onClose={() => setDatosInterrupcionOpen(false)}
+        referencia={timelineReferencia}
+        fechaInicio={timelineFechaInicio}
+        fechaUltRepo={timelineFechaUltRepo}
       />
 
       {/* ── DRAWER OVERLAY ──────────────────────────────────────── */}
@@ -2460,9 +2925,9 @@ function ModificarContent() {
           </button>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs — Tabla 4 vive ahora siempre visible en la Card B, ya no acá */}
         <div className="flex border-b border-[#E8EEF7] px-6 shrink-0">
-          {DRAWER_TABS.map((tab) => (
+          {DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => (
             <button
               key={tab.key}
               onClick={() => setDrawerTab(tab.key)}
@@ -3170,14 +3635,7 @@ export default function App() {
               </>
             )}
             {screen === "modificar" && (
-              <>
-                <button onClick={() => setScreen("cds2")} className="text-[#7A95B8] hover:text-[#1D558C] transition-colors mr-1" title="Volver">
-                  <ChevronLeft />
-                </button>
-                <h1 className="text-[15px] font-semibold text-[#1A202C] leading-none">Modificar interrupción</h1>
-                <span className="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-[3px] border border-[#BDD4EF] text-[#1565C0]"
-                  style={{ backgroundColor: "#EBF2FC", fontFamily: "'JetBrains Mono', monospace" }}>CDS2</span>
-              </>
+              <h1 className="text-[15px] font-semibold text-[#1A202C] leading-none">Modificar interrupción</h1>
             )}
             {screen === "welcome" && (
               <h1 className="text-[15px] font-semibold text-[#1A202C] leading-none">Inicio</h1>
