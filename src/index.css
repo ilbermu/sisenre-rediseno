@@ -71,6 +71,30 @@
   --shadow-high: 0 12px 32px rgba(21,40,80,.18);
 }
 
+/*
+ * Sistema de tamaños de botón — 2 tamaños únicos para toda la app, anclados
+ * a los tokens de arriba (nada de alto/padding/tipografía/radius suelto por
+ * instancia — ver BTN_SM/BTN_MD en App.tsx, junto a actionBtnCls y
+ * rowActionBtnCls).
+ *
+ * sm (compacto) — acciones inline de fila (Modificar/Borrar en las tablas
+ * ABM) y toggles/chips (BT/MT/AT, Interno/Externo, etc.):
+ *   height ~28px (h-7) · padding compacto (px-2.5)
+ *   · tipografía --text-caption (11px)
+ *   · --radius-sm (4px)
+ *
+ * md (default) — acciones estándar de panel (Buscar, Limpiar, Cancelar,
+ * Guardar, Insertar, Exportar, Auditoría) y botones dropdown-trigger
+ * (selector de período, "Cambiar de tabla" — ícono a la izquierda si
+ * aplica, chevron a la derecha, mismo espaciado consistente entre texto e
+ * íconos):
+ *   height ~36px (h-9) · padding normal (px-4)
+ *   · tipografía --text-body (13px)
+ *   · --radius-md (6px)
+ *
+ * No aplica a los <select> nativos (tema aparte, todavía sin resolver).
+ */
+
 html, body, #root {
   height: 100%;
   margin: 0;
