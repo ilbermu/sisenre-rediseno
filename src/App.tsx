@@ -146,9 +146,25 @@ const IcoPlus = () => (
     <path d="M6.5 1.5v9.5M1.75 6.25h9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
   </svg>
 );
+const IcoChevronsUp = () => (
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+    <path d="M2.5 7l4-4 4 4M2.5 11l4-4 4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+const IcoChevronsDown = () => (
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+    <path d="M2.5 2l4 4 4-4M2.5 6l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 const IcoExternalLink = () => (
   <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
     <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8M8 1h4v4M7 6l4.5-4.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const IcoHome = () => (
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+    <path d="M2 7.5L7.5 2l5.5 5.5M3.5 6v6.5a1 1 0 0 0 1 1h2v-4h2v4h2a1 1 0 0 0 1-1V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -171,12 +187,12 @@ const ABM_ITEMS: { code: string; label: string; screen?: Screen; key?: string }[
   { code: "CDS9",  label: "Tabla 9 NM", screen: "cds9nm", key: "CDS9b" },
 ];
 
-const OTROS_ITEMS = [
-  { label: "Generación de txt",    icon: <IcoFile /> },
-  { label: "Planilla consolidada", icon: <IcoClipboard /> },
-  { label: "Gestor de notas",      icon: <IcoEdit /> },
-  { label: "Inserta clientes",     icon: <IcoUserPlus /> },
-  { label: "Auditoría",            icon: <IcoShield /> },
+const OTROS_ITEMS: { label: string; icon: React.ReactNode; screen: Screen }[] = [
+  { label: "Generación de txt",    icon: <IcoFile />,      screen: "generaciontxt" },
+  { label: "Planilla consolidada", icon: <IcoClipboard />, screen: "planillaconsolidada" },
+  { label: "Gestor de notas",      icon: <IcoEdit />,      screen: "gestornotas" },
+  { label: "Inserta clientes",     icon: <IcoUserPlus />,  screen: "insertaclientes" },
+  { label: "Auditoría",            icon: <IcoShield />,    screen: "auditoria" },
 ];
 
 const PERIODS = ["Agosto 2026","Julio 2026","Junio 2026","Mayo 2026","Abril 2026"];
@@ -225,13 +241,9 @@ function filasSinteticas<T>(n: number, gen: () => T): T[] {
 }
 
 const N_FILAS_SINTETICAS = 40;
-// Partidos reales de la zona de concesión de Edenor.
-const ZONAS_SINTETICAS = [
-  "CABA", "Vicente López", "San Isidro", "Gral. San Martín", "Tres de Febrero",
-  "Hurlingham", "Morón", "Ituzaingó", "La Matanza", "Merlo", "Marcos Paz",
-  "Gral. Las Heras", "Gral. Rodríguez", "Moreno", "San Miguel", "Malvinas Argentinas",
-  "José. C Paz", "Pilar", "Escobar", "Tigre", "San Fernando",
-];
+// Zonas reales de Instalaciones MT (CDS7) — 4 valores, no confundir con los
+// 25 partidos que usa CDS8 (Reclamos de clientes).
+const ZONAS_CDS7 = ["NORTE", "MORON", "OLIVOS", "PILAR"];
 
 // Código de interrupción con el patrón real (ej. BFZ202607056849,
 // AFZ202401000404) — `anio` elige el estilo "2026" (CDS2/3/4/9-NM, como en
@@ -263,13 +275,28 @@ function equipoCodeSintetico(rng: () => number): string {
   return `@${enteroEntre(rng, 10000000, 99999999)}`;
 }
 
-const DESCRIPCIONES_EQUIPO_SINTETICAS = [
-  "PROTECCION DE SUMINISTRO",
-  "PROTECCION DE TOMA/ACOMETIDA",
-  "SECCIONADOR AEREO",
-  "LLAVE FUSIBLE",
-  "DESCONECTADOR BAJO CARGA",
-  "INTERRUPTOR AUTOMATICO",
+// Valores reales de "Descripción equipo operado" / "Descripción equipo
+// maniobrado" (CDS2/CDS4), tal cual la base — no normalizados salvo
+// mayúsculas/espacios (dos entradas que difieren en una letra real,
+// SECCIONAALIZADOR vs SECCIONALIZADOR, se mantienen separadas a propósito).
+const DESCRIPCIONES_EQUIPO_OPERADO: string[] = [
+  "CABLE - SIN DATOS", "CAJA CARENCIADA MONOFÁSICA", "CAJA CARENCIADA TRIFÁSICA",
+  "CAJA DE FUSIBLES APR", "CONCÉNTRICO", "FUSIBLE LIRA C/SECCION",
+  "INTERRUPTOR DE GENERADOR", "LAC", "LAPE", "LLAVE SECC. C/F.C/FRONT.ANILLO",
+  "LLAVE SECCIONADORA C/ FUSIBLES", "LÍNEA - SIN DATOS", "MD CLIENTE MT",
+  "MD SECC BAJO CARGA C/FUSIBLE", "MD SECCIONADOR BAJO CARGA",
+  "MONOPOSTE CARENCIADO", "NODO DE CAJA DE DISTRIBUCION", "PILAR",
+  "PILAR DOBLE", "PROTECCION DE SUMINISTRO", "PROTECCION DE TOMA/ACOMETIDA",
+  "PUENTE", "SALIDA BT DE CT", "SECC. AUTODESC. B/C UNIPOLAR",
+  "SECC. PUENTE B/CARGA UNIPOLAR", "SECCIONALIZADOR UNIPOLAR", "SECO",
+  "SUMINISTRO", "TIPO_ELE", "TOMA I DOBLE", "TOMA I HASTA 60 A.",
+  "TOMA II HASTA 200 A.", "TOMA III", "UNI AT INTERRUPTOR",
+  "UNI AT SECCIONADOR", "UNI MT CARRO", "UNI MT INT. C/PROT TEMPORAL",
+  "UNI MT INT. C/PROTECCIÓN", "UNI MT INTERRUPTOR", "UNI MT RECONECTADOR",
+  "UNI MT RECONECTADOR UNIPOLAR", "UNI MT SECC. AUTODESCONECTADOR",
+  "UNI MT SECC. BAJO CARGA", "UNI MT SECC. BAJO CARGA C/FUS.",
+  "UNI MT SECCIONAALIZADOR", "UNI MT SECCIONADOR",
+  "UNI MT SECCIONADOR BAJO CARGA", "UNI MT SECCIONALIZADOR",
 ];
 const NOMBRES_SINTETICOS = [
   "MENDEZ MONICA ISABEL",
@@ -293,8 +320,43 @@ const PARTIDOS_LOCALIDADES_SINTETICOS = [
   { partido: "SAN ISIDRO", localidad: "BOULOGNE" },
   { partido: "TIGRE", localidad: "DON TORCUATO" },
   { partido: "VICENTE LOPEZ", localidad: "OLIVOS" },
-  { partido: "SAN MARTIN", localidad: "VILLA BALLESTER" },
+  // "GRAL SAN MARTIN" (no "SAN MARTIN" a secas) — así coincide con la key
+  // real de PARTIDO_LOCALIDAD que alimenta el select de Partido en CDS8.
+  { partido: "GRAL SAN MARTIN", localidad: "VILLA BALLESTER" },
 ];
+// Mapeo Partido -> Localidad (datos reales NEXUS_GIS). Cada Localidad
+// pertenece a un unico Partido segun este mapeo; alimenta el combobox en
+// cascada Partido -> Localidad de CDS8. No mergear ni excluir partidos:
+// son categorias reales de Edenor (incluye NORTE y las 3 variantes de
+// Capital Federal como entradas separadas, tal cual la base).
+const PARTIDO_LOCALIDAD: Record<string, string[]> = {
+  "3 DE FEBRERO": ["11 DE SEPTIEMBRE", "C J LOMAS DEL PALOMAR", "CASEROS", "CHURRUCA", "CIUDADELA", "COLEGIO MILITAR", "EJCTO MILITAR (TF)", "EL LIBERTADOR", "JOSE INGENIEROS", "LOMA HERMOSA", "MARTIN CORONADO", "PABLO PODESTA", "REMEDIOS DE ESCALADA", "SAENZ PEÑA", "SANTOS LUGARES", "VILLA BOSCH", "VILLA RAFFO"],
+  "CAPITAL FEDERAL": ["11 DE SEPTIEMBRE", "AGRONOMIA", "AYACUCHO", "BELGRANO", "BERNARDO MONTEAGUDO", "C J LOMAS DEL PALOMAR", "C JARDIN EL LIBERTADOR", "C LIBERTADOR SAN MARTÍN", "CASEROS", "CHACABUCO", "CHACARITA", "CIUDADELA", "CNEL JOSE ZAPIOLA", "COGHLAN", "COLEGIALES", "COLEGIO MILITAR", "EJCTO MILITAR (TF)", "EL LIBERTADOR", "GDEROS DE SAN MARTÍN", "GRAL EUGENIO NECOCHEA", "GRAL JOSE DE SUCRE", "GRAL JOSE TOMAS GUIDO", "GREGORIA MATORRAS", "JOSE INGENIEROS", "JOSE LEON SUAREZ", "JUAN GREGORIO LAS HERAS", "JUAN M DE PUEYRREDON", "LA PATERNAL", "LOMA HERMOSA", "MARTIN CORONADO", "NUÑEZ", "PABLO PODESTA", "PALERMO", "PARQUE SAN LORENZO", "PTE F ALCORTA", "RECOLETA", "REMEDIOS DE ESCALADA", "SAAVEDRA", "SAENZ PEÑA", "SAN ANDRES", "SANTOS LUGARES", "VILLA BALLESTER", "VILLA BOSCH", "VILLA CRESPO", "VILLA DEVOTO", "VILLA LIBERTAD", "VILLA LYNCH", "VILLA MAIPU", "VILLA ORTUZAR", "VILLA PUEYRREDON", "VILLA PUEYRREDÓN", "VILLA RAFFO", "VILLA URQUIZA", "YAPEYU"],
+  "CIUDAD AUTONOMA DE BS": ["AGRONOMIA", "BELGRANO", "CHACARITA", "COGHLAN", "COLEGIALES", "LA PATERNAL", "NUÑEZ", "PALERMO", "RECOLETA", "SAAVEDRA", "VILLA CRESPO", "VILLA ORTUZAR", "VILLA PUEYRREDON", "VILLA URQUIZA"],
+  "CIUDAD AUTONOMA DE BS AS": ["AGRONOMIA", "BELGRANO", "CHACARITA", "COGHLAN", "COLEGIALES", "LA PATERNAL", "NUÑEZ", "PALERMO", "RECOLETA", "SAAVEDRA", "VILLA CRESPO", "VILLA DEVOTO", "VILLA ORTUZAR", "VILLA PUEYRREDON", "VILLA URQUIZA"],
+  "ESCOBAR": ["BENAVIDEZ", "DELTA 1RA SECCION (ES)", "ESCOBAR", "GARIN", "INGENIERO MASCHWITZ", "LOMA VERDE", "MAQUINISTA SAVIO", "MATHEU"],
+  "GRAL LAS HERAS": ["GRAL LAS HERAS"],
+  "GRAL RODRIGUEZ": ["GRAL RODRIGUEZ"],
+  "GRAL SAN MARTIN": ["AYACUCHO", "BERNARDO MONTEAGUDO", "BILLINGHURST", "BO PARQUE SAN MARTIN", "C JARDIN EL LIBERTADOR", "C LIBERTADOR SAN MARTIN", "C LIBERTADOR SAN MARTÍN", "CHACABUCO", "CNEL JOSE ZAPIOLA", "GDEROS DE SAN MARTIN", "GDEROS DE SAN MARTÍN", "GODOY CRUZ", "GRAL EUGENIO NECOCHEA", "GRAL JOSE DE SUCRE", "GRAL JOSE TOMAS GUIDO", "GREGORIA MATORRAS", "JOSE LEON SUAREZ", "JUAN GREGORIO LAS HERAS", "JUAN M DE PUEYRREDON", "M REMEDIOS DE ESCALADA", "MARQUES A DE AGUADO", "PARQUE SAN LORENZO", "PTE F ALCORTA", "SAN ANDRES", "SAN MARTIN", "VILLA BALLESTER", "VILLA LIBERTAD", "VILLA LYNCH", "VILLA MAIPU", "YAPEYU"],
+  "HURLINGHAM": ["HURLINGHAM", "VILLA TESEI", "WILLIAM MORRIS"],
+  "ITUZAINGO": ["ITUZAINGO", "VILLA UDAONDO"],
+  "JOSE C PAZ": ["JOSE C PAZ"],
+  "LA MATANZA": ["20 DE JUNIO", "ALDO BONZI", "CIUDAD EVITA", "GONZALEZ CATAN", "GREGORIO DE LAFERRERE", "ISIDRO CASANOVA", "LA TABLADA", "LOMAS DEL MIRADOR", "RAFAEL CASTILLO", "RAMOS MEJIA", "SAN JUSTO", "TAPIALES", "VILLA LUZURIAGA", "VILLA MADERO", "VIRREY DEL PINO"],
+  "MALVINAS ARGENTINAS": ["ADOLFO SOURDEAUX", "EL TRIANGULO", "GRAND BOURG", "LOS POLVORINES", "MALVINAS ARGENTINAS", "PABLO NOGUES", "TIERRAS ALTAS", "TORTUGUITAS", "VILLA DE MAYO"],
+  "MARCOS PAZ": ["MARCOS PAZ"],
+  "MERLO": ["LIBERTAD", "MARIANO ACOSTA", "MERLO", "PONTEVEDRA", "SAN ANTONIO DE PADUA"],
+  "MORENO": ["CUARTEL V", "FRANCISCO ALVAREZ", "LA REJA", "MORENO", "PASO DEL REY", "TRUJUI"],
+  "MORON": ["20 DE JUNIO", "ALDO BONZI", "CASTELAR", "CIUDAD EVITA", "EL PALOMAR", "GONZALEZ CATAN", "GRAL LAS HERAS", "GREGORIO DE LAFERRERE", "HAEDO", "HURLINGHAM", "ISIDRO CASANOVA", "ITUZAINGO", "LA TABLADA", "LIBERTAD", "LOMAS DEL MIRADOR", "MARCOS PAZ", "MARIANO ACOSTA", "MERLO", "MORON", "PONTEVEDRA", "RAFAEL CASTILLO", "RAMOS MEJIA", "SAN ANTONIO DE PADUA", "SAN JUSTO", "TAPIALES", "VILLA LUZURIAGA", "VILLA MADERO", "VILLA SARMIENTO", "VILLA TESEI", "VILLA UDAONDO", "VIRREY DEL PINO", "WILLIAM MORRIS"],
+  "NORTE": ["11 DE SEPTIEMBRE", "AGRONOMIA", "AYACUCHO", "BELGRANO", "BERNARDO MONTEAGUDO", "BILLINGHURST", "BO PARQUE SAN MARTIN", "C J LOMAS DEL PALOMAR", "C JARDIN EL LIBERTADOR", "C LIBERTADOR SAN MARTÍN", "CASEROS", "CHACABUCO", "CHACARITA", "CHURRUCA", "CIUDADELA", "CNEL JOSE ZAPIOLA", "COGHLAN", "COLEGIALES", "COLEGIO MILITAR", "EJCTO MILITAR (TF)", "EL LIBERTADOR", "GDEROS DE SAN MARTÍN", "GODOY CRUZ", "GRAL EUGENIO NECOCHEA", "GRAL JOSE DE SUCRE", "GRAL JOSE TOMAS GUIDO", "GREGORIA MATORRAS", "JOSE INGENIEROS", "JOSE LEON SUAREZ", "JUAN GREGORIO LAS HERAS", "JUAN M DE PUEYRREDON", "LA PATERNAL", "LOMA HERMOSA", "M REMEDIOS DE ESCALADA", "MARQUES A DE AGUADO", "MARTIN CORONADO", "NUÑEZ", "PABLO PODESTA", "PALERMO", "PARQUE SAN LORENZO", "PTE F ALCORTA", "RECOLETA", "REMEDIOS DE ESCALADA", "SAAVEDRA", "SAENZ PEÑA", "SAN ANDRES", "SANTOS LUGARES", "VILLA BALLESTER", "VILLA BOSCH", "VILLA CRESPO", "VILLA DEVOTO", "VILLA LIBERTAD", "VILLA LYNCH", "VILLA MAIPU", "VILLA ORTUZAR", "VILLA PUEYRREDÓN", "VILLA RAFFO", "VILLA URQUIZA", "YAPEYU"],
+  "OLIVOS": ["ACASSUSO", "BECCAR", "BENAVIDEZ", "BOULOGNE", "CARAPACHAY", "CIUDAD DE TIGRE", "DELTA 1RA SECCION (ES)", "DELTA 1RA SECCION (TI)", "DELTA 2DA SECCION (SF)", "DELTA 3RA SECCION (SF)", "DIQUE LUJAN", "DON TORCUATO", "EL TALAR", "ESCOBAR", "FLORIDA", "FLORIDA (OESTE)", "GARIN", "GENERAL PACHECO", "INGENIERO MASCHWITZ", "LA LUCILA", "LOMA VERDE", "MAQUINISTA SAVIO", "MARTINEZ", "MATHEU", "MUNRO", "NORDELTA", "OLIVOS", "RICARDO ROJAS", "RINCON DE MILBERG", "SAN FERNANDO", "SAN ISIDRO", "TRONCOS DEL TALAR", "VICENTE LOPEZ", "VICTORIA", "VILLA ADELINA (SI)", "VILLA ADELINA (VL)", "VILLA MARTELLI", "VIRREYES"],
+  "PILAR": ["ADOLFO SOURDEAUX", "BELLA VISTA", "CAMPO DE MAYO", "CUARTEL V", "DEL VISO", "EL TRIANGULO", "FATIMA", "FRANCISCO ALVAREZ", "GRAL RODRIGUEZ", "GRAND BOURG", "JOSE C PAZ", "LA LONJA", "LA REJA", "LOS POLVORINES", "LUIS LAGOMARSINO", "MALVINAS ARGENTINAS", "MANUEL ALBERTI", "MANZANARES", "MORENO", "MUÑIZ", "PABLO NOGUES", "PASO DEL REY", "PILAR", "PTE DERQUI", "SAN MIGUEL", "TIERRAS ALTAS", "TORTUGUITAS", "TRUJUI", "VILLA ASTOLFI", "VILLA DE MAYO", "VILLA ROSA", "ZELAYA"],
+  "SAN FERNANDO": ["CIUDAD DE TIGRE", "DELTA 2DA SECCION (SF)", "DELTA 3RA SECCION (SF)", "SAN FERNANDO", "VICTORIA", "VIRREYES"],
+  "SAN ISIDRO": ["ACASSUSO", "BECCAR", "BOULOGNE", "FATIMA", "MARTINEZ", "SAN ISIDRO", "VILLA ADELINA (SI)", "VILLA TESEI"],
+  "SAN MIGUEL": ["BELLA VISTA", "CAMPO DE MAYO", "MUÑIZ", "SAN MIGUEL"],
+  "TIGRE": ["BENAVIDEZ", "CIUDAD DE TIGRE", "DELTA 1RA SECCION (TI)", "DIQUE LUJAN", "DON TORCUATO", "EL TALAR", "GENERAL PACHECO", "NORDELTA", "RICARDO ROJAS", "RINCON DE MILBERG", "SAN FERNANDO", "TRONCOS DEL TALAR"],
+  "VICENTE LOPEZ": ["CARAPACHAY", "FATIMA", "FLORIDA", "FLORIDA (OESTE)", "LA LUCILA", "MUNRO", "OLIVOS", "VICENTE LOPEZ", "VILLA ADELINA (VL)", "VILLA MARTELLI"],
+};
+const PARTIDOS: string[] = Object.keys(PARTIDO_LOCALIDAD);
 const CODIGOS_FALLA_SINTETICOS = [
   "Otros", "Rotura de conductor", "Falla en transformador",
   "Descarga atmosférica", "Vandalismo", "Sobrecarga",
@@ -320,9 +382,9 @@ const SAMPLE_ROWS = (() => {
     origen: elegir(rng, ["Interno", "Externo"]),
     tipo: elegir(rng, ["Forzado", "Programado"]),
     nivel: elegir(rng, ["BT", "MT", "AT"]),
-    faseElectrica: elegir(rng, ["M", "B", "T"]),
+    faseElectrica: elegir(rng, ["R", "S", "T", "RST"]),
     codigoEquipoOperado: equipoCodeSintetico(rng),
-    descEquipoOperado: elegir(rng, DESCRIPCIONES_EQUIPO_SINTETICAS),
+    descEquipoOperado: elegir(rng, DESCRIPCIONES_EQUIPO_OPERADO),
     divisionRedNormal: elegir(rng, ["Sí", "No"]),
     cadenaElectricaAguasArriba: cadenaCodeSintetica(rng),
     alimentadorMT: String(enteroEntre(rng, 5000, 5999)),
@@ -357,7 +419,7 @@ const CDS4_ROWS = (() => {
     fecha: fechaSintetica(rng, 7, 2026),
     faseElectrica: elegir(rng, ["R", "S", "T", "RS", "RT", "ST", "RST"]),
     codigoEquipoManiobrado: equipoCodeSintetico(rng),
-    descEquipoManiobrado: elegir(rng, DESCRIPCIONES_EQUIPO_SINTETICAS),
+    descEquipoManiobrado: elegir(rng, DESCRIPCIONES_EQUIPO_OPERADO),
     cadenaElectricaAguasArriba: cadenaCodeSintetica(rng),
     alimentadorMT: String(enteroEntre(rng, 5000, 5999)),
     cantidadClientesBt: String(enteroEntre(rng, 1, 40)),
@@ -1838,7 +1900,10 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                   />
                   {op.extra === "codigoFalla" && (
                     <SelectWrap className="w-44">
-                      <select className={MOD_SELECT_CLS + " w-full"}>
+                      {/* Sin más opciones que el placeholder — siempre
+                          muestra "Seleccione código", así que va fijo en
+                          gray-500 (mismo criterio que AbmCampo). */}
+                      <select className={MOD_SELECT_CLS + " w-full !text-gray-500"}>
                         <option value="">Seleccione código</option>
                       </select>
                     </SelectWrap>
@@ -2290,12 +2355,230 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
 
 // ─── Welcome screen content ───────────────────────────────────────────────────
 
-function WelcomeContent() {
-  const quickLinks = [
-    { code: "CDS2", label: "Interrupciones", desc: "Consulta y gestión de interrupciones computadas", icon: <IcoZap /> },
-    { code: "CDS3", label: "Interrupciones no computables", desc: "Registro de interrupciones no imputables", icon: <IcoZapOff /> },
-    { code: "CDS4", label: "Reposiciones", desc: "Seguimiento de reposiciones de servicio", icon: <IcoRefresh /> },
-    { code: "CDS8", label: "Reclamos", desc: "Gestión de reclamos de calidad de servicio", icon: <IcoMsg /> },
+// Selector de día acotado al mes de entrega — mismo mecanismo/estilos que
+// DateTimeField (DayPicker/es/DateTimeChevron/DateTimeCaptionLabel/
+// DAY_PICKER_CLASSNAMES/IcoCalendar), pero sin hora y sin navegación de mes:
+// startMonth === endMonth, así que las flechas del calendario quedan sin
+// efecto y clickear un día aplica y cierra al toque (no hay hora que
+// confirmar aparte, no hace falta botón "Aplicar").
+function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChange: (d: number) => void; anio: number; mes: number }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+  const mesFijo = new Date(anio, mes, 1);
+  return (
+    <div ref={ref} style={{ position: "relative" }} className="shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="h-7 pl-2.5 pr-2 flex items-center gap-1.5 border border-gray-400 rounded-sm bg-white text-body-sm font-semibold text-gray-900 hover:border-primary hover:text-secondary transition-colors"
+      >
+        {value}
+        <span className="text-gray-500"><IcoCalendar /></span>
+      </button>
+      {open && (
+        <div
+          className="absolute z-30 bg-white border border-gray-300 rounded-lg p-3"
+          style={{ bottom: "calc(100% + 6px)", right: 0, width: "max-content", boxShadow: "var(--shadow-high)" }}
+        >
+          <DayPicker
+            mode="single"
+            navLayout="around"
+            locale={es}
+            defaultMonth={mesFijo}
+            startMonth={mesFijo}
+            endMonth={mesFijo}
+            selected={new Date(anio, mes, value)}
+            onSelect={(d) => { if (d) { onChange(d.getDate()); setOpen(false); } }}
+            components={{ Chevron: DateTimeChevron, CaptionLabel: DateTimeCaptionLabel }}
+            classNames={DAY_PICKER_CLASSNAMES}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CronogramaEnre() {
+  // El cronograma marca el MES DE ENTREGA/CORRECCIÓN (cuando IT hace el
+  // trabajo) — que es un mes POSTERIOR al período que se está procesando.
+  // Ej.: IT entrega las tablas de Agosto 2026 recién en septiembre — por
+  // eso la grilla muestra septiembre pero la leyenda de período dice
+  // "Período Agosto 2026". El período se calcula como el mes anterior al
+  // de entrega (con rollover de año si hace falta), no se hardcodea.
+  const ANIO_ENTREGA = 2026;
+  const MES_ENTREGA = 8; // 0=enero..11=diciembre → 8=septiembre
+
+  const MESES_ES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  const fechaEntregaMes = new Date(ANIO_ENTREGA, MES_ENTREGA, 1);
+  const fechaPeriodo = new Date(ANIO_ENTREGA, MES_ENTREGA - 1, 1);
+  const nombreMesEntrega = MESES_ES[fechaEntregaMes.getMonth()];
+  const nombrePeriodo = `${MESES_ES[fechaPeriodo.getMonth()].replace(/^./, (c) => c.toUpperCase())} ${fechaPeriodo.getFullYear()}`;
+  const DIAS_MES = new Date(ANIO_ENTREGA, MES_ENTREGA + 1, 0).getDate();
+
+  // Entrega y entrega tentativa son puntuales y EDITABLES; la ventana de
+  // corrección se autocompleta con todos los días entre las dos.
+  const [diaEntrega, setDiaEntrega] = useState(11);
+  const [diaTentativa, setDiaTentativa] = useState(29);
+
+  const hoyReal = new Date();
+  const HOY = (hoyReal.getFullYear() === ANIO_ENTREGA && hoyReal.getMonth() === MES_ENTREGA) ? hoyReal.getDate() : null;
+
+  const hayCorreccion = diaTentativa - diaEntrega > 1;
+  const correccionDesde = diaEntrega + 1;
+  const correccionHasta = diaTentativa - 1;
+
+  function etapaDelDia(dia: number): "entrega" | "correccion" | "tentativa" | null {
+    if (dia === diaEntrega) return "entrega";
+    if (dia === diaTentativa) return "tentativa";
+    if (hayCorreccion && dia > diaEntrega && dia < diaTentativa) return "correccion";
+    return null;
+  }
+
+  // Swatches de la referencia (solo lectura) — acá sí van sólidos, es una
+  // leyenda de color puntual, no una celda de calendario completa.
+  const COLOR_ETAPA = {
+    entrega: "var(--color-primary)",
+    correccion: "var(--color-warning)",
+    tentativa: "var(--color-error)",
+  } as const;
+
+  const LEYENDA = [
+    { etapa: "entrega" as const, label: "Entrega de tablas" },
+    { etapa: "correccion" as const, label: "Ventana de corrección" },
+    { etapa: "tentativa" as const, label: "Entrega tentativa final" },
+  ];
+
+  const primerDiaSemana = (fechaEntregaMes.getDay() + 6) % 7; // Lun=0..Dom=6
+  const celdas: { dia: number | null; col: number; row: number }[] = [];
+  for (let i = 0; i < primerDiaSemana; i++) celdas.push({ dia: null, col: i, row: 0 });
+  for (let dia = 1; dia <= DIAS_MES; dia++) {
+    const idx = primerDiaSemana + dia - 1;
+    celdas.push({ dia, col: idx % 7, row: Math.floor(idx / 7) });
+  }
+  const totalFilas = Math.max(...celdas.map((c) => c.row)) + 1;
+
+  // Calendario con ancho PROPIO, acotado — no estira a lo ancho de la card
+  // (eso hacía que cada celda quedara un rectángulo achatado en vez de un
+  // día). 34px de celda × 7 columnas + gaps ≈ 256px, proporción real de
+  // calendario.
+  const CAL_CELL = 34;
+  const CAL_WIDTH = CAL_CELL * 7 + 3 * 6;
+
+  const claseCeldaBase = "rounded-[3px] flex items-center justify-center text-micro font-semibold border";
+
+  return (
+    <div className="bg-white rounded-[7px] border border-gray-300 px-5 py-4" style={{ maxWidth: 760 }}>
+      <div className="mb-4">
+        <span className="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-3 rounded-full bg-primary-tint border border-[#B9D2FB] text-secondary text-body-sm font-semibold">
+          <span className="shrink-0 rounded-full" style={{ width: 6, height: 6, backgroundColor: "var(--color-primary)" }} />
+          Período {nombrePeriodo}
+        </span>
+      </div>
+
+      <div className="flex gap-6 items-start">
+        {/* Calendario — ancho fijo, celdas casi cuadradas, colores tenues */}
+        <div className="shrink-0" style={{ width: CAL_WIDTH }}>
+          <div className="grid gap-[3px] mb-1" style={{ gridTemplateColumns: `repeat(7, ${CAL_CELL}px)` }}>
+            {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
+              <span key={i} className="text-micro text-center font-medium text-gray-400">{d}</span>
+            ))}
+          </div>
+          <div className="grid gap-[3px]" style={{ gridTemplateColumns: `repeat(7, ${CAL_CELL}px)`, gridTemplateRows: `repeat(${totalFilas}, 30px)` }}>
+            {celdas.map((c, i) => {
+              if (c.dia === null) return <div key={i} style={{ gridColumn: c.col + 1, gridRow: c.row + 1 }} />;
+              const esFinDeSemana = c.col >= 5;
+              const etapaReal = etapaDelDia(c.dia);
+              const etapa = esFinDeSemana ? null : etapaReal;
+              const esHoy = c.dia === HOY;
+
+              let clase = claseCeldaBase + " border-transparent bg-gray-100 text-gray-500";
+              let estiloExtra: React.CSSProperties = {};
+              if (etapa === "entrega") {
+                clase = claseCeldaBase + " bg-primary-tint border-primary text-secondary";
+              } else if (etapa === "correccion") {
+                clase = claseCeldaBase + " bg-warning-bg border-warning-border text-warning-text font-medium";
+              } else if (etapa === "tentativa") {
+                clase = claseCeldaBase + " border-error-border text-error";
+                estiloExtra.backgroundColor = "var(--color-error-bg)";
+              }
+
+              return (
+                <div
+                  key={i}
+                  title={`${c.dia} de ${nombreMesEntrega}${etapa ? " — " + LEYENDA.find((l) => l.etapa === etapa)?.label : ""}`}
+                  className={clase}
+                  style={{
+                    gridColumn: c.col + 1,
+                    gridRow: c.row + 1,
+                    boxShadow: esHoy ? "0 0 0 2px var(--color-secondary)" : undefined,
+                    ...estiloExtra,
+                  }}
+                >
+                  {c.dia}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Panel derecho — referencia de solo lectura arriba, fechas clave editables abajo, separadas */}
+        <div className="flex-1 min-w-0 flex flex-col">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="shrink-0 rounded-[2px]" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.entrega }} />
+              <span className="text-body-sm text-gray-600 flex-1 min-w-0">Entrega de tablas</span>
+              <span className="text-body-sm font-medium text-gray-900 shrink-0">{diaEntrega} de {nombreMesEntrega}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="shrink-0 rounded-[2px]" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.correccion }} />
+              <span className="text-body-sm text-gray-600 flex-1 min-w-0">Ventana de corrección</span>
+              <span className="text-body-sm font-medium text-gray-900 shrink-0">
+                {hayCorreccion ? `${correccionDesde} – ${correccionHasta} de ${nombreMesEntrega}` : "—"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="shrink-0 rounded-[2px]" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.tentativa }} />
+              <span className="text-body-sm text-gray-600 flex-1 min-w-0">Entrega tentativa final</span>
+              <span className="text-body-sm font-medium text-gray-900 shrink-0">{diaTentativa} de {nombreMesEntrega}</span>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 my-3" />
+
+          <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">Fechas clave</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>Entrega de tablas</FieldLabel>
+              <div className="flex items-center gap-1.5">
+                <DiaDelMesField value={diaEntrega} onChange={setDiaEntrega} anio={ANIO_ENTREGA} mes={MES_ENTREGA} />
+                <span className="text-body-sm text-gray-600 truncate">de {nombreMesEntrega}</span>
+              </div>
+            </div>
+            <div>
+              <FieldLabel>Entrega tentativa</FieldLabel>
+              <div className="flex items-center gap-1.5">
+                <DiaDelMesField value={diaTentativa} onChange={setDiaTentativa} anio={ANIO_ENTREGA} mes={MES_ENTREGA} />
+                <span className="text-body-sm text-gray-600 truncate">de {nombreMesEntrega}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }) {
+  const quickLinks: { code: string; tableKey: AbmTableKey; label: string; desc: string; icon: React.ReactNode }[] = [
+    { code: "CDS2", tableKey: "cds2", label: "Interrupciones", desc: "Consulta y gestión de interrupciones computadas", icon: <IcoZap /> },
+    { code: "CDS3", tableKey: "cds3", label: "Interrupciones no computables", desc: "Registro de interrupciones no imputables", icon: <IcoZapOff /> },
+    { code: "CDS4", tableKey: "cds4", label: "Reposiciones", desc: "Seguimiento de reposiciones de servicio", icon: <IcoRefresh /> },
+    { code: "CDS8", tableKey: "cds8", label: "Reclamos", desc: "Gestión de reclamos de calidad de servicio", icon: <IcoMsg /> },
   ];
 
   return (
@@ -2309,10 +2592,11 @@ function WelcomeContent() {
 
       {/* Quick access */}
       <p className="text-caption font-semibold uppercase tracking-[0.09em] text-gray-500 mb-3">Accesos frecuentes</p>
-      <div className="grid grid-cols-2 gap-4" style={{ maxWidth: 760 }}>
+      <div className="grid grid-cols-2 gap-4 mb-8" style={{ maxWidth: 760 }}>
         {quickLinks.map((item) => (
           <div
             key={item.code}
+            onClick={() => onIrATabla(item.tableKey)}
             className="group bg-white rounded-[7px] border border-gray-300 px-5 py-4 cursor-pointer transition-all duration-150 hover:border-primary hover:shadow-[0_4px_16px_rgba(77,151,250,0.1)]"
           >
             <div className="flex items-start gap-3">
@@ -2333,6 +2617,10 @@ function WelcomeContent() {
           </div>
         ))}
       </div>
+
+      {/* Cronograma ENRE */}
+      <p className="text-caption font-semibold uppercase tracking-[0.09em] text-gray-500 mb-3">Cronograma ENRE</p>
+      <CronogramaEnre />
     </div>
   );
 }
@@ -2466,6 +2754,143 @@ function DatosInterrupcionModal({
               ))}
             </div>
           ))}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ─── Modal: Confirmar borrado ───────────────────────────────────────────────
+// Confirmación antes de eliminar un registro de una tabla ABM — mismo Modal
+// compartido, tamaño "sm". Botón primario en color de error (no el azul de
+// acciones normales) con el verbo de la acción ("Eliminar"), nunca "Sí/No" —
+// así el compromiso queda claro sin releer la pregunta.
+function ConfirmarBorrarModal({
+  open,
+  registro,
+  tabla,
+  onCancelar,
+  onConfirmar,
+}: {
+  open: boolean;
+  registro: string;
+  // Nomenclatura de la tabla ABM activa tal como la conoce el usuario
+  // ("Tabla 2".."Tabla 9 NM", ver ABM_ITEMS) — no el nombre descriptivo de
+  // config.titulo ("Interrupciones", etc.), que es una etiqueta interna.
+  tabla: string;
+  onCancelar: () => void;
+  onConfirmar: () => void;
+}) {
+  return (
+    <Modal
+      title="¿Eliminar el registro?"
+      open={open}
+      onClose={onCancelar}
+      size="sm"
+      footer={
+        <>
+          <button type="button" onClick={onCancelar} className={modalNeutralBtnCls}>Cancelar</button>
+          <button type="button" onClick={onConfirmar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-error)" }}>Eliminar</button>
+        </>
+      }
+    >
+      <p className="text-body text-gray-700">
+        Se eliminará el registro{" "}
+        <span className="font-medium text-gray-900 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          {registro}
+        </span>
+        {" "}de <span className="font-medium text-gray-900">{tabla}</span>. Esta acción no se puede deshacer.
+      </p>
+    </Modal>
+  );
+}
+
+// ─── Modal: Confirmar modificación ─────────────────────────────────────────
+const NOTA_PRESETS = ["Procesar Lotes", "Test 2", "Test 3", "Alta manual / Modifico", "2da Alta Manual"];
+const NOTA_OPCIONES = [...NOTA_PRESETS, "Otra (especificar)"];
+
+function ConfirmarModificarModal({
+  open,
+  cambios,
+  onCancelar,
+  onConfirmar,
+}: {
+  open: boolean;
+  cambios: { label: string; anterior: string; nuevo: string }[];
+  onCancelar: () => void;
+  onConfirmar: (nota: string) => void;
+}) {
+  const [nota, setNota] = useState("");
+  const [notaManual, setNotaManual] = useState("");
+  const esManual = nota === "__manual__";
+  const notaFinal = (esManual ? notaManual : nota).trim();
+  const seleccionBoton = esManual ? "Otra (especificar)" : nota;
+
+  // Reset cada vez que se abre — para que la próxima vez no arranque con la
+  // nota de la edición anterior ya seleccionada.
+  useEffect(() => {
+    if (open) { setNota(""); setNotaManual(""); }
+  }, [open]);
+
+  return (
+    <Modal
+      title="Justificá el cambio antes de guardar"
+      open={open}
+      onClose={onCancelar}
+      size="lg"
+      footer={
+        <>
+          <button type="button" onClick={onCancelar} className={modalNeutralBtnCls}>Cancelar</button>
+          <button
+            type="button"
+            onClick={() => onConfirmar(notaFinal)}
+            disabled={!notaFinal}
+            className={modalPrimaryBtnCls}
+            style={{ backgroundColor: "var(--color-primary)" }}
+          >
+            Guardar
+          </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-5">
+        <div>
+          <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-3">Resumen de cambios</p>
+          {cambios.length === 0 ? (
+            <p className="text-body-sm text-gray-500">No se detectaron cambios respecto al registro original.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {cambios.map((c) => (
+                <div key={c.label} className="flex items-center gap-3 px-3 py-2 rounded-sm bg-gray-50 border border-gray-200">
+                  <span className="w-[38%] shrink-0 text-body-sm font-medium text-gray-700">{c.label}</span>
+                  <span className="flex-1 min-w-0 text-body-sm text-gray-500 line-through truncate">{c.anterior || "(vacío)"}</span>
+                  <span className="shrink-0 text-gray-400">→</span>
+                  <span className="flex-1 min-w-0 text-body-sm font-semibold text-gray-900 truncate">{c.nuevo || "(vacío)"}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-sm border border-primary bg-primary-tint p-4">
+          <p className="text-caption font-semibold uppercase tracking-[0.07em] text-secondary mb-1">Motivo</p>
+          <p className="text-body-sm text-gray-600 mb-3">
+            Seleccioná una nota o ingresá una manual para justificar este cambio.
+          </p>
+          <ButtonSelectGroup
+            options={NOTA_OPCIONES}
+            selected={seleccionBoton ? [seleccionBoton] : []}
+            onToggle={(opt) => setNota(opt === "Otra (especificar)" ? "__manual__" : opt)}
+          />
+          {esManual && (
+            <input
+              autoFocus
+              value={notaManual}
+              onChange={(e) => setNotaManual(e.target.value)}
+              placeholder="Escribí el motivo de la modificación"
+              className="mt-2 w-full h-9 px-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10"
+            />
+          )}
         </div>
       </div>
     </Modal>
@@ -3753,16 +4178,31 @@ type AbmDeepLink = {
 };
 
 type CampoOpcion = string | { value: string; label: string };
-type CampoTipo = "texto" | "select" | "fecha" | "readonly" | "toggle";
+type CampoTipo = "texto" | "select" | "fecha" | "readonly" | "toggle" | "combobox";
 
 type CampoBusqueda = {
   nombre: string;
   label: string;
   tipo: CampoTipo;
-  opciones?: CampoOpcion[];
+  // Función en vez de array fijo: opciones en cascada que dependen de otro
+  // campo del mismo formulario (ver AbmCampo, que la resuelve pasándole
+  // `valoresFormulario`) — sin acoplar el nombre del campo del que depende
+  // ni la tabla a este tipo.
+  opciones?: CampoOpcion[] | ((valores: Record<string, string>) => CampoOpcion[]);
   placeholder?: string;
   // Ancho solo se aplica cuando el campo va solo en su fila (fila de 1).
   ancho?: string;
+  // Nombres de otros campos que se vacían cuando este campo cambia de
+  // valor — típicamente el campo dependiente de una cascada (ver
+  // `opciones` función), para que no quede un valor huérfano que ya no es
+  // una opción válida del campo dependiente.
+  limpiaAlCambiar?: string[];
+  // Solo aplica a tipo "toggle", en una fila donde es el único campo (sin
+  // nada más para acompañarlo, ver Causa en CDS3): en vez del criterio
+  // default (shrink-to-fit + espacio en blanco aceptado a la derecha), los
+  // botones se reparten el 100% del ancho de la fila entre los dos, como
+  // si fueran un input.
+  expandirBotones?: boolean;
 };
 
 type SeccionBusqueda = {
@@ -3821,20 +4261,17 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
             { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BFZ202607056849" },
             { nombre: "fecha", label: "Fecha", tipo: "fecha" },
           ],
-          [{ nombre: "nivelTension", label: "Nivel de tensión", tipo: "toggle", opciones: ["BT", "MT", "AT"] }],
         ],
       },
       {
         titulo: "Clasificación",
         filas: [
           [
+            { nombre: "nivelTension", label: "Nivel de tensión", tipo: "toggle", opciones: ["BT", "MT", "AT"] },
             { nombre: "origen", label: "Origen", tipo: "toggle", opciones: [{ value: "I", label: "Interno" }, { value: "E", label: "Externo" }] },
             { nombre: "tipo", label: "Tipo", tipo: "toggle", opciones: [{ value: "F", label: "Forzado" }, { value: "P", label: "Programado" }] },
+            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "select", opciones: ["R", "S", "T", "RST"] },
           ],
-          [{
-            nombre: "faseElectrica", label: "Fase eléctrica", tipo: "toggle",
-            opciones: [{ value: "M", label: "M — Monofásica" }, { value: "B", label: "B — Bifásica" }, { value: "T", label: "T — Trifásica" }],
-          }],
         ],
       },
       {
@@ -3842,7 +4279,7 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         filas: [
           [
             { nombre: "codigoEquipoOperado", label: "Código de equipo operado", tipo: "texto" },
-            { nombre: "descEquipoOperado", label: "Descripción equipo operado", tipo: "texto" },
+            { nombre: "descEquipoOperado", label: "Descripción equipo operado", tipo: "combobox", opciones: DESCRIPCIONES_EQUIPO_OPERADO },
           ],
           [
             { nombre: "divisionRedNormal", label: "División red normal?", tipo: "toggle", opciones: ["Sí", "No"] },
@@ -3912,7 +4349,7 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
       {
         titulo: "Clasificación",
-        filas: [[{ nombre: "causa", label: "Causa", tipo: "toggle", opciones: CAUSAS_NC }]],
+        filas: [[{ nombre: "causa", label: "Causa", tipo: "toggle", opciones: CAUSAS_NC, expandirBotones: true }]],
       },
     ],
     columnasResultado: [
@@ -4137,7 +4574,7 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
             { nombre: "alimentadorMT", label: "Alimentador MT", tipo: "texto", placeholder: "NCBT" },
             { nombre: "subestacion", label: "Subestación", tipo: "texto", placeholder: "SE NORTE" },
           ],
-          [{ nombre: "zona", label: "Zona", tipo: "texto", placeholder: "San Fernando" }],
+          [{ nombre: "zona", label: "Zona", tipo: "toggle", opciones: ZONAS_CDS7, expandirBotones: true }],
         ],
       },
       {
@@ -4184,7 +4621,7 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       const rng = crearRng(20250107);
       return filasSinteticas(N_FILAS_SINTETICAS, () => ({
         alim: String(enteroEntre(rng, 5000, 5999)),
-        zona: elegir(rng, ZONAS_SINTETICAS),
+        zona: elegir(rng, ZONAS_CDS7),
         ssee: String(enteroEntre(rng, 100, 299)),
         cantClientes: String(enteroEntre(rng, 200, 3000)),
         cantTrafos: String(enteroEntre(rng, 5, 120)),
@@ -4235,8 +4672,8 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
             { nombre: "depto", label: "Depto.", tipo: "texto", placeholder: "A" },
           ],
           [
-            { nombre: "partido", label: "Partido", tipo: "texto", placeholder: "LA MATANZA" },
-            { nombre: "localidad", label: "Localidad", tipo: "texto", placeholder: "LOMAS DEL MIRADOR" },
+            { nombre: "partido", label: "Partido", tipo: "select", opciones: PARTIDOS, limpiaAlCambiar: ["localidad"] },
+            { nombre: "localidad", label: "Localidad", tipo: "combobox", opciones: (valores: Record<string, string>) => PARTIDO_LOCALIDAD[valores.partido] ?? [] },
           ],
         ],
       },
@@ -4303,7 +4740,7 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
           ],
           [
             { nombre: "cliente", label: "Cliente", tipo: "readonly", placeholder: "3190897997" },
-            { nombre: "tarifa", label: "Tarifa", tipo: "toggle", opciones: ["1R", "1G", "2", "3"] },
+            { nombre: "tarifa", label: "Tarifa", tipo: "select", opciones: ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"] },
           ],
           [{ nombre: "ct", label: "CT", tipo: "texto", placeholder: "19649#B1#19649-TR1" }],
         ],
@@ -4321,7 +4758,7 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ref: refInterrupcionSintetica(rng, "2024"),
         f: String(enteroEntre(rng, 1, 5)),
         cliente: clienteIdSintetico(rng),
-        tarifa: elegir(rng, ["1R", "1G", "2", "3"]),
+        tarifa: elegir(rng, ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"]),
         ct: cadenaCodeSintetica(rng),
       }));
       // Fila fija — misma interrupción que usa DRAWER_TABS.tabla9 en el
@@ -4352,7 +4789,7 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
           ],
           [
             { nombre: "cliente", label: "Cliente", tipo: "texto", placeholder: "0932073585" },
-            { nombre: "tarifa", label: "Tarifa", tipo: "toggle", opciones: ["1R", "1G", "2", "3"] },
+            { nombre: "tarifa", label: "Tarifa", tipo: "select", opciones: ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"] },
           ],
         ],
       },
@@ -4369,7 +4806,7 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ref: refInterrupcionSintetica(rng, "2026"),
         f: String(enteroEntre(rng, 1, 5)),
         cliente: clienteIdSintetico(rng),
-        tarifa: elegir(rng, ["1R", "1G", "2", "3"]),
+        tarifa: elegir(rng, ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"]),
       }));
     })(),
     totalRegistros: 58,
@@ -4509,6 +4946,7 @@ function AbmCampo({
   onChange,
   lockedEnModificar,
   consultando,
+  valoresFormulario,
 }: {
   campo: CampoBusqueda;
   mode: AbmMode;
@@ -4523,6 +4961,11 @@ function AbmCampo({
   // estado "placeholder" (ver CampoEstado). No es lo mismo que "modificar":
   // no cambia título ni botones del panel, es una vista de consulta nomás.
   consultando?: boolean;
+  // Formulario completo (todos los `valores` del panel de Búsqueda/Alta),
+  // no solo el de este campo — lo necesita `campo.opciones` cuando es
+  // función, para resolver opciones en cascada según otro campo (ej.
+  // Localidad según Partido) sin acoplar acá el nombre de ningún campo.
+  valoresFormulario?: Record<string, string>;
 }) {
   const estado = estadoDeCampo(campo, mode, !!consultando, !!lockedEnModificar);
   const isDisabled = estado === "placeholder" || estado === "disabled";
@@ -4532,18 +4975,19 @@ function AbmCampo({
   // un widget propio — en estado "empty"/"enabled" (alta) se ve y escribe
   // como cualquier campo de texto.
   const widget = campo.tipo === "readonly" ? "texto" : campo.tipo;
+  const opts = (typeof campo.opciones === "function" ? campo.opciones(valoresFormulario ?? {}) : campo.opciones) ?? [];
 
   if (widget === "toggle") {
     // Igual que "select": opciones string simple (value===label) u
     // objeto {value,label} — el dato real del campo es siempre `value`,
     // el botón muestra `label`.
-    const opts = (campo.opciones ?? []).map((o) => (typeof o === "string" ? { value: o, label: o } : o));
+    const toggleOpts = opts.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
     const v = value ?? "";
     return (
       <div>
         <FieldLabel>{campo.label}</FieldLabel>
         <div className="flex gap-2 mt-0.5">
-          {opts.map((opt) => {
+          {toggleOpts.map((opt) => {
             const active = v === opt.value;
             return (
               <button
@@ -4551,7 +4995,7 @@ function AbmCampo({
                 type="button"
                 disabled={isDisabled}
                 onClick={() => onChange?.(active ? "" : opt.value)}
-                className={`${BTN_SM} flex items-center justify-center border select-none font-medium transition-all duration-150 ${
+                className={`${BTN_SM.replace("h-7", "h-8")} ${campo.expandirBotones ? "flex-1" : ""} flex items-center justify-center border select-none font-medium transition-all duration-150 ${
                   estado === "disabled" ? "cursor-not-allowed opacity-60" : isDisabled ? "cursor-default" : "cursor-pointer"
                 } ${
                   active
@@ -4584,11 +5028,21 @@ function AbmCampo({
         <SelectWrap>
           <select
             disabled={isDisabled}
-            className={selectCls + estadoCls}
-            {...(controlled ? { value: value ?? "", onChange: (e: React.ChangeEvent<HTMLSelectElement>) => onChange?.(e.target.value) } : {})}
+            // selectCls trae text-gray-900 fijo — sin value real (mostrando
+            // "Seleccione") se pisa a gray-500, igual que el placeholder de
+            // los inputs de texto (necesita `!` por el mismo motivo que
+            // ESTADO_CLASES: gray-900 gana igual sin importar el orden acá).
+            className={selectCls + estadoCls + (!value ? " !text-gray-500" : "")}
+            // A diferencia de texto, un <select> no tiene el problema de
+            // "Buscar/Limpiar pisan lo tipeado a medio camino" que justifica
+            // dejarlo sin controlar en estado "empty" — siempre controlado,
+            // así onChange dispara siempre y `valores` queda al día (lo
+            // necesita, p. ej., la cascada Partido→Localidad de CDS8).
+            value={value ?? ""}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange?.(e.target.value)}
           >
             <option value="">Seleccione</option>
-            {(campo.opciones ?? []).map((o) => {
+            {opts.map((o) => {
               const opt = typeof o === "string" ? { value: o, label: o } : o;
               return <option key={opt.value} value={opt.value}>{opt.label}</option>;
             })}
@@ -4598,16 +5052,136 @@ function AbmCampo({
     );
   }
 
+  if (widget === "combobox") {
+    return (
+      <AbmCombobox
+        campo={campo}
+        opts={opts}
+        value={value ?? ""}
+        onChange={onChange}
+        isDisabled={isDisabled}
+        estadoCls={estadoCls}
+      />
+    );
+  }
+
   // texto (incluye los campos "readonly" de config)
   return (
     <div>
       <FieldLabel>{campo.label}</FieldLabel>
+      {/* key: ver comentario en el <select> de más arriba — mismo fix para
+          el cruce uncontrolled→controlled. */}
       <input
+        key={controlled ? "c" : "u"}
         disabled={isDisabled}
         className={inputCls + estadoCls}
         placeholder={campo.placeholder}
         {...(controlled ? { value: value ?? "", onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value) } : {})}
       />
+    </div>
+  );
+}
+
+// Combobox buscable — mismo trigger visual que "select" (selectCls +
+// flecha vía SelectWrap) y mismo panel/mecanismo de apertura-cierre por
+// click afuera que AbmTableSelector/PeriodSelector, pero el trigger es un
+// <button> (no un <select> nativo) porque el panel aloja un buscador
+// además de la lista de opciones.
+function AbmCombobox({
+  campo,
+  opts,
+  value,
+  onChange,
+  isDisabled,
+  estadoCls,
+}: {
+  campo: CampoBusqueda;
+  opts: CampoOpcion[];
+  value: string;
+  onChange?: (v: string) => void;
+  isDisabled: boolean;
+  estadoCls: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [filtro, setFiltro] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+  // Si el campo pasa a no-editable (ej. se seleccionó una fila en
+  // Resultados mientras el panel estaba abierto) no debe quedar un panel
+  // huérfano abierto sobre un trigger ya bloqueado.
+  useEffect(() => {
+    if (isDisabled) setOpen(false);
+  }, [isDisabled]);
+
+  const normalizados = opts.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
+  const filtrados = filtro ? normalizados.filter((o) => o.label.toLowerCase().includes(filtro.toLowerCase())) : normalizados;
+  const seleccionado = normalizados.find((o) => o.value === value);
+
+  function cerrar() {
+    setOpen(false);
+    setFiltro("");
+  }
+
+  return (
+    <div>
+      <FieldLabel>{campo.label}</FieldLabel>
+      <div ref={ref} style={{ position: "relative" }}>
+        <SelectWrap>
+          <button
+            type="button"
+            disabled={isDisabled}
+            onClick={() => setOpen((v) => !v)}
+            className={selectCls + estadoCls + " text-left" + (!value ? " !text-gray-500" : "")}
+          >
+            {/* || (no ??): value "" es "sin selección", no un valor real a
+                mostrar — con ?? quedaría en blanco en vez de "Seleccione". */}
+            <span className="block truncate">{seleccionado?.label || value || "Seleccione"}</span>
+          </button>
+        </SelectWrap>
+        {open && !isDisabled && (
+          <div
+            className="absolute left-0 top-[calc(100%+5px)] w-full bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+            style={{ boxShadow: "var(--shadow-mid)" }}
+          >
+            <div className="p-1.5 border-b border-gray-100">
+              <input
+                autoFocus
+                value={filtro}
+                onChange={(e) => setFiltro(e.target.value)}
+                placeholder="Buscar..."
+                className={inputCls + " h-7 text-body-sm"}
+              />
+            </div>
+            <div className="p-1.5 flex flex-col gap-0.5 max-h-96 overflow-y-auto">
+              {normalizados.length === 0 ? (
+                <p className="px-2.5 py-2 text-body-sm text-gray-500">Sin opciones — seleccioná Partido primero</p>
+              ) : filtrados.length === 0 ? (
+                <p className="px-2.5 py-2 text-body-sm text-gray-500">Sin resultados</p>
+              ) : (
+                filtrados.map((opt) => {
+                  const active = opt.value === value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => { onChange?.(opt.value); cerrar(); }}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm border text-left transition-colors ${
+                        active ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      <span className="flex-1 min-w-0 truncate text-body">{opt.label}</span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -4619,6 +5193,7 @@ function AbmFila({
   setValor,
   camposLocked,
   consultando,
+  columnasCompartidas,
 }: {
   fila: CampoBusqueda[];
   mode: AbmMode;
@@ -4628,6 +5203,12 @@ function AbmFila({
   camposLocked: string[];
   // Ver AbmCampo — fila seleccionada en Resultados en modo buscar.
   consultando?: boolean;
+  // true si otra(s) fila(s) de la misma sección tienen la misma cantidad de
+  // columnas — en ese caso las columnas deben quedar parejas (1fr) entre
+  // todas para que se alineen visualmente, sin importar si alguna tiene un
+  // toggle angosto. Solo una fila que es la única de su longitud en la
+  // sección puede darse el lujo de ajustar sus columnas por tipo de campo.
+  columnasCompartidas?: boolean;
 }) {
   const isMulti = fila.length > 1;
   // Fila de un solo campo: por default el campo define su propio ancho
@@ -4637,11 +5218,36 @@ function AbmFila({
   // la fila (100% del panel) deja un espacio muerto grande a la derecha.
   // `ancho` explícito en el campo, si lo hay, sigue ganando por sobre esto.
   const soloCampo = !isMulti ? fila[0] : undefined;
-  const soloAncho = soloCampo?.ancho ?? (soloCampo?.tipo === "toggle" ? "fit-content" : undefined);
+  const soloAncho = soloCampo?.ancho ?? (soloCampo?.tipo === "toggle" && !soloCampo?.expandirBotones ? "fit-content" : undefined);
+  // Columnas parejas (1fr cada una) dejan un hueco cuando alguna es un
+  // control de opciones acotadas (toggle/select, angosto por naturaleza)
+  // — esa columna se ajusta a su contenido (auto); texto/fecha/combobox
+  // son de contenido abierto y absorben el espacio sobrante. Pero eso solo
+  // vale cuando la fila no tiene con quién alinearse dentro de la sección:
+  // si otra fila hermana comparte la misma cantidad de columnas (ver
+  // `columnasCompartidas`, calculado por sección en AbmScreen), todas esas
+  // filas deben usar la misma grilla pareja para que sus columnas queden
+  // alineadas entre sí, aunque alguna tenga un toggle/select. Si TODOS los
+  // campos de una fila "no compartida" quedan compactos (ningún campo
+  // abierto que absorba el sobrante), ese sobrante se reparte como espacio
+  // entre los campos (space-between) en vez de amontonarse al final.
+  const esCompacto = (tipo: CampoTipo) => tipo === "toggle" || tipo === "select";
+  const gridTemplate = isMulti
+    ? columnasCompartidas
+      ? `repeat(${fila.length}, 1fr)`
+      : fila.map((c) => (esCompacto(c.tipo) ? "auto" : "1fr")).join(" ")
+    : undefined;
+  const todosCompactos = isMulti && !columnasCompartidas && fila.every((c) => esCompacto(c.tipo));
   return (
     <div
       className={isMulti ? "grid gap-3 items-end" : ""}
-      style={isMulti ? { gridTemplateColumns: `repeat(${fila.length}, 1fr)` } : soloAncho ? { width: soloAncho } : undefined}
+      style={
+        isMulti
+          ? { gridTemplateColumns: gridTemplate, justifyContent: todosCompactos ? "space-between" : undefined }
+          : soloAncho
+            ? { width: soloAncho }
+            : undefined
+      }
     >
       {fila.map((campo) => (
         <AbmCampo
@@ -4652,6 +5258,7 @@ function AbmFila({
           onChange={(v) => setValor(campo.nombre, v)}
           lockedEnModificar={camposLocked.includes(campo.nombre)}
           consultando={consultando}
+          valoresFormulario={valores}
         />
       ))}
     </div>
@@ -4671,6 +5278,19 @@ function mapearFilaAValores(mapeo: Record<string, string>, fila: Record<string, 
     if (fila[columna] !== undefined) nuevos[campoNombre] = fila[columna];
   }
   return nuevos;
+}
+
+// Resuelve el value crudo de un campo (toggle/select/combobox) a su label
+// legible, usando las mismas `opciones` que ya usa AbmCampo — incluyendo el
+// caso de opciones en función/cascada (ej. Localidad depende de Partido).
+function labelDeValor(campo: CampoBusqueda, valor: string, contexto: Record<string, string>): string {
+  if (!valor) return "";
+  if (campo.tipo === "toggle" || campo.tipo === "select" || campo.tipo === "combobox") {
+    const opciones = typeof campo.opciones === "function" ? campo.opciones(contexto) : campo.opciones;
+    const opcion = opciones?.find((o) => (typeof o === "string" ? o === valor : o.value === valor));
+    if (opcion) return typeof opcion === "string" ? opcion : opcion.label;
+  }
+  return valor;
 }
 
 // Componente unico que renderiza cualquiera de las 9 tablas ABM a partir de
@@ -4702,6 +5322,18 @@ function AbmScreen({
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const [valores, setValores] = useState<Record<string, string>>({});
+  // Foto del registro tal como estaba al entrar a Modificar — se compara
+  // contra `valores` (que sí cambia con cada edición) para saber qué
+  // campos cambiaron, ver ConfirmarModificarModal.
+  const [valoresOriginales, setValoresOriginales] = useState<Record<string, string>>({});
+  const [modalModificarAbierto, setModalModificarAbierto] = useState(false);
+  const [filaABorrar, setFilaABorrar] = useState<number | null>(null);
+  // Índices (de config.rows) borrados en esta sesión — config.rows es mock
+  // estático derivado de la config, no estado real, así que "borrar" no
+  // puede sacar la fila del array: en cambio se la excluye de Resultados
+  // (visibleIndices más abajo) sin tocar los índices de las demás filas,
+  // que siguen usándose como identidad en selectedRow/mapeoFilaACampos/etc.
+  const [filasBorradas, setFilasBorradas] = useState<Set<number>>(new Set());
   const camposLocked = config.camposReadonlyEnModificar ?? [];
 
   // Reset al cambiar de tabla — corre primero.
@@ -4710,6 +5342,8 @@ function AbmScreen({
     setShowData(false);
     setSelectedRow(null);
     setValores({});
+    setValoresOriginales({});
+    setFilasBorradas(new Set());
   }, [tableKey]);
 
   // Aplica un deep-link pendiente para ESTA tabla — corre después del
@@ -4753,15 +5387,29 @@ function AbmScreen({
   }, [mode, selectedRow, tableKey]);
 
   function setValor(nombre: string, v: string) {
-    setValores((prev) => ({ ...prev, [nombre]: v }));
+    // `limpiaAlCambiar` (config del campo que cambió) — típicamente el
+    // campo dependiente de una cascada (ver Partido -> Localidad en CDS8),
+    // para que no quede seleccionado un valor que ya no es una opción
+    // válida del campo dependiente.
+    const campo = config.secciones.flatMap((s) => s.filas.flat()).find((c) => c.nombre === nombre);
+    setValores((prev) => {
+      const next = { ...prev, [nombre]: v };
+      for (const otro of campo?.limpiaAlCambiar ?? []) next[otro] = "";
+      return next;
+    });
   }
 
   const hasSelection = selectedRow !== null;
   const consultando = mode === "buscar" && hasSelection;
   const columnKeys = config.columnasResultado.map((c) => c.key);
   const getCells = (row: Record<string, string>) => columnKeys.map((k) => row[k] ?? "");
-  const { search, setSearch, sortIdx, sortDir, toggleSort, visibleIndices } =
+  const { search, setSearch, sortIdx, sortDir, toggleSort, visibleIndices: visibleIndicesConBorradas } =
     useTableToolbar(config.rows, getCells, tableKey);
+  // Excluye las filas "borradas" de Resultados (navegación por teclado,
+  // export, conteo) sin renumerar nada — los índices que quedan siguen
+  // siendo los mismos de config.rows, que es lo que usan selectedRow,
+  // mapeoFilaACampos y el resto del formulario.
+  const visibleIndices = visibleIndicesConBorradas.filter((i) => !filasBorradas.has(i));
 
   // Navegación por teclado en Resultados: flecha abajo/arriba mueve la
   // selección entre filas visibles y autocompleta Búsqueda en vivo (mismo
@@ -4831,9 +5479,11 @@ function AbmScreen({
   // wrapper de la derecha — igual que en modo Insertar.
   function handleAbrirModificar(i: number) {
     const filaActual = config.rows[i];
+    const valoresIniciales = mapearFilaAValores(config.mapeoFilaACampos, filaActual);
     setSelectedRow(i);
     setMode("modificar");
-    setValores(mapearFilaAValores(config.mapeoFilaACampos, filaActual));
+    setValores(valoresIniciales);
+    setValoresOriginales(valoresIniciales);
   }
   function handleCancelarModificar() {
     // Misma razón que handleCancelarAlta: sin limpiar selectedRow, el
@@ -4845,14 +5495,57 @@ function AbmScreen({
     setMode("buscar");
     setSelectedRow(null);
     setValores({});
+    setValoresOriginales({});
   }
   function handleGuardarModificar() {
+    setModalModificarAbierto(true);
+  }
+  function handleCancelarConfirmarModificar() {
+    // Solo cierra el modal — sigue en modo Modificando, no se pierde la edición.
+    setModalModificarAbierto(false);
+  }
+  function handleConfirmarModificar(nota: string) {
+    // TODO: config.rows es mock derivado de la config, no estado real —
+    // todavía no hay dónde persistir el cambio ni la nota (mismo caso que
+    // Borrar). Por ahora cierra el flujo igual que antes.
+    setModalModificarAbierto(false);
     setMode("buscar");
     setSelectedRow(null);
     setValores({});
+    setValoresOriginales({});
+  }
+
+  function handleAbrirBorrar(i: number) {
+    setFilaABorrar(i);
+  }
+  function handleCancelarBorrar() {
+    setFilaABorrar(null);
+  }
+  function handleConfirmarBorrar() {
+    if (filaABorrar !== null) {
+      setFilasBorradas((prev) => new Set(prev).add(filaABorrar));
+      // La fila borrada no puede seguir seleccionada — si lo estaba,
+      // "consultando" quedaría mostrando el dato de un registro que ya no
+      // aparece en Resultados.
+      if (selectedRow === filaABorrar) setSelectedRow(null);
+    }
+    setFilaABorrar(null);
   }
 
   const totalPages = Math.max(1, Math.ceil(config.totalRegistros / 25));
+
+  // Campos que cambiaron respecto a `valoresOriginales` (la foto tomada al
+  // entrar a Modificar) — alimenta ConfirmarModificarModal. Excluye
+  // "readonly" (no editables, nunca cambian) y resuelve value → label
+  // legible vía labelDeValor para toggle/select/combobox.
+  const camposModificados = config.secciones
+    .flatMap((s) => s.filas.flat())
+    .filter((c) => c.tipo !== "readonly" && (valores[c.nombre] ?? "") !== (valoresOriginales[c.nombre] ?? ""))
+    .map((c) => ({
+      label: c.label,
+      anterior: labelDeValor(c, valoresOriginales[c.nombre] ?? "", valoresOriginales),
+      nuevo: labelDeValor(c, valores[c.nombre] ?? "", valores),
+    }));
 
   return (
     <>
@@ -4894,16 +5587,29 @@ function AbmScreen({
             tag={config.code}
           />
           <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
-            {config.secciones.map((sec) => (
-              <div key={sec.titulo}>
-                <SectionDivider title={sec.titulo} />
-                <div className="flex flex-col gap-3">
-                  {sec.filas.map((fila, fi) => (
-                    <AbmFila key={fi} fila={fila} mode={mode} valores={valores} setValor={setValor} camposLocked={camposLocked} consultando={consultando} />
-                  ))}
+            {config.secciones.map((sec) => {
+              const conteoPorLongitud = new Map<number, number>();
+              for (const fila of sec.filas) conteoPorLongitud.set(fila.length, (conteoPorLongitud.get(fila.length) ?? 0) + 1);
+              return (
+                <div key={sec.titulo}>
+                  <SectionDivider title={sec.titulo} />
+                  <div className="flex flex-col gap-3">
+                    {sec.filas.map((fila, fi) => (
+                      <AbmFila
+                        key={fi}
+                        fila={fila}
+                        mode={mode}
+                        valores={valores}
+                        setValor={setValor}
+                        camposLocked={camposLocked}
+                        consultando={consultando}
+                        columnasCompartidas={(conteoPorLongitud.get(fila.length) ?? 0) > 1}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="shrink-0 border-t border-gray-200 px-5 py-4 flex gap-3">
@@ -5115,7 +5821,7 @@ function AbmScreen({
                             </button>
                             <button
                               type="button"
-                              onClick={(e) => e.stopPropagation()}
+                              onClick={(e) => { e.stopPropagation(); handleAbrirBorrar(i); }}
                               className={rowActionBtnCls("destructive")}
                             >
                               Borrar
@@ -5158,13 +5864,473 @@ function AbmScreen({
           )}
         </div>
       </div>
+
+      <ConfirmarBorrarModal
+        open={filaABorrar !== null}
+        registro={filaABorrar !== null ? config.rows[filaABorrar][config.columnasResultado[0].key] : ""}
+        tabla={ABM_ITEMS.find((it) => it.screen === tableKey)?.label ?? config.titulo}
+        onCancelar={handleCancelarBorrar}
+        onConfirmar={handleConfirmarBorrar}
+      />
+      <ConfirmarModificarModal
+        open={modalModificarAbierto}
+        cambios={camposModificados}
+        onCancelar={handleCancelarConfirmarModificar}
+        onConfirmar={handleConfirmarModificar}
+      />
     </>
   );
 }
 
 // screens: login → select → welcome → (tabla ABM) → modificar
-type Screen = "login" | "select" | "welcome" | "modificar" | AbmTableKey;
+type Screen = "login" | "select" | "welcome" | "modificar" | AbmTableKey
+  | "generaciontxt" | "planillaconsolidada" | "gestornotas" | "insertaclientes" | "auditoria";
 
+// ─── Generación de txt ──────────────────────────────────────────────────────
+
+function GeneracionTxtContent() {
+  const [tabla, setTabla] = useState("");
+
+  function handleExportar() {
+    // mock: sin backend real conectado todavía (mismo alcance que Borrar/Guardar)
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto px-10 py-10">
+      <div className="bg-white rounded-[7px] border border-gray-300" style={{ maxWidth: 640 }}>
+        <CardHeader title="Exportación" />
+        <div className="p-6 flex items-end gap-3">
+          <div className="flex-1 min-w-0" style={{ maxWidth: 320 }}>
+            <FieldLabel>Tabla a exportar</FieldLabel>
+            <SelectWrap>
+              <select value={tabla} onChange={(e) => setTabla(e.target.value)} className={MOD_SELECT_CLS + " w-full"}>
+                <option value="">Seleccione tabla a exportar</option>
+                {ABM_ITEMS.map((item) => (
+                  <option key={item.key ?? item.code + item.label} value={item.screen as string}>{item.label}</option>
+                ))}
+              </select>
+            </SelectWrap>
+          </div>
+          <button type="button" disabled={!tabla} onClick={handleExportar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+            Exportar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Planilla consolidada ───────────────────────────────────────────────────
+
+function generarConsolidacionSintetica(rng: () => number) {
+  return {
+    reclamos: enteroEntre(rng, 70000, 95000),
+    reiteraciones: enteroEntre(rng, 45000, 65000),
+    saidi: (rng() * 0.6).toFixed(9),
+    saifi: (rng() * 0.3).toFixed(9),
+    maxDuracionRef: refInterrupcionSintetica(rng, "2026"),
+    maxDuracionValor: enteroEntre(rng, 10000, 30000),
+    maxMarginalRef: refInterrupcionSintetica(rng, "2026"),
+    maxMarginalValor: (rng() * 300000000).toFixed(7),
+  };
+}
+
+function PlanillaConsolidadaContent() {
+  const [datos, setDatos] = useState(() => generarConsolidacionSintetica(crearRng(hashSemilla("planilla-consolidada"))));
+  const [fechaProceso, setFechaProceso] = useState("12/08/2026 09:19");
+  const [usuarioProceso] = useState("Rdellamagiora");
+  const [procesando, setProcesando] = useState(false);
+  const [progresoAbierto, setProgresoAbierto] = useState(false);
+
+  function handleProcesar() {
+    setProcesando(true);
+    setTimeout(() => {
+      setDatos(generarConsolidacionSintetica(crearRng(Date.now())));
+      setFechaProceso(new Date().toLocaleString("es-AR").slice(0, 16));
+      setProcesando(false);
+    }, 900);
+  }
+
+  function handleGenerarCsv() {
+    const filas: [string, string][] = [
+      ["Fecha último proceso", fechaProceso],
+      ["Usuario último proceso", usuarioProceso],
+      ["Reclamos", String(datos.reclamos)],
+      ["Reiteraciones", String(datos.reiteraciones)],
+      ["SAIDI", datos.saidi],
+      ["SAIFI", datos.saifi],
+      ["Máxima duración — Interrupción", datos.maxDuracionRef],
+      ["Máxima duración — Valor", String(datos.maxDuracionValor)],
+      ["Máximo marginal ajustado — Interrupción", datos.maxMarginalRef],
+      ["Máximo marginal ajustado — Valor", datos.maxMarginalValor],
+    ];
+    const csv = filas.map((f) => f.join(";")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `planilla_consolidada_${fechaProceso.replace(/[/: ]/g, "-")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto px-10 py-10">
+      <div className="bg-white rounded-[7px] border border-gray-300" style={{ maxWidth: 760 }}>
+        <CardHeader title="Consolidación" />
+        <div className="p-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div><FieldLabel>Fecha último proceso</FieldLabel><input readOnly value={fechaProceso} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
+            <div><FieldLabel>Usuario último proceso</FieldLabel><input readOnly value={usuarioProceso} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
+            <div><FieldLabel>Reclamos</FieldLabel><input readOnly value={String(datos.reclamos)} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
+            <div><FieldLabel>Reiteraciones</FieldLabel><input readOnly value={String(datos.reiteraciones)} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
+            <div><FieldLabel>SAIDI</FieldLabel><input readOnly value={datos.saidi} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
+            <div><FieldLabel>SAIFI</FieldLabel><input readOnly value={datos.saifi} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mt-3">
+            <div>
+              <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-1.5">Máxima duración</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><FieldLabel>Interrupción</FieldLabel><input readOnly value={datos.maxDuracionRef} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
+                <div><FieldLabel>Valor</FieldLabel><input readOnly value={String(datos.maxDuracionValor)} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
+              </div>
+            </div>
+            <div>
+              <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-1.5">Máximo marginal ajustado</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><FieldLabel>Interrupción</FieldLabel><input readOnly value={datos.maxMarginalRef} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
+                <div><FieldLabel>Valor</FieldLabel><input readOnly value={datos.maxMarginalValor} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+            <button type="button" onClick={() => setProgresoAbierto(true)} className={modalNeutralBtnCls}>Ver progreso</button>
+            <button type="button" disabled={procesando} onClick={handleProcesar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+              {procesando ? "Procesando…" : "Procesar"}
+            </button>
+            <button type="button" onClick={handleGenerarCsv} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>Generar CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <Modal
+        title="Progreso del proceso"
+        open={progresoAbierto}
+        onClose={() => setProgresoAbierto(false)}
+        size="sm"
+        footer={<button type="button" onClick={() => setProgresoAbierto(false)} className={modalNeutralBtnCls}>Cerrar</button>}
+      >
+        <div className="flex flex-col gap-3">
+          {["Recepción de tablas", "Cálculo de indicadores", "Consolidación final"].map((paso, i) => (
+            <div key={paso} className="flex items-center gap-2.5">
+              <span
+                className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white text-micro"
+                style={{ backgroundColor: i < 2 ? "var(--color-success)" : "var(--color-gray-300)" }}
+              >
+                {i < 2 ? "✓" : ""}
+              </span>
+              <span className="text-body text-gray-700">{paso}</span>
+            </div>
+          ))}
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
+// ─── Gestor de notas ────────────────────────────────────────────────────────
+
+const NOTAS_INICIALES = [
+  "INCONSISTENCIA DE AFECTACION",
+  "SUPERPOSICION CON OTRA INTERRUPCION",
+  "NO CORRESPONDE INTERRUPCION/ AFECTACION",
+  "INTERRUPCION NO CREADA POR CALCULO",
+  "CORRESPONDE A INSTALACION CLIENTE/ MENOR A 3 MINUTOS",
+  "INTERRUPCION CREADA A PARTIR DE RECLAMO",
+  "INTERRUPCION POR OM EC O FM",
+  "DATOS INCOMPLETOS/ INCORRECTOS",
+  "TIPO O NIVEL DE TENSION DE LA INTERRUPCION INCORRECTOS",
+].map((texto, i) => ({ id: `n${i + 1}`, texto, posicion: i + 1 }));
+
+function GestorNotasContent() {
+  const [notas, setNotas] = useState(NOTAS_INICIALES);
+  const [filtro, setFiltro] = useState("");
+  const [seleccionada, setSeleccionada] = useState<string | null>(null);
+  const [porPagina, setPorPagina] = useState(10);
+  const [pagina, setPagina] = useState(1);
+  const [modalAbierto, setModalAbierto] = useState<string | null>(null); // "nueva" o el id a editar
+  const [textoModal, setTextoModal] = useState("");
+
+  const ordenadas = [...notas].sort((a, b) => a.posicion - b.posicion);
+  const filtradas = filtro ? ordenadas.filter((n) => n.texto.toLowerCase().includes(filtro.toLowerCase())) : ordenadas;
+  const totalPaginas = Math.max(1, Math.ceil(filtradas.length / porPagina));
+  const paginaSegura = Math.min(pagina, totalPaginas);
+  const visibles = filtradas.slice((paginaSegura - 1) * porPagina, paginaSegura * porPagina);
+
+  function mover(id: string, direccion: "top" | "up" | "down" | "bottom") {
+    const orden = [...notas].sort((a, b) => a.posicion - b.posicion);
+    const idx = orden.findIndex((n) => n.id === id);
+    if (idx === -1) return;
+    const [item] = orden.splice(idx, 1);
+    if (direccion === "top") orden.unshift(item);
+    else if (direccion === "bottom") orden.push(item);
+    else if (direccion === "up") orden.splice(Math.max(0, idx - 1), 0, item);
+    else orden.splice(Math.min(orden.length, idx + 1), 0, item);
+    setNotas(orden.map((n, i) => ({ ...n, posicion: i + 1 })));
+  }
+
+  function abrirNueva() { setTextoModal(""); setModalAbierto("nueva"); }
+  function abrirEditar(id: string, texto: string) { setTextoModal(texto); setModalAbierto(id); }
+  function guardarModal() {
+    const texto = textoModal.trim();
+    if (!texto) return;
+    if (modalAbierto === "nueva") {
+      setNotas((prev) => [...prev, { id: `n${Date.now()}`, texto, posicion: prev.length + 1 }]);
+    } else if (modalAbierto) {
+      setNotas((prev) => prev.map((n) => (n.id === modalAbierto ? { ...n, texto } : n)));
+    }
+    setModalAbierto(null);
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto px-10 py-10">
+      <div className="flex gap-4 items-start" style={{ maxWidth: 900 }}>
+        <div className="flex-1 bg-white rounded-[7px] border border-gray-300 overflow-hidden">
+          <CardHeader
+            title="Notas"
+            right={
+              <button type="button" onClick={abrirNueva} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+                Agregar nota
+              </button>
+            }
+          />
+          <div className="p-5">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-3 py-2 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600">Nota</th>
+                  <th className="w-24 px-3 py-2 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600">Posición</th>
+                  <th className="w-14 px-2 py-2" />
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="p-1.5">
+                    <input
+                      value={filtro}
+                      onChange={(e) => { setFiltro(e.target.value); setPagina(1); }}
+                      placeholder="Buscar nota..."
+                      className={MOD_FIELD_CLS}
+                    />
+                  </td>
+                  <td /><td />
+                </tr>
+              </thead>
+              <tbody>
+                {visibles.length === 0 ? (
+                  <tr><td colSpan={3}>
+                    <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
+                      <span className="text-gray-400"><IcoInbox /></span>
+                      <p className="text-body font-medium text-gray-600">No hay notas</p>
+                    </div>
+                  </td></tr>
+                ) : visibles.map((n) => (
+                  <tr
+                    key={n.id}
+                    onClick={() => setSeleccionada(n.id)}
+                    className={`border-b border-gray-100 cursor-pointer transition-colors ${seleccionada === n.id ? "bg-primary-tint" : "hover:bg-gray-50"}`}
+                  >
+                    <td className="px-3 py-2.5 text-body text-gray-800">{n.texto}</td>
+                    <td className="px-3 py-2.5 text-body text-gray-600 tabular-nums">{n.posicion}</td>
+                    <td className="px-2 py-2.5">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); abrirEditar(n.id, n.texto); }}
+                        className="w-7 h-7 flex items-center justify-center rounded-sm text-gray-500 hover:bg-primary-tint hover:text-secondary transition-colors"
+                        title="Editar"
+                      >
+                        <IcoEdit />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="flex items-center justify-between mt-3">
+              <div className="flex items-center gap-2 text-body-sm text-gray-600">
+                <span>Mostrar</span>
+                <SelectWrap>
+                  <select
+                    value={porPagina}
+                    onChange={(e) => { setPorPagina(Number(e.target.value)); setPagina(1); }}
+                    className={MOD_SELECT_CLS}
+                  >
+                    {[10, 25, 50].map((n) => <option key={n} value={n}>{n} registros</option>)}
+                  </select>
+                </SelectWrap>
+              </div>
+              <div className="flex items-center gap-3 text-body-sm text-gray-600">
+                <button disabled={paginaSegura <= 1} onClick={() => setPagina((p) => p - 1)} className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40">Anterior</button>
+                <span>Pág. <span className="font-medium text-gray-800">{paginaSegura}</span> de <span className="font-medium text-gray-800">{totalPaginas}</span></span>
+                <button disabled={paginaSegura >= totalPaginas} onClick={() => setPagina((p) => p + 1)} className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40">Siguiente</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Reordenar — actúa sobre la fila seleccionada de la tabla (click en la fila) */}
+        <div className="flex flex-col gap-1.5 pt-14 shrink-0">
+          {([
+            { dir: "top" as const, icon: <IcoChevronsUp />, title: "Mover al principio" },
+            { dir: "up" as const, icon: <span className="inline-flex rotate-180"><ChevronDown /></span>, title: "Subir" },
+            { dir: "down" as const, icon: <ChevronDown />, title: "Bajar" },
+            { dir: "bottom" as const, icon: <IcoChevronsDown />, title: "Mover al final" },
+          ]).map((b) => (
+            <button
+              key={b.dir}
+              type="button"
+              title={b.title}
+              disabled={!seleccionada}
+              onClick={() => seleccionada && mover(seleccionada, b.dir)}
+              className="w-9 h-9 flex items-center justify-center rounded-sm border border-gray-400 bg-white text-gray-600 hover:bg-primary-tint hover:border-primary hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            >
+              {b.icon}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <Modal
+        title={modalAbierto === "nueva" ? "Agregar nota" : "Editar nota"}
+        open={modalAbierto !== null}
+        onClose={() => setModalAbierto(null)}
+        size="sm"
+        footer={
+          <>
+            <button type="button" onClick={() => setModalAbierto(null)} className={modalNeutralBtnCls}>Cancelar</button>
+            <button type="button" disabled={!textoModal.trim()} onClick={guardarModal} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>Guardar</button>
+          </>
+        }
+      >
+        <FieldLabel>Nota</FieldLabel>
+        <input value={textoModal} onChange={(e) => setTextoModal(e.target.value.toUpperCase())} className={MOD_FIELD_CLS} placeholder="Ej. DATOS INCOMPLETOS/ INCORRECTOS" autoFocus />
+      </Modal>
+    </div>
+  );
+}
+
+// ─── Inserta clientes en BDTH ───────────────────────────────────────────────
+
+function InsertaClientesContent() {
+  const [cliente, setCliente] = useState("");
+  const [validado, setValidado] = useState(false);
+  const [periodo, setPeriodo] = useState("");
+
+  function handleCambioCliente(v: string) { setCliente(v); setValidado(false); }
+  function handleValidar() { if (cliente.trim()) setValidado(true); }
+  function handleInsertar() {
+    // mock: sin backend real conectado todavía
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto px-10 py-10">
+      <div className="bg-white rounded-[7px] border border-gray-300 p-6" style={{ maxWidth: 640 }}>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-end gap-3">
+            <div className="flex-1 min-w-0">
+              <FieldLabel>Cliente</FieldLabel>
+              <input value={cliente} onChange={(e) => handleCambioCliente(e.target.value)} placeholder="ID de cliente" className={MOD_FIELD_CLS} />
+            </div>
+            <button type="button" disabled={!cliente.trim()} onClick={handleValidar} className={modalNeutralBtnCls}>Validar</button>
+            {validado && <span className="text-body-sm font-medium shrink-0" style={{ color: "var(--color-success)" }}>✓ Cliente válido</span>}
+          </div>
+          <div style={{ maxWidth: 280 }}>
+            <FieldLabel>Período BDTH</FieldLabel>
+            <SelectWrap>
+              <select value={periodo} onChange={(e) => setPeriodo(e.target.value)} className={MOD_SELECT_CLS + " w-full"}>
+                <option value="">Seleccione período</option>
+                {PERIODS.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </SelectWrap>
+          </div>
+          <div className="flex justify-end pt-3 border-t border-gray-200">
+            <button type="button" disabled={!validado || !periodo} onClick={handleInsertar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>Insertar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Reporte de auditoría ───────────────────────────────────────────────────
+
+const USUARIOS_SISENRE_DEMO = [
+  "ALEGHISSA", "APOZZER", "BLOPONTE", "BMABDALLAH", "CGLOAZZO", "CONSULTA_SISENRE",
+  "DJAHNEL", "DLAZZARI", "EROMANELLO", "EVINTRIAGO", "FSCANDIZZO", "ICALVET",
+  "LALVANO", "LCALABRESE", "LGUERINI", "LORIVAS", "LRICLE", "LSTIVANELLO",
+]; // lista de ejemplo — reemplazar por el listado real de usuarios SISENRE cuando lo tengamos
+
+function AuditoriaContent() {
+  const [usuario, setUsuario] = useState("");
+  const [tablasSel, setTablasSel] = useState<Set<AbmTableKey>>(new Set());
+
+  function toggleTabla(k: AbmTableKey) {
+    setTablasSel((prev) => {
+      const next = new Set(prev);
+      if (next.has(k)) next.delete(k); else next.add(k);
+      return next;
+    });
+  }
+
+  function handleExportar() {
+    // mock: sin backend real conectado todavía
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto px-10 py-10">
+      <div className="bg-white rounded-[7px] border border-gray-300" style={{ maxWidth: 720 }}>
+        <CardHeader title="Filtros" />
+        <div className="p-6 grid grid-cols-2 gap-6">
+          <div>
+            <AbmCombobox
+              campo={{ nombre: "usuarioAuditoria", label: "Seleccione usuario", tipo: "combobox" }}
+              opts={USUARIOS_SISENRE_DEMO}
+              value={usuario}
+              onChange={setUsuario}
+              isDisabled={false}
+              estadoCls=""
+            />
+          </div>
+          <div>
+            <FieldLabel>Seleccione tablas</FieldLabel>
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              {ABM_ITEMS.map((item) => (
+                <ModalCheckbox
+                  key={item.key ?? item.code + item.label}
+                  label={item.label}
+                  checked={item.screen ? tablasSel.has(item.screen as AbmTableKey) : false}
+                  onChange={() => item.screen && toggleTabla(item.screen as AbmTableKey)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end px-6 pb-6">
+          <button
+            type="button"
+            disabled={!usuario || tablasSel.size === 0}
+            onClick={handleExportar}
+            className={modalPrimaryBtnCls}
+            style={{ backgroundColor: "var(--color-primary)" }}
+          >
+            Exportar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("login");
@@ -5206,6 +6372,18 @@ export default function App() {
     setScreen(lastAbmTable);
     setAbmExpanded((v) => !v);
     setVolverA(null);
+  }
+
+  // Navegación a Inicio (sidebar) — sin estado previo que restaurar, igual
+  // que irAConsultas.
+  function irAInicio() {
+    setVolverA(null);
+    setScreen("welcome");
+  }
+
+  function irAOtroScreen(s: Screen) {
+    setVolverA(null);
+    setScreen(s);
   }
 
   // Navegación normal a Consultas de interrupción (sidebar) — sin estado
@@ -5253,14 +6431,17 @@ export default function App() {
         <div className="flex items-center gap-2 px-3 border-b border-gray-300" style={{ minHeight: 60, paddingTop: 10, paddingBottom: 10 }}>
           {!collapsed ? (
             <>
-              <div
-                className="flex-1 flex items-center overflow-hidden"
+              <button
+                type="button"
+                onClick={irAInicio}
+                title="Ir a Inicio"
+                className="flex-1 flex items-center overflow-hidden cursor-pointer"
                 style={{ height: 38 }}
               >
                 <div style={{ zoom: 0.68, transformOrigin: "left center", pointerEvents: "none" }}>
                   <Logo />
                 </div>
-              </div>
+              </button>
               <button
                 onClick={() => setCollapsed(true)}
                 className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-gray-600 hover:text-gray-800 hover:bg-gray-200 transition-colors"
@@ -5286,48 +6467,55 @@ export default function App() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2" style={{ scrollbarWidth: "none" }}>
-          {/* Consultas de interrupción — por encima del grupo ABM, con más
-              peso visual (label siempre en negrita) que los ítems de ABM. */}
-          <div className="pt-2">
+          <div className="flex flex-col gap-0.5">
+            <NavItem
+              label="Inicio"
+              icon={<IcoHome />}
+              active={screen === "welcome"}
+              collapsed={collapsed}
+              onClick={irAInicio}
+            />
             <NavItem
               label="Consultas de interrupción"
               icon={<IcoSearch />}
               active={screen === "modificar"}
               collapsed={collapsed}
               onClick={irAConsultas}
-              boldLabel
             />
           </div>
+
           <div className={`my-2 border-t border-gray-300 ${collapsed ? "mx-auto w-8" : "mx-1"}`} />
 
-          {/* ABM — ítem padre desplegable (acordeón). Click navega a la última
-              tabla activa (o CDS2 la primera vez) y despliega/colapsa los
-              hijos. En modo colapsado (sidebar angosto) los 9 hijos nunca se
-              renderizan — solo el ícono del padre; navegar entre tablas en
-              ese estado queda cubierto por el selector dentro del panel. */}
-          {!collapsed ? (
-            <button
-              type="button"
-              onClick={handleAbmParentClick}
-              aria-expanded={abmExpanded}
-              className={`w-full flex items-center gap-1.5 px-1 pt-4 pb-1.5 text-micro font-semibold uppercase tracking-[0.1em] transition-colors select-none ${
-                isAbmTableKey(screen) ? "text-gray-700" : "text-gray-500 hover:text-gray-600"
+          {/* ABM — ítem padre desplegable (acordeón), ahora con el MISMO lenguaje
+              visual (ícono + texto) que Inicio/Consultas en los dos estados del
+              sidebar — antes tenía dos renders distintos (caption chico sin ícono
+              expandido, NavItem con ícono colapsado). Click navega a la última
+              tabla activa (o CDS2 la primera vez) y despliega/colapsa los hijos. */}
+          <button
+            type="button"
+            onClick={handleAbmParentClick}
+            aria-expanded={abmExpanded}
+            style={{ position: "relative" }}
+            className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-all duration-150 group
+              ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
+              ${isAbmTableKey(screen)
+                ? "border-primary bg-primary-tint text-secondary"
+                : "border-transparent text-gray-700 hover:text-gray-800 hover:bg-gray-100"
               }`}
-            >
-              <span className={`shrink-0 transition-transform duration-150 ${abmExpanded ? "" : "-rotate-90"}`}>
-                <ChevronDown />
-              </span>
-              <span className="flex-1 text-left">Alta, Baja y Modificación</span>
-            </button>
-          ) : (
-            <NavItem
-              label="Alta, Baja y Modificación"
-              icon={<IcoEdit />}
-              active={isAbmTableKey(screen)}
-              collapsed={collapsed}
-              onClick={handleAbmParentClick}
-            />
-          )}
+          >
+            <span className="shrink-0"><IcoEdit /></span>
+            {!collapsed && (
+              <>
+                <span className="flex-1 text-body text-left leading-snug">Alta, Baja y Modificación</span>
+                <span className={`shrink-0 transition-transform duration-150 ${abmExpanded ? "" : "-rotate-90"}`}>
+                  <ChevronDown />
+                </span>
+              </>
+            )}
+            {collapsed && (
+              <span className="sidebar-item-tooltip">Alta, Baja y Modificación</span>
+            )}
+          </button>
 
           {abmExpanded && !collapsed && (
             <div className="flex flex-col gap-0.5 pl-3 ml-2.5 border-l border-gray-200">
@@ -5354,8 +6542,9 @@ export default function App() {
                 key={item.label}
                 label={item.label}
                 icon={item.icon}
-                active={false}
+                active={screen === item.screen}
                 collapsed={collapsed}
+                onClick={() => irAOtroScreen(item.screen)}
               />
             ))}
           </div>
@@ -5392,12 +6581,17 @@ export default function App() {
                 {screen === "welcome" && (
                   <h1 className="text-label font-semibold text-gray-900 leading-none">Inicio</h1>
                 )}
+                {screen === "generaciontxt" && <h1 className="text-label font-semibold text-gray-900 leading-none">Generación de txt</h1>}
+                {screen === "planillaconsolidada" && <h1 className="text-label font-semibold text-gray-900 leading-none">Planilla consolidada</h1>}
+                {screen === "gestornotas" && <h1 className="text-label font-semibold text-gray-900 leading-none">Gestor de notas</h1>}
+                {screen === "insertaclientes" && <h1 className="text-label font-semibold text-gray-900 leading-none">Inserta clientes en BDTH</h1>}
+                {screen === "auditoria" && <h1 className="text-label font-semibold text-gray-900 leading-none">Reporte de auditoría</h1>}
               </div>
               <PeriodSelector />
             </header>
 
             {/* Content */}
-            {screen === "welcome" && <WelcomeContent />}
+            {screen === "welcome" && <WelcomeContent onIrATabla={goToAbmTable} />}
             {screen === "modificar" && (
               <ModificarContent
                 onIrAAbm={irAAbmConDeepLink}
@@ -5405,6 +6599,11 @@ export default function App() {
                 initialReferencia={modificarInitialReferencia}
               />
             )}
+            {screen === "generaciontxt" && <GeneracionTxtContent />}
+            {screen === "planillaconsolidada" && <PlanillaConsolidadaContent />}
+            {screen === "gestornotas" && <GestorNotasContent />}
+            {screen === "insertaclientes" && <InsertaClientesContent />}
+            {screen === "auditoria" && <AuditoriaContent />}
           </>
         )}
       </div>
