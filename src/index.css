@@ -73,6 +73,76 @@
 }
 
 /*
+ * Escalas compactas para ventanas bajas (notebooks de 14", viewport real
+ * ~650-720px de alto una vez descontado chrome del navegador — a ~950-1000px
+ * de alto ya aparece scroll hoy). Tailwind v4 resuelve TODAS las utilidades
+ * numéricas de espaciado (padding, gap, alto, ancho) vía
+ * calc(var(--spacing) * N), y las utilidades de texto semántico
+ * (text-title, text-title-sm, text-label, text-body, text-body-sm, etc.)
+ * vía font-size: var(--text-...) — redefinir esos tokens acá alcanza para
+ * compactar TODA la app (paddings, alturas de botón incluidas vía
+ * BTN_SM/BTN_MD) sin tocar className en cada componente. El objetivo es
+ * "cero scroll" de página/formulario en esos altos — la tabla de resultados
+ * sigue scrolleando su propio body, eso es aceptado.
+ *
+ * Tier 2 va DESPUÉS del tier 1 en el archivo a propósito: en un viewport que
+ * cumple ambas condiciones (max-height: 760px también cumple <= 900px), el
+ * tier 2 tiene que ganar para los tokens que redefine.
+ *
+ * Tier 2 es el target real de notebook de 14" (viewport ≈650-750px de alto)
+ * — el punto de partida se calibró para que el achique equivalga a ver la
+ * app a ~75% de zoom del navegador, y luego se ajustó más agresivo todavía
+ * (~64% de --spacing) en pasadas de fine-tuning. Una vez que la grilla de 2
+ * columnas de AbmScreen y el rebalanceo de paneles liberaron espacio real,
+ * se volvió a subir un escalón (--spacing ~80% del default, texto más
+ * cerca de tier 1) — el recorte más agresivo ya no hacía falta. Caption/
+ * micro no bajan más: ya están en el piso de legibilidad.
+ */
+@media (max-height: 900px) {
+  :root {
+    --spacing: 0.2125rem;
+    --text-title: 24px;
+    --text-title-sm: 20px;
+    --text-label: 13px;
+  }
+}
+
+@media (max-height: 760px) {
+  :root {
+    --spacing: 0.2rem;
+    --text-title: 23px;
+    --text-title-sm: 19px;
+    --text-label: 13px;
+    --text-body: 12px;
+    --text-body-sm: 11px;
+    /* Franja de título de pantalla + selector de período — tanto la de App
+       (pantallas normales) como el masthead propio de AbmScreen (selector
+       de tabla + período) comparten este mismo alto fijo en `minHeight`
+       inline, en px, fuera de la escala --spacing. */
+    --header-min-height: 44px;
+
+    /* LoginScreen (título "Bienvenido" + Usuario/Contraseña/Confirmar) es
+       una pantalla marcada aparte, con paddings/gaps en `style` inline en
+       px en vez de clases Tailwind — no participa de --spacing/--text-*,
+       así que cada valor que aporta alto vertical necesita su propia
+       variable acá. El offset superior (`calc(38vh + 15px)`) es el que más
+       pesa: a 38% del alto de una ventana ya baja, empuja la card entera
+       contra el borde inferior. */
+    --login-top-offset: calc(8vh + 10px);
+    --login-form-pt: 24px;
+    --login-form-pb: 16px;
+    --login-title-size: 26px;
+    --login-title-line: 30px;
+    --login-header-gap: 4px;
+    --login-inputs-mt: 12px;
+    --login-inputs-gap: 14px;
+    --login-input-py: 8px;
+    --login-button-mt: 16px;
+    --login-button-py: 10px;
+  }
+}
+
+/*
  * Sistema de tamaños de botón — 2 tamaños únicos para toda la app, anclados
  * a los tokens de arriba (nada de alto/padding/tipografía/radius suelto por
  * instancia — ver BTN_SM/BTN_MD en App.tsx, junto a actionBtnCls y

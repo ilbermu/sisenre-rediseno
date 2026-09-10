@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { DayPicker, useDayPicker, type ChevronProps } from "react-day-picker";
 import { es } from "date-fns/locale";
 import Logo from "@/imports/Logo/index";
@@ -144,6 +145,12 @@ const IcoLogOut = () => (
 const IcoPlus = () => (
   <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
     <path d="M6.5 1.5v9.5M1.75 6.25h9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+const IcoDownload = () => (
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+    <path d="M7.5 2v7.5M4.5 6.5L7.5 9.5l3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M2.5 11.5v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
   </svg>
 );
 const IcoChevronsUp = () => (
@@ -431,6 +438,40 @@ const CDS4_ROWS = (() => {
 // generadas para la vista de muestra.
 const CDS4_TOTAL = 48213;
 
+// ─── Dropdown/popover "smart" direction ────────────────────────────────────────
+// Mecanismo único reusado por TODO panel flotante de la app (AbmCombobox,
+// AbmTableSelector, PeriodSelector, DateTimeField, MiniCaptionDropdown,
+// DiaDelMesField, UserMenu, el dropdown "Acciones" de PersistentActionsBar)
+// en vez de que cada uno hardcodee su propia dirección (algunos abrían
+// siempre hacia abajo, otros siempre hacia arriba, sin criterio común).
+// Abre hacia abajo por default; flipea hacia arriba solo cuando el panel no
+// entra completo entre el trigger y el borde inferior del viewport. Mide
+// recién al abrirse (no en cada render, no todo el tiempo) usando el mismo
+// `ref` que cada componente ya tiene para su listener de click-outside.
+function useDropdownDirection(
+  triggerRef: React.RefObject<HTMLElement | null>,
+  open: boolean,
+  panelHeight: number
+): "down" | "up" {
+  const [direction, setDirection] = useState<"down" | "up">("down");
+  useEffect(() => {
+    if (!open || !triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const espacioAbajo = window.innerHeight - rect.bottom;
+    const espacioArriba = rect.top;
+    setDirection(espacioAbajo < panelHeight && espacioArriba > espacioAbajo ? "up" : "down");
+  }, [open, triggerRef, panelHeight]);
+  return direction;
+}
+
+// Ancla vertical del panel según la dirección resuelta — spread dentro del
+// `style` del panel junto a lo que cada dropdown ya tenga (width, boxShadow,
+// etc.). `gapPx` es la separación entre trigger y panel (cada dropdown ya
+// tenía su propio valor de 4-6px, se mantiene).
+function dropdownAnchorStyle(direction: "down" | "up", gapPx: number): React.CSSProperties {
+  return direction === "up" ? { bottom: `calc(100% + ${gapPx}px)` } : { top: `calc(100% + ${gapPx}px)` };
+}
+
 // ─── Shared input classes ─────────────────────────────────────────────────────
 
 const inputCls =
@@ -489,6 +530,7 @@ function NavItem({
   return (
     <button
       onClick={onClick}
+      title={!collapsed ? label + (code ? ` · ${code}` : "") : undefined}
       style={{ position: "relative" }}
       className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-all duration-150 group
         ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
@@ -500,7 +542,7 @@ function NavItem({
       {icon && <span className="shrink-0">{icon}</span>}
       {!collapsed && (
         <>
-          <span className={`flex-1 text-body text-left leading-snug ${boldLabel ? "font-semibold" : ""}`}>{label}</span>
+          <span className={`flex-1 min-w-0 truncate text-body text-left leading-snug ${boldLabel ? "font-semibold" : ""}`}>{label}</span>
           {code && (
             <span
               className={`text-micro font-mono shrink-0 tabular-nums ${active ? "text-secondary/60" : "text-gray-500 group-hover:text-gray-600"}`}
@@ -531,6 +573,7 @@ function PeriodSelector() {
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
+  const direction = useDropdownDirection(ref, open, 260);
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <button
@@ -546,8 +589,8 @@ function PeriodSelector() {
       </button>
       {open && (
         <div
-          className="absolute right-0 top-[calc(100%+5px)] w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-          style={{ boxShadow: "var(--shadow-mid)" }}
+          className="absolute right-0 w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
         >
           <div className="px-3 py-2.5 border-b border-gray-100">
             <p className="text-caption font-semibold text-gray-600 uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
@@ -631,6 +674,7 @@ function MiniCaptionDropdown({
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
+  const direction = useDropdownDirection(ref, open, 224);
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <button
@@ -643,7 +687,7 @@ function MiniCaptionDropdown({
       {open && (
         <div
           className="absolute left-1/2 z-40 bg-white border border-gray-300 rounded-lg p-1.5 flex flex-col gap-0.5 overflow-y-auto"
-          style={{ top: "calc(100% + 4px)", transform: "translateX(-50%)", minWidth: 96, maxHeight: 224, boxShadow: "var(--shadow-mid)" }}
+          style={{ ...dropdownAnchorStyle(direction, 4), transform: "translateX(-50%)", minWidth: 96, maxHeight: 224, boxShadow: "var(--shadow-mid)" }}
         >
           {options.map((o) => (
             <button
@@ -693,6 +737,7 @@ function DateTimeField({
   disabled,
   muted = disabled,
   fullWidth = false,
+  className = "",
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -709,6 +754,10 @@ function DateTimeField({
   // barra de filtros compacta de Consultas de interrupción sigue usando el
   // ancho fijo (default), que ahí es intencional.
   fullWidth?: boolean;
+  // Extra classes sumadas al trigger — ej. un override de ancho con `!`
+  // (important) para un breakpoint puntual, ya que el ancho fijo de acá
+  // arriba se aplica vía `style` inline y le gana a una clase normal.
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -720,6 +769,7 @@ function DateTimeField({
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
+  const direction = useDropdownDirection(ref, open, 400);
 
   // Sincroniza selectedDate/hora cada vez que cambia `value`, sin importar
   // si el popover está abierto — antes solo sincronizaba al abrir, así que
@@ -749,7 +799,8 @@ function DateTimeField({
           // `!` (important): MOD_FIELD_CLS ya trae bg-white/text-gray-900, que en
           // el CSS compilado ganan igual sin importar el orden en que se
           // concatenan los strings acá (ver mismo fix en AbmCampo/disabledCls).
-          (muted ? " !bg-gray-100 !text-gray-500" : disabled ? " !bg-gray-50 !text-gray-900" : "")
+          (muted ? " !bg-gray-100 !text-gray-500" : disabled ? " !bg-gray-50 !text-gray-900" : "") +
+          (className ? ` ${className}` : "")
         }
         style={fullWidth ? undefined : { width: 170, flexShrink: 0 }}
       >
@@ -759,7 +810,7 @@ function DateTimeField({
       {!disabled && open && (
         <div
           className="absolute z-30 bg-white border border-gray-300 rounded-lg p-4"
-          style={{ top: "calc(100% + 6px)", width: "max-content", boxShadow: "var(--shadow-high)" }}
+          style={{ ...dropdownAnchorStyle(direction, 6), width: "max-content", boxShadow: "var(--shadow-high)" }}
         >
           <DayPicker
             mode="single"
@@ -809,6 +860,10 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
+  // Solo aplica al caso no-colapsado (flyout vertical) — el colapsado abre
+  // hacia el costado (flyout horizontal), geometría distinta que no entra
+  // en el criterio arriba/abajo.
+  const direction = useDropdownDirection(ref, open, 170);
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <button
@@ -835,8 +890,8 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
       </button>
       {open && (
         <div
-          className={`absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "bottom-[calc(100%+6px)] left-0 right-0"} bg-white rounded-sm border border-gray-300 py-1 z-50 min-w-[160px]`}
-          style={{ boxShadow: "var(--shadow-mid)" }}
+          className={`absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "left-0 right-0"} bg-white rounded-sm border border-gray-300 py-1 z-50 min-w-[160px]`}
+          style={collapsed ? { boxShadow: "var(--shadow-mid)" } : { ...dropdownAnchorStyle(direction, 6), boxShadow: "var(--shadow-mid)" }}
         >
           <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-gray-50 transition-colors">
             <IcoUser /> Mi perfil
@@ -2201,7 +2256,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     }
   }
 
-  const inputCls = "w-full px-[8px] py-[12px] border border-gray-500 rounded-sm bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
+  const inputCls = "w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-gray-500 rounded-sm bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
   const inputStyle: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: "var(--color-gray-900)", lineHeight: "20px", letterSpacing: "0.14px" };
   const labelStyle: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: "var(--color-gray-700)", lineHeight: "20px", letterSpacing: "0.14px" };
 
@@ -2221,18 +2276,22 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
         </div>
       </div>
 
-      {/* Right half: 600px card, top aligned ~15px below logo */}
-      <div className="relative flex-1 flex flex-col" style={{ paddingTop: "calc(38vh + 15px)" }}>
+      {/* Right half: 600px card, top aligned ~15px below logo. Todo el
+          padding/gap de acá abajo es en px inline (no clases Tailwind), así
+          que no participa de --spacing — cada valor que aporta alto
+          vertical usa var(--login-*, valor-normal) para poder achicarse en
+          tier 760px (ver index.css) sin tocar el tamaño normal. */}
+      <div className="relative flex-1 flex flex-col" style={{ paddingTop: "var(--login-top-offset, calc(38vh + 15px))" }}>
         <div className="bg-gray-50 rounded-tl-[12px] rounded-tr-[12px] flex flex-col overflow-hidden flex-1 min-h-0" style={{ width: 600, margin: "0 auto" }}>
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0" style={{ paddingTop: 60, paddingLeft: 32, paddingRight: 32, paddingBottom: 32 }}>
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0" style={{ paddingTop: "var(--login-form-pt, 60px)", paddingLeft: 32, paddingRight: 32, paddingBottom: "var(--login-form-pb, 32px)" }}>
             {/* Header */}
-            <div className="flex flex-col gap-[8px] shrink-0">
-              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 40, color: "var(--color-secondary)", lineHeight: "40px" }}>Bienvenido </p>
+            <div className="flex flex-col gap-[8px] [@media(max-height:760px)]:gap-[var(--login-header-gap,8px)] shrink-0">
+              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "var(--login-title-size, 40px)", color: "var(--color-secondary)", lineHeight: "var(--login-title-line, 40px)" }}>Bienvenido </p>
               <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 16, color: "var(--color-gray-700)", lineHeight: "20px", letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
             </div>
 
             {/* Inputs */}
-            <div className="flex flex-col shrink-0" style={{ marginTop: 24, gap: 32 }}>
+            <div className="flex flex-col shrink-0" style={{ marginTop: "var(--login-inputs-mt, 24px)", gap: "var(--login-inputs-gap, 32px)" }}>
               <div className="flex flex-col gap-[4px]">
                 <label style={labelStyle}>Usuario</label>
                 <input type="text" autoComplete="username" value={usuario} onChange={e => { setUsuario(e.target.value); setError(""); }} className={inputCls} style={inputStyle} />
@@ -2248,12 +2307,16 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             )}
 
             {/* Button */}
-            <div className="shrink-0" style={{ marginTop: 32 }}>
+            <div className="shrink-0" style={{ marginTop: "var(--login-button-mt, 32px)" }}>
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full rounded-sm text-white hover:brightness-110 disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all"
-                style={{ backgroundColor: "var(--color-primary)", fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 16, lineHeight: "20px", padding: "12px 24px", boxShadow: "0px 1px 2px 0px rgba(16,24,40,0.05)" }}
+                style={{
+                  backgroundColor: "var(--color-primary)", fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 16, lineHeight: "20px",
+                  paddingTop: "var(--login-button-py, 12px)", paddingBottom: "var(--login-button-py, 12px)", paddingLeft: 24, paddingRight: 24,
+                  boxShadow: "0px 1px 2px 0px rgba(16,24,40,0.05)",
+                }}
               >
                 {loading ? "Ingresando…" : "Confirmar"}
               </button>
@@ -2369,6 +2432,7 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
+  const direction = useDropdownDirection(ref, open, 340);
   const mesFijo = new Date(anio, mes, 1);
   return (
     <div ref={ref} style={{ position: "relative" }} className="shrink-0">
@@ -2383,7 +2447,7 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
       {open && (
         <div
           className="absolute z-30 bg-white border border-gray-300 rounded-lg p-3"
-          style={{ bottom: "calc(100% + 6px)", right: 0, width: "max-content", boxShadow: "var(--shadow-high)" }}
+          style={{ ...dropdownAnchorStyle(direction, 6), right: 0, width: "max-content", boxShadow: "var(--shadow-high)" }}
         >
           <DayPicker
             mode="single"
@@ -2576,9 +2640,9 @@ function CronogramaEnre() {
 function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }) {
   const quickLinks: { code: string; tableKey: AbmTableKey; label: string; desc: string; icon: React.ReactNode }[] = [
     { code: "CDS2", tableKey: "cds2", label: "Interrupciones", desc: "Consulta y gestión de interrupciones computadas", icon: <IcoZap /> },
-    { code: "CDS3", tableKey: "cds3", label: "Interrupciones no computables", desc: "Registro de interrupciones no imputables", icon: <IcoZapOff /> },
-    { code: "CDS4", tableKey: "cds4", label: "Reposiciones", desc: "Seguimiento de reposiciones de servicio", icon: <IcoRefresh /> },
-    { code: "CDS8", tableKey: "cds8", label: "Reclamos", desc: "Gestión de reclamos de calidad de servicio", icon: <IcoMsg /> },
+    { code: "CDS3", tableKey: "cds3", label: "Interrupciones no computables", desc: "Registro de interrupciones no imputables", icon: <IcoZap /> },
+    { code: "CDS4", tableKey: "cds4", label: "Reposiciones", desc: "Seguimiento de reposiciones de servicio", icon: <IcoZap /> },
+    { code: "CDS8", tableKey: "cds8", label: "Reclamos", desc: "Gestión de reclamos de calidad de servicio", icon: <IcoZap /> },
   ];
 
   return (
@@ -3097,11 +3161,13 @@ function ButtonSelectGroup({
   selected,
   onToggle,
   disabled = false,
+  sizeCls = BTN_SM,
 }: {
   options: string[];
   selected: string[];
   onToggle: (opt: string) => void;
   disabled?: boolean;
+  sizeCls?: string;
 }) {
   return (
     <div className="flex gap-1.5 flex-wrap">
@@ -3114,7 +3180,7 @@ function ButtonSelectGroup({
             disabled={disabled}
             aria-pressed={isSel}
             onClick={() => onToggle(opt)}
-            className={`${BTN_SM} font-medium border transition-all duration-150 shrink-0 ${
+            className={`${sizeCls} font-medium border transition-all duration-150 shrink-0 ${
               disabled
                 ? isSel
                   ? "bg-primary-tint/60 border-primary/50 text-secondary/80 cursor-not-allowed"
@@ -3175,6 +3241,15 @@ function PersistentActionsBar({
   siempreHabilitadas: ActionItem[];
   condicionales: ActionItem[];
 }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+  const direction = useDropdownDirection(ref, open, 300);
+
   function Boton(a: ActionItem) {
     return (
       <button
@@ -3187,15 +3262,81 @@ function PersistentActionsBar({
       </button>
     );
   }
-  return (
-    <div
-      className="flex items-center gap-2 flex-wrap rounded-sm border border-gray-300 bg-white px-3 py-2.5 shrink-0"
-      style={{ boxShadow: "var(--shadow-low)" }}
-    >
-      {siempreHabilitadas.map(Boton)}
-      <div className="w-px h-5 bg-gray-300 shrink-0" />
-      {condicionales.map(Boton)}
+
+  function ItemMenu(a: ActionItem) {
+    return (
+      <button
+        key={a.label}
+        type="button"
+        disabled={a.disabled}
+        onClick={() => { a.onClick?.(); setOpen(false); }}
+        className={`w-full flex items-center px-2.5 py-2 rounded-sm text-left text-body transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none ${
+          a.variant === "destructive" ? "text-error hover:bg-red-50" : "text-gray-700 hover:bg-gray-100"
+        }`}
+      >
+        {a.label}
+      </button>
+    );
+  }
+
+  // El trigger+panel de tier 760px no vive acá abajo — se porta junto al
+  // buscador de la tabla "Interrupciones" (ver slot "acciones-tier2-slot",
+  // dentro de ModificarContent) — no al header de esa card, ni al de
+  // "Búsqueda", ni a la barra de título principal (esa es solo título +
+  // selector de período en toda la app). Esto elimina la fila/card entera
+  // de PersistentActionsBar en ese breakpoint en vez de solo vaciarla de
+  // contenido.
+  //
+  // El elemento con ese id vive en uno de dos renders condicionales según
+  // haya o no resultados (el buscador de tabla solo existe con datos
+  // cargados) — por eso `portalNode` se re-resuelve en CADA render (sin
+  // dependencias) en vez de una sola vez al montar: cuando cambia esa
+  // condición, React desmonta el div viejo y monta uno nuevo con el mismo
+  // id, y el efecto necesita volver a buscarlo o el portal quedaría
+  // apuntando a un nodo ya removido del DOM.
+  const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setPortalNode(document.getElementById("acciones-tier2-slot"));
+  });
+
+  const dropdown = (
+    <div ref={ref} className="hidden [@media(max-height:760px)]:block relative mr-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={actionBtnCls("neutral") + " inline-flex items-center gap-1.5"}
+      >
+        Acciones
+        <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}><ChevronDown /></span>
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 w-56 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden p-1.5 flex flex-col gap-0.5"
+          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
+        >
+          {siempreHabilitadas.map(ItemMenu)}
+          <div className="h-px bg-gray-200 my-0.5" />
+          {condicionales.map(ItemMenu)}
+        </div>
+      )}
     </div>
+  );
+
+  return (
+    <>
+      {/* Fila expandida — tamaño normal de ventana. Se esconde entera (no
+          solo se vacía) en tier 760px, porque el dropdown que la reemplaza
+          vive en el header (portal de acá abajo), no en este lugar. */}
+      <div
+        className="rounded-sm border border-gray-300 bg-white shrink-0 flex items-center gap-2 flex-wrap px-3 py-2.5 [@media(max-height:760px)]:hidden"
+        style={{ boxShadow: "var(--shadow-low)" }}
+      >
+        {siempreHabilitadas.map(Boton)}
+        <div className="w-px h-5 bg-gray-300 shrink-0" />
+        {condicionales.map(Boton)}
+      </div>
+      {portalNode && createPortal(dropdown, portalNode)}
+    </>
   );
 }
 
@@ -3225,7 +3366,7 @@ function ModificarContent({
   // Campos de la barra principal de Búsqueda que antes quedaban sin
   // controlar — ahora necesitan estado propio para poder autocompletarse
   // con los datos de la interrupción seleccionada en la tabla de abajo.
-  const [nivelSel, setNivelSel] = useState("BT");
+  const [nivelSel, setNivelSel] = useState("");
   const [codigoBusqueda, setCodigoBusqueda] = useState("");
   const [faseSel, setFaseSel] = useState("");
   const [desarmeOpen, setDesarmeOpen] = useState(false);
@@ -3269,7 +3410,7 @@ function ModificarContent({
       setTipoSel(selectedRecord.tipo);
       setFlyoutFilters((prev) => ({ ...prev, fecha: selectedRecord.fecha }));
     } else {
-      setNivelSel("BT");
+      setNivelSel("");
       setCodigoBusqueda("");
       setFaseSel("");
       setOrigenSel(null);
@@ -3376,25 +3517,6 @@ function ModificarContent({
       ?.scrollIntoView({ block: "nearest" });
   }, [modSelectedRow]);
 
-  // Interrupciones y Reposiciones tienen que quedar SIEMPRE del mismo alto
-  // fijo — el que ya sale bien al montar el panel (sin selección, sin
-  // resultados) — sin importar cuántas filas/datos traigan después. Se
-  // mide el alto natural de Card B (Reposiciones) UNA SOLA VEZ al montar
-  // (antes de aplicarle una altura explícita a sí misma) y ese valor queda
-  // congelado para siempre como altura fija de ambas cards; cada una
-  // scrollea su contenido internamente (flex-1 min-h-0 overflow-y-auto)
-  // en vez de crecer. Deliberadamente NO se vuelve a medir en cada cambio
-  // de contenido (nada de ResizeObserver corriendo todo el tiempo): eso es
-  // justamente lo que antes dejaba que resultados/selección estiraran la
-  // card y terminaran empujando el scroll de toda la página.
-  const cardBRef = useRef<HTMLDivElement>(null);
-  const [cardBHeight, setCardBHeight] = useState<number | undefined>(undefined);
-  useLayoutEffect(() => {
-    const el = cardBRef.current;
-    if (!el) return;
-    setCardBHeight(el.offsetHeight);
-  }, []);
-
   function handleModListKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (!modShowData || modVisibleIndices.length === 0) return;
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
@@ -3411,9 +3533,57 @@ function ModificarContent({
     setModSelectedRow(modVisibleIndices[Math.max(nextPos, 0)]);
   }
 
+  // Más filtros / Limpiar / Buscar — mismo lugar (pegados a la derecha de la
+  // fila de filtros) en cualquier tamaño de ventana.
+  const masFiltrosBtn = (
+    <button
+      type="button"
+      onClick={() => setFlyoutOpen((v) => !v)}
+      className={`${BTN_MD} font-medium border flex items-center gap-1.5 transition-all duration-150 ${
+        activeFlyoutFields.length > 0
+          ? "bg-primary-tint border-primary text-secondary"
+          : "bg-white border-gray-400 text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
+      }`}
+    >
+      <IcoFilter />
+      Más filtros
+      {activeFlyoutFields.length > 0 && (
+        <span className="w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center">
+          {activeFlyoutFields.length}
+        </span>
+      )}
+    </button>
+  );
+  const limpiarBuscarBtns = (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setModShowData(false);
+          setModSelectedRow(null);
+          setOrigenSel(null);
+          setTipoSel(null);
+          setFlyoutFilters(EMPTY_FLYOUT_FILTERS);
+          setNivelSel("");
+          setCodigoBusqueda("");
+          setFaseSel("");
+        }}
+        disabled={!modShowData}
+        className={`${BTN_MD} font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
+      >Limpiar</button>
+      <button
+        type="button"
+        onClick={() => { setModShowData(true); setModSelectedRow(null); }}
+        disabled={modShowData}
+        className={`${BTN_MD} font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
+        style={{ backgroundColor: "var(--color-primary)" }}
+      >Buscar</button>
+    </>
+  );
+
   return (
-    <div className="flex-1 overflow-y-auto p-5 relative">
-    <div className="flex flex-col gap-5">
+    <div className="flex-1 min-h-0 flex flex-col p-5 relative overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col gap-5 [@media(max-height:760px)]:gap-2">
 
         {/* Card A — título propio ("Búsqueda" + badge CDS2, mismo patrón que
             los paneles Búsqueda/Resultados del motor ABM) arriba de la
@@ -3424,23 +3594,16 @@ function ModificarContent({
             style={CARD_SHADOW}
           >
             <CardHeader title="Búsqueda" tag="CDS2" />
-            <div className="relative z-30 flex items-center gap-2 px-3 py-2.5">
-            <SelectWrap className="w-[60px] shrink-0">
-              <select
-                disabled={hasSelection}
-                className={MOD_SELECT_CLS + " w-full" + (hasSelection ? " !bg-gray-50 !text-gray-900" : "")}
-                style={{ fontWeight: 600 }}
-                value={nivelSel}
-                onChange={(e) => setNivelSel(e.target.value)}
-              >
-                <option>BT</option><option>MT</option><option>AT</option>
-              </select>
-            </SelectWrap>
-
+            <div className="relative z-30 flex items-center gap-2 px-3 py-2.5 [@media(max-height:760px)]:flex-wrap">
+            {/* Ancho fijo (no crece a ocupar el sobrante) para que se vea
+                proporcionado contra Nivel/Fase — 190px en tamaño normal,
+                bastante más chico en tier 760px vía el `!` important de
+                abajo (el ancho normal es inline, gana a una clase sin
+                important). */}
             <input
               disabled={hasSelection}
               placeholder={`Ej: ${RECORD.referencia}`}
-              className={MOD_FIELD_CLS + (hasSelection ? " !bg-gray-50 !text-gray-900" : "")}
+              className={MOD_FIELD_CLS + (hasSelection ? " !bg-gray-50 !text-gray-900" : "") + " [@media(max-height:760px)]:!w-[112px]"}
               style={{ width: 190, flexShrink: 0, fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-body-sm)" }}
               value={codigoBusqueda}
               onChange={(e) => setCodigoBusqueda(e.target.value)}
@@ -3451,12 +3614,26 @@ function ModificarContent({
               onChange={(v) => setFlyoutFilters((prev) => ({ ...prev, fecha: v }))}
               disabled={hasSelection}
               muted={false}
+              className="[@media(max-height:760px)]:!w-[128px]"
             />
 
-            <SelectWrap className="w-[110px] shrink-0">
+            <SelectWrap className="w-[88px] shrink-0">
               <select
                 disabled={hasSelection}
-                className={MOD_SELECT_CLS + " w-full" + (hasSelection ? " !bg-gray-50 !text-gray-900" : "")}
+                className={MOD_SELECT_CLS + " w-full" + (hasSelection ? " !bg-gray-50 !text-gray-900" : "") + (!nivelSel ? " !text-gray-500" : "")}
+                style={{ fontWeight: nivelSel ? 600 : 400 }}
+                value={nivelSel}
+                onChange={(e) => setNivelSel(e.target.value)}
+              >
+                <option value="" disabled>Nivel</option>
+                <option>BT</option><option>MT</option><option>AT</option>
+              </select>
+            </SelectWrap>
+
+            <SelectWrap className="w-[84px] shrink-0">
+              <select
+                disabled={hasSelection}
+                className={MOD_SELECT_CLS + " w-full" + (hasSelection ? " !bg-gray-50 !text-gray-900" : "") + (!faseSel ? " !text-gray-500" : "")}
                 value={faseSel}
                 onChange={(e) => setFaseSel(e.target.value)}
               >
@@ -3468,62 +3645,60 @@ function ModificarContent({
 
             <div className="w-px h-5 bg-gray-300 shrink-0" />
 
-            <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500 shrink-0">Origen</span>
-            <ButtonSelectGroup
-              options={["Interno", "Externo"]}
-              selected={origenSel ? [origenSel] : []}
-              onToggle={(opt) => setOrigenSel(origenSel === opt ? null : opt)}
-              disabled={modShowData || hasSelection}
-            />
+            {/* Toggle Origen/Tipo — tamaño normal. En tier 760px pasan a
+                <select> nativo (ver más abajo): ocupan menos ancho por lo
+                que aportan, justo lo que le faltaba a esta fila. */}
+            <div className="contents [@media(max-height:760px)]:hidden">
+              <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500 shrink-0">Origen</span>
+              <ButtonSelectGroup
+                options={["Interno", "Externo"]}
+                selected={origenSel ? [origenSel] : []}
+                onToggle={(opt) => setOrigenSel(origenSel === opt ? null : opt)}
+                disabled={modShowData || hasSelection}
+                sizeCls={BTN_SM.replace("h-7", "h-8")}
+              />
 
-            <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500 shrink-0">Tipo</span>
-            <ButtonSelectGroup
-              options={["Forzado", "Programado"]}
-              selected={tipoSel ? [tipoSel] : []}
-              onToggle={(opt) => setTipoSel(tipoSel === opt ? null : opt)}
-              disabled={modShowData || hasSelection}
-            />
+              <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500 shrink-0">Tipo</span>
+              <ButtonSelectGroup
+                options={["Forzado", "Programado"]}
+                selected={tipoSel ? [tipoSel] : []}
+                onToggle={(opt) => setTipoSel(tipoSel === opt ? null : opt)}
+                disabled={modShowData || hasSelection}
+                sizeCls={BTN_SM.replace("h-7", "h-8")}
+              />
+            </div>
 
-            <div className="ml-auto flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setFlyoutOpen((v) => !v)}
-                className={`${BTN_MD} font-medium border flex items-center gap-1.5 transition-all duration-150 ${
-                  activeFlyoutFields.length > 0
-                    ? "bg-primary-tint border-primary text-secondary"
-                    : "bg-white border-gray-400 text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
-                }`}
+            <SelectWrap className="hidden [@media(max-height:760px)]:block w-[92px] shrink-0">
+              <select
+                disabled={modShowData || hasSelection}
+                className={MOD_SELECT_CLS + " w-full" + (!origenSel ? " !text-gray-500" : "")}
+                value={origenSel ?? ""}
+                onChange={(e) => setOrigenSel(e.target.value || null)}
               >
-                <IcoFilter />
-                Más filtros
-                {activeFlyoutFields.length > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center">
-                    {activeFlyoutFields.length}
-                  </span>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setModShowData(false);
-                  setModSelectedRow(null);
-                  setOrigenSel(null);
-                  setTipoSel(null);
-                  setFlyoutFilters(EMPTY_FLYOUT_FILTERS);
-                  setNivelSel("BT");
-                  setCodigoBusqueda("");
-                  setFaseSel("");
-                }}
-                disabled={!modShowData}
-                className={`${BTN_MD} font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
-              >Limpiar</button>
-              <button
-                type="button"
-                onClick={() => { setModShowData(true); setModSelectedRow(null); }}
-                disabled={modShowData}
-                className={`${BTN_MD} font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
-                style={{ backgroundColor: "var(--color-primary)" }}
-              >Buscar</button>
+                <option value="" disabled>Origen</option>
+                <option>Interno</option>
+                <option>Externo</option>
+              </select>
+            </SelectWrap>
+
+            <SelectWrap className="hidden [@media(max-height:760px)]:block w-[112px] shrink-0">
+              <select
+                disabled={modShowData || hasSelection}
+                className={MOD_SELECT_CLS + " w-full" + (!tipoSel ? " !text-gray-500" : "")}
+                value={tipoSel ?? ""}
+                onChange={(e) => setTipoSel(e.target.value || null)}
+              >
+                <option value="" disabled>Tipo</option>
+                <option>Forzado</option>
+                <option>Programado</option>
+              </select>
+            </SelectWrap>
+
+            {/* Más filtros / Limpiar / Buscar juntos, pegados a la derecha —
+                mismo lugar en cualquier tamaño de ventana. */}
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+              {masFiltrosBtn}
+              {limpiarBuscarBtns}
             </div>
             </div>
 
@@ -3640,23 +3815,37 @@ function ModificarContent({
       />
 
       {/* ── FILA INFERIOR — tabla de datos y Reposiciones (CDS4), una al lado de
-          la otra, misma altura (stretch: ninguna de las dos fuerza una altura
-          propia, ambas quedan del alto de la más alta) ── */}
-      <div className={`flex items-stretch gap-5 transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
+          la otra. flex-1 min-h-0 hace que la fila ocupe el resto del alto
+          disponible (nunca más) y que ambas cards, al estirarse (stretch,
+          default de un flex row) al alto de la fila, queden parejas — cada
+          una scrollea su body internamente (flex-1 min-h-0 overflow-y-auto)
+          en vez de crecer con el contenido y empujar scroll de página. ── */}
+      <div className={`flex-1 min-h-0 flex gap-5 transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
 
       {/* ── Tabla de datos — navegador de referencias, mismo alto y mismo
           tratamiento de card que Card B ── */}
       <div
-        className="flex-1 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
-        style={{ ...CARD_SHADOW, height: cardBHeight }}
+        className="flex-1 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden [@media(max-height:760px)]:flex-[2]"
+        style={CARD_SHADOW}
       >
 
         {/* Header — mismo componente/tratamiento que el de Card B (Reposiciones) */}
         <CardHeader title="Interrupciones" tag="CDS2" />
 
-        {/* Table toolbar — solo buscador, sin Exportar (no se requiere acá) */}
-        {modShowData && (
-          <TableToolbar search={modSearch} onSearchChange={setModSearch} hideExport />
+        {/* Table toolbar — solo buscador, sin Exportar. En tier 760px suma
+            el dropdown "Acciones" a la derecha del buscador (children,
+            tiene lugar de sobra ahí) en vez de una fila propia. Con
+            resultados vacíos no hay buscador que mostrar, así que el slot
+            vive en una franja mínima aparte — Desarmes/Lotes siguen
+            disponibles sin selección, no pueden depender de modShowData. */}
+        {modShowData ? (
+          <TableToolbar search={modSearch} onSearchChange={setModSearch} hideExport>
+            <div id="acciones-tier2-slot" className="hidden [@media(max-height:760px)]:flex items-center" />
+          </TableToolbar>
+        ) : (
+          <div className="hidden [@media(max-height:760px)]:flex items-center justify-end px-4 py-2 border-b border-gray-200 bg-white shrink-0">
+            <div id="acciones-tier2-slot" className="flex items-center" />
+          </div>
         )}
 
         {/* Tabla Referencia / Fecha */}
@@ -3720,22 +3909,26 @@ function ModificarContent({
         </div>
       </div>
 
-        {/* Card B — Reposiciones (CDS4). Mismo criterio que Card A: alto fijo
-            (congelado al montar) + body scrolleable propio, para que nunca
-            crezca con el contenido (banner de selección, filas de la
-            Tabla 4, etc.) ni empuje el scroll de la página. */}
+        {/* Card B — Reposiciones (CDS4). Mismo criterio que la card de
+            Interrupciones: nunca crece con el contenido (banner de
+            selección, filas de la Tabla 4, etc.) — body scrolleable propio
+            en vez de empujar el scroll de la página. En tier 760px el split
+            de la fila pasa de 50/50 a 40/60 (ver flex-[2]/flex-[3] acá y en
+            Interrupciones) — esta card es la que más necesita el ancho
+            extra para sus columnas. */}
         <div
-          ref={cardBRef}
-          className="flex-1 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
-          style={{ ...CARD_SHADOW, height: cardBHeight }}
+          className="flex-1 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden [@media(max-height:760px)]:flex-[3]"
+          style={CARD_SHADOW}
         >
           <CardHeader title="Reposiciones" tag="CDS4" />
           <div className="flex-1 min-h-0 overflow-y-auto">
 
             {/* Interrupción seleccionada — solo aparece con una fila activa
-                en la tabla de la derecha */}
+                en la tabla de la derecha. Oculto en tier 760px: no aporta
+                lo suficiente para el espacio que ocupa ahí (en tamaño
+                normal se queda como está). */}
             {selectedRecord && (
-              <div className="px-5 py-2.5 border-b border-gray-100 flex items-center gap-2">
+              <div className="px-5 py-2.5 border-b border-gray-100 flex items-center gap-2 [@media(max-height:760px)]:hidden">
                 <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Interrupción</span>
                 <span
                   className="text-body-sm font-medium text-gray-800 tabular-nums"
@@ -3817,9 +4010,18 @@ function ModificarContent({
             </div>
 
             {/* Indicadores de las tablas relacionadas — siguen abriendo el drawer */}
-            <div className="px-5 py-3 border-b border-gray-100">
+            <div className="px-5 py-3 border-b border-gray-100 [@media(max-height:760px)]:pb-2">
               <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">Tablas relacionadas</p>
-              <div className="grid grid-cols-3 gap-2">
+              {/* Tier 760px: los 5 tiles (Tabla 3/5/6/8/9) tienen que entrar
+                  en una sola fila. El ancho acá es el recurso escaso (esta
+                  card es la mitad de la fila inferior), no el alto — así
+                  que en vez de columnas parejas y angostas (grid-cols-N
+                  estira cada tile a lo alto), pasan a flex-wrap con cada
+                  tile en fila (label + valor una al lado de la otra, tipo
+                  "TABLA 3: 12") y ancho ajustado a su contenido: bajo y
+                  ancho en vez de angosto y alto. */}
+              {/* Tamaño normal: tiles como siempre. */}
+              <div className="grid grid-cols-3 gap-2 [@media(max-height:760px)]:hidden">
                 {STATUS_ITEMS.map((item) => (
                   <button
                     key={item.tabKey}
@@ -3839,11 +4041,33 @@ function ModificarContent({
                   </button>
                 ))}
               </div>
+
+              {/* Tier 760px: mismo patrón de chip/pill que "Filtros
+                  aplicados" (recap-chips) — clickeables igual que los
+                  tiles, todos en una fila (con wrap si no entran). Label
+                  (caption, atenuado) y valor (más peso, color secundario)
+                  separados — antes se leían empastados con el mismo peso. */}
+              <div className="hidden [@media(max-height:760px)]:flex items-center flex-wrap gap-2">
+                {STATUS_ITEMS.map((item) => (
+                  <button
+                    key={item.tabKey}
+                    type="button"
+                    disabled={!hasSelection}
+                    onClick={() => setDrawerTab(item.tabKey)}
+                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full bg-primary-tint border border-[#B9D2FB] transition-all duration-150 hover:brightness-95 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span className="text-caption text-secondary/60">{item.label}:</span>
+                    <span className="text-body-sm font-bold text-secondary">
+                      {hasSelection ? valoresRelacionadas?.[item.tabKey] : "—"}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Datos de la Interrupción — abre el modal del mismo nombre.
                 Sin selección no hay datos que mostrar ni modal que abrir. */}
-            <div className="px-5 py-4">
+            <div className="px-5 py-4 [@media(max-height:760px)]:pt-2">
               <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2.5">Datos de la Interrupción</p>
               {selectedRecord ? (
                 <button
@@ -4265,12 +4489,19 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
       {
         titulo: "Clasificación",
+        // Orden Nivel, Fase, Origen, Tipo (no el orden "de lectura" Nivel/
+        // Origen/Tipo/Fase) — en tamaño normal esta fila de 4 sigue en una
+        // sola línea (gridTemplateColumns propio de AbmFila, no le importa
+        // el orden), pero en tier 760px (grilla plana de 2 columnas, ver
+        // AbmScreen) el wrap natural empareja de a 2 en el orden del
+        // array: así entran (Nivel+Fase) y (Origen+Tipo), no (Nivel+Origen)
+        // y (Tipo+Fase).
         filas: [
           [
             { nombre: "nivelTension", label: "Nivel de tensión", tipo: "toggle", opciones: ["BT", "MT", "AT"] },
+            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "select", opciones: ["R", "S", "T", "RST"] },
             { nombre: "origen", label: "Origen", tipo: "toggle", opciones: [{ value: "I", label: "Interno" }, { value: "E", label: "Externo" }] },
             { nombre: "tipo", label: "Tipo", tipo: "toggle", opciones: [{ value: "F", label: "Forzado" }, { value: "P", label: "Programado" }] },
-            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "select", opciones: ["R", "S", "T", "RST"] },
           ],
         ],
       },
@@ -4833,6 +5064,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
+  const direction = useDropdownDirection(ref, open, 450);
   const current = ABM_TABLE_CONFIGS[value];
   return (
     <div ref={ref} style={{ position: "relative" }} className="min-w-0">
@@ -4858,8 +5090,8 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
       </button>
       {open && (
         <div
-          className="absolute left-0 top-[calc(100%+5px)] w-96 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-          style={{ boxShadow: "var(--shadow-mid)" }}
+          className="absolute left-0 w-96 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
         >
           <div className="px-3 py-2.5 border-b border-gray-100">
             <p className="text-caption font-semibold text-gray-600 uppercase tracking-[0.08em] select-none">Cambiar de tabla</p>
@@ -4986,7 +5218,7 @@ function AbmCampo({
     return (
       <div>
         <FieldLabel>{campo.label}</FieldLabel>
-        <div className="flex gap-2 mt-0.5">
+        <div className="flex gap-2 mt-0.5 [@media(max-height:760px)]:w-full">
           {toggleOpts.map((opt) => {
             const active = v === opt.value;
             return (
@@ -4995,7 +5227,12 @@ function AbmCampo({
                 type="button"
                 disabled={isDisabled}
                 onClick={() => onChange?.(active ? "" : opt.value)}
-                className={`${BTN_SM.replace("h-7", "h-8")} ${campo.expandirBotones ? "flex-1" : ""} flex items-center justify-center border select-none font-medium transition-all duration-150 ${
+                // Tier 760px: la grilla plana de AbmScreen estira TODO
+                // campo a w-full en su celda, toggles incluidos — de ahí el
+                // flex-1 incondicional en ese breakpoint (en tamaño normal
+                // sigue siendo shrink-to-fit salvo que expandirBotones lo
+                // pida explícitamente).
+                className={`${BTN_SM.replace("h-7", "h-8")} ${campo.expandirBotones ? "flex-1" : ""} [@media(max-height:760px)]:flex-1 flex items-center justify-center border select-none font-medium transition-all duration-150 ${
                   estado === "disabled" ? "cursor-not-allowed opacity-60" : isDisabled ? "cursor-default" : "cursor-pointer"
                 } ${
                   active
@@ -5110,6 +5347,7 @@ function AbmCombobox({
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
+  const direction = useDropdownDirection(ref, open, 450);
   // Si el campo pasa a no-editable (ej. se seleccionó una fila en
   // Resultados mientras el panel estaba abierto) no debe quedar un panel
   // huérfano abierto sobre un trigger ya bloqueado.
@@ -5129,13 +5367,18 @@ function AbmCombobox({
   return (
     <div>
       <FieldLabel>{campo.label}</FieldLabel>
-      <div ref={ref} style={{ position: "relative" }}>
+      {/* w-full explícito: a diferencia de un <select> nativo (que centra su
+          texto verticalmente solo), este trigger es un <button>, que
+          necesita flex items-center para lo mismo — sin eso el texto queda
+          pegado arriba y el control se ve más chico/desalineado que un
+          select vecino aunque midan lo mismo por CSS. */}
+      <div ref={ref} style={{ position: "relative" }} className="w-full">
         <SelectWrap>
           <button
             type="button"
             disabled={isDisabled}
             onClick={() => setOpen((v) => !v)}
-            className={selectCls + estadoCls + " text-left" + (!value ? " !text-gray-500" : "")}
+            className={selectCls + estadoCls + " flex items-center text-left" + (!value ? " !text-gray-500" : "")}
           >
             {/* || (no ??): value "" es "sin selección", no un valor real a
                 mostrar — con ?? quedaría en blanco en vez de "Seleccione". */}
@@ -5144,8 +5387,8 @@ function AbmCombobox({
         </SelectWrap>
         {open && !isDisabled && (
           <div
-            className="absolute left-0 top-[calc(100%+5px)] w-full bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-            style={{ boxShadow: "var(--shadow-mid)" }}
+            className="absolute left-0 w-full bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+            style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
           >
             <div className="p-1.5 border-b border-gray-100">
               <input
@@ -5238,9 +5481,14 @@ function AbmFila({
       : fila.map((c) => (esCompacto(c.tipo) ? "auto" : "1fr")).join(" ")
     : undefined;
   const todosCompactos = isMulti && !columnasCompartidas && fila.every((c) => esCompacto(c.tipo));
+  // A partir de 3 campos la fila ya usa casi todo el ancho del panel — en el
+  // grid de 2 columnas de la sección (ver AbmScreen, tier 760px) tiene que
+  // ocupar las 2 para no aplastar sus campos a la mitad. Filas de 1-2 campos
+  // sí pueden emparejarse una al lado de la otra.
+  const spanTodas = fila.length >= 3;
   return (
     <div
-      className={isMulti ? "grid gap-3 items-end" : ""}
+      className={`${isMulti ? "grid gap-3 items-end" : ""}${spanTodas ? " [@media(max-height:760px)]:col-span-2" : ""}`}
       style={
         isMulti
           ? { gridTemplateColumns: gridTemplate, justifyContent: todosCompactos ? "space-between" : undefined }
@@ -5317,6 +5565,21 @@ function AbmScreen({
   onVolver?: () => void;
 }) {
   const config = ABM_TABLE_CONFIGS[tableKey];
+  // Tier 760px: la grilla plana del panel de Búsqueda (ver más abajo) es de
+  // 2 columnas por default, ya validado contra Tabla 2 (12 campos, 6 filas
+  // — entra sin scroll). Tablas con más campos que eso (CDS8: 14, la más
+  // cargada — sección Cliente sola tiene 9) no entran en 6 filas y siguen
+  // necesitando scroll con solo 2 columnas; el criterio de "cero scroll"
+  // pesa más que mantener el mismo número de columnas en todas las tablas.
+  // Contar los campos totales de la tabla (no medir nada en el DOM) alcanza
+  // para decidirlo de antemano, sin necesidad de una lista hardcodeada de
+  // tablas ni de lógica por tabla en el JSX de abajo.
+  const totalCamposTabla = config.secciones.reduce((acc, sec) => acc + sec.filas.flat().length, 0);
+  const usaTresColumnasTier2 = totalCamposTabla > 12;
+  const filasGridColsTier2Cls = usaTresColumnasTier2 ? "[@media(max-height:760px)]:grid-cols-3" : "[@media(max-height:760px)]:grid-cols-2";
+  // Si la tabla usa 3 columnas, un campo `expandirBotones` necesita las 3
+  // para ocupar todo el ancho (no las 2 de siempre) — ver más abajo.
+  const expandirBotonesSpanCls = usaTresColumnasTier2 ? "[@media(max-height:760px)]:col-span-3" : "[@media(max-height:760px)]:col-span-2";
   const [mode, setMode] = useState<AbmMode>("buscar");
   const [showData, setShowData] = useState(false);
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
@@ -5555,7 +5818,7 @@ function AbmScreen({
           ni dropdown genérico. */}
       <header
         className="flex items-center gap-3 px-6 border-b border-gray-300 shrink-0"
-        style={{ minHeight: 60, backgroundColor: "var(--color-gray-50)", boxShadow: "0 1px 0 var(--color-gray-300)" }}
+        style={{ minHeight: "var(--header-min-height, 60px)", backgroundColor: "var(--color-gray-50)", boxShadow: "0 1px 0 var(--color-gray-300)" }}
       >
         {volverVisible && (
           <button
@@ -5579,7 +5842,13 @@ function AbmScreen({
 
         {/* ── Left column: form ── */}
         <div
-          className="flex flex-col rounded-sm border border-gray-300 bg-white shrink-0 overflow-hidden"
+          // Tier 760px: el split pasa de 41/resto a ~47/resto — al revés que
+          // en Interrupciones/Reposiciones (acá es Búsqueda la que le sobra
+          // espacio a Resultados y necesita más ancho para acomodar más
+          // columnas de campos, ver la sección de abajo). El ancho normal
+          // (41%, inline) tiene prioridad de especificidad sobre una clase
+          // sin `!important`, de ahí el `!w-[47%]`.
+          className="flex flex-col rounded-sm border border-gray-300 bg-white shrink-0 overflow-hidden [@media(max-height:760px)]:!w-[47%]"
           style={{ width: "41%", boxShadow: "var(--shadow-low)" }}
         >
           <CardHeader
@@ -5590,10 +5859,19 @@ function AbmScreen({
             {config.secciones.map((sec) => {
               const conteoPorLongitud = new Map<number, number>();
               for (const fila of sec.filas) conteoPorLongitud.set(fila.length, (conteoPorLongitud.get(fila.length) ?? 0) + 1);
+              // Tier 760px reemplaza el sistema de filas/columnasCompartidas
+              // de acá abajo por una grilla fija y genérica: TODOS los
+              // campos de la sección, sin importar cómo la tabla los
+              // agrupó en `filas`, se aplanan y se acomodan de a 2 por
+              // línea en un grid-template-columns: repeat(2, minmax(0,1fr))
+              // — el wrap natural de CSS grid, no un reordenamiento manual
+              // por tabla. Mismo mecanismo para las 9 tablas.
+              const camposPlanos = sec.filas.flat();
               return (
                 <div key={sec.titulo}>
                   <SectionDivider title={sec.titulo} />
-                  <div className="flex flex-col gap-3">
+                  {/* Tamaño normal: sistema de filas de siempre. */}
+                  <div className="flex flex-col gap-3 [@media(max-height:760px)]:hidden">
                     {sec.filas.map((fila, fi) => (
                       <AbmFila
                         key={fi}
@@ -5605,6 +5883,34 @@ function AbmScreen({
                         consultando={consultando}
                         columnasCompartidas={(conteoPorLongitud.get(fila.length) ?? 0) > 1}
                       />
+                    ))}
+                  </div>
+                  {/* Tier 760px: grilla fija a lo ancho completo del panel
+                      — 2 o 3 columnas según cuántos campos tenga la tabla
+                      en total (ver totalCamposTabla más arriba) — cada
+                      campo (toggle, select o input) estira a w-full dentro
+                      de su celda. */}
+                  <div className={`hidden [@media(max-height:760px)]:grid ${filasGridColsTier2Cls} [@media(max-height:760px)]:items-end [@media(max-height:760px)]:gap-3`}>
+                    {camposPlanos.map((campo) => (
+                      // `expandirBotones` es la señal existente de "este
+                      // toggle necesita todo el ancho disponible, no una
+                      // celda" (ver Causa en CDS3, Zona en CDS7) — acá eso
+                      // se traduce en ocupar todas las columnas de la
+                      // grilla plana (2 o 3 según la tabla), no solo una.
+                      // Sin esto, un toggle de 1-2 opciones largas queda a
+                      // una fracción del ancho del panel y el texto rompe a
+                      // 2 líneas.
+                      <div key={campo.nombre} className={campo.expandirBotones ? expandirBotonesSpanCls : ""}>
+                        <AbmCampo
+                          campo={campo}
+                          mode={mode}
+                          value={valores[campo.nombre]}
+                          onChange={(v) => setValor(campo.nombre, v)}
+                          lockedEnModificar={camposLocked.includes(campo.nombre)}
+                          consultando={consultando}
+                          valoresFormulario={valores}
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -5675,12 +5981,14 @@ function AbmScreen({
                     vive acá siempre visible/habilitada, no en la fila ni
                     atada a una selección (corrige un comportamiento heredado
                     del producto original que la ataba a un registro). */}
-                <button type="button" className={actionBtnCls("neutral")}>
-                  <span className="inline-flex items-center gap-1.5"><IcoShield /> Auditoría</span>
+                <button type="button" title="Auditoría" aria-label="Auditoría" className={actionBtnCls("neutral")}>
+                  <span className="inline-flex items-center gap-1.5"><IcoShield /> <span className="[@media(max-height:760px)]:hidden">Auditoría</span></span>
                 </button>
                 {showData && (
                   <button
                     type="button"
+                    title="Exportar"
+                    aria-label="Exportar"
                     onClick={() =>
                       exportRowsToCsv(
                         config.exportFilename,
@@ -5690,12 +5998,12 @@ function AbmScreen({
                     }
                     className={actionBtnCls("neutral")}
                   >
-                    Exportar
+                    <span className="inline-flex items-center gap-1.5"><IcoDownload /> <span className="[@media(max-height:760px)]:hidden">Exportar</span></span>
                   </button>
                 )}
                 {config.hasInsertar && (
-                  <button type="button" onClick={handleAbrirAlta} className={actionBtnCls("neutral")}>
-                    <span className="inline-flex items-center gap-1.5"><IcoPlus /> Insertar</span>
+                  <button type="button" title="Insertar" aria-label="Insertar" onClick={handleAbrirAlta} className={actionBtnCls("neutral")}>
+                    <span className="inline-flex items-center gap-1.5"><IcoPlus /> <span className="[@media(max-height:760px)]:hidden">Insertar</span></span>
                   </button>
                 )}
               </div>
@@ -6332,11 +6640,38 @@ function AuditoriaContent() {
   );
 }
 
+// Sigue una media query en vivo (matchMedia + listener de "change") — usado
+// para el acordeón del sidebar en tier 760px (ver App): a diferencia de una
+// clase Tailwind condicionada por CSS, acá el breakpoint tiene que cambiar
+// comportamiento real (qué grupo se auto-expande, qué handler navega vs.
+// solo despliega), no nada más apariencia.
+function useMatchMedia(query: string): boolean {
+  const [matches, setMatches] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = () => setMatches(mql.matches);
+    onChange();
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, [query]);
+  return matches;
+}
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>("login");
   const [collapsed, setCollapsed] = useState(false);
   const [lastAbmTable, setLastAbmTable] = useState<AbmTableKey>("cds2");
   const [abmExpanded, setAbmExpanded] = useState(true);
+  // "Otros" no es desplegable en el tamaño normal (label fijo, ver más
+  // abajo) — este estado solo importa en el acordeón compacto de tier
+  // 760px, donde ABM/Otros pasan a excluirse mutuamente.
+  const [otrosExpanded, setOtrosExpanded] = useState(true);
+  // Notebooks de 14" (ventana baja): "Alta, Baja y Modificación" (9 tablas)
+  // y "Otros" (5 pantallas) expandidos a la vez es lo primero que se corta
+  // (tapa ítems contra el footer del sidebar). Acá SÍ hace falta JS real
+  // (no solo CSS) porque cambia comportamiento — qué grupo se auto-expande
+  // y cuál handler colapsa al otro — no solo apariencia.
+  const compactSidebar = useMatchMedia("(max-height: 760px)");
   // Deep-link pendiente hacia una tabla ABM (ej. desde el drawer "Tablas
   // relacionadas" de Modificar interrupción) — AbmScreen lo consume al
   // montar/cambiar de tabla y precarga campo, ejecuta búsqueda o entra en
@@ -6351,6 +6686,46 @@ export default function App() {
   // lo consume ModificarContent como valor inicial en su próximo mount.
   const [modificarInitialDrawerTab, setModificarInitialDrawerTab] = useState<string | null>(null);
   const [modificarInitialReferencia, setModificarInitialReferencia] = useState<string | null>(null);
+
+  // Acordeón de uno-abierto-a-la-vez del sidebar compacto (tier 760px):
+  // abre el grupo que contiene `target` y cierra el otro. No hace nada si
+  // la ventana no está en el tier compacto — en tamaño normal ambos grupos
+  // siguen su comportamiento de siempre (ABM toggleable a mano, Otros
+  // siempre expandido). Función plana (no hook) — puede vivir después de
+  // los early return de abajo sin problema; se referencia acá arriba por
+  // hoisting de `function`.
+  function syncAccordionCompacto(target: Screen) {
+    if (!compactSidebar) return;
+    if (isAbmTableKey(target)) {
+      setAbmExpanded(true);
+      setOtrosExpanded(false);
+    } else if (OTROS_ITEMS.some((it) => it.screen === target)) {
+      setAbmExpanded(false);
+      setOtrosExpanded(true);
+    } else {
+      setAbmExpanded(false);
+      setOtrosExpanded(false);
+    }
+  }
+
+  // Al entrar/salir del tier compacto (resize, o directamente montar con la
+  // ventana ya baja): en compacto, auto-expande el grupo de la pantalla
+  // activa y colapsa el resto; al volver a tamaño normal, restaura el
+  // default de siempre (ambos expandidos). No corre en cada cambio de
+  // `screen` — eso ya lo cubren las funciones de navegación de abajo vía
+  // syncAccordionCompacto, para no pisar un toggle manual del usuario en
+  // tamaño normal.
+  //
+  // Este hook (como todos los de App) tiene que quedar ANTES de los early
+  // return de login/select de abajo — Rules of Hooks: un hook detrás de un
+  // return condicional se salta en esos renders y React explota ("Rendered
+  // more hooks than during the previous render").
+  useEffect(() => {
+    if (compactSidebar) syncAccordionCompacto(screen);
+    else { setAbmExpanded(true); setOtrosExpanded(true); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compactSidebar]);
+
   if (screen === "login") return <LoginScreen onLogin={() => setScreen("select")} />;
   if (screen === "select") return <SelectScreen onSelect={(v) => setScreen(v === "nuevo" ? "welcome" : "select")} />;
 
@@ -6363,15 +6738,28 @@ export default function App() {
     setScreen(k);
     setLastAbmTable(k);
     setAbmExpanded(true);
+    if (compactSidebar) setOtrosExpanded(false);
     setVolverA(null);
   }
 
   // Click en el ítem padre "ABM": navega a la última tabla activa (o CDS2
-  // la primera vez) y despliega/colapsa los hijos.
+  // la primera vez) y despliega/colapsa los hijos. En el acordeón compacto,
+  // abrir ABM cierra "Otros" (uno-abierto-a-la-vez).
   function handleAbmParentClick() {
+    const next = !abmExpanded;
     setScreen(lastAbmTable);
-    setAbmExpanded((v) => !v);
+    setAbmExpanded(next);
+    if (compactSidebar && next) setOtrosExpanded(false);
     setVolverA(null);
+  }
+
+  // Click en el header "Otros" — solo clickeable en el acordeón compacto
+  // (ver sidebar): en tamaño normal sigue siendo un label fijo, decisión de
+  // diseño ya tomada que no se toca fuera de tier 760px.
+  function handleOtrosParentClick() {
+    const next = !otrosExpanded;
+    setOtrosExpanded(next);
+    if (compactSidebar && next) setAbmExpanded(false);
   }
 
   // Navegación a Inicio (sidebar) — sin estado previo que restaurar, igual
@@ -6379,11 +6767,13 @@ export default function App() {
   function irAInicio() {
     setVolverA(null);
     setScreen("welcome");
+    syncAccordionCompacto("welcome");
   }
 
   function irAOtroScreen(s: Screen) {
     setVolverA(null);
     setScreen(s);
+    syncAccordionCompacto(s);
   }
 
   // Navegación normal a Consultas de interrupción (sidebar) — sin estado
@@ -6393,6 +6783,7 @@ export default function App() {
     setModificarInitialReferencia(null);
     setVolverA(null);
     setScreen("modificar");
+    syncAccordionCompacto("modificar");
   }
 
   function irAAbmConDeepLink(link: AbmDeepLink) {
@@ -6408,6 +6799,7 @@ export default function App() {
     setModificarInitialReferencia(volverA?.referencia ?? null);
     setVolverA(null);
     setScreen("modificar");
+    syncAccordionCompacto("modificar");
   }
 
   return (
@@ -6420,7 +6812,12 @@ export default function App() {
 
       {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
       <aside style={{
-        width: collapsed ? 60 : 256,
+        // Tier 760px: sidebar ~26% más angosto (256 → 190) para devolverle
+        // ancho horizontal al contenido — es justo lo que le faltaba a la
+        // barra de Búsqueda. Los labels largos ("Alta, Baja y Modificación")
+        // truncan con ellipsis + title (tooltip nativo) si no entran, en vez
+        // de encimarse o cortarse sin indicación.
+        width: collapsed ? 60 : compactSidebar ? 190 : 256,
         transition: "width 220ms cubic-bezier(0.4,0,0.2,1)",
         backgroundColor: "var(--color-gray-50)",
         display: "flex", flexDirection: "column",
@@ -6495,6 +6892,7 @@ export default function App() {
             type="button"
             onClick={handleAbmParentClick}
             aria-expanded={abmExpanded}
+            title={!collapsed ? "Alta, Baja y Modificación" : undefined}
             style={{ position: "relative" }}
             className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-all duration-150 group
               ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
@@ -6506,7 +6904,7 @@ export default function App() {
             <span className="shrink-0"><IcoEdit /></span>
             {!collapsed && (
               <>
-                <span className="flex-1 text-body text-left leading-snug">Alta, Baja y Modificación</span>
+                <span className="flex-1 min-w-0 truncate text-body text-left leading-snug">Alta, Baja y Modificación</span>
                 <span className={`shrink-0 transition-transform duration-150 ${abmExpanded ? "" : "-rotate-90"}`}>
                   <ChevronDown />
                 </span>
@@ -6531,23 +6929,42 @@ export default function App() {
             </div>
           )}
 
-          {/* Otros group */}
-          {!collapsed
-            ? <p className="px-1 pt-5 pb-1.5 text-micro font-semibold uppercase tracking-[0.1em] text-gray-500 select-none">Otros</p>
-            : <div className="my-3 border-t border-gray-300 mx-auto w-8" />
-          }
-          <div className="flex flex-col gap-0.5">
-            {OTROS_ITEMS.map((item) => (
-              <NavItem
-                key={item.label}
-                label={item.label}
-                icon={item.icon}
-                active={screen === item.screen}
-                collapsed={collapsed}
-                onClick={() => irAOtroScreen(item.screen)}
-              />
-            ))}
-          </div>
+          {/* Otros group — label fijo, no clickeable, en tamaño normal
+              (decisión de diseño ya tomada). Solo en el acordeón compacto
+              (tier 760px) se vuelve un disclosure como el de ABM, porque
+              ahí sí hace falta poder colapsarlo para que ambos grupos no
+              se corten contra el footer. */}
+          {collapsed ? (
+            <div className="my-3 border-t border-gray-300 mx-auto w-8" />
+          ) : compactSidebar ? (
+            <button
+              type="button"
+              onClick={handleOtrosParentClick}
+              aria-expanded={otrosExpanded}
+              className="w-full flex items-center gap-1 px-1 pt-5 pb-1.5 text-micro font-semibold uppercase tracking-[0.1em] text-gray-500 select-none hover:text-gray-700 transition-colors"
+            >
+              <span className="flex-1 text-left">Otros</span>
+              <span className={`shrink-0 transition-transform duration-150 ${otrosExpanded ? "" : "-rotate-90"}`}>
+                <ChevronDown />
+              </span>
+            </button>
+          ) : (
+            <p className="px-1 pt-5 pb-1.5 text-micro font-semibold uppercase tracking-[0.1em] text-gray-500 select-none">Otros</p>
+          )}
+          {(!compactSidebar || otrosExpanded) && !collapsed && (
+            <div className="flex flex-col gap-0.5">
+              {OTROS_ITEMS.map((item) => (
+                <NavItem
+                  key={item.label}
+                  label={item.label}
+                  icon={item.icon}
+                  active={screen === item.screen}
+                  collapsed={collapsed}
+                  onClick={() => irAOtroScreen(item.screen)}
+                />
+              ))}
+            </div>
+          )}
         </nav>
 
         {/* Footer */}
@@ -6569,10 +6986,13 @@ export default function App() {
           />
         ) : (
           <>
-            {/* Top bar */}
+            {/* Top bar — reservado para título de pantalla + selector de
+                período, transversal a toda la app: no le agregues nada más
+                acá (ver AjustesConsultas/PersistentActionsBar, que anclan su
+                propio dropdown de tier 760px a la card de Búsqueda, no acá). */}
             <header
               className="flex items-center px-6 border-b border-gray-300 shrink-0"
-              style={{ minHeight: 60, backgroundColor: "var(--color-gray-50)", boxShadow: "0 1px 0 var(--color-gray-300)" }}
+              style={{ minHeight: "var(--header-min-height, 60px)", backgroundColor: "var(--color-gray-50)", boxShadow: "0 1px 0 var(--color-gray-300)" }}
             >
               <div className="flex items-center gap-2.5 flex-1">
                 {screen === "modificar" && (
