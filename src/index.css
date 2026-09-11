@@ -52,6 +52,10 @@
   --color-error-bg: #FEE2E2;
   --color-error-text-strong: #B91C1C;
 
+  /* Chip/badge (borde y hover del botón cerrar) */
+  --color-chip-border: #B9D2FB;
+  --color-chip-border-hover: #D9E9FF;
+
   /* Escala tipográfica semántica */
   --text-micro: 10px;
   --text-caption: 11px;
@@ -186,11 +190,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   left: calc(100% + 8px);
   top: 50%;
   transform: translateY(-50%);
-  background: #1E3560;
+  background: var(--color-gray-800);
   color: #fff;
   font-size: 12px;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;

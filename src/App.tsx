@@ -439,7 +439,7 @@ const CDS4_ROWS = (() => {
 const CDS4_TOTAL = 48213;
 
 // ─── Dropdown/popover "smart" direction ────────────────────────────────────────
-// Mecanismo único reusado por TODO panel flotante de la app (AbmCombobox,
+// Mecanismo único reusado por TODO panel flotante de la app (ValuePicker,
 // AbmTableSelector, PeriodSelector, DateTimeField, MiniCaptionDropdown,
 // DiaDelMesField, UserMenu, el dropdown "Acciones" de PersistentActionsBar)
 // en vez de que cada uno hardcodee su propia dirección (algunos abrían
@@ -471,18 +471,6 @@ function useDropdownDirection(
 function dropdownAnchorStyle(direction: "down" | "up", gapPx: number): React.CSSProperties {
   return direction === "up" ? { bottom: `calc(100% + ${gapPx}px)` } : { top: `calc(100% + ${gapPx}px)` };
 }
-
-// ─── Shared input classes ─────────────────────────────────────────────────────
-
-const inputCls =
-  "w-full h-8 px-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 " +
-  "placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 " +
-  "transition-all duration-150";
-
-const selectCls =
-  "w-full h-8 px-2.5 pr-7 text-body bg-white border border-gray-400 rounded-sm text-gray-900 " +
-  "appearance-none cursor-pointer focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 " +
-  "transition-all duration-150";
 
 function SelectWrap({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
@@ -546,7 +534,6 @@ function NavItem({
           {code && (
             <span
               className={`text-micro font-mono shrink-0 tabular-nums ${active ? "text-secondary/60" : "text-gray-500 group-hover:text-gray-600"}`}
-              style={{ fontFamily: "'JetBrains Mono', monospace" }}
             >
               {code}
             </span>
@@ -794,9 +781,9 @@ function DateTimeField({
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
         className={
-          MOD_FIELD_CLS +
-          " flex items-center justify-between gap-2 text-left" +
-          // `!` (important): MOD_FIELD_CLS ya trae bg-white/text-gray-900, que en
+          MOD_SELECT_CLS +
+          " w-full flex items-center justify-between gap-2 text-left" +
+          // `!` (important): MOD_SELECT_CLS ya trae bg-white/text-gray-900, que en
           // el CSS compilado ganan igual sin importar el orden en que se
           // concatenan los strings acá (ver mismo fix en AbmCampo/disabledCls).
           (muted ? " !bg-gray-100 !text-gray-500" : disabled ? " !bg-gray-50 !text-gray-900" : "") +
@@ -972,8 +959,7 @@ function SelectionActionBar({ recordLabel }: { recordLabel: string }) {
         Registro seleccionado
       </span>
       <span
-        className="text-body-sm font-medium text-gray-800 tabular-nums"
-        style={{ fontFamily: "'JetBrains Mono', monospace" }}
+        className="text-body-sm font-medium text-gray-800 tabular-nums font-mono"
       >
         {recordLabel}
       </span>
@@ -1218,8 +1204,7 @@ function Modal({
             {title}
             {subtitle && (
               <span
-                className="ml-2 font-normal text-body text-gray-600"
-                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                className="ml-2 font-normal text-body text-gray-600 font-mono"
               >
                 {subtitle}
               </span>
@@ -1363,8 +1348,7 @@ function DesarmeModal({
       <div className="grid grid-cols-2 gap-4">
         <ListBox title="Interrupción/Reclamo">
           <div
-            className="px-2 py-1.5 text-body tabular-nums text-gray-800"
-            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            className="px-2 py-1.5 text-body tabular-nums text-gray-800 font-mono"
           >
             {referencia}
           </div>
@@ -1454,23 +1438,11 @@ function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void 
       <div className="grid grid-cols-2 gap-4">
         <div>
           <FieldLabel>Nivel tensión</FieldLabel>
-          <SelectWrap>
-            <select className={MOD_SELECT_CLS + " w-full"}>
-              <option>BT</option>
-              <option>MT</option>
-              <option>AT</option>
-            </select>
-          </SelectWrap>
+          <ValuePicker opts={["BT", "MT", "AT"]} defaultValue="BT" />
         </div>
         <div>
           <FieldLabel>Tipo</FieldLabel>
-          <SelectWrap>
-            <select className={MOD_SELECT_CLS + " w-full"}>
-              {NIVEL_TIPO_TIPOS.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
-          </SelectWrap>
+          <ValuePicker opts={NIVEL_TIPO_TIPOS} defaultValue={NIVEL_TIPO_TIPOS[0]} />
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
@@ -1518,14 +1490,7 @@ function ReplicarModal({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <FieldLabel>Período destino</FieldLabel>
-          <SelectWrap>
-            <select className={MOD_SELECT_CLS + " w-full"}>
-              <option value="">Período</option>
-              {PERIODS.map((p) => (
-                <option key={p}>{p}</option>
-              ))}
-            </select>
-          </SelectWrap>
+          <ValuePicker opts={PERIODS} placeholder="Período" />
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
@@ -1597,11 +1562,11 @@ function CambiaFasesModal({
               <tr key={r.idElemento} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                 <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.fase}</td>
                 <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
-                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap font-mono">
                   {r.idElemento}
                 </td>
                 <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap">{r.tipoElemento}</td>
-                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-caption)" }}>
+                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap font-mono" style={{ fontSize: "var(--text-caption)" }}>
                   {r.cadena}
                 </td>
                 <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.cliente}</td>
@@ -1700,11 +1665,11 @@ function AltaClientesModal({
           <tbody>
             {ALTA_CLIENTES_ROWS.map((r) => (
               <tr key={r.interrupcion} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3 text-body tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", color: "var(--color-gray-800)" }}>
+                <td className="px-4 py-3 text-body tabular-nums font-mono" style={{ color: "var(--color-gray-800)" }}>
                   {r.interrupcion}
                 </td>
                 <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.repo}</td>
-                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-caption)" }}>
+                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap font-mono" style={{ fontSize: "var(--text-caption)" }}>
                   {r.cadenaCuenta}
                 </td>
                 <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.t4}</td>
@@ -1953,15 +1918,11 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                     checked={selectedOpcion === op.label}
                     onSelect={() => setSelectedOpcion(op.label)}
                   />
+                  {/* Sin más opciones que el placeholder — siempre muestra
+                      "Seleccione código" (mismo criterio que AbmCampo: sin
+                      value real, el trigger queda fijo en gray-500). */}
                   {op.extra === "codigoFalla" && (
-                    <SelectWrap className="w-44">
-                      {/* Sin más opciones que el placeholder — siempre
-                          muestra "Seleccione código", así que va fijo en
-                          gray-500 (mismo criterio que AbmCampo). */}
-                      <select className={MOD_SELECT_CLS + " w-full !text-gray-500"}>
-                        <option value="">Seleccione código</option>
-                      </select>
-                    </SelectWrap>
+                    <ValuePicker opts={[]} placeholder="Seleccione código" wrapClassName="w-44" />
                   )}
                   {op.extra === "causaAlta" && (
                     <div className="flex items-center gap-4">
@@ -2067,8 +2028,7 @@ function IntercambioModal({
           <div className="border border-gray-300 rounded-sm divide-y divide-gray-100 overflow-hidden">
             <div className="flex items-center justify-between gap-2 px-3 py-2">
               <span
-                className="text-body-sm tabular-nums text-gray-800 truncate"
-                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                className="text-body-sm tabular-nums text-gray-800 truncate font-mono"
               >
                 {referencia}
               </span>
@@ -2257,8 +2217,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   }
 
   const inputCls = "w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-gray-500 rounded-sm bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
-  const inputStyle: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: "var(--color-gray-900)", lineHeight: "20px", letterSpacing: "0.14px" };
-  const labelStyle: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: "var(--color-gray-700)", lineHeight: "20px", letterSpacing: "0.14px" };
+  const inputStyle: React.CSSProperties = { fontWeight: 400, fontSize: 14, color: "var(--color-gray-900)", lineHeight: "20px", letterSpacing: "0.14px" };
+  const labelStyle: React.CSSProperties = { fontWeight: 400, fontSize: 14, color: "var(--color-gray-700)", lineHeight: "20px", letterSpacing: "0.14px" };
 
   return (
     <div className="relative w-full h-screen overflow-hidden flex">
@@ -2271,8 +2231,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           <Logo />
         </div>
         <div style={{ marginTop: 50 }}>
-          <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "39.06px", color: "white", lineHeight: "46.87px" }}>SISENRE</p>
-          <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "39.06px", color: "white", lineHeight: "46.87px" }}>Calidad de servicio</p>
+          <p className="font-sans" style={{ fontWeight: 600, fontSize: "39.06px", color: "white", lineHeight: "46.87px" }}>SISENRE</p>
+          <p className="font-sans" style={{ fontWeight: 600, fontSize: "39.06px", color: "white", lineHeight: "46.87px" }}>Calidad de servicio</p>
         </div>
       </div>
 
@@ -2286,19 +2246,19 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0" style={{ paddingTop: "var(--login-form-pt, 60px)", paddingLeft: 32, paddingRight: 32, paddingBottom: "var(--login-form-pb, 32px)" }}>
             {/* Header */}
             <div className="flex flex-col gap-[8px] [@media(max-height:760px)]:gap-[var(--login-header-gap,8px)] shrink-0">
-              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "var(--login-title-size, 40px)", color: "var(--color-secondary)", lineHeight: "var(--login-title-line, 40px)" }}>Bienvenido </p>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 16, color: "var(--color-gray-700)", lineHeight: "20px", letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
+              <p className="font-sans" style={{ fontWeight: 600, fontSize: "var(--login-title-size, 40px)", color: "var(--color-secondary)", lineHeight: "var(--login-title-line, 40px)" }}>Bienvenido </p>
+              <p className="font-sans" style={{ fontWeight: 400, fontSize: 16, color: "var(--color-gray-700)", lineHeight: "20px", letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
             </div>
 
             {/* Inputs */}
             <div className="flex flex-col shrink-0" style={{ marginTop: "var(--login-inputs-mt, 24px)", gap: "var(--login-inputs-gap, 32px)" }}>
               <div className="flex flex-col gap-[4px]">
-                <label style={labelStyle}>Usuario</label>
-                <input type="text" autoComplete="username" value={usuario} onChange={e => { setUsuario(e.target.value); setError(""); }} className={inputCls} style={inputStyle} />
+                <label className="font-sans" style={labelStyle}>Usuario</label>
+                <input type="text" autoComplete="username" value={usuario} onChange={e => { setUsuario(e.target.value); setError(""); }} className={inputCls + " font-sans"} style={inputStyle} />
               </div>
               <div className="flex flex-col gap-[4px]">
-                <label style={labelStyle}>Contraseña</label>
-                <input type="password" autoComplete="current-password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} className={inputCls} style={inputStyle} />
+                <label className="font-sans" style={labelStyle}>Contraseña</label>
+                <input type="password" autoComplete="current-password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} className={inputCls + " font-sans"} style={inputStyle} />
               </div>
             </div>
 
@@ -2311,9 +2271,9 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-sm text-white hover:brightness-110 disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all"
+                className="w-full rounded-sm text-white hover:brightness-110 disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all font-sans"
                 style={{
-                  backgroundColor: "var(--color-primary)", fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 16, lineHeight: "20px",
+                  backgroundColor: "var(--color-primary)", fontWeight: 500, fontSize: 16, lineHeight: "20px",
                   paddingTop: "var(--login-button-py, 12px)", paddingBottom: "var(--login-button-py, 12px)", paddingLeft: 24, paddingRight: 24,
                   boxShadow: "0px 1px 2px 0px rgba(16,24,40,0.05)",
                 }}
@@ -2327,7 +2287,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
             {/* Footer */}
             <div className="shrink-0 text-center">
-              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: "var(--text-body-sm)", lineHeight: "16px", letterSpacing: "1px", color: "#000" }}>© Desarrollos propios 2026</p>
+              <p className="font-sans" style={{ fontWeight: 400, fontSize: "var(--text-body-sm)", lineHeight: "16px", letterSpacing: "1px", color: "#000" }}>© Desarrollos propios 2026</p>
             </div>
           </form>
         </div>
@@ -2358,8 +2318,8 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
 
   return (
     <div
-      className="w-full h-screen flex items-center justify-center"
-      style={{ fontFamily: "'Inter', system-ui, sans-serif", backgroundColor: "var(--color-gray-100)" }}
+      className="w-full h-screen flex items-center justify-center font-sans"
+      style={{ backgroundColor: "var(--color-gray-100)" }}
     >
       <div className="w-full max-w-[520px] px-6">
         {/* Header */}
@@ -2381,7 +2341,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
                 onMouseLeave={() => setHovered(null)}
                 className="w-full text-left px-5 py-4 rounded-lg border transition-all duration-150"
                 style={{
-                  backgroundColor: isHov ? "#fff" : "#fff",
+                  backgroundColor: isHov ? "var(--color-primary-tint)" : "#fff",
                   borderColor: isHov ? "var(--color-primary)" : "var(--color-gray-300)",
                   boxShadow: isHov ? "0 4px 16px rgba(77,151,250,0.12)" : "0 1px 3px rgba(21,40,80,0.05)",
                   cursor: opt.disabled ? "not-allowed" : "pointer",
@@ -2439,7 +2399,7 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="h-7 pl-2.5 pr-2 flex items-center gap-1.5 border border-gray-400 rounded-sm bg-white text-body-sm font-semibold text-gray-900 hover:border-primary hover:text-secondary transition-colors"
+        className="h-8 px-2.5 flex items-center gap-1.5 border border-gray-400 rounded-sm bg-white text-body-sm font-semibold text-gray-900 hover:border-primary hover:text-secondary transition-colors"
       >
         {value}
         <span className="text-gray-500"><IcoCalendar /></span>
@@ -2536,9 +2496,9 @@ function CronogramaEnre() {
   const claseCeldaBase = "rounded-[3px] flex items-center justify-center text-micro font-semibold border";
 
   return (
-    <div className="bg-white rounded-[7px] border border-gray-300 px-5 py-4" style={{ maxWidth: 760 }}>
+    <div className="bg-white rounded-md border border-gray-300 px-5 py-4" style={{ maxWidth: 760 }}>
       <div className="mb-4">
-        <span className="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-3 rounded-full bg-primary-tint border border-[#B9D2FB] text-secondary text-body-sm font-semibold">
+        <span className="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-3 rounded-full bg-primary-tint border border-chip-border text-secondary text-body-sm font-semibold">
           <span className="shrink-0 rounded-full" style={{ width: 6, height: 6, backgroundColor: "var(--color-primary)" }} />
           Período {nombrePeriodo}
         </span>
@@ -2661,7 +2621,7 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
           <div
             key={item.code}
             onClick={() => onIrATabla(item.tableKey)}
-            className="group bg-white rounded-[7px] border border-gray-300 px-5 py-4 cursor-pointer transition-all duration-150 hover:border-primary hover:shadow-[0_4px_16px_rgba(77,151,250,0.1)]"
+            className="group bg-white rounded-md border border-gray-300 px-5 py-4 cursor-pointer transition-all duration-150 hover:border-primary hover:shadow-[0_4px_16px_rgba(77,151,250,0.1)]"
           >
             <div className="flex items-start gap-3">
               <span className="mt-0.5 text-primary shrink-0">{item.icon}</span>
@@ -2670,7 +2630,6 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
                   <p className="text-label font-semibold text-gray-900">{item.label}</p>
                   <span
                     className="text-micro font-mono font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600"
-                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
                     {item.code}
                   </span>
@@ -2860,7 +2819,7 @@ function ConfirmarBorrarModal({
     >
       <p className="text-body text-gray-700">
         Se eliminará el registro{" "}
-        <span className="font-medium text-gray-900 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <span className="font-medium text-gray-900 tabular-nums font-mono">
           {registro}
         </span>
         {" "}de <span className="font-medium text-gray-900">{tabla}</span>. Esta acción no se puede deshacer.
@@ -2965,6 +2924,9 @@ function ConfirmarModificarModal({
 
 const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
 
+// Clases únicas para todo <input>/<select> de texto simple de la app —
+// Modificar, Alta/Búsqueda ABM y ValuePicker comparten estas dos (antes
+// existían por separado como inputCls/selectCls, ya unificadas acá).
 const MOD_FIELD_CLS =
   "w-full h-8 px-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 " +
   "placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150";
@@ -3126,8 +3088,7 @@ const DRAWER_TAB_TO_ABM: Partial<Record<string, { tableKey: AbmTableKey; campoCo
 function CodeBadge({ code }: { code: string }) {
   return (
     <span
-      className="text-micro font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600 shrink-0"
-      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+      className="text-micro font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600 shrink-0 font-mono"
     >
       {code}
     </span>
@@ -3603,8 +3564,8 @@ function ModificarContent({
             <input
               disabled={hasSelection}
               placeholder={`Ej: ${RECORD.referencia}`}
-              className={MOD_FIELD_CLS + (hasSelection ? " !bg-gray-50 !text-gray-900" : "") + " [@media(max-height:760px)]:!w-[112px]"}
-              style={{ width: 190, flexShrink: 0, fontFamily: "'JetBrains Mono', monospace", fontSize: "var(--text-body-sm)" }}
+              className={MOD_FIELD_CLS + " font-mono" + (hasSelection ? " !bg-gray-50 !text-gray-900" : "") + " [@media(max-height:760px)]:!w-[112px]"}
+              style={{ width: 190, flexShrink: 0, fontSize: "var(--text-body-sm)" }}
               value={codigoBusqueda}
               onChange={(e) => setCodigoBusqueda(e.target.value)}
             />
@@ -3617,31 +3578,26 @@ function ModificarContent({
               className="[@media(max-height:760px)]:!w-[128px]"
             />
 
-            <SelectWrap className="w-[88px] shrink-0">
-              <select
-                disabled={hasSelection}
-                className={MOD_SELECT_CLS + " w-full" + (hasSelection ? " !bg-gray-50 !text-gray-900" : "") + (!nivelSel ? " !text-gray-500" : "")}
-                style={{ fontWeight: nivelSel ? 600 : 400 }}
-                value={nivelSel}
-                onChange={(e) => setNivelSel(e.target.value)}
-              >
-                <option value="" disabled>Nivel</option>
-                <option>BT</option><option>MT</option><option>AT</option>
-              </select>
-            </SelectWrap>
+            <ValuePicker
+              isDisabled={hasSelection}
+              triggerExtraClassName={hasSelection ? " !bg-gray-50 !text-gray-900" : ""}
+              triggerStyle={{ fontWeight: nivelSel ? 600 : 400 }}
+              value={nivelSel}
+              onChange={setNivelSel}
+              opts={["BT", "MT", "AT"]}
+              placeholder="Nivel"
+              wrapClassName="w-[88px] shrink-0"
+            />
 
-            <SelectWrap className="w-[84px] shrink-0">
-              <select
-                disabled={hasSelection}
-                className={MOD_SELECT_CLS + " w-full" + (hasSelection ? " !bg-gray-50 !text-gray-900" : "") + (!faseSel ? " !text-gray-500" : "")}
-                value={faseSel}
-                onChange={(e) => setFaseSel(e.target.value)}
-              >
-                <option value="" disabled>Fase</option>
-                <option>R</option><option>S</option><option>T</option>
-                <option>RS</option><option>RT</option><option>ST</option><option>RST</option>
-              </select>
-            </SelectWrap>
+            <ValuePicker
+              isDisabled={hasSelection}
+              triggerExtraClassName={hasSelection ? " !bg-gray-50 !text-gray-900" : ""}
+              value={faseSel}
+              onChange={setFaseSel}
+              opts={["R", "S", "T", "RS", "RT", "ST", "RST"]}
+              placeholder="Fase"
+              wrapClassName="w-[84px] shrink-0"
+            />
 
             <div className="w-px h-5 bg-gray-300 shrink-0" />
 
@@ -3668,31 +3624,23 @@ function ModificarContent({
               />
             </div>
 
-            <SelectWrap className="hidden [@media(max-height:760px)]:block w-[92px] shrink-0">
-              <select
-                disabled={modShowData || hasSelection}
-                className={MOD_SELECT_CLS + " w-full" + (!origenSel ? " !text-gray-500" : "")}
-                value={origenSel ?? ""}
-                onChange={(e) => setOrigenSel(e.target.value || null)}
-              >
-                <option value="" disabled>Origen</option>
-                <option>Interno</option>
-                <option>Externo</option>
-              </select>
-            </SelectWrap>
+            <ValuePicker
+              isDisabled={modShowData || hasSelection}
+              value={origenSel ?? ""}
+              onChange={(v) => setOrigenSel(v || null)}
+              opts={["Interno", "Externo"]}
+              placeholder="Origen"
+              wrapClassName="hidden [@media(max-height:760px)]:block w-[92px] shrink-0"
+            />
 
-            <SelectWrap className="hidden [@media(max-height:760px)]:block w-[112px] shrink-0">
-              <select
-                disabled={modShowData || hasSelection}
-                className={MOD_SELECT_CLS + " w-full" + (!tipoSel ? " !text-gray-500" : "")}
-                value={tipoSel ?? ""}
-                onChange={(e) => setTipoSel(e.target.value || null)}
-              >
-                <option value="" disabled>Tipo</option>
-                <option>Forzado</option>
-                <option>Programado</option>
-              </select>
-            </SelectWrap>
+            <ValuePicker
+              isDisabled={modShowData || hasSelection}
+              value={tipoSel ?? ""}
+              onChange={(v) => setTipoSel(v || null)}
+              opts={["Forzado", "Programado"]}
+              placeholder="Tipo"
+              wrapClassName="hidden [@media(max-height:760px)]:block w-[112px] shrink-0"
+            />
 
             {/* Más filtros / Limpiar / Buscar juntos, pegados a la derecha —
                 mismo lugar en cualquier tamaño de ventana. */}
@@ -3778,13 +3726,13 @@ function ModificarContent({
               {activeFlyoutFields.map((f) => (
                 <span
                   key={f.key}
-                  className="inline-flex items-center gap-1.5 h-7 pl-3 pr-1.5 rounded-full bg-primary-tint border border-[#B9D2FB] text-secondary text-body-sm font-semibold"
+                  className="inline-flex items-center gap-1.5 h-7 pl-3 pr-1.5 rounded-full bg-primary-tint border border-chip-border text-secondary text-body-sm font-semibold"
                 >
                   {f.label}: {flyoutFilters[f.key]}
                   <button
                     type="button"
                     onClick={() => clearFlyoutField(f.key)}
-                    className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-[#D9E9FF] transition-colors"
+                    className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-chip-border-hover transition-colors"
                   >
                     <svg width="8" height="8" viewBox="0 0 14 14" fill="none">
                       <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
@@ -3893,8 +3841,8 @@ function ModificarContent({
                 style={{ backgroundColor: selected ? "var(--color-primary-tint)" : undefined, borderLeft: selected ? "3px solid var(--color-primary)" : "3px solid transparent" }}
                 onClick={() => setModSelectedRow(selected ? null : i)}
               >
-                <div className="py-1.5 text-caption tabular-nums pr-3"
-                  style={{ fontFamily: "'JetBrains Mono', monospace", color: selected ? "var(--color-secondary)" : "var(--color-gray-700)", fontWeight: selected ? 600 : 400 }}>
+                <div className="py-1.5 text-caption tabular-nums pr-3 font-mono"
+                  style={{ color: selected ? "var(--color-secondary)" : "var(--color-gray-700)", fontWeight: selected ? 600 : 400 }}>
                   {row.referencia}
                 </div>
                 <div className={`py-1.5 text-caption ${selected ? "text-secondary font-medium" : "text-gray-600"}`}>{row.fecha}</div>
@@ -3931,8 +3879,7 @@ function ModificarContent({
               <div className="px-5 py-2.5 border-b border-gray-100 flex items-center gap-2 [@media(max-height:760px)]:hidden">
                 <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Interrupción</span>
                 <span
-                  className="text-body-sm font-medium text-gray-800 tabular-nums"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  className="text-body-sm font-medium text-gray-800 tabular-nums font-mono"
                 >
                   {selectedRecord.referencia}
                 </span>
@@ -4054,7 +4001,7 @@ function ModificarContent({
                     type="button"
                     disabled={!hasSelection}
                     onClick={() => setDrawerTab(item.tabKey)}
-                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full bg-primary-tint border border-[#B9D2FB] transition-all duration-150 hover:brightness-95 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full bg-primary-tint border border-chip-border transition-all duration-150 hover:brightness-95 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span className="text-caption text-secondary/60">{item.label}:</span>
                     <span className="text-body-sm font-bold text-secondary">
@@ -4097,8 +4044,7 @@ function ModificarContent({
                   {/* Barra de resumen */}
                   <div className="px-3 py-2 text-center" style={{ backgroundColor: "var(--color-gray-700)" }}>
                     <span
-                      className="text-caption font-medium text-white whitespace-nowrap"
-                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                      className="text-caption font-medium text-white whitespace-nowrap font-mono"
                     >
                       {timelineFechaInicio}  -  {timelineReferencia}  -  {timelineFechaUltRepo}  -  {timelineDuracion}
                     </span>
@@ -4177,7 +4123,7 @@ function ModificarContent({
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center justify-between">
           <div>
             <p className="text-caption text-gray-600 uppercase tracking-[0.08em] font-semibold mb-0.5">Interrupción</p>
-            <p className="text-[14px] font-semibold text-gray-900" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            <p className="text-[14px] font-semibold text-gray-900 font-mono">
               {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
             </p>
           </div>
@@ -4427,6 +4373,15 @@ type CampoBusqueda = {
   // botones se reparten el 100% del ancho de la fila entre los dos, como
   // si fueran un input.
   expandirBotones?: boolean;
+  // "select"/"combobox" con ~20+ opciones (Partido, Localidad, Descripción
+  // equipo operado): el panel inline deja de ser usable, así que ValuePicker
+  // lo abre como modal centrado con buscador en vez de panel junto al
+  // trigger — el resto del chrome (trigger, fila de opción, hover/selected)
+  // es el mismo panel inline que cualquier select/combobox corto.
+  listaLarga?: boolean;
+  // Mensaje de "sin opciones" a medida (ej. Localidad antes de elegir
+  // Partido) — default genérico si no se especifica.
+  emptyMessage?: string;
 };
 
 type SeccionBusqueda = {
@@ -4510,7 +4465,7 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         filas: [
           [
             { nombre: "codigoEquipoOperado", label: "Código de equipo operado", tipo: "texto" },
-            { nombre: "descEquipoOperado", label: "Descripción equipo operado", tipo: "combobox", opciones: DESCRIPCIONES_EQUIPO_OPERADO },
+            { nombre: "descEquipoOperado", label: "Descripción equipo operado", tipo: "combobox", opciones: DESCRIPCIONES_EQUIPO_OPERADO, listaLarga: true },
           ],
           [
             { nombre: "divisionRedNormal", label: "División red normal?", tipo: "toggle", opciones: ["Sí", "No"] },
@@ -4903,8 +4858,8 @@ const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
             { nombre: "depto", label: "Depto.", tipo: "texto", placeholder: "A" },
           ],
           [
-            { nombre: "partido", label: "Partido", tipo: "select", opciones: PARTIDOS, limpiaAlCambiar: ["localidad"] },
-            { nombre: "localidad", label: "Localidad", tipo: "combobox", opciones: (valores: Record<string, string>) => PARTIDO_LOCALIDAD[valores.partido] ?? [] },
+            { nombre: "partido", label: "Partido", tipo: "select", opciones: PARTIDOS, limpiaAlCambiar: ["localidad"], listaLarga: true },
+            { nombre: "localidad", label: "Localidad", tipo: "combobox", opciones: (valores: Record<string, string>) => PARTIDO_LOCALIDAD[valores.partido] ?? [], listaLarga: true, emptyMessage: "Sin opciones — seleccioná Partido primero" },
           ],
         ],
       },
@@ -5080,7 +5035,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
         <span className="text-label font-semibold text-gray-900 leading-none truncate">{current.titulo}</span>
         <span
           className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-gray-400 text-[#1565C0] shrink-0"
-          style={{ backgroundColor: "var(--color-gray-100)", fontFamily: "'JetBrains Mono', monospace" }}
+          style={{ backgroundColor: "var(--color-gray-100)" }}
         >
           {current.code}
         </span>
@@ -5113,7 +5068,6 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
                   <span className="flex-1 min-w-0 truncate text-body">{c.titulo}</span>
                   <span
                     className={`text-micro font-mono shrink-0 tabular-nums ${isSel ? "text-secondary/70" : "text-gray-500"}`}
-                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
                     {c.code}
                   </span>
@@ -5153,7 +5107,7 @@ function estadoDeCampo(campo: CampoBusqueda, mode: AbmMode, consultando: boolean
   return "enabled"; // alta, o modificar sobre un campo editable
 }
 
-// `!` (important) es necesario en ambas: inputCls/selectCls ya traen
+// `!` (important) es necesario en ambas: MOD_FIELD_CLS/MOD_SELECT_CLS ya traen
 // bg-white/text-gray-900, y en el CSS compilado esas reglas quedan DESPUÉS
 // de las de gray-50/gray-100 (orden interno de Tailwind, no el orden en que
 // se concatenan los strings acá), así que sin !important terminan ganando
@@ -5258,46 +5212,21 @@ function AbmCampo({
     );
   }
 
-  if (widget === "select") {
+  // "select" (pocas opciones, sin buscador) y "combobox" (con buscador;
+  // modal en vez de panel inline si `listaLarga`) comparten un solo chrome
+  // de trigger/panel vía ValuePicker — ver comentario en su definición.
+  if (widget === "select" || widget === "combobox") {
     return (
-      <div>
-        <FieldLabel>{campo.label}</FieldLabel>
-        <SelectWrap>
-          <select
-            disabled={isDisabled}
-            // selectCls trae text-gray-900 fijo — sin value real (mostrando
-            // "Seleccione") se pisa a gray-500, igual que el placeholder de
-            // los inputs de texto (necesita `!` por el mismo motivo que
-            // ESTADO_CLASES: gray-900 gana igual sin importar el orden acá).
-            className={selectCls + estadoCls + (!value ? " !text-gray-500" : "")}
-            // A diferencia de texto, un <select> no tiene el problema de
-            // "Buscar/Limpiar pisan lo tipeado a medio camino" que justifica
-            // dejarlo sin controlar en estado "empty" — siempre controlado,
-            // así onChange dispara siempre y `valores` queda al día (lo
-            // necesita, p. ej., la cascada Partido→Localidad de CDS8).
-            value={value ?? ""}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange?.(e.target.value)}
-          >
-            <option value="">Seleccione</option>
-            {opts.map((o) => {
-              const opt = typeof o === "string" ? { value: o, label: o } : o;
-              return <option key={opt.value} value={opt.value}>{opt.label}</option>;
-            })}
-          </select>
-        </SelectWrap>
-      </div>
-    );
-  }
-
-  if (widget === "combobox") {
-    return (
-      <AbmCombobox
-        campo={campo}
+      <ValuePicker
+        label={campo.label}
         opts={opts}
         value={value ?? ""}
         onChange={onChange}
         isDisabled={isDisabled}
         estadoCls={estadoCls}
+        searchable={widget === "combobox" || !!campo.listaLarga}
+        modal={!!campo.listaLarga}
+        emptyMessage={campo.emptyMessage}
       />
     );
   }
@@ -5311,7 +5240,7 @@ function AbmCampo({
       <input
         key={controlled ? "c" : "u"}
         disabled={isDisabled}
-        className={inputCls + estadoCls}
+        className={MOD_FIELD_CLS + estadoCls}
         placeholder={campo.placeholder}
         {...(controlled ? { value: value ?? "", onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value) } : {})}
       />
@@ -5319,35 +5248,82 @@ function AbmCampo({
   );
 }
 
-// Combobox buscable — mismo trigger visual que "select" (selectCls +
-// flecha vía SelectWrap) y mismo panel/mecanismo de apertura-cierre por
-// click afuera que AbmTableSelector/PeriodSelector, pero el trigger es un
-// <button> (no un <select> nativo) porque el panel aloja un buscador
-// además de la lista de opciones.
-function AbmCombobox({
-  campo,
+// Familia unificada "dropdown de valor" — reemplaza tanto al <select>
+// nativo (chrome MOD_SELECT_CLS) como al combobox buscable: mismo trigger
+// (<button> con flecha, borde/alto/radius de MOD_SELECT_CLS) y mismo chrome
+// de panel (borde/radius/sombra/alto de fila/hover/selected), sea que el
+// panel se abra inline (junto al trigger, con smart-positioning vía
+// dropdownAnchorStyle/useDropdownDirection) o como modal centrado con
+// backdrop (listas largas, ver `modal`). La única pieza que puede variar es
+// el buscador arriba de la lista (`searchable`) — todo lo demás es un solo
+// chrome, tanto si viene de un <select> corto sin buscador como de un
+// combobox largo con buscador y modal.
+function ValuePicker({
+  label,
   opts,
   value,
+  defaultValue = "",
   onChange,
-  isDisabled,
-  estadoCls,
+  isDisabled = false,
+  estadoCls = "",
+  searchable = false,
+  modal = false,
+  modalTitle,
+  emptyMessage = "Sin opciones",
+  searchPlaceholder = "Buscar...",
+  placeholder = "Seleccione",
+  wrapClassName = "w-full",
+  triggerExtraClassName = "",
+  triggerStyle,
 }: {
-  campo: CampoBusqueda;
+  label?: string;
   opts: CampoOpcion[];
-  value: string;
+  value?: string;
+  defaultValue?: string;
   onChange?: (v: string) => void;
-  isDisabled: boolean;
-  estadoCls: string;
+  isDisabled?: boolean;
+  estadoCls?: string;
+  // Muestra el input de buscador arriba de la lista — el único elemento
+  // que puede diferir entre un <select> corto (false) y un combobox
+  // (true, sea inline o modal).
+  searchable?: boolean;
+  // Panel como modal centrado con backdrop en vez de panel inline — listas
+  // largas (~20+ opciones) donde el panel inline ya no es usable.
+  modal?: boolean;
+  modalTitle?: string;
+  emptyMessage?: string;
+  searchPlaceholder?: string;
+  placeholder?: string;
+  wrapClassName?: string;
+  triggerExtraClassName?: string;
+  triggerStyle?: React.CSSProperties;
 }) {
   const [open, setOpen] = useState(false);
   const [filtro, setFiltro] = useState("");
+  // Uncontrolled fallback: mocks/estáticos que no traen value/onChange (ver
+  // GenerarModal/ReplicarModal) igual necesitan mostrar y cambiar una
+  // selección — mismo patrón que un <select> sin value controlado.
+  const [internalValue, setInternalValue] = useState(defaultValue);
+  const isControlled = value !== undefined;
+  const currentValue = isControlled ? value : internalValue;
   const ref = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
+    if (modal || !open) return;
     const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
-  }, []);
-  const direction = useDropdownDirection(ref, open, 450);
+  }, [modal, open]);
+
+  useEffect(() => {
+    if (!modal || !open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") cerrar(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [modal, open]);
+
+  const direction = useDropdownDirection(ref, open && !modal, searchable ? 450 : 260);
+
   // Si el campo pasa a no-editable (ej. se seleccionó una fila en
   // Resultados mientras el panel estaba abierto) no debe quedar un panel
   // huérfano abierto sobre un trigger ya bloqueado.
@@ -5357,74 +5333,114 @@ function AbmCombobox({
 
   const normalizados = opts.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
   const filtrados = filtro ? normalizados.filter((o) => o.label.toLowerCase().includes(filtro.toLowerCase())) : normalizados;
-  const seleccionado = normalizados.find((o) => o.value === value);
+  const seleccionado = normalizados.find((o) => o.value === currentValue);
 
+  function elegir(v: string) {
+    if (!isControlled) setInternalValue(v);
+    onChange?.(v);
+    cerrar();
+  }
   function cerrar() {
     setOpen(false);
     setFiltro("");
   }
 
+  const buscador = searchable && (
+    <div className="p-1.5 border-b border-gray-100 shrink-0">
+      <input
+        autoFocus
+        value={filtro}
+        onChange={(e) => setFiltro(e.target.value)}
+        placeholder={searchPlaceholder}
+        className={MOD_FIELD_CLS + " h-7 text-body-sm"}
+      />
+    </div>
+  );
+
+  const lista = (
+    <div className={modal ? "flex-1 overflow-y-auto p-1.5 flex flex-col gap-0.5" : "p-1.5 flex flex-col gap-0.5 max-h-96 overflow-y-auto"}>
+      {normalizados.length === 0 ? (
+        <p className="px-2.5 py-2 text-body-sm text-gray-500">{emptyMessage}</p>
+      ) : filtrados.length === 0 ? (
+        <p className="px-2.5 py-2 text-body-sm text-gray-500">Sin resultados</p>
+      ) : (
+        filtrados.map((opt) => {
+          const active = opt.value === currentValue;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => elegir(opt.value)}
+              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm border text-left transition-colors ${
+                active ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <span className="flex-1 min-w-0 truncate text-body">{opt.label}</span>
+            </button>
+          );
+        })
+      )}
+    </div>
+  );
+
   return (
     <div>
-      <FieldLabel>{campo.label}</FieldLabel>
-      {/* w-full explícito: a diferencia de un <select> nativo (que centra su
-          texto verticalmente solo), este trigger es un <button>, que
-          necesita flex items-center para lo mismo — sin eso el texto queda
-          pegado arriba y el control se ve más chico/desalineado que un
-          select vecino aunque midan lo mismo por CSS. */}
-      <div ref={ref} style={{ position: "relative" }} className="w-full">
-        <SelectWrap>
-          <button
-            type="button"
-            disabled={isDisabled}
-            onClick={() => setOpen((v) => !v)}
-            className={selectCls + estadoCls + " flex items-center text-left" + (!value ? " !text-gray-500" : "")}
-          >
-            {/* || (no ??): value "" es "sin selección", no un valor real a
-                mostrar — con ?? quedaría en blanco en vez de "Seleccione". */}
-            <span className="block truncate">{seleccionado?.label || value || "Seleccione"}</span>
-          </button>
-        </SelectWrap>
-        {open && !isDisabled && (
+      {label && <FieldLabel>{label}</FieldLabel>}
+      <div ref={ref} className={`relative ${wrapClassName}`}>
+        <button
+          type="button"
+          disabled={isDisabled}
+          onClick={() => setOpen((v) => !v)}
+          style={triggerStyle}
+          className={MOD_SELECT_CLS + " w-full" + estadoCls + " flex items-center text-left" + (!currentValue ? " !text-gray-500" : "") + triggerExtraClassName}
+        >
+          {/* || (no ??): value "" es "sin selección", no un valor real a
+              mostrar — con ?? quedaría en blanco en vez del placeholder. */}
+          <span className="block truncate">{seleccionado?.label || currentValue || placeholder}</span>
+        </button>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
+          <ChevronDown />
+        </div>
+        {!modal && open && !isDisabled && (
           <div
             className="absolute left-0 w-full bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
             style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
           >
-            <div className="p-1.5 border-b border-gray-100">
-              <input
-                autoFocus
-                value={filtro}
-                onChange={(e) => setFiltro(e.target.value)}
-                placeholder="Buscar..."
-                className={inputCls + " h-7 text-body-sm"}
-              />
-            </div>
-            <div className="p-1.5 flex flex-col gap-0.5 max-h-96 overflow-y-auto">
-              {normalizados.length === 0 ? (
-                <p className="px-2.5 py-2 text-body-sm text-gray-500">Sin opciones — seleccioná Partido primero</p>
-              ) : filtrados.length === 0 ? (
-                <p className="px-2.5 py-2 text-body-sm text-gray-500">Sin resultados</p>
-              ) : (
-                filtrados.map((opt) => {
-                  const active = opt.value === value;
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => { onChange?.(opt.value); cerrar(); }}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm border text-left transition-colors ${
-                        active ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-gray-100"
-                      }`}
-                    >
-                      <span className="flex-1 min-w-0 truncate text-body">{opt.label}</span>
-                    </button>
-                  );
-                })
-              )}
-            </div>
+            {buscador}
+            {lista}
           </div>
         )}
       </div>
+      {modal && open && !isDisabled && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/25" onClick={cerrar} />
+          <div
+            className="fixed z-50 flex flex-col bg-white rounded-lg overflow-hidden"
+            style={{
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 440,
+              maxWidth: "calc(100vw - 40px)",
+              maxHeight: "calc(100vh - 80px)",
+              boxShadow: "var(--shadow-high)",
+            }}
+          >
+            <div className="px-4 py-3 border-b border-gray-200 shrink-0 flex items-center justify-between gap-3">
+              <p className="min-w-0 truncate text-label font-semibold text-gray-900">{modalTitle ?? label ?? "Seleccionar"}</p>
+              <button
+                type="button"
+                onClick={cerrar}
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
+              >
+                <IcoX />
+              </button>
+            </div>
+            {buscador}
+            {lista}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -6090,12 +6106,11 @@ function AbmScreen({
                           <td
                             key={c.key}
                             className={`w-[1%] whitespace-nowrap px-4 py-2.5 text-body ${
-                              c.mono ? "tabular-nums" : isSelected ? "text-secondary font-medium" : "text-gray-700"
+                              c.mono ? "font-mono tabular-nums" : isSelected ? "text-secondary font-medium" : "text-gray-700"
                             }`}
                             style={{
                               ...(c.mono
                                 ? {
-                                    fontFamily: "'JetBrains Mono', monospace",
                                     color: isSelected ? "var(--color-secondary)" : "var(--color-gray-800)",
                                     fontWeight: isSelected ? 600 : 400,
                                   }
@@ -6205,19 +6220,17 @@ function GeneracionTxtContent() {
 
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
-      <div className="bg-white rounded-[7px] border border-gray-300" style={{ maxWidth: 640 }}>
+      <div className="bg-white rounded-md border border-gray-300" style={{ maxWidth: 640 }}>
         <CardHeader title="Exportación" />
         <div className="p-6 flex items-end gap-3">
           <div className="flex-1 min-w-0" style={{ maxWidth: 320 }}>
-            <FieldLabel>Tabla a exportar</FieldLabel>
-            <SelectWrap>
-              <select value={tabla} onChange={(e) => setTabla(e.target.value)} className={MOD_SELECT_CLS + " w-full"}>
-                <option value="">Seleccione tabla a exportar</option>
-                {ABM_ITEMS.map((item) => (
-                  <option key={item.key ?? item.code + item.label} value={item.screen as string}>{item.label}</option>
-                ))}
-              </select>
-            </SelectWrap>
+            <ValuePicker
+              label="Tabla a exportar"
+              value={tabla}
+              onChange={setTabla}
+              opts={ABM_ITEMS.map((item) => ({ value: item.screen as string, label: item.label }))}
+              placeholder="Seleccione tabla a exportar"
+            />
           </div>
           <button type="button" disabled={!tabla} onClick={handleExportar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
             Exportar
@@ -6284,7 +6297,7 @@ function PlanillaConsolidadaContent() {
 
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
-      <div className="bg-white rounded-[7px] border border-gray-300" style={{ maxWidth: 760 }}>
+      <div className="bg-white rounded-md border border-gray-300" style={{ maxWidth: 760 }}>
         <CardHeader title="Consolidación" />
         <div className="p-6">
           <div className="grid grid-cols-2 gap-4">
@@ -6405,7 +6418,7 @@ function GestorNotasContent() {
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
       <div className="flex gap-4 items-start" style={{ maxWidth: 900 }}>
-        <div className="flex-1 bg-white rounded-[7px] border border-gray-300 overflow-hidden">
+        <div className="flex-1 bg-white rounded-md border border-gray-300 overflow-hidden">
           <CardHeader
             title="Notas"
             right={
@@ -6543,7 +6556,7 @@ function InsertaClientesContent() {
 
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
-      <div className="bg-white rounded-[7px] border border-gray-300 p-6" style={{ maxWidth: 640 }}>
+      <div className="bg-white rounded-md border border-gray-300 p-6" style={{ maxWidth: 640 }}>
         <div className="flex flex-col gap-4">
           <div className="flex items-end gap-3">
             <div className="flex-1 min-w-0">
@@ -6554,13 +6567,13 @@ function InsertaClientesContent() {
             {validado && <span className="text-body-sm font-medium shrink-0" style={{ color: "var(--color-success)" }}>✓ Cliente válido</span>}
           </div>
           <div style={{ maxWidth: 280 }}>
-            <FieldLabel>Período BDTH</FieldLabel>
-            <SelectWrap>
-              <select value={periodo} onChange={(e) => setPeriodo(e.target.value)} className={MOD_SELECT_CLS + " w-full"}>
-                <option value="">Seleccione período</option>
-                {PERIODS.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </SelectWrap>
+            <ValuePicker
+              label="Período BDTH"
+              value={periodo}
+              onChange={setPeriodo}
+              opts={PERIODS}
+              placeholder="Seleccione período"
+            />
           </div>
           <div className="flex justify-end pt-3 border-t border-gray-200">
             <button type="button" disabled={!validado || !periodo} onClick={handleInsertar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>Insertar</button>
@@ -6597,17 +6610,16 @@ function AuditoriaContent() {
 
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
-      <div className="bg-white rounded-[7px] border border-gray-300" style={{ maxWidth: 720 }}>
+      <div className="bg-white rounded-md border border-gray-300" style={{ maxWidth: 720 }}>
         <CardHeader title="Filtros" />
         <div className="p-6 grid grid-cols-2 gap-6">
           <div>
-            <AbmCombobox
-              campo={{ nombre: "usuarioAuditoria", label: "Seleccione usuario", tipo: "combobox" }}
+            <ValuePicker
+              label="Seleccione usuario"
               opts={USUARIOS_SISENRE_DEMO}
               value={usuario}
               onChange={setUsuario}
-              isDisabled={false}
-              estadoCls=""
+              searchable
             />
           </div>
           <div>
@@ -6803,9 +6815,8 @@ export default function App() {
   }
 
   return (
-    <div style={{
+    <div className="font-sans" style={{
       width: "100%", height: "100vh", display: "flex",
-      fontFamily: "'Inter', system-ui, sans-serif",
       backgroundColor: "var(--color-gray-100)",
       overflow: "hidden",
     }}>
@@ -6825,7 +6836,7 @@ export default function App() {
         borderRight: "1px solid var(--color-gray-300)",
       }}>
         {/* Logo + collapse */}
-        <div className="flex items-center gap-2 px-3 border-b border-gray-300" style={{ minHeight: 60, paddingTop: 10, paddingBottom: 10 }}>
+        <div className="flex items-center gap-2 px-3 border-b border-gray-300" style={{ minHeight: "var(--header-min-height, 60px)", paddingTop: 10, paddingBottom: 10 }}>
           {!collapsed ? (
             <>
               <button
@@ -6835,7 +6846,7 @@ export default function App() {
                 className="flex-1 flex items-center overflow-hidden cursor-pointer"
                 style={{ height: 38 }}
               >
-                <div style={{ zoom: 0.68, transformOrigin: "left center", pointerEvents: "none" }}>
+                <div style={{ transform: "scale(0.68)", transformOrigin: "left center", pointerEvents: "none" }}>
                   <Logo />
                 </div>
               </button>
