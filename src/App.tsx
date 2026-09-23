@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown,
   Zap, FileText, Pencil, Clipboard, UserPlus, Shield, Calendar, Search, X,
   Filter, Inbox, User, Settings, LogOut, Plus, Download, ChevronsUp, ChevronsDown, Home,
-  Activity,
+  Activity, Copy, Check,
 } from "lucide-react";
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
@@ -3298,6 +3298,76 @@ function ContextChip({
   );
 }
 
+// Botón ícono para copiar un valor al portapapeles — mismo tratamiento visual
+// que el botón cerrar del drawer (gray-600, hover bg-gray-100 + texto
+// gray-800), mismo tamaño/strokeWidth de ícono. navigator.clipboard es la vía
+// principal; si la Clipboard API no existe o falla (contexto no seguro,
+// permiso denegado, etc.) cae a un <textarea> temporal fuera de pantalla +
+// document.execCommand("copy"). Sin toasts: el feedback es el ícono
+// cambiando a Check (color success) ~1.5s y volviendo solo — el timeout se
+// limpia al desmontar para no setear estado sobre un componente ya
+// desmontado. `label` identifica QUÉ se copia (minúscula, sin artículo) para
+// armar aria-label/title/aria-live ("Copiar interrupción" / "Interrupción
+// copiada").
+function CopyButton({ value, label }: { value: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  async function handleCopy() {
+    let ok = false;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        ok = true;
+      }
+    } catch {
+      ok = false;
+    }
+    if (!ok) {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = value;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+      } catch {
+        ok = false;
+      }
+    }
+    if (!ok) return;
+    setCopied(true);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setCopied(false), 1500);
+  }
+
+  const labelCapitalizado = label.charAt(0).toUpperCase() + label.slice(1);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label={`Copiar ${label}`}
+        title={copied ? "Copiada" : `Copiar ${label}`}
+        className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all shrink-0"
+      >
+        {copied ? <Check size={14} strokeWidth={1.5} className="text-success" /> : <Copy size={14} strokeWidth={1.5} />}
+      </button>
+      <span className="sr-only" aria-live="polite">{copied ? `${labelCapitalizado} copiada` : ""}</span>
+    </>
+  );
+}
+
 // Card de sección dentro de un drawer — reemplaza las franjas de borde a
 // borde de antes (título/tabla/toolbar todo al mismo nivel, separados solo
 // por líneas divisorias) por contenedores propios: cada sección es una
@@ -3312,6 +3382,17 @@ function ContextChip({
 // propio: tablas y toolbars van de borde a borde dentro de la card, con un
 // borde superior que las separa del título — la card las contiene, no hace
 // falta repetir el borde adentro de cada una.
+//
+// `shrink-0` en el contenedor raíz — no cosmético: el body del drawer que
+// contiene estas cards es un flex column con scroll (overflow-y-auto) y
+// cada card tiene `overflow-hidden`. Con overflow distinto de "visible", el
+// min-height automático de un flex item pasa a 0 (ver la regla CSS de
+// min-size:auto), así que si el contenido total supera el alto disponible,
+// flex ACHICA las cards en vez de dejar que el body scrollee — la tabla de
+// Reposiciones quedaba comprimida y recortada al elegir un tab con más
+// contenido (ver DESIGN_SYSTEM.md, "Secciones dentro de drawers"). Dentro
+// de un contenedor flex con scroll, las secciones no se achican nunca — el
+// que scrollea es el contenedor, no ellas.
 function DrawerSection({
   title,
   tag,
@@ -3328,7 +3409,7 @@ function DrawerSection({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-low)" }}>
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shrink-0" style={{ boxShadow: "var(--shadow-low)" }}>
       <div className="px-4 pt-4 pb-3 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-label font-semibold text-gray-900">{title}</span>
@@ -4339,31 +4420,16 @@ function ModificarContent({
         {/* Header — shrink-0, fijo, fondo BLANCO (no gray-50: el gris ahora
             es del body, para que el header se lea como la superficie de
             "arriba" y el body como la superficie de "adentro" que contiene
-            las cards). Único elemento de borde a borde del drawer. Una
-            sola línea alineada con el botón cerrar: chip de Interrupción
-            (variante neutra, dato fijo de contexto) + chip de Reposición
-            (variante activa, MISMO tint que la fila seleccionada de
-            ReposicionesTable — decisión: reposición y fecha van en UN solo
-            chip con separador "·" interno en vez de dos chips separados,
-            porque describen una sola cosa — la reposición elegida — no dos
-            hechos independientes). Chip de reposición solo con más de una
-            reposición. Alto h-14 consistente con CardHeader. */}
+            las cards). Único elemento de borde a borde del drawer. Chip de
+            Interrupción (variante neutra, dato fijo de contexto) + botón
+            copiar la referencia, alineados con el botón cerrar. La
+            reposición activa se mudó a la card "Tablas relacionadas" (ver
+            más abajo) — acá el header queda solo con el dato que no cambia
+            al navegar entre tabs. Alto h-14 consistente con CardHeader. */}
         <div className="h-14 px-6 border-b border-gray-200 bg-white shrink-0 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
             <ContextChip label="Interrupción" value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} mono />
-            {tabla4Rows.length > 1 && filaFaseSeleccionada && (
-              <ContextChip
-                variant="activa"
-                label="Reposición"
-                value={
-                  <>
-                    {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length}
-                    <span className="mx-1.5 text-secondary/40">·</span>
-                    {filaFaseSeleccionada.horaRep}
-                  </>
-                }
-              />
-            )}
+            <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
           </div>
           <button
             onClick={() => setDrawerTab(null)}
@@ -4409,7 +4475,21 @@ function ModificarContent({
               sin scroll propio — fluye en el scroll del body. */}
           <DrawerSection
             title="Tablas relacionadas"
-            meta={tabla4Rows.length > 1 && modSelectedFase !== null ? `Reposición ${modSelectedFase + 1}` : undefined}
+            meta={
+              tabla4Rows.length > 1 && filaFaseSeleccionada ? (
+                <ContextChip
+                  variant="activa"
+                  label="Reposición"
+                  value={
+                    <>
+                      {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length}
+                      <span className="mx-1.5 text-secondary/40">·</span>
+                      {filaFaseSeleccionada.horaRep}
+                    </>
+                  }
+                />
+              ) : undefined
+            }
             description={activeTabData?.subtitle}
             right={
               <SegmentedSwitch

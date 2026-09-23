@@ -23,9 +23,11 @@ es una card propia:
   `overflow-hidden`.
   - Fila de título: `px-4 pt-4 pb-3`, `items-center justify-between`.
     Izquierda: título (`text-label font-semibold text-gray-900`) + `CodeBadge`
-    opcional + un "meta" opcional (`text-body-sm text-gray-500`, ej. "4
-    registros", "Reposición 2"). Derecha (`right`): un control o acción — ej.
-    un `SegmentedSwitch` para elegir qué muestra la card.
+    opcional + un "meta" opcional — texto plano (`text-body-sm text-gray-500`,
+    ej. "4 registros") o un nodo con su propio estilo, ej. un `ContextChip`
+    variant="activa" para un dato que es SELECCIÓN DE DATOS, no descripción
+    (ej. "Reposición 2 de 4 · fecha"). Derecha (`right`): un control o
+    acción — ej. un `SegmentedSwitch` para elegir qué muestra la card.
   - Descripción opcional debajo del título: `text-body-sm text-gray-600`,
     `px-4 pb-3`.
   - Contenido (`children`): **sin padding propio**. Tablas y toolbars van de
@@ -38,6 +40,19 @@ es una card propia:
   body es una lista navegable por teclado con su propio tope de filas (ej.
   `ReposicionesTable`, ver su prop `heightMode`), documentada como tal en el
   componente.
+- **`DrawerSection` lleva `shrink-0` en su contenedor raíz — no es
+  cosmético.** El body es un flex column con `overflow-y-auto` y cada
+  `DrawerSection` tiene `overflow-hidden`. Con overflow distinto de
+  `visible`, el min-height automático de un flex item pasa a `0` (regla CSS
+  `min-size: auto` de flexbox), así que si el contenido total supera el alto
+  disponible, flex **achica las cards** en vez de dejar que el body
+  scrollee — sin `shrink-0` esto pasó de verdad: elegir un tab con más
+  contenido en "Tablas relacionadas" comprimía y recortaba la tabla de
+  Reposiciones de al lado. Regla: **dentro de un contenedor flex con
+  scroll, las secciones no se achican nunca — el que scrollea es el
+  contenedor, no ellas.** Aplica a cualquier hijo directo de un contenedor
+  `flex-col overflow-y-auto` que tenga su propio `overflow` no-visible, no
+  solo a `DrawerSection`.
 
 ## `SegmentedSwitch` vs. selección persistente — no mezclar
 
