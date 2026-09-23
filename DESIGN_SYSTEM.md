@@ -139,6 +139,26 @@ indicador ÚNICO, no 3 datos independientes: `role="img"` + `aria-label` con
 el valor real en el contenedor, cada caja individual `aria-hidden`. Se usa
 como `value` de un `MetaChip` (ej. `label="Fase"`).
 
+## `CopyButton`: acción de copiar con feedback real
+
+`CopyButton` (`src/App.tsx`) es el botón de copiar al portapapeles de toda la
+app (ej. la referencia de Interrupción en el header del modal "Tablas
+relacionadas") — `w-8 h-8 rounded-sm text-gray-600 hover:bg-gray-100`, ícono
+`Copy` (14px). Usa `navigator.clipboard.writeText` con fallback a
+`document.execCommand("copy")` vía un `<textarea>` oculto para navegadores/
+contextos sin Clipboard API. Solo si la copia realmente ocurrió (`ok === true`)
+cambia el ícono a `Check` (`text-success`) por 1.5s y anuncia "\<label\>
+copiada" en un `sr-only aria-live="polite"` — nunca simula el estado de éxito
+si la operación falló o no está implementada.
+
+Ese último punto es la razón por la que el botón "Copiar datos de la
+reposición" (mismo estilo visual, ícono `ClipboardList`, junto a los
+`MetaChip` de la reposición activa en "Tablas relacionadas") es una EXCEPCIÓN
+deliberada: su `onClick` está vacío (`TODO` en el código, pendiente de definir
+qué copia y en qué formato) y por eso NO usa el patrón de feedback de
+`CopyButton` — mostrar el ícono de "copiado" sin haber copiado nada sería
+mentirle al usuario. Ver `docs/PROGRESO.md` para el estado de este pendiente.
+
 ## Tabs de contenido: `UnderlineTabs`
 
 `UnderlineTabs` (`src/App.tsx`) es EL patrón de tabs de contenido de la
