@@ -923,7 +923,11 @@ function SortableHeaderCell({
   );
 }
 
-// Encabezado clickeable para tablas armadas con <table>/<th> (drawer de indicadores).
+// Encabezado clickeable para tablas armadas con <table>/<th> (tabs de
+// "Tablas relacionadas" en Modificar interrupción). sticky/bg/border acá
+// (no en el <tr> padre): position:sticky necesita su propio fondo opaco
+// por elemento para taparse a sí mismo al scrollear — un fondo puesto solo
+// en el <tr> no lo sigue.
 function SortableTh({
   label,
   active,
@@ -936,7 +940,7 @@ function SortableTh({
   onClick: () => void;
 }) {
   return (
-    <th className="px-4 py-3 text-left text-caption font-semibold uppercase tracking-[0.07em] select-none whitespace-nowrap">
+    <th className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-4 py-3 text-left text-caption font-semibold uppercase tracking-[0.07em] select-none whitespace-nowrap">
       <button
         type="button"
         onClick={onClick}
@@ -964,6 +968,7 @@ function TableToolbar({
   hideExport = false,
   searchPlaceholder = "Buscar en la tabla…",
   children,
+  bare = false,
 }: {
   search: string;
   onSearchChange: (v: string) => void;
@@ -973,20 +978,34 @@ function TableToolbar({
   hideExport?: boolean;
   searchPlaceholder?: string;
   children?: React.ReactNode;
+  // true: sin el contenedor propio (px-4 py-2.5 border-b bg-white,
+  // flex justify-between) — solo el buscador, para vivir dentro de una
+  // fila que ya arma su propio layout (ej. la fila de descripción +
+  // buscador del modal "Tablas relacionadas"). Ignora onExport/children
+  // (un buscador "bare" con botones al lado no tiene sentido — para eso
+  // está el modo normal). El ancho lo controla quien lo envuelve. Default
+  // false — ningún llamado existente cambia.
+  bare?: boolean;
 }) {
+  const searchBox = (
+    <div className="relative flex-1 max-w-[320px]">
+      <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 text-gray-500">
+        <Search size={15} strokeWidth={1.5} />
+      </span>
+      <input
+        value={search}
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder={searchPlaceholder}
+        className="w-full h-8 pl-8 pr-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150"
+      />
+    </div>
+  );
+
+  if (bare) return searchBox;
+
   return (
     <div className="px-4 py-2.5 border-b border-gray-200 bg-white shrink-0 flex items-center justify-between gap-3">
-      <div className="relative flex-1 max-w-[320px]">
-        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 text-gray-500">
-          <Search size={15} strokeWidth={1.5} />
-        </span>
-        <input
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder={searchPlaceholder}
-          className="w-full h-8 pl-8 pr-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150"
-        />
-      </div>
+      {searchBox}
       {(!hideExport || children) && (
         <div className="flex items-center gap-2 shrink-0">
           {!hideExport && onExport && (
@@ -1025,6 +1044,8 @@ function Modal({
   headerExtra,
   titleSize = "label",
   bodyPadding = true,
+  bodyOverflow = "auto",
+  bodyClassName = "",
   height,
 }: {
   title: string;
@@ -1037,11 +1058,12 @@ function Modal({
   // Slot propio para una segunda línea de header, debajo de título/cerrar
   // pero todavía dentro del bloque con borde inferior del header — ej.
   // contexto adicional con un CopyButton. Ningún modal existente lo pasa,
-  // así que su header no cambia. Cuando SÍ viene, el título recorta su
-  // padding inferior (pb-1.5 en vez de pb-4) para que el gap con esa
-  // segunda línea quede compacto (4-6px) en vez de heredar el mismo
-  // padding que separaba al título del body — esto solo afecta a modales
-  // que pasan headerExtra.
+  // así que su header no cambia. Cuando SÍ viene, el título pasa a
+  // pt-3.5/pb-0 (en vez de py-4) — el padding inferior del bloque entero
+  // lo aporta esa segunda línea (ver call site), no el título — así el
+  // gap entre título y esa línea queda compacto (mt-0.5) en vez de
+  // heredar el padding completo que separaba al título del body. Esto
+  // solo afecta a modales que pasan headerExtra.
   headerExtra?: React.ReactNode;
   // "label" (default, 15px — ningún modal existente cambia) o "title-sm"
   // (22px, el siguiente escalón de la escala) para cuando el título tiene
@@ -1053,6 +1075,16 @@ function Modal({
   // de dejar que Modal les imponga el padding estándar. Default true —
   // ningún modal existente cambia.
   bodyPadding?: boolean;
+  // "hidden": el body deja de ser la zona que scrollea — para modales de
+  // trabajo con cards propias adentro, donde el scroll vive DENTRO de una
+  // de esas cards (ver bodyClassName/`p-5 flex flex-col gap-4` típico),
+  // nunca en el body entero. Default "auto" (overflow-y-auto, como
+  // siempre) — ningún modal existente cambia.
+  bodyOverflow?: "auto" | "hidden";
+  // Clases extra para el body (ej. "bg-gray-50 flex flex-col gap-4" para
+  // el patrón de modal de trabajo con cards, ver DESIGN_SYSTEM.md).
+  // Default "" — ningún modal existente cambia.
+  bodyClassName?: string;
   // Alto fijo del panel (CSS length, ej. "min(720px, calc(100vh - 40px))")
   // — por default el modal se ajusta al contenido hasta el tope de
   // maxHeight. Pasarlo cuando el contenido interno gestiona su propia
@@ -1088,14 +1120,13 @@ function Modal({
         }}
       >
         {/* Header — título/cerrar siempre; headerExtra (si viene) se apila
-            debajo, todavía dentro de este mismo bloque bordeado. pb-1.5 en
-            vez de pb-4 cuando hay headerExtra: ese padding pasa a separar
-            título de esa segunda línea (gap compacto) en vez de separar
-            título del body — el padding total de arriba+abajo del bloque
-            entero sigue siendo parejo porque headerExtra aporta su propio
-            pb-4 (ver call site). */}
+            debajo, todavía dentro de este mismo bloque bordeado. Con
+            headerExtra, el título pasa a pt-3.5/pb-0 (en vez de py-4) — el
+            padding inferior del bloque entero lo aporta headerExtra (su
+            propio pb-3.5, ver call site), con solo mt-0.5 de gap interno
+            entre las dos líneas. */}
         <div className="border-b border-gray-200 shrink-0">
-          <div className={`px-5 pt-4 flex items-center justify-between gap-3 ${headerExtra ? "pb-1.5" : "pb-4"}`}>
+          <div className={`px-5 flex items-center justify-between gap-3 ${headerExtra ? "pt-3.5 pb-0" : "py-4"}`}>
             <p className={`min-w-0 truncate font-semibold text-gray-900 ${titleSize === "title-sm" ? "text-title-sm" : "text-label"}`}>
               {title}
               {subtitle && (
@@ -1118,7 +1149,11 @@ function Modal({
         </div>
 
         {/* Body */}
-        <div className={`flex-1 min-h-0 overflow-y-auto ${bodyPadding ? "p-5" : ""}`}>{children}</div>
+        <div
+          className={`flex-1 min-h-0 ${bodyOverflow === "hidden" ? "overflow-hidden" : "overflow-y-auto"} ${bodyPadding ? "p-5" : ""} ${bodyClassName}`}
+        >
+          {children}
+        </div>
 
         {/* Footer */}
         {footer && (
@@ -3289,23 +3324,78 @@ function ReposicionesTable({
   );
 }
 
-// Separador vertical entre datos de FaseReposicionFicha — hijo más del
-// flex, no border/margin de los items vecinos: con `items-stretch` en el
-// contenedor y `self-stretch` acá, mide siempre la altura de la fila
-// completa (el dato más alto, Equipo con descripción) en vez de la altura
-// de "su" dato de al lado — y el espacio a los dos lados es idéntico por
-// construcción (lo da el `gap-4` del contenedor, no padding propio).
-function FichaSeparador() {
-  return <div className="w-px self-stretch bg-gray-300" aria-hidden="true" />;
+// Tile de dato de solo lectura — label (micro gray-600) + valor (label
+// font-semibold), mismo borde/fondo/radio/tipografía en los dos lugares
+// donde se usa: los indicadores de "Tablas relacionadas" de la Card B
+// (clickeables — onClick+disabled abren el modal en ese tab) y la grilla
+// de datos de la reposición activa dentro del modal (de solo lectura, sin
+// onClick). Con onClick se renderiza como <button> (mismas clases de
+// hover/disabled/alert que ya tenía el tile de la Card B, sin cambiar);
+// sin onClick, como <div> estática con el mismo aspecto en reposo —
+// nunca "disabled" ni "alert" ahí, esos estados son del modo interactivo.
+// `description` agrega una tercera línea opcional (body-sm gray-600,
+// hasta 2 líneas — line-clamp-2 + title: nunca trunca de a una si el
+// texto entra en esas 2 líneas, solo si las excede) para datos como el
+// código+descripción de un equipo.
+function DataTile({
+  label,
+  value,
+  mono = false,
+  description,
+  alert = false,
+  disabled = false,
+  onClick,
+  className = "",
+}: {
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+  description?: string;
+  alert?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  className?: string;
+}) {
+  const interactive = !!onClick;
+  const stateCls = interactive
+    ? disabled
+      ? "bg-gray-100 border-gray-300 cursor-not-allowed"
+      : `hover:ring-2 hover:ring-primary/30 active:scale-[0.97] ${alert ? "bg-warning-bg border-warning-border" : "bg-gray-50 border-gray-300"}`
+    : alert
+    ? "bg-warning-bg border-warning-border"
+    : "bg-gray-50 border-gray-300";
+  const valorColorCls = disabled ? "text-gray-400" : alert ? "text-warning-text" : "text-gray-900";
+  const cls = `rounded-sm border px-2 py-2 flex flex-col gap-1 text-left transition-all duration-150 ${stateCls} ${className}`;
+
+  const content = (
+    <>
+      <span className="text-micro text-gray-600 leading-tight">{label}</span>
+      <span className={`text-label font-semibold leading-none ${valorColorCls} ${mono ? "font-mono" : ""}`}>{value}</span>
+      {description && (
+        <p className="text-body-sm text-gray-600 line-clamp-2" title={description}>
+          {description}
+        </p>
+      )}
+    </>
+  );
+
+  if (interactive) {
+    return (
+      <button type="button" disabled={disabled} onClick={onClick} className={cls}>
+        {content}
+      </button>
+    );
+  }
+  return <div className={cls}>{content}</div>;
 }
 
-// Ficha en línea de la reposición activa — vive en la barra de reposición
-// del modal "Tablas relacionadas" (patrón Gmail), a la izquierda del
-// paginador. Mismo modelo FaseReposicion que ReposicionesTable (misma
-// fuente: filaFaseSeleccionada). Cada dato (salvo Equipo) lleva `shrink-0`
-// + `whitespace-nowrap` en label y valor — con poco ancho, el dato se
-// mantiene entero (nunca se comprime ni envuelve a media palabra); es
-// Equipo el único que cede espacio (min-w-0, su descripción trunca).
+// Cuerpo de la card "Reposición" del modal "Tablas relacionadas" — grilla
+// grid-cols-5 con los datos de solo lectura de la reposición activa, vía
+// DataTile (mismo componente que los tiles de "Tablas relacionadas" en la
+// Card B). Equipo ocupa 2 columnas y suma su descripción como tercera
+// línea (sin truncar de a una, ver DataTile). Fase y el código de Equipo
+// van en mono. Mismo modelo FaseReposicion que ReposicionesTable (misma
+// fuente: filaFaseSeleccionada).
 //
 // Destello: useMatchMedia sigue prefers-reduced-motion en vivo — con
 // reduce-motion activo, directamente no destella. prevNroRef guarda la
@@ -3337,42 +3427,16 @@ function FaseReposicionFicha({ fila }: { fila: FaseReposicion }) {
     };
   }, []);
 
-  const labelCls = "text-micro font-semibold uppercase tracking-[0.06em] text-gray-500 whitespace-nowrap";
-  const valorCls = "text-body-sm font-medium tabular-nums text-gray-900 whitespace-nowrap";
-
   return (
     <div
       aria-live="polite"
-      className={`flex flex-wrap items-stretch gap-4 -m-1 p-1 rounded-sm transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
+      className={`px-4 pb-4 rounded-b-lg transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
     >
-      <div className="shrink-0">
-        <p className={labelCls}>Reposición</p>
-        <p className={valorCls}>{fila.nro}</p>
-      </div>
-      <FichaSeparador />
-      <div className="shrink-0">
-        <p className={labelCls}>Hora reposición</p>
-        <p className={valorCls}>{fila.horaRep}</p>
-      </div>
-      <FichaSeparador />
-      <div className="shrink-0">
-        <p className={labelCls}>Fase</p>
-        <p className={`${valorCls} font-mono`}>{fila.fase}</p>
-      </div>
-      <FichaSeparador />
-      {/* Único dato elástico — 220px matching el mismo tope que usa la
-          celda Equipo de ReposicionesTable para esta misma descripción;
-          con el resto de los datos a ancho fijo, la barra tiene lugar de
-          sobra (paginador aparte) como para no apretarlo más que eso. */}
-      <div className="min-w-0 max-w-[220px]">
-        <p className={labelCls}>Equipo</p>
-        <p className={`${valorCls} font-mono truncate`}>{fila.equipoCodigo}</p>
-        <p className="text-micro text-gray-500 truncate" title={fila.equipoDesc}>{fila.equipoDesc}</p>
-      </div>
-      <FichaSeparador />
-      <div className="shrink-0">
-        <p className={labelCls}>Usuarios BT</p>
-        <p className={valorCls}>{fila.usuariosBT}</p>
+      <div className="grid grid-cols-5 gap-3 items-stretch">
+        <DataTile label="Hora reposición" value={fila.horaRep} />
+        <DataTile label="Fase" value={fila.fase} mono />
+        <DataTile className="col-span-2" label="Equipo" value={fila.equipoCodigo} mono description={fila.equipoDesc} />
+        <DataTile label="Usuarios BT" value={fila.usuariosBT} />
       </div>
     </div>
   );
@@ -3380,13 +3444,14 @@ function FaseReposicionFicha({ fila }: { fila: FaseReposicion }) {
 
 // Tabs subrayados — EL patrón de tabs de contenido de la app (elegir qué
 // vista mostrar dentro de un mismo contenedor, ej. qué tabla se muestra en
-// el modal "Tablas relacionadas"). El contenedor respeta el padding
-// horizontal del resto de ese contenedor (px-5 en el modal, para que el
-// primer tab quede alineado con la ficha y la descripción de abajo) — el
-// borde inferior gray-200 sigue yendo de lado a lado porque el padding no
-// mueve el borde, solo el contenido. El borde activo (2px primary) se
-// superpone a esa línea de base vía -mb-px. role="tablist"/"tab" +
-// flechas izquierda/derecha para moverse entre opciones.
+// la card "Tablas relacionadas" del modal del mismo nombre, en Modificar
+// interrupción). El contenedor respeta el padding horizontal del resto de
+// ese contenedor (px-4, el mismo que usa el resto del contenido de esa
+// card) — el borde inferior gray-200 sigue yendo de lado a lado DE LA
+// CARD (no del modal): el padding mueve el contenido, no el borde. El
+// borde activo (2px primary) se superpone a esa línea de base vía
+// -mb-px. role="tablist"/"tab" + flechas izquierda/derecha para moverse
+// entre opciones.
 function UnderlineTabs({
   options,
   activeKey,
@@ -3408,7 +3473,7 @@ function UnderlineTabs({
   }
 
   return (
-    <div role="tablist" aria-label={ariaLabel} onKeyDown={handleKeyDown} className="flex border-b border-gray-200 shrink-0 px-5">
+    <div role="tablist" aria-label={ariaLabel} onKeyDown={handleKeyDown} className="flex border-b border-gray-200 shrink-0 px-4">
       {options.map((opt) => {
         const active = opt.key === activeKey;
         return (
@@ -3421,8 +3486,8 @@ function UnderlineTabs({
             onClick={() => onSelect(opt.key)}
             // px-4 es igual en TODOS los tabs (pareja) — el primero suma
             // first:-ml-4 para cancelar su propio pl-4 y que el texto quede
-            // alineado al borde de contenido del contenedor (px-5), en la
-            // misma vertical que la ficha y la descripción de abajo.
+            // alineado al borde de contenido del contenedor (px-4), en la
+            // misma vertical que el resto del contenido de la card.
             className={`h-10 min-w-24 px-4 first:-ml-4 text-body border-b-2 -mb-px transition-colors ${
               active ? "border-primary text-secondary font-medium" : "border-transparent text-gray-600 hover:bg-gray-50"
             }`}
@@ -4362,25 +4427,20 @@ function ModificarContent({
                   tile en fila (label + valor una al lado de la otra, tipo
                   "TABLA 3: 12") y ancho ajustado a su contenido: bajo y
                   ancho en vez de angosto y alto. */}
-              {/* Tamaño normal: tiles como siempre. */}
+              {/* Tamaño normal: tiles como siempre — vía DataTile
+                  (compartido con la grilla de datos de la reposición
+                  activa en el modal "Tablas relacionadas"), en su modo
+                  interactivo (onClick+disabled). */}
               <div className="grid grid-cols-3 gap-2 [@media(max-height:760px)]:hidden">
                 {STATUS_ITEMS.map((item) => (
-                  <button
+                  <DataTile
                     key={item.tabKey}
-                    type="button"
+                    label={item.label}
+                    value={hasSelection ? valoresRelacionadas?.[item.tabKey] : "—"}
+                    alert={item.alert}
                     disabled={!hasSelection}
                     onClick={() => setRelTab(item.tabKey)}
-                    className={`rounded-sm border px-2 py-2 flex flex-col gap-1 text-left transition-all duration-150 ${
-                      !hasSelection
-                        ? "bg-gray-100 border-gray-300 cursor-not-allowed"
-                        : `hover:ring-2 hover:ring-primary/30 active:scale-[0.97] ${item.alert ? "bg-warning-bg border-warning-border" : "bg-gray-50 border-gray-300"}`
-                    }`}
-                  >
-                    <span className="text-micro text-gray-600 leading-tight">{item.label}</span>
-                    <span className={`text-label font-semibold leading-none ${!hasSelection ? "text-gray-400" : item.alert ? "text-warning-text" : "text-gray-900"}`}>
-                      {hasSelection ? valoresRelacionadas?.[item.tabKey] : "—"}
-                    </span>
-                  </button>
+                  />
                 ))}
               </div>
 
@@ -4454,44 +4514,50 @@ function ModificarContent({
 
       {/* ── MODAL "Tablas relacionadas" ─────────────────────────── */}
       {/* Alto FIJO (min(720px, 100vh−40px)): el modal no puede saltar de
-          tamaño al cambiar de tab o de reposición. bodyPadding=false
-          porque el contenido arma su propio layout interno (barra + tabs
-          fijos, una sola zona con scroll) en vez del p-5 estándar de
-          Modal. headerExtra agrega la segunda línea (Interrupción +
-          CopyButton) debajo de título/cerrar, sin tocar el header de los
-          demás modales de la app (ninguno pasa estas props). titleSize
-          "title-sm": el título tiene que pesar más que la referencia de
-          abajo — antes ambos eran text-label y competían. */}
+          tamaño al cambiar de tab o de reposición. bodyOverflow="hidden" +
+          bodyClassName="bg-gray-50 flex flex-col gap-4": el body deja de
+          scrollear — es una composición de 2 cards sobre fondo gris, y el
+          scroll vive DENTRO de la card de contenido (punto 4), nunca acá.
+          headerExtra agrega la segunda línea (Interrupción + CopyButton)
+          debajo de título/cerrar, sin tocar el header de los demás
+          modales de la app (ninguno pasa estas props). titleSize
+          "title-sm" (22px): no existe un paso de ~20px en la escala
+          (micro/caption/body-sm/body/label=15/title-sm=22/title=26) — es
+          el más cercano a 20px entre label y title-sm, así que es el que
+          se usa acá; el título sigue siendo el elemento más fuerte del
+          header, por encima de la referencia (text-body-sm) de abajo. */}
       <Modal
         title="Tablas relacionadas"
         open={relTab !== null}
         onClose={() => setRelTab(null)}
         size="xl"
-        bodyPadding={false}
         titleSize="title-sm"
+        bodyOverflow="hidden"
+        bodyClassName="bg-gray-50 flex flex-col gap-4"
         height="min(720px, calc(100vh - 40px))"
         headerExtra={
-          <div className="px-5 pb-4 flex items-center gap-2">
+          <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2">
             <span className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Interrupción</span>
-            <span className="text-body font-medium font-mono tabular-nums text-gray-900">
+            <span className="text-body-sm font-medium font-mono tabular-nums text-gray-800">
               {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
             </span>
             <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
           </div>
         }
       >
-        <div className="h-full flex flex-col min-h-0">
-
-          {/* Barra de reposición — patrón Gmail: ficha en línea a la
-              izquierda, paginador ‹ n de N › a la derecha (solo con más de
-              una reposición). El paginador actualiza modSelectedFase —
-              única fuente de verdad, sincronizada con la Card B de
-              afuera. */}
-          <div className="shrink-0 bg-gray-50 border-b border-gray-200 px-5 py-2.5 flex items-center justify-between gap-4 flex-wrap">
-            {filaFaseSeleccionada && <FaseReposicionFicha fila={filaFaseSeleccionada} />}
+        {/* Card "Reposición" — shrink-0, no scrollea. El número titula la
+            card (ya no es un dato más de la grilla, como antes) y el
+            paginador ‹ › vive en el header de la card, no separado en una
+            barra propia. Sin paginador ni "de N" con una sola
+            reposición. */}
+        <div className="shrink-0 bg-white border border-gray-200 rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-low)" }}>
+          <div className="px-4 pt-3.5 pb-3 flex items-center justify-between gap-3">
+            <span className="text-label font-semibold text-gray-900">
+              Reposición {filaFaseSeleccionada ? filaFaseSeleccionada.nro : "—"}
+            </span>
             {tabla4Rows.length > 1 && modSelectedFase !== null && (
               <div className="flex items-center gap-1 shrink-0">
-                <span className="text-body-sm text-gray-600 tabular-nums mr-1">{modSelectedFase + 1} de {tabla4Rows.length}</span>
+                <span className="text-body-sm text-gray-600 tabular-nums mr-1">de {tabla4Rows.length}</span>
                 <button
                   type="button"
                   onClick={() => setModSelectedFase(modSelectedFase - 1)}
@@ -4513,8 +4579,15 @@ function ModificarContent({
               </div>
             )}
           </div>
+          {filaFaseSeleccionada && <FaseReposicionFicha fila={filaFaseSeleccionada} />}
+        </div>
 
-          {/* Tabs — pegados a la barra de arriba, de lado a lado */}
+        {/* Card "Tablas relacionadas" — flex-1 min-h-0, mismo estilo de
+            card que la de arriba. UnderlineTabs como header de la card
+            (px-4, borde inferior de lado a lado DE LA CARD); fila de
+            descripción + buscador; área de tabla con su propio borde y
+            scroll — la única zona con scroll del modal. */}
+        <div className="flex-1 min-h-0 bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col" style={{ boxShadow: "var(--shadow-low)" }}>
           <UnderlineTabs
             ariaLabel="Tablas relacionadas"
             options={DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => ({ key: tab.key, label: tab.label }))}
@@ -4522,146 +4595,157 @@ function ModificarContent({
             onSelect={setRelTab}
           />
 
-          {/* Contenido del tab — única zona con scroll vertical del modal */}
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            {/* Tabla 3 no repite descripción: el resultado (Sí/No existe)
-                ya dice todo lo que decía "Existencia en tabla". En el
-                resto de los tabs se mantiene. */}
-            {activeTabData?.subtitle && activeTabData.key !== "tabla3" && (
-              <div className="px-5 py-2.5">
-                <p className="text-body-sm text-gray-600 leading-snug">{activeTabData.subtitle}</p>
-              </div>
-            )}
+          {/* Descripción del tab activo (izquierda) + buscador acotado a
+              ~w-72 (derecha) — TableToolbar en modo `bare`, sin su propio
+              contenedor/borde/padding: esta fila ya los aporta. Tabla 3 no
+              repite descripción, el resultado (Sí/No existe) ya la dice. */}
+          <div className="px-4 py-3 shrink-0 flex items-center justify-between gap-4">
+            <p className="text-body-sm text-gray-600 leading-snug flex-1 min-w-0">
+              {activeTabData && activeTabData.key !== "tabla3" ? activeTabData.subtitle : null}
+            </p>
+            <div className="w-72 shrink-0">
+              {relTabRows.length > 0 && (
+                <TableToolbar search={relSearch} onSearchChange={setRelSearch} hideExport bare />
+              )}
+            </div>
+          </div>
 
+          {/* Área de la tabla — única zona con scroll del modal (los dos
+              ejes). Tabla 3 y los estados vacíos viven ACÁ ADENTRO,
+              centrados vertical y horizontalmente (antes flotaban sueltos
+              en el body del modal). Header de tabla sticky con fondo
+              opaco (ver SortableTh) — la tabla pasa a border-separate y
+              los separadores de fila se mueven de <tr> a <td>, porque
+              bajo border-collapse un borde de fila se pinta en la capa de
+              bordes de la tabla y puede quedar por encima del <th>
+              sticky al scrollear (mismo criterio que ya usa
+              ReposicionesTable). */}
+          <div className="flex-1 min-h-0 mx-4 mb-4 border border-gray-200 rounded-md overflow-auto">
             {activeTabData && (
               activeTabData.key === "tabla3" ? (() => {
                 const existe = valoresRelacionadas?.tabla3 === "SI";
                 return (
-                  <div className="px-5 py-4 flex items-center gap-3">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: existe ? "var(--color-success-bg)" : "var(--color-error-bg)" }}
-                    >
-                      {existe ? (
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                          <path d="M4.5 10.5l3.5 3.5 7.5-7.5" stroke="var(--color-success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      ) : (
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                          <path d="M5.5 5.5l9 9M14.5 5.5l-9 9" stroke="var(--color-error)" strokeWidth="2.2" strokeLinecap="round" />
-                        </svg>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-body font-semibold" style={{ color: existe ? "var(--color-success-text-strong)" : "var(--color-error-text-strong)" }}>
-                        {existe ? "Sí existe en Tabla 3" : "No existe en Tabla 3"}
-                      </p>
-                      <p className="text-body-sm text-gray-500">
-                        {existe
-                          ? "Esta reposición tiene registro en la tabla"
-                          : "Esta reposición no tiene registro en la tabla"}
-                      </p>
+                  <div className="h-full min-h-[180px] flex items-center justify-center p-6">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: existe ? "var(--color-success-bg)" : "var(--color-error-bg)" }}
+                      >
+                        {existe ? (
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M4.5 10.5l3.5 3.5 7.5-7.5" stroke="var(--color-success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M5.5 5.5l9 9M14.5 5.5l-9 9" stroke="var(--color-error)" strokeWidth="2.2" strokeLinecap="round" />
+                          </svg>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-body font-semibold" style={{ color: existe ? "var(--color-success-text-strong)" : "var(--color-error-text-strong)" }}>
+                          {existe ? "Sí existe en Tabla 3" : "No existe en Tabla 3"}
+                        </p>
+                        <p className="text-body-sm text-gray-500">
+                          {existe
+                            ? "Esta reposición tiene registro en la tabla"
+                            : "Esta reposición no tiene registro en la tabla"}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 );
-              })() : (
-                <>
-                  {relTabRows.length > 0 && (
-                    <TableToolbar search={relSearch} onSearchChange={setRelSearch} hideExport />
-                  )}
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                          {activeTabData.cols.map((col, ci) => (
-                            <SortableTh
-                              key={col}
-                              label={col}
-                              active={relSortIdx === ci}
-                              dir={relSortDir}
-                              onClick={() => relToggleSort(ci)}
-                            />
+              })() : relTabRows.length === 0 ? (
+                <div className="h-full min-h-[180px] flex items-center justify-center p-6">
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
+                    <p className="text-body font-medium text-gray-600">Sin registros</p>
+                    <p className="text-body-sm text-gray-500">Sin registros para la reposición {filaFaseSeleccionada?.nro ?? "—"}</p>
+                    {abmMapping && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onIrAAbm({
+                            tableKey: abmMapping.tableKey,
+                            campo: abmMapping.campoCodigoInterrupcion,
+                            columna: abmMapping.columnaCodigoInterrupcion,
+                            valor: interrupcionActualRef,
+                            modo: "alta",
+                            relTabOrigen: relTab ?? undefined,
+                            referenciaOrigen: interrupcionActualRef,
+                            reposicionOrigen: filaFaseSeleccionada?.nro,
+                          })
+                        }
+                        className="mt-1 text-body-sm font-semibold text-secondary hover:underline"
+                      >
+                        Ir a {ABM_TABLE_CONFIGS[abmMapping.tableKey].code} a insertar →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
+                  <thead>
+                    <tr>
+                      {activeTabData.cols.map((col, ci) => (
+                        <SortableTh
+                          key={col}
+                          label={col}
+                          active={relSortIdx === ci}
+                          dir={relSortDir}
+                          onClick={() => relToggleSort(ci)}
+                        />
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {relVisibleIndices.map((ri) => {
+                      const row = relTabRows[ri];
+                      // Cuando la tabla mapea a ABM y la primera columna es
+                      // "Interrupción", esa celda es el valor más confiable
+                      // para el deep-link; si no, se usa la interrupción
+                      // actual como fallback. Con filas generadas (ver
+                      // generarFilasTabla5/6/8/9) este valor no está
+                      // garantizado a existir en ABM_TABLE_CONFIGS —
+                      // soft-fail aceptado, ver comentario en DRAWER_TABS.
+                      const valorDeepLink =
+                        activeTabData.cols[0] === "Interrupción" ? row[0] : interrupcionActualRef;
+                      const esUltima = ri === relVisibleIndices[relVisibleIndices.length - 1];
+                      return (
+                        <tr
+                          key={ri}
+                          onClick={
+                            abmMapping
+                              ? () =>
+                                  onIrAAbm({
+                                    tableKey: abmMapping.tableKey,
+                                    campo: abmMapping.campoCodigoInterrupcion,
+                                    columna: abmMapping.columnaCodigoInterrupcion,
+                                    valor: valorDeepLink,
+                                    modo: "buscar",
+                                    relTabOrigen: relTab ?? undefined,
+                                    referenciaOrigen: interrupcionActualRef,
+                                    reposicionOrigen: filaFaseSeleccionada?.nro,
+                                  })
+                              : undefined
+                          }
+                          className={`transition-colors ${abmMapping ? "cursor-pointer hover:bg-primary-tint" : "hover:bg-gray-50"}`}
+                        >
+                          {row.map((cell, ci) => (
+                            <td
+                              key={ci}
+                              className={`px-4 py-3.5 text-body text-gray-700 whitespace-nowrap ${esUltima ? "" : "border-b border-gray-100"}`}
+                            >
+                              {cell}
+                            </td>
                           ))}
                         </tr>
-                      </thead>
-                      <tbody>
-                        {relTabRows.length === 0 ? (
-                          <tr>
-                            <td colSpan={activeTabData.cols.length}>
-                              <div className="flex flex-col items-center justify-center py-8 gap-3 text-center">
-                                <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                                <p className="text-body font-medium text-gray-600">Sin registros</p>
-                                <p className="text-body-sm text-gray-500">Sin registros para la reposición {filaFaseSeleccionada?.nro ?? "—"}</p>
-                                {abmMapping && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      onIrAAbm({
-                                        tableKey: abmMapping.tableKey,
-                                        campo: abmMapping.campoCodigoInterrupcion,
-                                        columna: abmMapping.columnaCodigoInterrupcion,
-                                        valor: interrupcionActualRef,
-                                        modo: "alta",
-                                        relTabOrigen: relTab ?? undefined,
-                                        referenciaOrigen: interrupcionActualRef,
-                                        reposicionOrigen: filaFaseSeleccionada?.nro,
-                                      })
-                                    }
-                                    className="mt-1 text-body-sm font-semibold text-secondary hover:underline"
-                                  >
-                                    Ir a {ABM_TABLE_CONFIGS[abmMapping.tableKey].code} a insertar →
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ) : relVisibleIndices.map((ri) => {
-                          const row = relTabRows[ri];
-                          // Cuando la tabla mapea a ABM y la primera columna es
-                          // "Interrupción", esa celda es el valor más confiable
-                          // para el deep-link; si no, se usa la interrupción
-                          // actual como fallback. Con filas generadas (ver
-                          // generarFilasTabla5/6/8/9) este valor no está
-                          // garantizado a existir en ABM_TABLE_CONFIGS —
-                          // soft-fail aceptado, ver comentario en DRAWER_TABS.
-                          const valorDeepLink =
-                            activeTabData.cols[0] === "Interrupción" ? row[0] : interrupcionActualRef;
-                          return (
-                            <tr
-                              key={ri}
-                              onClick={
-                                abmMapping
-                                  ? () =>
-                                      onIrAAbm({
-                                        tableKey: abmMapping.tableKey,
-                                        campo: abmMapping.campoCodigoInterrupcion,
-                                        columna: abmMapping.columnaCodigoInterrupcion,
-                                        valor: valorDeepLink,
-                                        modo: "buscar",
-                                        relTabOrigen: relTab ?? undefined,
-                                        referenciaOrigen: interrupcionActualRef,
-                                        reposicionOrigen: filaFaseSeleccionada?.nro,
-                                      })
-                                  : undefined
-                              }
-                              className={`border-b border-gray-100 transition-colors ${
-                                abmMapping ? "cursor-pointer hover:bg-primary-tint" : "hover:bg-gray-50"
-                              }`}
-                            >
-                              {row.map((cell, ci) => (
-                                <td key={ci} className="px-4 py-3.5 text-body text-gray-700 whitespace-nowrap">{cell}</td>
-                              ))}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
+                      );
+                    })}
+                  </tbody>
+                </table>
               )
             )}
           </div>
-
         </div>
       </Modal>
 
