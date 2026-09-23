@@ -1022,6 +1022,9 @@ function Modal({
   size = "lg",
   footer,
   children,
+  headerExtra,
+  bodyPadding = true,
+  height,
 }: {
   title: string;
   subtitle?: string;
@@ -1030,6 +1033,22 @@ function Modal({
   size?: "sm" | "lg" | "xl";
   footer?: React.ReactNode;
   children: React.ReactNode;
+  // Slot propio para una segunda línea de header, debajo de título/cerrar
+  // pero todavía dentro del bloque con borde inferior del header — ej.
+  // contexto adicional con un CopyButton. Ningún modal existente lo pasa,
+  // así que su header no cambia.
+  headerExtra?: React.ReactNode;
+  // false: el body pierde su padding p-5 — para modales que arman su
+  // propio layout interno (barras, tabs, tablas de borde a borde) en vez
+  // de dejar que Modal les imponga el padding estándar. Default true —
+  // ningún modal existente cambia.
+  bodyPadding?: boolean;
+  // Alto fijo del panel (CSS length, ej. "min(720px, calc(100vh - 40px))")
+  // — por default el modal se ajusta al contenido hasta el tope de
+  // maxHeight. Pasarlo cuando el contenido interno gestiona su propia
+  // única zona de scroll y el panel no puede saltar de tamaño entre
+  // estados (ej. cambiar de tab).
+  height?: string;
 }) {
   useEffect(() => {
     if (!open) return;
@@ -1054,32 +1073,37 @@ function Modal({
           width: size === "sm" ? 480 : size === "xl" ? 1120 : 920,
           maxWidth: "calc(100vw - 40px)",
           maxHeight: "calc(100vh - 40px)",
+          height,
           boxShadow: "var(--shadow-high)",
         }}
       >
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-gray-200 shrink-0 flex items-center justify-between gap-3">
-          <p className="min-w-0 truncate text-label font-semibold text-gray-900">
-            {title}
-            {subtitle && (
-              <span
-                className="ml-2 font-normal text-body text-gray-600 font-mono"
-              >
-                {subtitle}
-              </span>
-            )}
-          </p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
-          >
-            <X size={14} strokeWidth={1.5} />
-          </button>
+        {/* Header — título/cerrar siempre; headerExtra (si viene) se apila
+            debajo, todavía dentro de este mismo bloque bordeado. */}
+        <div className="border-b border-gray-200 shrink-0">
+          <div className="px-5 py-4 flex items-center justify-between gap-3">
+            <p className="min-w-0 truncate text-label font-semibold text-gray-900">
+              {title}
+              {subtitle && (
+                <span
+                  className="ml-2 font-normal text-body text-gray-600 font-mono"
+                >
+                  {subtitle}
+                </span>
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
+            >
+              <X size={14} strokeWidth={1.5} />
+            </button>
+          </div>
+          {headerExtra}
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5">{children}</div>
+        <div className={`flex-1 min-h-0 overflow-y-auto ${bodyPadding ? "p-5" : ""}`}>{children}</div>
 
         {/* Footer */}
         {footer && (
@@ -3113,13 +3137,13 @@ const REPOSICIONES_HEADER_H = 29;
 const REPOSICIONES_ROW_H = 47;
 
 // Tabla de Reposiciones (Tabla 4) de la Card B "Reposiciones" (Modificar
-// interrupción). Antes también vivía en el drawer de "Tablas relacionadas"
-// (con heightMode "auto" + bare, para meter la tabla completa dentro de una
-// DrawerSection) — el drawer pasó a una vista enfocada en una sola
-// reposición (ver ReposicionStepper/FaseReposicionFicha), así que esas dos
+// interrupción) — única instancia de este componente: el drawer "Tablas
+// relacionadas" que también la usaba (con heightMode "auto" + bare) se
+// reemplazó por un modal enfocado en una sola reposición a la vez (ver
+// FaseReposicionFicha y el paginador ‹ › del modal), así que esas dos
 // props quedaron sin uso y se sacaron junto con su lógica; modSelectedFase
-// sigue siendo la única fuente de verdad, ahora compartida vía el stepper
-// del drawer en vez de esta tabla. Columnas fijas (Reposición/Hora/Fase/
+// sigue siendo la única fuente de verdad, compartida vía el paginador del
+// modal en vez de esta tabla. Columnas fijas (Reposición/Hora/Fase/
 // Equipo/Usuarios BT vienen de FaseReposicion, no de un array genérico) —
 // `cols` solo aporta las etiquetas de header, para que DRAWER_TABS siga
 // siendo la única fuente de los títulos. Header <th> sticky + scroll propio
@@ -3250,100 +3274,24 @@ function ReposicionesTable({
   );
 }
 
-// Chip de contexto — label opcional (micro uppercase semibold) + valor
-// (body-sm font-medium tabular-nums). Pill de alto fijo h-7. Dos variantes:
-// "neutral" (fondo gray-100/borde gray-200/texto gray-800 — un dato fijo de
-// contexto, ej. la Interrupción en el header del drawer) y "activa" (fondo
-// --color-primary-tint/borde --color-chip-border/texto secondary — el mismo
-// tint que la fila seleccionada de ReposicionesTable, para un dato que es
-// SELECCIÓN DE DATOS). Ver ReposicionStepper para la variante navegable
-// (mismo lenguaje visual, con flechas ‹ › adentro).
-function ContextChip({
-  label,
-  value,
-  variant = "neutral",
-  mono = false,
-}: {
-  label?: string;
-  value: React.ReactNode;
-  variant?: "neutral" | "activa";
-  mono?: boolean;
-}) {
-  return (
-    <span
-      className={`h-7 inline-flex items-center gap-1.5 px-2.5 rounded-sm border shrink-0 ${
-        variant === "activa" ? "bg-primary-tint border-chip-border text-secondary" : "bg-gray-100 border-gray-200 text-gray-800"
-      }`}
-    >
-      {label && (
-        <span className={`text-micro font-semibold uppercase tracking-[0.06em] ${variant === "activa" ? "text-secondary/60" : "text-gray-500"}`}>
-          {label}
-        </span>
-      )}
-      <span className={`text-body-sm font-medium tabular-nums ${mono ? "font-mono" : ""}`}>{value}</span>
-    </span>
-  );
-}
-
-// Variante navegable de ContextChip "activa" — mismo lenguaje visual (fondo
-// --color-primary-tint, borde --color-chip-border, texto secondary), con
-// flechas ‹ › adentro para recorrer las reposiciones sin volver a la card
-// de afuera. Reemplaza a la ContextChip/SegmentedSwitch que antes vivían en
-// el slot `right` de la card "Tablas relacionadas" del drawer: acá la
-// navegación ES el dato (no hay un valor fijo que mostrar aparte). Al
-// clickear actualiza modSelectedFase — única fuente de verdad, compartida
-// con la Card B de Modificar interrupción, que refleja el cambio al cerrar
-// el drawer. Se deshabilita en los extremos (primera/última reposición):
-// opacidad reducida, cursor-default, sin hover — nunca oculto, para que la
-// posición ‹ › no salte de lugar entre reposiciones.
-function ReposicionStepper({
-  index,
-  total,
-  onChange,
-}: {
-  index: number;
-  total: number;
-  onChange: (next: number) => void;
-}) {
-  const atStart = index <= 0;
-  const atEnd = index >= total - 1;
-  const btnCls = (disabled: boolean) =>
-    `w-6 h-6 flex items-center justify-center rounded-sm transition-colors ${disabled ? "opacity-40 cursor-default" : "hover:bg-white"}`;
-  return (
-    <div className="h-8 inline-flex items-center gap-1 px-1 rounded-sm border border-chip-border bg-primary-tint text-secondary shrink-0">
-      <button type="button" onClick={() => onChange(index - 1)} disabled={atStart} aria-label="Reposición anterior" className={btnCls(atStart)}>
-        <ChevronLeft size={24} strokeWidth={1.5} />
-      </button>
-      <span className="flex items-center gap-1.5 px-0.5">
-        <span className="text-micro font-semibold uppercase tracking-[0.06em] text-secondary/60">Reposición</span>
-        <span className="text-body-sm font-medium tabular-nums">{index + 1} de {total}</span>
-      </span>
-      <button type="button" onClick={() => onChange(index + 1)} disabled={atEnd} aria-label="Reposición siguiente" className={btnCls(atEnd)}>
-        <ChevronRight size={24} strokeWidth={1.5} />
-      </button>
-    </div>
-  );
-}
-
-// Ficha de la reposición activa — primer bloque dentro de la card "Tablas
-// relacionadas" del drawer, debajo del título/stepper. Grid de 4 columnas
-// con ancho FIJO en las tres angostas (Hora reposición/Fase/Usuarios BT) —
-// no "auto" — para que los valores no salten de ancho al cambiar de
-// reposición (una fase "R" vs. "RST", un código de equipo corto vs. largo);
-// solo Equipo es elástica (minmax(0,1fr)) porque su descripción trunca con
-// "…" en vez de angostar la columna. Mismo modelo FaseReposicion que
+// Ficha en línea de la reposición activa — vive en la barra de reposición
+// del modal "Tablas relacionadas" (patrón Gmail), a la izquierda del
+// paginador. Fila que hace wrap con poco ancho SIN partir cada dato: el
+// separador vertical de 1px es un border-l del propio bloque de datos (no
+// un elemento aparte), así viaja pegado a "su" dato incluso si el bloque
+// entero salta a la línea siguiente. Mismo modelo FaseReposicion que
 // ReposicionesTable (misma fuente: filaFaseSeleccionada).
 //
 // Destello: useMatchMedia sigue prefers-reduced-motion en vivo — con
 // reduce-motion activo, directamente no destella. prevNroRef guarda la
-// última reposición mostrada para detectar un cambio REAL (no el montaje
-// inicial); `drawerOpen` evita destellar por un cambio que ocurrió con el
-// drawer cerrado (ej. se seleccionó otra interrupción en la Card A) — el
-// panel nunca se desmonta al abrir/cerrar el drawer (el panel entero se
-// traslada con CSS, no se desmonta), así que sin este chequeo un cambio en
-// segundo plano podría dejar el flash "premontado" para la próxima
-// apertura. El timeout se limpia tanto al re-disparar como al desmontar.
-function FaseReposicionFicha({ fila, drawerOpen }: { fila: FaseReposicion; drawerOpen: boolean }) {
+// última reposición mostrada para detectar un cambio REAL — no el montaje
+// inicial: la ficha vive dentro del modal (Modal directamente no renderiza
+// nada si `open` es false), así que un cambio de interrupción con el modal
+// cerrado nunca la deja "premontada" — al reabrir, este componente vuelve
+// a montar de cero y prevNroRef arranca ya en el valor actual, sin
+// comparación previa que dispare un destello espurio. El timeout se limpia
+// tanto al re-disparar como al desmontar.
+function FaseReposicionFicha({ fila }: { fila: FaseReposicion }) {
   const reduceMotion = useMatchMedia("(prefers-reduced-motion: reduce)");
   const [flash, setFlash] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -3352,11 +3300,11 @@ function FaseReposicionFicha({ fila, drawerOpen }: { fila: FaseReposicion; drawe
   useEffect(() => {
     const prevNro = prevNroRef.current;
     prevNroRef.current = fila.nro;
-    if (prevNro === fila.nro || !drawerOpen || reduceMotion) return;
+    if (prevNro === fila.nro || reduceMotion) return;
     setFlash(true);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => setFlash(false), 250);
-  }, [fila.nro, drawerOpen, reduceMotion]);
+  }, [fila.nro, reduceMotion]);
 
   useEffect(() => {
     return () => {
@@ -3364,36 +3312,91 @@ function FaseReposicionFicha({ fila, drawerOpen }: { fila: FaseReposicion; drawe
     };
   }, []);
 
+  const datoCls = "pl-4 first:pl-0 border-l first:border-l-0 border-gray-300";
+
   return (
     <div
       aria-live="polite"
-      className={`mx-4 mb-4 rounded-md border border-gray-200 px-4 py-3 transition-colors duration-300 ${flash ? "bg-primary-tint" : "bg-gray-50"}`}
+      className={`flex flex-wrap items-start gap-y-2 -m-1 p-1 rounded-sm transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
     >
-      <div className="grid gap-4 grid-cols-[132px_64px_minmax(0,1fr)_96px]">
-        <div>
-          <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500 mb-1">Hora reposición</p>
-          <p className="text-body font-medium tabular-nums text-gray-900 whitespace-nowrap">{fila.horaRep}</p>
-        </div>
-        <div>
-          <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500 mb-1">Fase</p>
-          <p className="text-body font-medium font-mono tabular-nums text-gray-900">{fila.fase}</p>
-        </div>
-        <div className="min-w-0">
-          <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500 mb-1">Equipo</p>
-          <p className="text-body font-medium font-mono tabular-nums text-gray-900 truncate">{fila.equipoCodigo}</p>
-          <p className="text-micro text-gray-500 truncate" title={fila.equipoDesc}>{fila.equipoDesc}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500 mb-1">Usuarios BT</p>
-          <p className="text-body font-medium tabular-nums text-gray-900">{fila.usuariosBT}</p>
-        </div>
+      <div className={datoCls}>
+        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Reposición</p>
+        <p className="text-body-sm font-medium tabular-nums text-gray-900">{fila.nro}</p>
+      </div>
+      <div className={datoCls}>
+        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Hora reposición</p>
+        <p className="text-body-sm font-medium tabular-nums text-gray-900 whitespace-nowrap">{fila.horaRep}</p>
+      </div>
+      <div className={datoCls}>
+        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Fase</p>
+        <p className="text-body-sm font-medium font-mono tabular-nums text-gray-900">{fila.fase}</p>
+      </div>
+      <div className={`${datoCls} min-w-0 max-w-[180px]`}>
+        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Equipo</p>
+        <p className="text-body-sm font-medium font-mono tabular-nums text-gray-900 truncate">{fila.equipoCodigo}</p>
+        <p className="text-micro text-gray-500 truncate" title={fila.equipoDesc}>{fila.equipoDesc}</p>
+      </div>
+      <div className={datoCls}>
+        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Usuarios BT</p>
+        <p className="text-body-sm font-medium tabular-nums text-gray-900">{fila.usuariosBT}</p>
       </div>
     </div>
   );
 }
 
+// Tabs subrayados — EL patrón de tabs de contenido de la app (elegir qué
+// vista mostrar dentro de un mismo contenedor, ej. qué tabla se muestra en
+// el modal "Tablas relacionadas"). Pegados de lado a lado (sin padding
+// horizontal en el contenedor — cada `px-4` es de cada botón), con el
+// borde inferior gray-200 del contenedor como línea de base y el borde
+// activo (2px primary) superpuesto vía -mb-px. role="tablist"/"tab" +
+// flechas izquierda/derecha para moverse entre opciones.
+function UnderlineTabs({
+  options,
+  activeKey,
+  onSelect,
+  ariaLabel,
+}: {
+  options: { key: string; label: string }[];
+  activeKey: string | null;
+  onSelect: (key: string) => void;
+  ariaLabel: string;
+}) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    const idx = options.findIndex((o) => o.key === activeKey);
+    if (idx === -1) return;
+    const next = e.key === "ArrowRight" ? (idx + 1) % options.length : (idx - 1 + options.length) % options.length;
+    onSelect(options[next].key);
+  }
+
+  return (
+    <div role="tablist" aria-label={ariaLabel} onKeyDown={handleKeyDown} className="flex border-b border-gray-200 shrink-0">
+      {options.map((opt) => {
+        const active = opt.key === activeKey;
+        return (
+          <button
+            key={opt.key}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            tabIndex={active ? 0 : -1}
+            onClick={() => onSelect(opt.key)}
+            className={`h-10 min-w-24 px-4 text-body border-b-2 -mb-px transition-colors ${
+              active ? "border-primary text-secondary font-medium" : "border-transparent text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // Botón ícono para copiar un valor al portapapeles — mismo tratamiento visual
-// que el botón cerrar del drawer (gray-600, hover bg-gray-100 + texto
+// que el botón cerrar de Modal (gray-600, hover bg-gray-100 + texto
 // gray-800), mismo tamaño/strokeWidth de ícono. navigator.clipboard es la vía
 // principal; si la Clipboard API no existe o falla (contexto no seguro,
 // permiso denegado, etc.) cae a un <textarea> temporal fuera de pantalla +
@@ -3459,124 +3462,6 @@ function CopyButton({ value, label }: { value: string; label: string }) {
       </button>
       <span className="sr-only" aria-live="polite">{copied ? `${labelCapitalizado} copiada` : ""}</span>
     </>
-  );
-}
-
-// Card de sección dentro de un drawer — reemplaza las franjas de borde a
-// borde de antes (título/tabla/toolbar todo al mismo nivel, separados solo
-// por líneas divisorias) por contenedores propios: cada sección es una
-// card visualmente distinta, así la jerarquía se lee de un vistazo en vez
-// de flotar entre bordes. Patrón documentado en DESIGN_SYSTEM.md
-// ("Secciones dentro de drawers").
-//
-// Fila de título: label semibold + CodeBadge opcional + meta opcional a la
-// izquierda; un control o acción opcional (`right`) a la derecha —
-// típicamente un SegmentedSwitch para elegir qué muestra la card.
-// Descripción opcional debajo. El contenido (`children`) no tiene padding
-// propio: tablas y toolbars van de borde a borde dentro de la card, con un
-// borde superior que las separa del título — la card las contiene, no hace
-// falta repetir el borde adentro de cada una.
-//
-// `shrink-0` en el contenedor raíz — no cosmético: el body del drawer que
-// contiene estas cards es un flex column con scroll (overflow-y-auto) y
-// cada card tiene `overflow-hidden`. Con overflow distinto de "visible", el
-// min-height automático de un flex item pasa a 0 (ver la regla CSS de
-// min-size:auto), así que si el contenido total supera el alto disponible,
-// flex ACHICA las cards en vez de dejar que el body scrollee — la tabla de
-// Reposiciones quedaba comprimida y recortada al elegir un tab con más
-// contenido (ver DESIGN_SYSTEM.md, "Secciones dentro de drawers"). Dentro
-// de un contenedor flex con scroll, las secciones no se achican nunca — el
-// que scrollea es el contenedor, no ellas.
-function DrawerSection({
-  title,
-  tag,
-  meta,
-  description,
-  right,
-  children,
-}: {
-  title: string;
-  tag?: string;
-  meta?: React.ReactNode;
-  description?: React.ReactNode;
-  right?: React.ReactNode;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shrink-0" style={{ boxShadow: "var(--shadow-low)" }}>
-      <div className="px-4 pt-4 pb-3 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-label font-semibold text-gray-900">{title}</span>
-          {tag && <CodeBadge code={tag} />}
-          {meta && <span className="text-body-sm text-gray-500">{meta}</span>}
-        </div>
-        {right && <div className="shrink-0">{right}</div>}
-      </div>
-      {description && (
-        <div className="px-4 pb-3">
-          <p className="text-body-sm text-gray-600 leading-snug">{description}</p>
-        </div>
-      )}
-      {children && <div className="border-t border-gray-100">{children}</div>}
-    </div>
-  );
-}
-
-// Riel + pastilla — para cambiar de VISTA dentro de un mismo contenedor
-// (tabs de contenido: qué tabla se muestra en la card de "Tablas
-// relacionadas"). Distinto del estado "seleccionado persistente" (tint +
-// borde celeste + texto navy, ver ContextChip/STATUS_ITEMS/
-// ButtonSelectGroup), que es para SELECCIÓN DE DATOS (filas, chips,
-// filtros, toggles de valor como Origen/Tipo) — no mezclar los dos
-// lenguajes. Ver DESIGN_SYSTEM.md. role="tablist"/"tab" + flechas
-// izquierda/derecha para moverse entre opciones.
-function SegmentedSwitch({
-  options,
-  activeKey,
-  onSelect,
-  ariaLabel,
-}: {
-  options: { key: string; label: string }[];
-  activeKey: string | null;
-  onSelect: (key: string) => void;
-  ariaLabel: string;
-}) {
-  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-    e.preventDefault();
-    const idx = options.findIndex((o) => o.key === activeKey);
-    if (idx === -1) return;
-    const next = e.key === "ArrowRight" ? (idx + 1) % options.length : (idx - 1 + options.length) % options.length;
-    onSelect(options[next].key);
-  }
-
-  return (
-    <div
-      role="tablist"
-      aria-label={ariaLabel}
-      onKeyDown={handleKeyDown}
-      className="inline-flex items-center gap-0.5 bg-gray-100 rounded-md p-0.5 shrink-0"
-    >
-      {options.map((opt) => {
-        const active = opt.key === activeKey;
-        return (
-          <button
-            key={opt.key}
-            type="button"
-            role="tab"
-            aria-selected={active}
-            tabIndex={active ? 0 : -1}
-            onClick={() => onSelect(opt.key)}
-            style={active ? { boxShadow: "var(--shadow-low)" } : undefined}
-            className={`h-7 px-3 rounded-sm text-body-sm transition-all duration-150 ${
-              active ? "bg-white text-gray-900 font-medium" : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            {opt.label}
-          </button>
-        );
-      })}
-    </div>
   );
 }
 
@@ -3771,22 +3656,31 @@ function PersistentActionsBar({
 
 function ModificarContent({
   onIrAAbm,
-  initialDrawerTab = null,
+  initialRelTab = null,
   initialReferencia = null,
+  initialReposicion = null,
 }: {
   onIrAAbm: (link: AbmDeepLink) => void;
-  // Tab del drawer a reabrir al montar — lo usa el botón "Volver" de
-  // AbmScreen para restaurar el contexto desde el que se saltó a ABM.
-  initialDrawerTab?: string | null;
+  // Tab del modal "Tablas relacionadas" a reabrir al montar — lo usa el
+  // botón "Volver" de AbmScreen para restaurar el contexto desde el que se
+  // saltó a ABM.
+  initialRelTab?: string | null;
   // Referencia (SAMPLE_ROWS) a re-seleccionar al montar — misma fuente que
-  // initialDrawerTab, para volver exactamente a la interrupción que se
-  // estaba mirando, no solo a la pantalla.
+  // initialRelTab, para volver exactamente a la interrupción que se estaba
+  // mirando, no solo a la pantalla.
   initialReferencia?: string | null;
+  // Número de reposición (.nro) a re-seleccionar al montar — misma fuente
+  // que initialRelTab/initialReferencia, para que "Volver" restaure
+  // exactamente la reposición que se estaba mirando, no siempre la
+  // primera. Se resuelve una sola vez, en el useState inicial de
+  // modSelectedFase más abajo — el efecto que resetea esa selección al
+  // cambiar de interrupción se salta su primera corrida para no pisarlo.
+  initialReposicion?: number | null;
 }) {
   const initialRowIndex = initialReferencia ? SAMPLE_ROWS.findIndex((r) => r.referencia === initialReferencia) : -1;
   const [modShowData, setModShowData] = useState(initialRowIndex >= 0);
   const [modSelectedRow, setModSelectedRow] = useState<number | null>(initialRowIndex >= 0 ? initialRowIndex : null);
-  const [drawerTab, setDrawerTab] = useState<string | null>(initialDrawerTab);
+  const [relTab, setRelTab] = useState<string | null>(initialRelTab);
   const [origenSel, setOrigenSel] = useState<string | null>(null);
   const [tipoSel, setTipoSel] = useState<string | null>(null);
   const [flyoutOpen, setFlyoutOpen] = useState(false);
@@ -3806,12 +3700,12 @@ function ModificarContent({
   const [intercambioOpen, setIntercambioOpen] = useState(false);
   const [datosInterrupcionOpen, setDatosInterrupcionOpen] = useState(false);
   const hasSelection = modSelectedRow !== null;
-  const activeTabData = DRAWER_TABS.find(t => t.key === drawerTab);
+  const activeTabData = DRAWER_TABS.find(t => t.key === relTab);
   const selectedRecord = modSelectedRow !== null ? SAMPLE_ROWS[modSelectedRow] : null;
-  // Tabla ABM equivalente al tab activo del drawer (solo CDS5/6/8/9) — si
-  // existe, las filas de la mini-tabla y el estado vacío ofrecen el
-  // deep-link hacia AbmScreen.
-  const abmMapping = drawerTab ? DRAWER_TAB_TO_ABM[drawerTab] : undefined;
+  // Tabla ABM equivalente al tab activo del modal "Tablas relacionadas"
+  // (solo CDS5/6/8/9) — si existe, las filas de la tabla y el estado vacío
+  // ofrecen el deep-link hacia AbmScreen.
+  const abmMapping = relTab ? DRAWER_TAB_TO_ABM[relTab] : undefined;
   // Interrupción (SAMPLE_ROWS) que se está mirando ahora mismo — viaja en
   // todo deep-link como `referenciaOrigen` para que "Volver" restaure
   // exactamente esta selección.
@@ -3875,9 +3769,31 @@ function ModificarContent({
   // Interrupciones) — "Tablas relacionadas" y "Datos de la interrupción"
   // reflejan la reposición puntual seleccionada acá, no siempre la primera
   // ni la última. Al cambiar de interrupción se preselecciona la primera
-  // reposición de la lista (si tiene alguna) — ver efecto más abajo.
-  const [modSelectedFase, setModSelectedFase] = useState<number | null>(null);
+  // reposición de la lista (si tiene alguna) — ver efecto más abajo. Al
+  // MONTAR, en cambio, arranca en `initialReposicion` si vino uno (viaja
+  // desde el botón "Volver" de AbmScreen) — el useState inicial la busca
+  // por .nro en vez de asumir índice 0, porque la posición de una
+  // reposición dentro de tabla4Rows no tiene por qué coincidir con su
+  // número (ver DRAWER_TABS.tabla4).
+  const [modSelectedFase, setModSelectedFase] = useState<number | null>(() => {
+    if (tabla4Rows.length === 0) return null;
+    if (initialReposicion !== null) {
+      const idx = tabla4Rows.findIndex((f) => f.nro === initialReposicion);
+      if (idx >= 0) return idx;
+    }
+    return 0;
+  });
+  // Se salta su primera corrida (el useState de arriba ya resolvió el
+  // valor inicial, initialReposicion incluido) — si no, este efecto corre
+  // igual en el primer render (todo useEffect corre después del montaje,
+  // "cambió" o no) y pisaría esa restauración con 0 antes de que el
+  // usuario llegue a verla.
+  const isFirstFaseReset = useRef(true);
   useEffect(() => {
+    if (isFirstFaseReset.current) {
+      isFirstFaseReset.current = false;
+      return;
+    }
     setModSelectedFase(tabla4Rows.length > 0 ? 0 : null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modSelectedRow]);
@@ -3893,16 +3809,17 @@ function ModificarContent({
     ? generarTablasRelacionadas(`${selectedRecord.referencia}#${filaFaseSeleccionada.nro}`)
     : null;
 
-  // Filas de cada tab del drawer (5/6/8/9) — generadas por reposición
-  // seleccionada (ver generarFilasTabla5/6/8/9), cantidad exactamente
-  // igual al tile correspondiente en valoresRelacionadas. Tabla 3 no pasa
-  // por acá (usa valoresRelacionadas.tabla3 directo, ver JSX).
-  const drawerTabRows: string[][] = (() => {
-    if (!drawerTab || !selectedRecord || !filaFaseSeleccionada || !valoresRelacionadas) return [];
+  // Filas de cada tab del modal "Tablas relacionadas" (5/6/8/9) —
+  // generadas por reposición seleccionada (ver generarFilasTabla5/6/8/9),
+  // cantidad exactamente igual al tile correspondiente en
+  // valoresRelacionadas. Tabla 3 no pasa por acá (usa
+  // valoresRelacionadas.tabla3 directo, ver JSX).
+  const relTabRows: string[][] = (() => {
+    if (!relTab || !selectedRecord || !filaFaseSeleccionada || !valoresRelacionadas) return [];
     const referencia = selectedRecord.referencia;
     const nroReposicion = filaFaseSeleccionada.nro;
     const seedBase = `${referencia}#${nroReposicion}`;
-    switch (drawerTab) {
+    switch (relTab) {
       case "tabla5": return generarFilasTabla5(seedBase, referencia, nroReposicion, Number(valoresRelacionadas.tabla5));
       case "tabla6": return generarFilasTabla6(seedBase, referencia, nroReposicion, Number(valoresRelacionadas.tabla6));
       case "tabla8": return generarFilasTabla8(seedBase, Number(valoresRelacionadas.tabla8));
@@ -3911,11 +3828,11 @@ function ModificarContent({
     }
   })();
 
-  // Tabla del drawer de indicadores — se resetea al cambiar de tab O de
-  // reposición seleccionada (el contenido de cada tab depende de ambas).
-  const drawerGetCells = (row: string[]) => row;
-  const { search: drawerSearch, setSearch: setDrawerSearch, sortIdx: drawerSortIdx, sortDir: drawerSortDir, toggleSort: drawerToggleSort, visibleIndices: drawerVisibleIndices } =
-    useTableToolbar(drawerTabRows, drawerGetCells, `${drawerTab}#${modSelectedFase}`);
+  // Tabla del tab activo — se resetea al cambiar de tab O de reposición
+  // seleccionada (el contenido de cada tab depende de ambas).
+  const relGetCells = (row: string[]) => row;
+  const { search: relSearch, setSearch: setRelSearch, sortIdx: relSortIdx, sortDir: relSortDir, toggleSort: relToggleSort, visibleIndices: relVisibleIndices } =
+    useTableToolbar(relTabRows, relGetCells, `${relTab}#${modSelectedFase}`);
 
   // Datos de la Interrupción (widget + modal, Card B) — solo tiene sentido
   // con una interrupción seleccionada; sin selección, la sección completa
@@ -4391,7 +4308,10 @@ function ModificarContent({
               />
             </div>
 
-            {/* Indicadores de las tablas relacionadas — siguen abriendo el drawer */}
+            {/* Indicadores de las tablas relacionadas — abren el modal "Tablas
+                relacionadas", preseleccionado en la reposición actual (modSelectedFase
+                es la única fuente de verdad, compartida entre esta card y el modal —
+                no hace falta pasar nada extra) y en el tab del tile clickeado. */}
             <div className="px-5 py-3 border-b border-gray-100 [@media(max-height:760px)]:pb-2">
               <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">Tablas relacionadas</p>
               {/* Tier 760px: los 5 tiles (Tabla 3/5/6/8/9) tienen que entrar
@@ -4409,7 +4329,7 @@ function ModificarContent({
                     key={item.tabKey}
                     type="button"
                     disabled={!hasSelection}
-                    onClick={() => setDrawerTab(item.tabKey)}
+                    onClick={() => setRelTab(item.tabKey)}
                     className={`rounded-sm border px-2 py-2 flex flex-col gap-1 text-left transition-all duration-150 ${
                       !hasSelection
                         ? "bg-gray-100 border-gray-300 cursor-not-allowed"
@@ -4435,7 +4355,7 @@ function ModificarContent({
                     key={item.tabKey}
                     type="button"
                     disabled={!hasSelection}
-                    onClick={() => setDrawerTab(item.tabKey)}
+                    onClick={() => setRelTab(item.tabKey)}
                     className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full bg-primary-tint border border-chip-border transition-all duration-150 hover:brightness-95 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span className="text-caption text-secondary/60">{item.label}:</span>
@@ -4492,84 +4412,77 @@ function ModificarContent({
         ticks={timelineTicks}
       />
 
-      {/* ── DRAWER OVERLAY ──────────────────────────────────────── */}
-      {drawerTab !== null && (
-        <div
-          className="fixed inset-0 z-40 bg-black/25"
-          onClick={() => setDrawerTab(null)}
-        />
-      )}
-
-      {/* ── DRAWER PANEL ────────────────────────────────────────── */}
-      <div
-        className="fixed top-0 right-0 h-full bg-white z-50 flex flex-col"
-        style={{
-          width: 900,
-          boxShadow: "-4px 0 32px rgba(21,40,80,0.18)",
-          transform: drawerTab !== null ? "translateX(0)" : "translateX(100%)",
-          transition: "transform 280ms cubic-bezier(0.4,0,0.2,1)",
-        }}
-      >
-        {/* Header — shrink-0, fijo, fondo BLANCO (no gray-50: el gris ahora
-            es del body, para que el header se lea como la superficie de
-            "arriba" y el body como la superficie de "adentro" que contiene
-            las cards). Único elemento de borde a borde del drawer. Chip de
-            Interrupción (variante neutra, dato fijo de contexto) + botón
-            copiar la referencia, alineados con el botón cerrar. La
-            reposición activa se mudó a la card "Tablas relacionadas" (ver
-            más abajo) — acá el header queda solo con el dato que no cambia
-            al navegar entre tabs. Alto h-14 consistente con CardHeader. */}
-        <div className="h-14 px-6 border-b border-gray-200 bg-white shrink-0 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <ContextChip label="Interrupción" value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} mono />
+      {/* ── MODAL "Tablas relacionadas" ─────────────────────────── */}
+      {/* Alto FIJO (min(720px, 100vh−40px)): el modal no puede saltar de
+          tamaño al cambiar de tab o de reposición. bodyPadding=false
+          porque el contenido arma su propio layout interno (barra + tabs
+          fijos, una sola zona con scroll) en vez del p-5 estándar de
+          Modal. headerExtra agrega la segunda línea (Interrupción +
+          CopyButton) debajo de título/cerrar, sin tocar el header de los
+          demás modales de la app (ninguno pasa estas props). */}
+      <Modal
+        title="Tablas relacionadas"
+        open={relTab !== null}
+        onClose={() => setRelTab(null)}
+        size="xl"
+        bodyPadding={false}
+        height="min(720px, calc(100vh - 40px))"
+        headerExtra={
+          <div className="px-5 pb-4 flex items-center gap-2">
+            <span className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Interrupción</span>
+            <span className="text-label font-semibold font-mono tabular-nums text-gray-900">
+              {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
+            </span>
             <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
           </div>
-          <button
-            onClick={() => setDrawerTab(null)}
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all shrink-0"
-          >
-            <X size={14} strokeWidth={1.5} />
-          </button>
-        </div>
+        }
+      >
+        <div className="h-full flex flex-col min-h-0">
 
-        {/* Body — único scroll principal del drawer. Fondo gray-50; una
-            sola card ("Tablas relacionadas" — la de Reposiciones se sacó,
-            esa vista de conjunto ya está en la Card B de afuera; acá el
-            drawer pasó a una vista enfocada en UNA reposición, con el
-            ReposicionStepper para recorrer las demás). La card no usa
-            flex-1: mide lo que mide su contenido. */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-5 flex flex-col gap-4">
+          {/* Barra de reposición — patrón Gmail: ficha en línea a la
+              izquierda, paginador ‹ n de N › a la derecha (solo con más de
+              una reposición). El paginador actualiza modSelectedFase —
+              única fuente de verdad, sincronizada con la Card B de
+              afuera. */}
+          <div className="shrink-0 bg-gray-50 border-b border-gray-200 px-5 py-2.5 flex items-center justify-between gap-4 flex-wrap">
+            {filaFaseSeleccionada && <FaseReposicionFicha fila={filaFaseSeleccionada} />}
+            {tabla4Rows.length > 1 && modSelectedFase !== null && (
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="text-body-sm text-gray-600 tabular-nums mr-1">{modSelectedFase + 1} de {tabla4Rows.length}</span>
+                <button
+                  type="button"
+                  onClick={() => setModSelectedFase(modSelectedFase - 1)}
+                  disabled={modSelectedFase <= 0}
+                  aria-label="Reposición anterior"
+                  className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                >
+                  <ChevronLeft size={14} strokeWidth={1.5} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModSelectedFase(modSelectedFase + 1)}
+                  disabled={modSelectedFase >= tabla4Rows.length - 1}
+                  aria-label="Reposición siguiente"
+                  className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                >
+                  <ChevronRight size={14} strokeWidth={1.5} />
+                </button>
+              </div>
+            )}
+          </div>
 
-          {/* Card "Tablas relacionadas" — orden de arriba a abajo: título +
-              ReposicionStepper (solo con más de una reposición; reemplaza
-              al meta/chip y al SegmentedSwitch que antes vivían acá) →
-              ficha de la reposición activa → fila del SegmentedSwitch →
-              descripción del tab activo → toolbar + tabla / resultado
-              compacto de Tabla 3 / estado vacío. La descripción ya NO pasa
-              por la prop `description` de DrawerSection (quedaría lejos de
-              la tabla que describe con la ficha en el medio) — va como
-              children, debajo del switch. */}
-          <DrawerSection
-            title="Tablas relacionadas"
-            right={
-              tabla4Rows.length > 1 && modSelectedFase !== null ? (
-                <ReposicionStepper index={modSelectedFase} total={tabla4Rows.length} onChange={setModSelectedFase} />
-              ) : undefined
-            }
-          >
-            {filaFaseSeleccionada && <FaseReposicionFicha fila={filaFaseSeleccionada} drawerOpen={drawerTab !== null} />}
+          {/* Tabs — pegados a la barra de arriba, de lado a lado */}
+          <UnderlineTabs
+            ariaLabel="Tablas relacionadas"
+            options={DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => ({ key: tab.key, label: tab.label }))}
+            activeKey={relTab}
+            onSelect={setRelTab}
+          />
 
-            <div className="px-4 py-2.5 border-t border-gray-100">
-              <SegmentedSwitch
-                ariaLabel="Tablas relacionadas"
-                options={DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => ({ key: tab.key, label: tab.label }))}
-                activeKey={drawerTab}
-                onSelect={setDrawerTab}
-              />
-            </div>
-
+          {/* Contenido del tab — única zona con scroll vertical del modal */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
             {activeTabData?.subtitle && (
-              <div className="px-4 pb-2.5">
+              <div className="px-5 py-2.5">
                 <p className="text-body-sm text-gray-600 leading-snug">{activeTabData.subtitle}</p>
               </div>
             )}
@@ -4578,7 +4491,7 @@ function ModificarContent({
               activeTabData.key === "tabla3" ? (() => {
                 const existe = valoresRelacionadas?.tabla3 === "SI";
                 return (
-                  <div className="px-4 py-4 flex items-center gap-3">
+                  <div className="px-5 py-4 flex items-center gap-3">
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                       style={{ backgroundColor: existe ? "var(--color-success-bg)" : "var(--color-error-bg)" }}
@@ -4607,21 +4520,9 @@ function ModificarContent({
                 );
               })() : (
                 <>
-                  {drawerTabRows.length > 0 && (
-                    <TableToolbar
-                      search={drawerSearch}
-                      onSearchChange={setDrawerSearch}
-                      onExport={() =>
-                        exportRowsToCsv(
-                          activeTabData.label.replace(/\s+/g, "_").toLowerCase(),
-                          activeTabData.cols,
-                          drawerVisibleIndices.map((i) => drawerGetCells(drawerTabRows[i]))
-                        )
-                      }
-                    />
+                  {relTabRows.length > 0 && (
+                    <TableToolbar search={relSearch} onSearchChange={setRelSearch} hideExport />
                   )}
-                  {/* Solo scroll horizontal — la vertical la maneja el body
-                      del drawer, la tabla fluye con el resto del contenido. */}
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
                       <thead>
@@ -4630,15 +4531,15 @@ function ModificarContent({
                             <SortableTh
                               key={col}
                               label={col}
-                              active={drawerSortIdx === ci}
-                              dir={drawerSortDir}
-                              onClick={() => drawerToggleSort(ci)}
+                              active={relSortIdx === ci}
+                              dir={relSortDir}
+                              onClick={() => relToggleSort(ci)}
                             />
                           ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {drawerTabRows.length === 0 ? (
+                        {relTabRows.length === 0 ? (
                           <tr>
                             <td colSpan={activeTabData.cols.length}>
                               <div className="flex flex-col items-center justify-center py-8 gap-3 text-center">
@@ -4655,8 +4556,9 @@ function ModificarContent({
                                         columna: abmMapping.columnaCodigoInterrupcion,
                                         valor: interrupcionActualRef,
                                         modo: "alta",
-                                        drawerTabOrigen: drawerTab ?? undefined,
+                                        relTabOrigen: relTab ?? undefined,
                                         referenciaOrigen: interrupcionActualRef,
+                                        reposicionOrigen: filaFaseSeleccionada?.nro,
                                       })
                                     }
                                     className="mt-1 text-body-sm font-semibold text-secondary hover:underline"
@@ -4667,8 +4569,8 @@ function ModificarContent({
                               </div>
                             </td>
                           </tr>
-                        ) : drawerVisibleIndices.map((ri) => {
-                          const row = drawerTabRows[ri];
+                        ) : relVisibleIndices.map((ri) => {
+                          const row = relTabRows[ri];
                           // Cuando la tabla mapea a ABM y la primera columna es
                           // "Interrupción", esa celda es el valor más confiable
                           // para el deep-link; si no, se usa la interrupción
@@ -4690,8 +4592,9 @@ function ModificarContent({
                                         columna: abmMapping.columnaCodigoInterrupcion,
                                         valor: valorDeepLink,
                                         modo: "buscar",
-                                        drawerTabOrigen: drawerTab ?? undefined,
+                                        relTabOrigen: relTab ?? undefined,
                                         referenciaOrigen: interrupcionActualRef,
+                                        reposicionOrigen: filaFaseSeleccionada?.nro,
                                       })
                                   : undefined
                               }
@@ -4711,10 +4614,10 @@ function ModificarContent({
                 </>
               )
             )}
-          </DrawerSection>
+          </div>
 
         </div>
-      </div>
+      </Modal>
 
     </div>
   );
@@ -4743,7 +4646,7 @@ function isAbmTableKey(s: string): s is AbmTableKey {
 type AbmMode = "buscar" | "alta" | "modificar";
 
 // Deep-link hacia una tabla ABM con un campo precargado — usado por el
-// drawer "Tablas relacionadas" de Modificar interrupción para saltar
+// modal "Tablas relacionadas" de Modificar interrupción para saltar
 // directo a CDS5/6/8/9 con la interrupción actual ya cargada. `modo:
 // "buscar"` precarga el campo, ejecuta la búsqueda y selecciona la fila que
 // matchea `columna`/`valor` en los resultados; `modo: "alta"` precarga el
@@ -4754,13 +4657,17 @@ type AbmDeepLink = {
   columna: string; // key de columnasResultado usada para encontrar la fila a seleccionar
   valor: string;
   modo: "buscar" | "alta";
-  // Tab del drawer "Tablas relacionadas" desde el que se disparó el
+  // Tab del modal "Tablas relacionadas" desde el que se disparó el
   // deep-link — usado solo para reabrirlo al volver a Consultas.
-  drawerTabOrigen?: string;
+  relTabOrigen?: string;
   // Referencia (SAMPLE_ROWS) de la interrupción que se estaba mirando en
   // Consultas al disparar el deep-link — usada por "Volver" para
   // restaurar exactamente esa selección, no solo la pantalla.
   referenciaOrigen?: string;
+  // Número de reposición (.nro) seleccionado en Consultas al disparar el
+  // deep-link — usado junto con referenciaOrigen para que "Volver"
+  // restaure la reposición exacta, no siempre la primera.
+  reposicionOrigen?: number;
 };
 
 type CampoOpcion = string | { value: string; label: string };
@@ -7100,7 +7007,7 @@ export default function App() {
   // (no solo CSS) porque cambia comportamiento — qué grupo se auto-expande
   // y cuál handler colapsa al otro — no solo apariencia.
   const compactSidebar = useMatchMedia("(max-height: 760px)");
-  // Deep-link pendiente hacia una tabla ABM (ej. desde el drawer "Tablas
+  // Deep-link pendiente hacia una tabla ABM (ej. desde el modal "Tablas
   // relacionadas" de Modificar interrupción) — AbmScreen lo consume al
   // montar/cambiar de tabla y precarga campo, ejecuta búsqueda o entra en
   // alta según corresponda.
@@ -7109,11 +7016,12 @@ export default function App() {
   // seteado, AbmScreen muestra el botón "Volver". Se limpia en cualquier
   // navegación ABM normal (sidebar, selector interno) y se restablece solo
   // al llegar por un deep-link nuevo.
-  const [volverA, setVolverA] = useState<{ drawerTab: string | null; referencia: string | null } | null>(null);
+  const [volverA, setVolverA] = useState<{ relTab: string | null; referencia: string | null; reposicion: number | null } | null>(null);
   // Estado a restaurar en Consultas de interrupción al volver desde ABM —
   // lo consume ModificarContent como valor inicial en su próximo mount.
-  const [modificarInitialDrawerTab, setModificarInitialDrawerTab] = useState<string | null>(null);
+  const [modificarInitialRelTab, setModificarInitialRelTab] = useState<string | null>(null);
   const [modificarInitialReferencia, setModificarInitialReferencia] = useState<string | null>(null);
+  const [modificarInitialReposicion, setModificarInitialReposicion] = useState<number | null>(null);
 
   // Acordeón de uno-abierto-a-la-vez del sidebar compacto (tier 760px):
   // abre el grupo que contiene `target` y cierra el otro. No hace nada si
@@ -7207,8 +7115,9 @@ export default function App() {
   // Navegación normal a Consultas de interrupción (sidebar) — sin estado
   // previo que restaurar.
   function irAConsultas() {
-    setModificarInitialDrawerTab(null);
+    setModificarInitialRelTab(null);
     setModificarInitialReferencia(null);
+    setModificarInitialReposicion(null);
     setVolverA(null);
     setScreen("modificar");
     syncAccordionCompacto("modificar");
@@ -7217,14 +7126,16 @@ export default function App() {
   function irAAbmConDeepLink(link: AbmDeepLink) {
     setAbmDeepLink(link);
     goToAbmTable(link.tableKey); // limpia volverA...
-    setVolverA({ drawerTab: link.drawerTabOrigen ?? null, referencia: link.referenciaOrigen ?? null }); // ...y lo vuelve a armar
+    setVolverA({ relTab: link.relTabOrigen ?? null, referencia: link.referenciaOrigen ?? null, reposicion: link.reposicionOrigen ?? null }); // ...y lo vuelve a armar
   }
 
   // Botón "Volver a Consultas de interrupción" del masthead de AbmScreen —
-  // restaura la misma interrupción (y el mismo tab del drawer, si lo hay).
+  // restaura la misma interrupción, el mismo tab del modal "Tablas
+  // relacionadas" (si lo hay) y la misma reposición.
   function volverAConsultas() {
-    setModificarInitialDrawerTab(volverA?.drawerTab ?? null);
+    setModificarInitialRelTab(volverA?.relTab ?? null);
     setModificarInitialReferencia(volverA?.referencia ?? null);
+    setModificarInitialReposicion(volverA?.reposicion ?? null);
     setVolverA(null);
     setScreen("modificar");
     syncAccordionCompacto("modificar");
@@ -7442,8 +7353,9 @@ export default function App() {
             {screen === "modificar" && (
               <ModificarContent
                 onIrAAbm={irAAbmConDeepLink}
-                initialDrawerTab={modificarInitialDrawerTab}
+                initialRelTab={modificarInitialRelTab}
                 initialReferencia={modificarInitialReferencia}
+                initialReposicion={modificarInitialReposicion}
               />
             )}
             {screen === "generaciontxt" && <GeneracionTxtContent />}

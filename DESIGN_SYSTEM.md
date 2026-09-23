@@ -5,95 +5,62 @@ sueltos ni tamaños fuera de esa escala — si un valor no está ahí, no se usa
 Este archivo documenta *patrones de composición* (cómo se arman pantallas con
 esos tokens), no repite los tokens en sí.
 
-## Secciones dentro de drawers (`DrawerSection`)
+## `Modal` extendido: header propio y body sin padding
 
-Un drawer con más de una zona de contenido (ej. "Tablas relacionadas" en
-Modificar interrupción) NO se arma con franjas de borde a borde separadas por
-líneas divisorias — así el contenido flota y la jerarquía no se lee. Cada zona
-es una card propia:
+`Modal` (`src/App.tsx`) es el estándar para toda acción que requiera un
+diálogo. Por default arma su propio header (título + subtítulo + cerrar) y un
+body con `p-5` que crece con el contenido hasta el tope de `maxHeight`. Tres
+props opcionales lo extienden sin tocar cómo se ven los modales que no las
+pasan:
 
-- **Panel del drawer**: `flex-col` con tres partes — header (`shrink-0`,
-  fijo, fondo blanco, borde inferior — el único elemento de borde a borde del
-  drawer), body (`flex-1 overflow-y-auto`, el único scroll principal) y,
-  si hace falta, footer con acciones globales.
-- **Body**: fondo `gray-50`, `padding: var(--spacing) * 5` (`p-5`), las
-  secciones (`DrawerSection`) apiladas con `gap-4`.
-- **`DrawerSection`** (`src/App.tsx`): `bg-white`, borde `gray-200`, radio
-  `--radius-lg` (8px), sombra `--shadow-low` (la más baja de la escala),
-  `overflow-hidden`.
-  - Fila de título: `px-4 pt-4 pb-3`, `items-center justify-between`.
-    Izquierda: título (`text-label font-semibold text-gray-900`) + `CodeBadge`
-    opcional + un "meta" opcional — texto plano (`text-body-sm text-gray-500`,
-    ej. "4 registros") o un nodo con su propio estilo para un dato que es
-    SELECCIÓN DE DATOS, no descripción (ver `ContextChip`/`ReposicionStepper`
-    abajo). Derecha (`right`): un control — `SegmentedSwitch` para elegir
-    VISTA, o un `ReposicionStepper` para navegar un dato secuencial; nunca
-    los dos al mismo tiempo por el mismo motivo (ver "no mezclar" más abajo).
-  - Descripción opcional debajo del título: `text-body-sm text-gray-600`,
-    `px-4 pb-3`. Si la card tiene un bloque propio más abajo que ya la
-    contextualiza (ej. una ficha de detalle), la descripción se corre como
-    `children` junto a ese bloque en vez de vivir pegada al título — la idea
-    es que quede cerca de lo que describe, no que la prop se use siempre.
-  - Contenido (`children`): **sin padding propio**. Tablas y toolbars van de
-    borde a borde dentro de la card, con un borde superior (`border-t
-    border-gray-100`) que las separa del título — la card ya aporta el borde
-    exterior, no hace falta repetirlo adentro de cada tabla. Un bloque con su
-    propio padding (ej. una ficha de detalle) puede convivir ahí también,
-    siempre que gestione su propio `mx`/`mb`.
-- **Ninguna card se estira con `flex-1`** para llenar el alto del drawer — cada
-  una mide lo que mide su contenido.
-- **`DrawerSection` lleva `shrink-0` en su contenedor raíz — no es
-  cosmético.** El body es un flex column con `overflow-y-auto` y cada
-  `DrawerSection` tiene `overflow-hidden`. Con overflow distinto de
-  `visible`, el min-height automático de un flex item pasa a `0` (regla CSS
-  `min-size: auto` de flexbox), así que si el contenido total supera el alto
-  disponible, flex **achica las cards** en vez de dejar que el body
-  scrollee — sin `shrink-0` esto pasó de verdad: elegir un tab con más
-  contenido en "Tablas relacionadas" comprimía y recortaba la tabla de
-  Reposiciones de al lado. Regla: **dentro de un contenedor flex con
-  scroll, las secciones no se achican nunca — el que scrollea es el
-  contenedor, no ellas.** Aplica a cualquier hijo directo de un contenedor
-  `flex-col overflow-y-auto` que tenga su propio `overflow` no-visible, no
-  solo a `DrawerSection`.
+- **`headerExtra`**: una segunda línea de contenido debajo de título/cerrar,
+  todavía dentro del mismo bloque con borde inferior del header — para
+  contexto adicional (ej. "Interrupción `<ref>`" + `CopyButton`) que no entra
+  en la línea de título.
+- **`bodyPadding={false}`**: saca el `p-5` del body — para modales que arman
+  su propio layout interno (barras fijas, tabs, tablas de borde a borde) en
+  vez de dejar que `Modal` les imponga el padding estándar.
+- **`height`**: un alto CSS fijo (ej. `"min(720px, calc(100vh - 40px))"`) en
+  vez del alto-según-contenido de siempre — para cuando el contenido interno
+  tiene una única zona de scroll propia y el panel no puede saltar de tamaño
+  entre estados (ej. cambiar de tab). Combinarla con `bodyPadding={false}` y
+  un layout interno `h-full flex flex-col min-h-0`: las franjas fijas
+  (`shrink-0`) arriba, la única zona que scrollea (`flex-1 min-h-0
+  overflow-y-auto`) al final.
 
-## `SegmentedSwitch` vs. selección persistente — no mezclar
+## Tabs de contenido: `UnderlineTabs`
 
-Dos lenguajes visuales distintos para dos cosas distintas:
+`UnderlineTabs` (`src/App.tsx`) es EL patrón de tabs de contenido de la
+app — para elegir qué vista mostrar dentro de un mismo contenedor (ej. qué
+tabla se muestra en el modal "Tablas relacionadas" de Modificar
+interrupción). Reemplaza al `SegmentedSwitch` (riel + pastilla) que se usó
+brevemente para este mismo propósito — se volvió al lenguaje de tabs
+subrayados, más estándar para contenido tabular con varias vistas anchas.
 
-- **`SegmentedSwitch`** (riel gris `bg-gray-100` + pastilla blanca elevada
-  `bg-white` + `--shadow-low` en la opción activa) es para cambiar de **VISTA**
-  dentro de un mismo contenedor — tabs de contenido, ej. qué tabla se muestra
-  en la card de "Tablas relacionadas". La opción activa no lleva conteos ni
-  otro dato — es un selector de vista, no un indicador.
-- El estado **"seleccionado persistente"** (tint `--color-primary-tint` +
-  borde `--color-chip-border` + texto `--color-secondary`) sigue siendo para
-  **SELECCIÓN DE DATOS**: filas de tabla, chips de contexto (`ContextChip`),
-  filtros, toggles de valor (`ButtonSelectGroup` — Origen/Tipo), tiles con
-  cantidad (`STATUS_ITEMS`), y su variante navegable, `ReposicionStepper`
-  (ver abajo).
+- Contenedor `flex border-b border-gray-200` (línea de base, de lado a
+  lado — sin padding horizontal propio, cada `px-4` es del botón). Botones
+  `h-10 min-w-24 px-4 text-body`.
+  - Reposo: `text-gray-600`, hover `bg-gray-50`.
+  - Activo: `text-secondary font-medium` + `border-b-2 border-primary`
+    superpuesto a la línea de base vía `-mb-px`.
+- `role="tablist"` en el contenedor, `role="tab"` + `aria-selected` en cada
+  botón, flechas izquierda/derecha para moverse entre opciones.
+- Es para cambiar de **VISTA** — la selección de fila, chip o filtro sigue
+  siendo el estado "seleccionado persistente" (tint `--color-primary-tint` +
+  borde `--color-chip-border` + texto `--color-secondary`, ver
+  `ButtonSelectGroup` — Origen/Tipo, tiles con cantidad `STATUS_ITEMS`). No
+  mezclar los dos lenguajes ni usar `bg-primary` relleno para ninguno
+  (reservado a botones de acción primarios).
 
-Si algo representa "esto es lo que estoy mirando ahora" entre varias vistas
-posibles → `SegmentedSwitch`. Si representa "esto es lo que elegí/tengo
-seleccionado" como dato → tint + borde celeste + texto navy. No usar
-`bg-primary` relleno para ninguno de los dos (reservado a botones de acción
-primarios).
+## Dentro de un contenedor flex con scroll, las secciones no se achican
 
-### `ReposicionStepper` — variante navegable de `ContextChip` activa
-
-Mismo lenguaje visual que `ContextChip` variant="activa" (fondo
-`--color-primary-tint`, borde `--color-chip-border`, texto `--color-secondary`)
-pero con flechas ‹ › adentro (`ChevronLeft`/`ChevronRight`, 24×24, radio
-`--radius-sm`) para recorrer un dato SECUENCIAL sin salir del contenedor — ej.
-las reposiciones de una interrupción en el drawer de "Tablas relacionadas".
-Sigue siendo SELECCIÓN DE DATOS (actualiza el mismo estado que la selección
-de fila de una tabla — `modSelectedFase`, no un tab/vista), por eso hereda el
-tint en vez del lenguaje de `SegmentedSwitch`.
-
-- Botones a los extremos, alto `h-6` dentro de una chip `h-8`: reposo sin
-  fondo (hereda el `text-secondary` de la chip), hover `bg-white`. En el
-  primer/último valor quedan `disabled` — opacidad reducida, `cursor-default`,
-  sin hover — nunca ocultos, para que el centro (label + "n de N") no salte
-  de posición al llegar a un extremo.
-- Se usa cuando el dato en sí ES la navegación (no hay una "vista" separada
-  que elegir) — si en cambio hay varias vistas de contenido para un mismo
-  dato fijo, es `SegmentedSwitch`, no esto.
+Regla general para cualquier layout `flex-col` con `overflow-y-auto` que
+contenga hijos con su propio `overflow` no-visible (ej. `overflow-hidden` en
+una card, o una tabla con su propio scroll interno): esos hijos necesitan
+`shrink-0`. Sin eso, el min-height automático de un flex item pasa a `0`
+(regla CSS `min-size: auto` de flexbox) y, si el contenido total supera el
+alto disponible, flex **achica los hijos** en vez de dejar que el
+contenedor scrollee — un bug real que ya pasó acá: sin `shrink-0`, elegir un
+tab con más contenido comprimía y recortaba una tabla vecina en vez de
+activar el scroll del contenedor. El que scrollea es siempre el contenedor
+exterior, nunca sus secciones.
