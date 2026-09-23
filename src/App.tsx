@@ -2830,25 +2830,46 @@ const STATUS_ITEMS = [
   { label: "TABLA 9", alert: false, tabKey: "tabla9" },
 ];
 
+// Fila de la tabla de Reposiciones (Tabla 4/CDS4) — campos con nombre en vez
+// de string[][], para que ReposicionesTable pueda renderizar la celda Equipo
+// a dos líneas (código + descripción) sin depender de posiciones de array.
+type FaseReposicion = {
+  nro: number;
+  horaRep: string;
+  fase: string;
+  equipoCodigo: string;
+  equipoDesc: string;
+  usuariosBT: number;
+};
+
+// Fase eléctrica de la reposición — sesgada hacia monofásicas (R/S/T) y RST
+// (el caso más común en la base real), con las combinaciones bifásicas
+// (RS/RT/ST) como minoría.
+function faseElectricaReposicionSintetica(rng: () => number): string {
+  const dado = rng();
+  if (dado < 0.55) return elegir(rng, ["R", "S", "T"]);
+  if (dado < 0.85) return "RST";
+  return elegir(rng, ["RS", "RT", "ST"]);
+}
+
 // Fases de reposición de la interrupción seleccionada — mostrada siempre
 // visible en la Card B de Consultas de interrupción (ya no detrás de un
 // tab del drawer). Varía por interrupción: la semilla es la referencia
 // seleccionada, así que la misma interrupción siempre muestra las mismas
 // fases pero cada interrupción tiene las suyas. La cantidad de filas está
 // sesgada hacia pocas (1-3 el caso típico, 4-6 menos común, 7-10 raro).
-function generarFasesSinteticas(referencia: string): { nro: number; horaRep: string; clientes: number; clientesTA: number }[] {
+function generarFasesSinteticas(referencia: string): FaseReposicion[] {
   const rng = crearRng(hashSemilla(referencia + ":fases"));
   const dado = rng();
   const cantidad = dado < 0.65 ? enteroEntre(rng, 1, 3) : dado < 0.9 ? enteroEntre(rng, 4, 6) : enteroEntre(rng, 7, 10);
-  return Array.from({ length: cantidad }, (_, i) => {
-    const clientes = enteroEntre(rng, 1, 60);
-    return {
-      nro: i + 1,
-      horaRep: fechaSintetica(rng, 7, 2026),
-      clientes,
-      clientesTA: enteroEntre(rng, 0, clientes),
-    };
-  });
+  return Array.from({ length: cantidad }, (_, i) => ({
+    nro: i + 1,
+    horaRep: fechaSintetica(rng, 7, 2026),
+    fase: faseElectricaReposicionSintetica(rng),
+    equipoCodigo: equipoCodeSintetico(rng),
+    equipoDesc: elegir(rng, DESCRIPCIONES_EQUIPO_OPERADO),
+    usuariosBT: enteroEntre(rng, 1, 60),
+  }));
 }
 
 // Valores de "Tablas relacionadas" (indicadores TABLA 3/5/6/8/9) para la
@@ -2950,7 +2971,12 @@ const DRAWER_TABS = [
   {
     key: "tabla4", label: "Tabla 4",
     subtitle: "Reposiciones",
-    cols: ["Reposición", "Hora reposición", "Cant. clientes", "Cant. clientes T5"],
+    // ⚠ "Fase" acá es la fase ELÉCTRICA de la reposición (R/S/T/RS/RT/ST/
+    // RST) — no confundir con la columna "Fase" de Tabla 5/6/9 (más abajo
+    // en este mismo array), que guarda el NÚMERO de reposición. Mismo
+    // nombre, dos significados distintos dentro del drawer — reportado,
+    // sin resolver a propósito (ver mensaje de entrega).
+    cols: ["Reposición", "Hora reposición", "Fase", "Equipo", "Usuarios BT"],
     // Sin uso — Card B arma sus propias filas via generarFasesSinteticas,
     // acá solo quedan cols/subtitle/key/label.
     rows: [] as string[][],
@@ -3035,27 +3061,59 @@ function CardHeader({ title, tag, right }: { title: string; tag?: string; right?
   );
 }
 
+// Alto de header (th sticky) y de fila de ReposicionesTable, en px — la
+// celda Equipo ahora tiene 2 líneas (código + descripción), así que una
+// fila mide más que antes. Estos valores reflejan el alto REAL renderizado
+// (padding + line-height de cada franja de texto: body-sm ~12px + micro
+// ~10px para Equipo, más py-2.5 de padding), no un número puesto a ojo —
+// de acá salen tanto el alto fijo de la card como el tope "~4 filas
+// visibles" del drawer (ver llamadas a ReposicionesTable más abajo).
+const REPOSICIONES_HEADER_H = 29;
+const REPOSICIONES_ROW_H = 47;
+
 // Tabla de Reposiciones (Tabla 4) — compartida entre la Card B de
 // "Reposiciones" (Modificar interrupción) y el drawer de "Tablas
 // relacionadas": misma tabla, misma selección (modSelectedFase vive en
 // ModificarContent, única fuente de verdad — acá solo llega vía
-// selectedIndex/onSelect), solo cambia el alto visible entre una
-// instancia y la otra. Header <th> sticky + scroll propio + fila
-// seleccionada con borde izquierdo celeste, mismo criterio en ambos
-// lugares. Ref, hover y navegación por teclado (flechas arriba/abajo) son
-// internos a cada instancia — no hay estado que compartir ahí, solo el
-// índice seleccionado.
+// selectedIndex/onSelect). Columnas fijas (Reposición/Hora/Fase/Equipo/
+// Usuarios BT vienen de FaseReposicion, no de un array genérico) — `cols`
+// solo aporta las etiquetas de header, para que DRAWER_TABS siga siendo la
+// única fuente de los títulos. Header <th> sticky + scroll propio + fila
+// seleccionada con acento celeste, mismo criterio en ambos lugares. Ref,
+// hover y navegación por teclado (flechas arriba/abajo) son internos a
+// cada instancia — no hay estado que compartir ahí, solo el índice
+// seleccionado.
+//
+// heightMode "fixed" (default, la card): el contenedor siempre mide
+// maxHeight, se achique o no el contenido. "auto" (el drawer): el
+// contenedor se ajusta al contenido hasta un tope de maxHeight (con 1-2
+// filas no queda un bloque vacío) y recién ahí empieza a scrollear.
+//
+// El acento de fila seleccionada usa boxShadow inset (no borderLeft): con
+// border-collapse, un borde puesto en <td> se pinta en la capa de bordes
+// de la tabla, no en la celda, y esa capa puede quedar por ENCIMA del
+// <th> sticky al scrollear (el th sticky no lo tapa). El inset box-shadow
+// se pinta dentro de la celda como cualquier otro fondo — nunca escapa por
+// encima del header. Ventaja extra: al no ocupar espacio en el layout (a
+// diferencia del borderLeft, que necesitaba reservar 3px siempre,
+// transparente cuando no estaba seleccionada, para que el texto no se
+// corriera), el texto queda en la misma posición seleccionada o no, sin
+// necesidad de ese truco. La tabla pasa de border-collapse a
+// border-separate/border-spacing-0 y los separadores de fila se mueven de
+// <tr> a <td> — bajo border-separate los bordes puestos en <tr> no pintan.
 function ReposicionesTable({
   cols,
   rows,
   selectedIndex,
   onSelect,
-  maxHeight = 220,
+  heightMode = "fixed",
+  maxHeight = REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 5,
 }: {
   cols: string[];
-  rows: string[][];
+  rows: FaseReposicion[];
   selectedIndex: number | null;
   onSelect: (index: number | null) => void;
+  heightMode?: "fixed" | "auto";
   maxHeight?: number;
 }) {
   const [hovIndex, setHovIndex] = useState<number | null>(null);
@@ -3086,13 +3144,18 @@ function ReposicionesTable({
       tabIndex={rows.length > 0 ? 0 : -1}
       onKeyDown={handleKeyDown}
       className="border border-gray-200 rounded-sm overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
-      style={{ height: maxHeight }}
+      style={heightMode === "auto" ? { maxHeight } : { height: maxHeight }}
     >
-      <table className="w-full border-collapse">
+      <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
         <thead>
-          <tr className="border-b border-gray-200">
-            {cols.map((c) => (
-              <th key={c} className="sticky top-0 z-10 bg-gray-50 px-3 py-2 text-left text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 whitespace-nowrap">
+          <tr>
+            {cols.map((c, ci) => (
+              <th
+                key={c}
+                className={`sticky top-0 z-10 bg-gray-50 px-3 py-2 border-b border-gray-200 text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 whitespace-nowrap ${
+                  ci === cols.length - 1 ? "text-right" : "text-left"
+                }`}
+              >
                 {c}
               </th>
             ))}
@@ -3109,8 +3172,11 @@ function ReposicionesTable({
               </td>
             </tr>
           ) : (
-            rows.map((row, ri) => {
+            rows.map((fila, ri) => {
               const seleccionada = selectedIndex === ri;
+              const esUltima = ri === rows.length - 1;
+              const tdCls = `px-3 py-2.5 ${esUltima ? "" : "border-b border-gray-100"}`;
+              const textCls = seleccionada ? "text-secondary font-medium" : "text-gray-700";
               return (
                 <tr
                   key={ri}
@@ -3118,27 +3184,125 @@ function ReposicionesTable({
                   onClick={() => onSelect(seleccionada ? null : ri)}
                   onMouseEnter={() => setHovIndex(ri)}
                   onMouseLeave={() => setHovIndex(null)}
-                  className="border-b border-gray-100 last:border-b-0 transition-colors cursor-pointer"
+                  className="transition-colors cursor-pointer"
                   style={{ backgroundColor: seleccionada ? "var(--color-primary-tint)" : hovIndex === ri ? "var(--color-gray-50)" : undefined }}
                 >
-                  {row.map((cell, ci) => (
-                    <td
-                      key={ci}
-                      className={`px-3 py-2.5 text-body-sm whitespace-nowrap ${seleccionada ? "text-secondary font-medium" : "text-gray-700"}`}
-                      // borde de acento en la primera celda, no en el <tr>: con
-                      // border-collapse, un borde puesto directo en la fila no
-                      // renderiza de forma confiable en todos los navegadores.
-                      style={ci === 0 ? { borderLeft: seleccionada ? "3px solid var(--color-primary)" : "3px solid transparent" } : undefined}
-                    >
-                      {cell}
-                    </td>
-                  ))}
+                  <td
+                    className={`${tdCls} text-body-sm tabular-nums whitespace-nowrap ${textCls}`}
+                    style={{ boxShadow: seleccionada ? "inset 3px 0 0 var(--color-primary)" : undefined }}
+                  >
+                    {fila.nro}
+                  </td>
+                  <td className={`${tdCls} text-body-sm tabular-nums whitespace-nowrap ${textCls}`}>{fila.horaRep}</td>
+                  <td className={`${tdCls} text-body-sm font-mono tabular-nums whitespace-nowrap ${textCls}`}>{fila.fase}</td>
+                  <td className={`${tdCls} max-w-[220px]`}>
+                    <div className={`text-body-sm font-medium font-mono tabular-nums truncate ${seleccionada ? "text-secondary" : "text-gray-800"}`}>
+                      {fila.equipoCodigo}
+                    </div>
+                    <div className={`text-micro truncate ${seleccionada ? "text-gray-600" : "text-gray-500"}`} title={fila.equipoDesc}>
+                      {fila.equipoDesc}
+                    </div>
+                  </td>
+                  <td className={`${tdCls} text-body-sm tabular-nums text-right whitespace-nowrap ${textCls}`}>{fila.usuariosBT}</td>
                 </tr>
               );
             })
           )}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+// Chip de contexto del header del drawer de "Tablas relacionadas" — label
+// opcional (micro uppercase semibold) + valor (body-sm font-medium
+// tabular-nums). Pill de alto fijo h-7. Dos variantes: "neutral" (fondo
+// gray-100/borde gray-200/texto gray-800 — Interrupción, un dato fijo de
+// contexto) y "activa" (fondo --color-primary-tint/borde --color-chip-
+// border/texto secondary — Reposición, el MISMO tint que la fila
+// seleccionada de ReposicionesTable, para que el chip se lea relacionado
+// con esa fila).
+function ContextChip({
+  label,
+  value,
+  variant = "neutral",
+  mono = false,
+}: {
+  label?: string;
+  value: React.ReactNode;
+  variant?: "neutral" | "activa";
+  mono?: boolean;
+}) {
+  return (
+    <span
+      className={`h-7 inline-flex items-center gap-1.5 px-2.5 rounded-sm border shrink-0 ${
+        variant === "activa" ? "bg-primary-tint border-chip-border text-secondary" : "bg-gray-100 border-gray-200 text-gray-800"
+      }`}
+    >
+      {label && (
+        <span className={`text-micro font-semibold uppercase tracking-[0.06em] ${variant === "activa" ? "text-secondary/60" : "text-gray-500"}`}>
+          {label}
+        </span>
+      )}
+      <span className={`text-body-sm font-medium tabular-nums ${mono ? "font-mono" : ""}`}>{value}</span>
+    </span>
+  );
+}
+
+// Segmented control de "Tablas relacionadas" en el drawer — reemplaza los
+// tabs subrayados de antes: grupo inline-flex con borde exterior y
+// divisores internos, botones h-8. Estado activo = tint celeste (el mismo
+// "seleccionado persistente" que usa el resto del design system —
+// STATUS_ITEMS, ButtonSelectGroup —, nunca bg-primary relleno). Cada
+// opción muestra su conteo (mismo valor que el tile correspondiente en
+// valoresRelacionadas); un conteo en 0 se atenúa a gray-400 pero la opción
+// sigue siendo clickeable (lleva a su estado vacío). role="tablist"/"tab" +
+// flechas izquierda/derecha para moverse entre opciones.
+function RelatedTablesSegmented({
+  options,
+  activeKey,
+  onSelect,
+}: {
+  options: { key: string; label: string; value: string; empty: boolean }[];
+  activeKey: string | null;
+  onSelect: (key: string) => void;
+}) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    const idx = options.findIndex((o) => o.key === activeKey);
+    if (idx === -1) return;
+    const next = e.key === "ArrowRight" ? (idx + 1) % options.length : (idx - 1 + options.length) % options.length;
+    onSelect(options[next].key);
+  }
+
+  return (
+    <div
+      role="tablist"
+      aria-label="Tablas relacionadas"
+      onKeyDown={handleKeyDown}
+      className="inline-flex items-stretch rounded-sm border border-gray-300 overflow-hidden divide-x divide-gray-300 shrink-0"
+    >
+      {options.map((opt) => {
+        const active = opt.key === activeKey;
+        return (
+          <button
+            key={opt.key}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            tabIndex={active ? 0 : -1}
+            onClick={() => onSelect(opt.key)}
+            className={`h-8 px-3 flex items-center gap-1 text-body-sm font-medium transition-colors ${
+              active ? "bg-primary-tint text-secondary" : "bg-white text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            <span>{opt.label}</span>
+            <span className="text-gray-400">·</span>
+            <span className={`font-semibold tabular-nums ${opt.empty ? "text-gray-400" : ""}`}>{opt.value}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -3432,9 +3596,7 @@ function ModificarContent({
   // propias de esa interrupción — cantidad y valores varían de una a otra,
   // pero siempre las mismas para la misma interrupción.
   const tabla4Data = DRAWER_TABS.find(t => t.key === "tabla4")!;
-  const tabla4Rows = selectedRecord
-    ? generarFasesSinteticas(selectedRecord.referencia).map((f) => [String(f.nro), f.horaRep, String(f.clientes), String(f.clientesTA)])
-    : [];
+  const tabla4Rows: FaseReposicion[] = selectedRecord ? generarFasesSinteticas(selectedRecord.referencia) : [];
 
   // Fila de Reposiciones seleccionada (tabla interactiva, igual que
   // Interrupciones) — "Tablas relacionadas" y "Datos de la interrupción"
@@ -3455,7 +3617,7 @@ function ModificarContent({
   // deterministicos: volver a seleccionar la misma reposición siempre da
   // los mismos valores.
   const valoresRelacionadas = selectedRecord && filaFaseSeleccionada
-    ? generarTablasRelacionadas(`${selectedRecord.referencia}#${filaFaseSeleccionada[0]}`)
+    ? generarTablasRelacionadas(`${selectedRecord.referencia}#${filaFaseSeleccionada.nro}`)
     : null;
 
   // Filas de cada tab del drawer (5/6/8/9) — generadas por reposición
@@ -3465,7 +3627,7 @@ function ModificarContent({
   const drawerTabRows: string[][] = (() => {
     if (!drawerTab || !selectedRecord || !filaFaseSeleccionada || !valoresRelacionadas) return [];
     const referencia = selectedRecord.referencia;
-    const nroReposicion = Number(filaFaseSeleccionada[0]);
+    const nroReposicion = filaFaseSeleccionada.nro;
     const seedBase = `${referencia}#${nroReposicion}`;
     switch (drawerTab) {
       case "tabla5": return generarFilasTabla5(seedBase, referencia, nroReposicion, Number(valoresRelacionadas.tabla5));
@@ -3489,7 +3651,7 @@ function ModificarContent({
   // la Tabla 4 (no siempre la última de la lista).
   const timelineReferencia = selectedRecord?.referencia ?? "";
   const timelineFechaInicio = selectedRecord?.fecha ?? "";
-  const timelineFechaUltRepo = filaFaseSeleccionada ? filaFaseSeleccionada[1] : "";
+  const timelineFechaUltRepo = filaFaseSeleccionada ? filaFaseSeleccionada.horaRep : "";
   const timelineDuracion = "0 dias, 2 hs, 8 min";
   const timelineTicks = [0, 14, 22, 38, 47, 63, 81, 100];
 
@@ -3917,7 +4079,7 @@ function ModificarContent({
                     {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length}
                   </span>
                   <span className="text-gray-400">·</span>
-                  <span className="text-body-sm font-medium text-gray-800 tabular-nums">{filaFaseSeleccionada[1]}</span>
+                  <span className="text-body-sm font-medium text-gray-800 tabular-nums">{filaFaseSeleccionada.horaRep}</span>
                 </>
               )}
             </div>
@@ -3927,16 +4089,16 @@ function ModificarContent({
 
             {/* Tabla 4 — siempre visible, nunca detrás de un modal/drawer.
                 Vacía hasta que se selecciona una interrupción. Altura fija
-                (no maxHeight: siempre ocupa el mismo alto, sin achicarse
-                con pocas filas) + scroll propio + header sticky, ver
-                ReposicionesTable (compartida con el drawer). */}
+                (heightMode "fixed": siempre ocupa el mismo alto, ~5 filas,
+                sin achicarse con pocas) + scroll propio + header sticky,
+                ver ReposicionesTable (compartida con el drawer). */}
             <div className="px-5 py-3 border-b border-gray-100">
               <ReposicionesTable
                 cols={tabla4Data.cols}
                 rows={tabla4Rows}
                 selectedIndex={modSelectedFase}
                 onSelect={setModSelectedFase}
-                maxHeight={220}
+                maxHeight={REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 5}
               />
             </div>
 
@@ -4103,72 +4265,87 @@ function ModificarContent({
           transition: "transform 280ms cubic-bezier(0.4,0,0.2,1)",
         }}
       >
-        {/* Drawer header — además de Interrupción, la reposición activa
-            (mismo formato del punto 1: label micro + valor body-sm), solo
-            si hay más de una. */}
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center justify-between">
-          <div>
-            <p className="text-caption text-gray-600 uppercase tracking-[0.08em] font-semibold mb-0.5">Interrupción</p>
-            <p className="text-[14px] font-semibold text-gray-900 font-mono">
-              {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
-            </p>
+        {/* Drawer header — una sola línea alineada con el botón cerrar:
+            chip de Interrupción (variante neutra, dato fijo de contexto) +
+            chip de Reposición (variante activa, MISMO tint que la fila
+            seleccionada de ReposicionesTable — decisión: reposición y
+            fecha van en UN solo chip con separador "·" interno en vez de
+            dos chips separados, porque describen una sola cosa — la
+            reposición elegida — no dos hechos independientes; separarlos
+            hubiera sumado dos bordes/fondos más al h-14 sin aportar
+            lectura extra). Solo aparece con más de una reposición (mismo
+            criterio de siempre). Alto h-14 consistente con CardHeader. */}
+        <div className="h-14 px-6 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <ContextChip label="Interrupción" value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} mono />
             {tabla4Rows.length > 1 && filaFaseSeleccionada && (
-              <div className="flex items-center gap-2 mt-1.5">
-                <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Reposición</span>
-                <span className="text-body-sm font-medium text-gray-800 tabular-nums">
-                  {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length}
-                </span>
-                <span className="text-gray-400">·</span>
-                <span className="text-body-sm font-medium text-gray-800 tabular-nums">{filaFaseSeleccionada[1]}</span>
-              </div>
+              <ContextChip
+                variant="activa"
+                label="Reposición"
+                value={
+                  <>
+                    {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length}
+                    <span className="mx-1.5 text-secondary/40">·</span>
+                    {filaFaseSeleccionada.horaRep}
+                  </>
+                }
+              />
             )}
           </div>
           <button
             onClick={() => setDrawerTab(null)}
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all shrink-0"
           >
             <X size={14} strokeWidth={1.5} />
           </button>
         </div>
 
-        {/* Tabla de reposiciones — misma tabla/selección que la Card B
-            (modSelectedFase es la única fuente de verdad: cambiar de
-            reposición acá se refleja en la card al cerrar el drawer, y
-            viceversa). shrink-0, alto acotado a ~4 filas visibles. */}
-        <div className="px-6 py-3 border-b border-gray-200 shrink-0">
+        {/* Tabla de reposiciones — zona "maestro", sin fondo propio (se lee
+            como una extensión del header, no como una card aparte). Misma
+            tabla/selección que la Card B (modSelectedFase es la única
+            fuente de verdad: cambiar de reposición acá se refleja en la
+            card al cerrar el drawer, y viceversa). shrink-0, heightMode
+            "auto": se ajusta al contenido (2 filas no dejan un bloque
+            vacío) con tope de ~4 filas visibles antes de scrollear. Sin
+            border-b propio — el borde que la separa de la banda de abajo
+            es el border-t de esa banda. */}
+        <div className="px-6 py-3 shrink-0">
           <ReposicionesTable
             cols={tabla4Data.cols}
             rows={tabla4Rows}
             selectedIndex={modSelectedFase}
             onSelect={setModSelectedFase}
-            maxHeight={176}
+            heightMode="auto"
+            maxHeight={REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 4}
           />
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 px-6 shrink-0">
-          {DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setDrawerTab(tab.key)}
-              className={`px-4 py-3 text-body font-medium border-b-2 transition-colors ${
-                drawerTab === tab.key
-                  ? "border-primary text-secondary"
-                  : "border-transparent text-gray-600 hover:text-gray-700"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Banda "Tablas relacionadas" — abre la zona de datos relacionados:
+            título (mismo estilo de label de sección que la card) a la
+            izquierda, segmented control a la derecha (envuelve si no
+            entra). Reemplaza los tabs subrayados de antes, que quedaban
+            flotando sin pertenecer ni a la tabla de arriba ni al contenido
+            de abajo. */}
+        <div className="shrink-0 bg-gray-50 border-t border-b border-gray-200 px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600">Tablas relacionadas</p>
+          <RelatedTablesSegmented
+            options={DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => {
+              const valor = valoresRelacionadas?.[tab.key] ?? "0";
+              return { key: tab.key, label: tab.label, value: valor, empty: tab.key !== "tabla3" && valor === "0" };
+            })}
+            activeKey={drawerTab}
+            onSelect={setDrawerTab}
+          />
         </div>
 
         {/* Tab content */}
         <div className="flex-1 overflow-y-auto flex flex-col">
           {activeTabData && (
             <>
-              {/* Subtitle */}
+              {/* Subtitle — pegado a la toolbar de búsqueda de abajo (o al
+                  contenido de Tabla 3), no una franja bordeada aparte. */}
               {activeTabData.subtitle && (
-                <div className="px-5 py-2.5 border-b border-gray-100 shrink-0">
+                <div className="px-5 pt-3 pb-2 shrink-0">
                   <p className="text-body-sm text-gray-600 leading-snug">{activeTabData.subtitle}</p>
                 </div>
               )}
