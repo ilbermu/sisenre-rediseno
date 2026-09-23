@@ -5,12 +5,23 @@ sueltos ni tamaños fuera de esa escala — si un valor no está ahí, no se usa
 Este archivo documenta *patrones de composición* (cómo se arman pantallas con
 esos tokens), no repite los tokens en sí.
 
+## `Modal`: header = mismo tratamiento que `CardHeader`
+
+El bloque de header de `Modal` (título/cerrar + `headerExtra`, si viene) es
+`bg-gray-50` con `border-b border-gray-200` como divisor con el body — EL
+MISMO tratamiento que `CardHeader` (Búsqueda/Interrupciones/Reposiciones:
+`bg-gray-50 border-b border-gray-200`), para que headers de card y headers de
+modal se lean como el mismo elemento en toda la app. No es una prop opt-in:
+aplica a los 13 usos de `Modal` del archivo por igual. El body sigue en
+`bg-white` (default de `Modal`, ver `bodyClassName` si un modal puntual
+necesita otra cosa); el footer no cambia.
+
 ## `Modal` extendido: header propio, body sin scroll propio
 
 `Modal` (`src/App.tsx`) es el estándar para toda acción que requiera un
-diálogo. Por default arma su propio header (título `text-label` + subtítulo +
-cerrar) y un body con `p-5` que crece con el contenido y scrollea
-(`overflow-y-auto`) hasta el tope de `maxHeight`. Props opcionales lo
+diálogo. Por default arma su propio header (`bg-gray-50`, título `text-label`
++ subtítulo + cerrar) y un body con `p-5` que crece con el contenido y
+scrollea (`overflow-y-auto`) hasta el tope de `maxHeight`. Props opcionales lo
 extienden sin tocar cómo se ven los modales que no las pasan:
 
 - **`headerExtra`**: una segunda línea de contenido debajo de título/cerrar,
@@ -42,30 +53,28 @@ extienden sin tocar cómo se ven los modales que no las pasan:
   vez del alto-según-contenido de siempre — para cuando el panel no puede
   saltar de tamaño entre estados (ej. cambiar de tab o de reposición).
 
-## Patrón de modal de trabajo: header con metadatos, contenido de borde a borde
+## Patrón de modal de trabajo: header con identidad fija, contenido de borde a borde
 
 Para un modal con contenido propio de trabajo (no un formulario de acción
 puntual) — ej. "Tablas relacionadas" de Modificar interrupción — el contenido
 va de borde a borde del modal, alineado al mismo `px-5` que el header. Sin
-cards ni fondo gris: el dato de contexto secundario (ej. qué reposición está
-activa) vive como una línea de metadatos en el HEADER, no en una card del
-body.
+cards ni fondo gris en el body: el header (`headerExtra`) lleva SOLO la
+identidad del modal, el dato que no cambia mientras está abierto (ej. la
+Interrupción) — un dato que SÍ cambia con la interacción (ej. qué reposición
+está activa) va en el body, como primer elemento, en fondo blanco, arriba del
+contenido de trabajo — no en el header ni en una card.
 
-- **Header**: blanco, compacto. `headerExtra` apila ahí, debajo del título,
-  tantas líneas de contexto como haga falta (ver `headerExtra` arriba) — ej.
-  una línea fija (Interrupción + `CopyButton`) y, condicionalmente, una
-  línea de metadatos de un dato seleccionable (reposición activa): segmentos
-  de texto separados por "·" (`text-body-sm text-gray-600`, separador en
-  `text-gray-400`), con el paginador ‹ › al final de esa misma línea. Todos
-  los segmentos `whitespace-nowrap` salvo uno (el más largo/variable, ej. una
-  descripción) que es el único flexible (`min-w-0`, `truncate` + `title`) —
-  ese es el que cede espacio si la línea se aprieta. Es texto plano, sin
-  tiles ni bordes propios (ver "no es el patrón" en `DataTile` abajo).
+- **Header**: `headerExtra` apila, debajo del título, la línea de identidad
+  fija — ej. Interrupción + `CopyButton` — con `pb-3.5` fijo (sin una segunda
+  línea condicional, cierra parejo siempre).
 - **Body**: `bodyPadding={false}` + `bodyOverflow="hidden"` — el body EN SÍ
-  nunca scrollea ni tiene padding/fondo propios. Su único hijo es un wrapper
-  `h-full flex flex-col min-h-0` que arma el layout interno: filas fijas
-  (`shrink-0`, con su propio `px-5` para alinear con el header) arriba, la
-  zona de contenido de trabajo (`flex-1 min-h-0`) al final.
+  nunca scrollea ni tiene padding/fondo propios (queda blanco, heredado del
+  panel). Su único hijo es un wrapper `h-full flex flex-col min-h-0` que arma
+  el layout interno: filas fijas (`shrink-0`, con su propio `px-5` para
+  alinear con el header) arriba — la primera de ellas el dato interactivo del
+  momento (ver `MetaChip`/`FaseIndicador` abajo), sin `border-b` propio (lo
+  pone la fila de tabs de abajo) — la zona de contenido de trabajo (`flex-1
+  min-h-0`) al final.
 - **El scroll vive DENTRO de un contenedor propio** con su propio borde
   (`border border-gray-200 rounded-md overflow-auto`, `mx-5 mb-5` para
   alinear con el padding del resto del modal) — nunca en el body. Ese
@@ -98,10 +107,37 @@ text-gray-600`, `line-clamp-2` + `title`) — muestra el texto completo si
 entra en 2 líneas, solo trunca con "…" si lo excede. `className` para
 ajustes del propio grid item (ej. `col-span-2`).
 
-**No es el patrón para una línea de metadatos suelta** (sin borde/fondo
-propio por dato, ej. la línea de reposición activa en el header del modal
-"Tablas relacionadas") — ahí cada dato es texto plano separado por "·", sin
-tile.
+**No es el patrón para un grupo de chips sutiles** (más liviano que un tile
+de grilla, para datos alineados en una fila — ver `MetaChip` abajo).
+
+## `MetaChip`: chip sutil de metadato en una fila
+
+`MetaChip` (`src/App.tsx`, junto a `FaseReposicionFicha`) es un chip más
+liviano que `DataTile` — `inline-flex h-7 px-2.5 rounded-md border
+text-body-sm`, para datos de solo lectura alineados en una FILA (no una
+grilla) — ej. el grupo de datos de la reposición activa en el modal "Tablas
+relacionadas". Label opcional + valor + ícono opcional a la izquierda (el
+ícono se pasa sin color propio — solo la forma — `MetaChip` lo envuelve con
+el color de la variante). Dos variantes:
+
+- **`"neutral"`** (default): fondo `gray-50`, borde `gray-200`, label
+  `gray-500`, valor `gray-800 font-medium tabular-nums`, ícono `gray-400`. La
+  mayoría de los datos.
+- **`"accent"`**: fondo `--color-primary-tint`, borde `--color-chip-border`,
+  texto `secondary` (label a `/60` de opacidad) — el mismo lenguaje del
+  estado "seleccionado persistente" del sistema (ver `UnderlineTabs` abajo).
+  Para la ENTIDAD seleccionada del grupo (ej. "Reposición {n}"), no para un
+  dato cualquiera — no mezclar con `"neutral"` dentro del mismo grupo salvo
+  para marcar justo esa diferencia.
+
+`FaseIndicador` (mismo archivo) es un indicador compuesto de 3 mini-cajas
+fijas R/S/T (`18×18` — tamaño pedido explícitamente, sin paso de la escala de
+spacing que dé ese valor) — SIEMPRE en ese orden, resaltando con el mismo
+tint+borde celeste de `"accent"` las letras presentes en el valor real (ej.
+"RS" resalta R y S) y `gray-300`/`border-gray-200` las ausentes. Es un
+indicador ÚNICO, no 3 datos independientes: `role="img"` + `aria-label` con
+el valor real en el contenedor, cada caja individual `aria-hidden`. Se usa
+como `value` de un `MetaChip` (ej. `label="Fase"`).
 
 ## Tabs de contenido: `UnderlineTabs`
 

@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown,
   Zap, FileText, Pencil, Clipboard, UserPlus, Shield, Calendar, Search, X,
   Filter, Inbox, User, Settings, LogOut, Plus, Download, ChevronsUp, ChevronsDown, Home,
-  Activity, Copy, Check,
+  Activity, Copy, Check, Clock, Users, ClipboardList,
 } from "lucide-react";
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
@@ -1119,13 +1119,16 @@ function Modal({
           boxShadow: "var(--shadow-high)",
         }}
       >
-        {/* Header — título/cerrar siempre; headerExtra (si viene) se apila
-            debajo, todavía dentro de este mismo bloque bordeado. Con
+        {/* Header — bg-gray-50 (mismo tratamiento que CardHeader: Búsqueda/
+            Interrupciones/Reposiciones), aplica a los 13 usos de Modal por
+            igual, no es una prop opt-in. border-b como divisor con el body
+            (bg-white, sin cambios). título/cerrar siempre; headerExtra (si
+            viene) se apila debajo, todavía dentro de este mismo bloque. Con
             headerExtra, el título pasa a pt-3.5/pb-0 (en vez de py-4) — el
             padding inferior del bloque entero lo aporta headerExtra (su
             propio pb-3.5, ver call site), con solo mt-0.5 de gap interno
             entre las dos líneas. */}
-        <div className="border-b border-gray-200 shrink-0">
+        <div className="bg-gray-50 border-b border-gray-200 shrink-0">
           <div className={`px-5 flex items-center justify-between gap-3 ${headerExtra ? "pt-3.5 pb-0" : "py-4"}`}>
             <p className={`min-w-0 truncate font-semibold text-gray-900 ${titleSize === "title-sm" ? "text-title-sm" : "text-label"}`}>
               {title}
@@ -3385,25 +3388,85 @@ function DataTile({
   return <div className={cls}>{content}</div>;
 }
 
-// Segunda línea del header del modal "Tablas relacionadas" (debajo de la
-// línea de Interrupción, dentro de headerExtra) — NO una card, NO tiles:
-// una línea de metadatos de la reposición activa, segmentos separados por
-// "·", + el paginador ‹ › al final de esa misma línea. Fase y el código
-// de Equipo van en mono. La descripción del equipo es el único segmento
-// flexible (min-w-0, truncate + title) — el resto tiene ancho natural
-// (whitespace-nowrap), así que es esa descripción la que cede espacio si
-// la línea se aprieta.
+// Chip sutil de metadato — label opcional + valor + ícono opcional a la
+// izquierda. Dos variantes: "neutral" (fondo gray-50/borde gray-200 — la
+// mayoría de los datos, de solo lectura) y "accent" (fondo
+// --color-primary-tint/borde --color-chip-border/texto secondary — el
+// mismo lenguaje del estado "seleccionado persistente" del sistema, para
+// la ENTIDAD seleccionada, no para un dato cualquiera). El ícono se pasa
+// sin color propio (solo la forma) — MetaChip lo envuelve con el color que
+// corresponda a la variante, así el llamador no repite esa lógica.
+function MetaChip({
+  icon,
+  label,
+  value,
+  variant = "neutral",
+}: {
+  icon?: React.ReactNode;
+  label?: string;
+  value: React.ReactNode;
+  variant?: "neutral" | "accent";
+}) {
+  const accent = variant === "accent";
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md border text-body-sm whitespace-nowrap ${
+        accent ? "bg-primary-tint border-chip-border text-secondary" : "bg-gray-50 border-gray-200 text-gray-800"
+      }`}
+    >
+      {icon && <span className={accent ? "text-secondary/60" : "text-gray-400"}>{icon}</span>}
+      {label && <span className={accent ? "text-secondary/60" : "text-gray-500"}>{label}</span>}
+      <span className={`font-medium tabular-nums ${accent ? "text-secondary" : "text-gray-800"}`}>{value}</span>
+    </span>
+  );
+}
+
+// Indicador de fase eléctrica — 3 mini-cajas fijas R/S/T (18×18, tamaño
+// pedido explícitamente, no hay un paso de la escala de spacing que dé
+// justo ese valor). Siempre las 3 en ese orden, resalta las presentes en
+// `fase` (ej. "RS" resalta R y S) con el mismo tint+borde celeste que el
+// resto de los indicadores "accent" del sistema; las ausentes quedan en
+// gray-300/border-gray-200. Es un indicador compuesto, no 3 datos
+// independientes — role="img" + aria-label con el valor real en el
+// contenedor, cada caja individual aria-hidden.
+function FaseIndicador({ fase }: { fase: string }) {
+  const letras = ["R", "S", "T"] as const;
+  return (
+    <span className="flex items-center gap-0.5" role="img" aria-label={`Fase ${fase}`}>
+      {letras.map((letra) => {
+        const presente = fase.includes(letra);
+        return (
+          <span
+            key={letra}
+            aria-hidden="true"
+            className={`w-[18px] h-[18px] flex items-center justify-center rounded-sm border text-micro font-semibold font-mono ${
+              presente ? "bg-primary-tint border-chip-border text-secondary" : "border-gray-200 text-gray-300"
+            }`}
+          >
+            {letra}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+// Reposición activa — primer elemento del body del modal "Tablas
+// relacionadas", en fondo blanco arriba de UnderlineTabs (antes vivía en
+// headerExtra). Grupo de MetaChip (Reposición activa en "accent" — es la
+// entidad seleccionada — el resto en "neutral") + botón "Copiar datos de
+// la reposición" a la izquierda, paginador ‹ › a la derecha.
 //
 // Destello: useMatchMedia sigue prefers-reduced-motion en vivo — con
 // reduce-motion activo, directamente no destella. prevNroRef guarda la
 // última reposición mostrada para detectar un cambio REAL — no el montaje
-// inicial: esta línea vive dentro del modal (Modal directamente no
+// inicial: este bloque vive dentro del modal (Modal directamente no
 // renderiza nada si `open` es false), así que un cambio de interrupción
-// con el modal cerrado nunca la deja "premontada" — al reabrir, este
+// con el modal cerrado nunca lo deja "premontado" — al reabrir, este
 // componente vuelve a montar de cero y prevNroRef arranca ya en el valor
 // actual, sin comparación previa que dispare un destello espurio. El
 // timeout se limpia tanto al re-disparar como al desmontar. El destello
-// se aplica a la línea entera (paginador incluido).
+// se aplica al grupo entero (chips + botón copiar + paginador).
 function FaseReposicionFicha({
   fila,
   reposicionIndex,
@@ -3435,28 +3498,48 @@ function FaseReposicionFicha({
     };
   }, []);
 
-  const segCls = "text-body-sm text-gray-600 whitespace-nowrap";
-  const dotCls = "text-gray-400 shrink-0";
+  // Botón sin comportamiento todavía — solo el icono/estilo/aria están
+  // definidos. No simula feedback de "copiado": como no copia nada de
+  // verdad, mostrar un check acá sería mentirle al usuario.
+  // TODO: definir contenido y formato del copiado (pendiente de definición)
+  function handleCopiarDatosReposicion() {}
 
   return (
     <div
       aria-live="polite"
-      className={`px-5 pb-3.5 flex items-center gap-4 transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
+      className={`px-5 py-3 shrink-0 flex items-center justify-between gap-4 transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
     >
-      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-        <span className={segCls}>Reposición {fila.nro}</span>
-        <span className={dotCls}>·</span>
-        <span className={segCls}>{fila.horaRep}</span>
-        <span className={dotCls}>·</span>
-        <span className={`${segCls} font-mono`}>Fase {fila.fase}</span>
-        <span className={dotCls}>·</span>
-        <span className={`${segCls} font-mono`}>{fila.equipoCodigo}</span>
-        <span className={dotCls}>·</span>
-        <span className="text-body-sm text-gray-600 truncate min-w-0" title={fila.equipoDesc}>
-          {fila.equipoDesc}
-        </span>
-        <span className={dotCls}>·</span>
-        <span className={segCls}>{fila.usuariosBT} usuarios BT</span>
+      <div className="flex items-center gap-2 flex-wrap min-w-0">
+        <MetaChip variant="accent" value={<>Reposición {fila.nro}</>} />
+        <MetaChip icon={<Clock size={13} strokeWidth={1.5} />} value={fila.horaRep} />
+        <MetaChip label="Fase" value={<FaseIndicador fase={fila.fase} />} />
+        <MetaChip
+          value={
+            <span className="inline-flex items-center gap-1.5">
+              <span className="font-mono text-gray-800 font-medium">{fila.equipoCodigo}</span>
+              <span className="font-normal text-gray-500 truncate max-w-[220px]" title={fila.equipoDesc}>
+                {fila.equipoDesc}
+              </span>
+            </span>
+          }
+        />
+        <MetaChip
+          icon={<Users size={13} strokeWidth={1.5} />}
+          value={
+            <>
+              <span className="font-medium">{fila.usuariosBT}</span> <span className="font-normal">usuarios BT</span>
+            </>
+          }
+        />
+        <button
+          type="button"
+          onClick={handleCopiarDatosReposicion}
+          aria-label="Copiar datos de la reposición"
+          title="Copiar datos de la reposición"
+          className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all shrink-0"
+        >
+          <ClipboardList size={14} strokeWidth={1.5} />
+        </button>
       </div>
       {totalReposiciones > 1 && (
         <div className="shrink-0 flex items-center gap-1">
@@ -4580,26 +4663,33 @@ function ModificarContent({
         bodyOverflow="hidden"
         height="min(720px, calc(100vh - 40px))"
         headerExtra={
-          <>
-            <div className={`px-5 mt-0.5 flex items-center gap-2 ${filaFaseSeleccionada ? "pb-2" : "pb-3.5"}`}>
-              <span className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Interrupción</span>
-              <span className="text-body-sm font-medium font-mono tabular-nums text-gray-800">
-                {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
-              </span>
-              <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
-            </div>
-            {filaFaseSeleccionada && (
-              <FaseReposicionFicha
-                fila={filaFaseSeleccionada}
-                reposicionIndex={modSelectedFase ?? 0}
-                totalReposiciones={tabla4Rows.length}
-                onChangeReposicion={setModSelectedFase}
-              />
-            )}
-          </>
+          // Solo la Interrupción: es la identidad del modal, no cambia
+          // mientras está abierto (a diferencia de la reposición activa,
+          // que ahora vive en el body — ver abajo). pb-3.5 fijo (ya no
+          // condicional): sin una segunda línea debajo, el header siempre
+          // cierra parejo.
+          <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2">
+            <span className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Interrupción</span>
+            <span className="text-body-sm font-medium font-mono tabular-nums text-gray-800">
+              {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
+            </span>
+            <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
+          </div>
         }
       >
         <div className="h-full flex flex-col min-h-0">
+          {/* Reposición activa — primer elemento del body, en fondo
+              blanco (el body no tiene bg propio, hereda el bg-white del
+              panel). Sin border-b propio: lo pone la barra de tabs de
+              abajo. */}
+          {filaFaseSeleccionada && (
+            <FaseReposicionFicha
+              fila={filaFaseSeleccionada}
+              reposicionIndex={modSelectedFase ?? 0}
+              totalReposiciones={tabla4Rows.length}
+              onChangeReposicion={setModSelectedFase}
+            />
+          )}
           <UnderlineTabs
             ariaLabel="Tablas relacionadas"
             options={DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => ({ key: tab.key, label: tab.label }))}
