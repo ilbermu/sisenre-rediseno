@@ -8,15 +8,26 @@ esos tokens), no repite los tokens en sí.
 ## `Modal` extendido: header propio y body sin padding
 
 `Modal` (`src/App.tsx`) es el estándar para toda acción que requiera un
-diálogo. Por default arma su propio header (título + subtítulo + cerrar) y un
-body con `p-5` que crece con el contenido hasta el tope de `maxHeight`. Tres
-props opcionales lo extienden sin tocar cómo se ven los modales que no las
-pasan:
+diálogo. Por default arma su propio header (título `text-label` + subtítulo +
+cerrar) y un body con `p-5` que crece con el contenido hasta el tope de
+`maxHeight`. Cuatro props opcionales lo extienden sin tocar cómo se ven los
+modales que no las pasan:
 
 - **`headerExtra`**: una segunda línea de contenido debajo de título/cerrar,
   todavía dentro del mismo bloque con borde inferior del header — para
   contexto adicional (ej. "Interrupción `<ref>`" + `CopyButton`) que no entra
-  en la línea de título.
+  en la línea de título. Cuando viene, el título recorta su padding inferior
+  (`pb-1.5` en vez de `pb-4`) para que el gap con esa segunda línea quede
+  compacto (4-6px) — `headerExtra` aporta su propio `pb-4` para que el
+  padding total de arriba+abajo del bloque siga parejo.
+- **`titleSize="title-sm"`** (default `"label"`, 15px): sube el título al
+  siguiente escalón de la escala (`--text-title-sm`, 22px) — para cuando el
+  título tiene que ser el elemento más fuerte del header, por encima de un
+  `headerExtra` con su propio dato destacado (ej. una referencia mono). El
+  dato de `headerExtra` va entonces un paso MÁS ABAJO que el título en la
+  escala (ej. título `title-sm` + referencia `text-body`), nunca al mismo
+  nivel — si compiten en peso, el header no tiene un elemento más fuerte que
+  el otro y la jerarquía no se lee.
 - **`bodyPadding={false}`**: saca el `p-5` del body — para modales que arman
   su propio layout interno (barras fijas, tabs, tablas de borde a borde) en
   vez de dejar que `Modal` les imponga el padding estándar.
@@ -37,9 +48,15 @@ interrupción). Reemplaza al `SegmentedSwitch` (riel + pastilla) que se usó
 brevemente para este mismo propósito — se volvió al lenguaje de tabs
 subrayados, más estándar para contenido tabular con varias vistas anchas.
 
-- Contenedor `flex border-b border-gray-200` (línea de base, de lado a
-  lado — sin padding horizontal propio, cada `px-4` es del botón). Botones
-  `h-10 min-w-24 px-4 text-body`.
+- El contenedor respeta el padding horizontal del resto del contenedor que lo
+  aloja (ej. `px-5` en el modal "Tablas relacionadas") — el primer tab tiene
+  que quedar alineado en la misma vertical que el resto del contenido de ese
+  contenedor (ficha, descripción, toolbar), no pegado al borde del panel. El
+  borde inferior (línea de base) sigue yendo de lado a lado igual: el padding
+  mueve el contenido, no el borde. Cada botón usa `px-4` parejo — el primero
+  suma `first:-ml-4` para cancelar su propio `pl-4` y que el TEXTO (no el
+  padding) quede exactamente en el borde de contenido.
+- Botones `h-10 min-w-24 px-4 text-body`.
   - Reposo: `text-gray-600`, hover `bg-gray-50`.
   - Activo: `text-secondary font-medium` + `border-b-2 border-primary`
     superpuesto a la línea de base vía `-mb-px`.

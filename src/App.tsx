@@ -1023,6 +1023,7 @@ function Modal({
   footer,
   children,
   headerExtra,
+  titleSize = "label",
   bodyPadding = true,
   height,
 }: {
@@ -1036,8 +1037,17 @@ function Modal({
   // Slot propio para una segunda línea de header, debajo de título/cerrar
   // pero todavía dentro del bloque con borde inferior del header — ej.
   // contexto adicional con un CopyButton. Ningún modal existente lo pasa,
-  // así que su header no cambia.
+  // así que su header no cambia. Cuando SÍ viene, el título recorta su
+  // padding inferior (pb-1.5 en vez de pb-4) para que el gap con esa
+  // segunda línea quede compacto (4-6px) en vez de heredar el mismo
+  // padding que separaba al título del body — esto solo afecta a modales
+  // que pasan headerExtra.
   headerExtra?: React.ReactNode;
+  // "label" (default, 15px — ningún modal existente cambia) o "title-sm"
+  // (22px, el siguiente escalón de la escala) para cuando el título tiene
+  // que ser el elemento más fuerte del header, por encima de un
+  // headerExtra con su propio dato destacado (ej. una referencia mono).
+  titleSize?: "label" | "title-sm";
   // false: el body pierde su padding p-5 — para modales que arman su
   // propio layout interno (barras, tabs, tablas de borde a borde) en vez
   // de dejar que Modal les imponga el padding estándar. Default true —
@@ -1078,10 +1088,15 @@ function Modal({
         }}
       >
         {/* Header — título/cerrar siempre; headerExtra (si viene) se apila
-            debajo, todavía dentro de este mismo bloque bordeado. */}
+            debajo, todavía dentro de este mismo bloque bordeado. pb-1.5 en
+            vez de pb-4 cuando hay headerExtra: ese padding pasa a separar
+            título de esa segunda línea (gap compacto) en vez de separar
+            título del body — el padding total de arriba+abajo del bloque
+            entero sigue siendo parejo porque headerExtra aporta su propio
+            pb-4 (ver call site). */}
         <div className="border-b border-gray-200 shrink-0">
-          <div className="px-5 py-4 flex items-center justify-between gap-3">
-            <p className="min-w-0 truncate text-label font-semibold text-gray-900">
+          <div className={`px-5 pt-4 flex items-center justify-between gap-3 ${headerExtra ? "pb-1.5" : "pb-4"}`}>
+            <p className={`min-w-0 truncate font-semibold text-gray-900 ${titleSize === "title-sm" ? "text-title-sm" : "text-label"}`}>
               {title}
               {subtitle && (
                 <span
@@ -3274,13 +3289,23 @@ function ReposicionesTable({
   );
 }
 
+// Separador vertical entre datos de FaseReposicionFicha — hijo más del
+// flex, no border/margin de los items vecinos: con `items-stretch` en el
+// contenedor y `self-stretch` acá, mide siempre la altura de la fila
+// completa (el dato más alto, Equipo con descripción) en vez de la altura
+// de "su" dato de al lado — y el espacio a los dos lados es idéntico por
+// construcción (lo da el `gap-4` del contenedor, no padding propio).
+function FichaSeparador() {
+  return <div className="w-px self-stretch bg-gray-300" aria-hidden="true" />;
+}
+
 // Ficha en línea de la reposición activa — vive en la barra de reposición
 // del modal "Tablas relacionadas" (patrón Gmail), a la izquierda del
-// paginador. Fila que hace wrap con poco ancho SIN partir cada dato: el
-// separador vertical de 1px es un border-l del propio bloque de datos (no
-// un elemento aparte), así viaja pegado a "su" dato incluso si el bloque
-// entero salta a la línea siguiente. Mismo modelo FaseReposicion que
-// ReposicionesTable (misma fuente: filaFaseSeleccionada).
+// paginador. Mismo modelo FaseReposicion que ReposicionesTable (misma
+// fuente: filaFaseSeleccionada). Cada dato (salvo Equipo) lleva `shrink-0`
+// + `whitespace-nowrap` en label y valor — con poco ancho, el dato se
+// mantiene entero (nunca se comprime ni envuelve a media palabra); es
+// Equipo el único que cede espacio (min-w-0, su descripción trunca).
 //
 // Destello: useMatchMedia sigue prefers-reduced-motion en vivo — con
 // reduce-motion activo, directamente no destella. prevNroRef guarda la
@@ -3312,33 +3337,42 @@ function FaseReposicionFicha({ fila }: { fila: FaseReposicion }) {
     };
   }, []);
 
-  const datoCls = "pl-4 first:pl-0 border-l first:border-l-0 border-gray-300";
+  const labelCls = "text-micro font-semibold uppercase tracking-[0.06em] text-gray-500 whitespace-nowrap";
+  const valorCls = "text-body-sm font-medium tabular-nums text-gray-900 whitespace-nowrap";
 
   return (
     <div
       aria-live="polite"
-      className={`flex flex-wrap items-start gap-y-2 -m-1 p-1 rounded-sm transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
+      className={`flex flex-wrap items-stretch gap-4 -m-1 p-1 rounded-sm transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
     >
-      <div className={datoCls}>
-        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Reposición</p>
-        <p className="text-body-sm font-medium tabular-nums text-gray-900">{fila.nro}</p>
+      <div className="shrink-0">
+        <p className={labelCls}>Reposición</p>
+        <p className={valorCls}>{fila.nro}</p>
       </div>
-      <div className={datoCls}>
-        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Hora reposición</p>
-        <p className="text-body-sm font-medium tabular-nums text-gray-900 whitespace-nowrap">{fila.horaRep}</p>
+      <FichaSeparador />
+      <div className="shrink-0">
+        <p className={labelCls}>Hora reposición</p>
+        <p className={valorCls}>{fila.horaRep}</p>
       </div>
-      <div className={datoCls}>
-        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Fase</p>
-        <p className="text-body-sm font-medium font-mono tabular-nums text-gray-900">{fila.fase}</p>
+      <FichaSeparador />
+      <div className="shrink-0">
+        <p className={labelCls}>Fase</p>
+        <p className={`${valorCls} font-mono`}>{fila.fase}</p>
       </div>
-      <div className={`${datoCls} min-w-0 max-w-[180px]`}>
-        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Equipo</p>
-        <p className="text-body-sm font-medium font-mono tabular-nums text-gray-900 truncate">{fila.equipoCodigo}</p>
+      <FichaSeparador />
+      {/* Único dato elástico — 220px matching el mismo tope que usa la
+          celda Equipo de ReposicionesTable para esta misma descripción;
+          con el resto de los datos a ancho fijo, la barra tiene lugar de
+          sobra (paginador aparte) como para no apretarlo más que eso. */}
+      <div className="min-w-0 max-w-[220px]">
+        <p className={labelCls}>Equipo</p>
+        <p className={`${valorCls} font-mono truncate`}>{fila.equipoCodigo}</p>
         <p className="text-micro text-gray-500 truncate" title={fila.equipoDesc}>{fila.equipoDesc}</p>
       </div>
-      <div className={datoCls}>
-        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Usuarios BT</p>
-        <p className="text-body-sm font-medium tabular-nums text-gray-900">{fila.usuariosBT}</p>
+      <FichaSeparador />
+      <div className="shrink-0">
+        <p className={labelCls}>Usuarios BT</p>
+        <p className={valorCls}>{fila.usuariosBT}</p>
       </div>
     </div>
   );
@@ -3346,10 +3380,12 @@ function FaseReposicionFicha({ fila }: { fila: FaseReposicion }) {
 
 // Tabs subrayados — EL patrón de tabs de contenido de la app (elegir qué
 // vista mostrar dentro de un mismo contenedor, ej. qué tabla se muestra en
-// el modal "Tablas relacionadas"). Pegados de lado a lado (sin padding
-// horizontal en el contenedor — cada `px-4` es de cada botón), con el
-// borde inferior gray-200 del contenedor como línea de base y el borde
-// activo (2px primary) superpuesto vía -mb-px. role="tablist"/"tab" +
+// el modal "Tablas relacionadas"). El contenedor respeta el padding
+// horizontal del resto de ese contenedor (px-5 en el modal, para que el
+// primer tab quede alineado con la ficha y la descripción de abajo) — el
+// borde inferior gray-200 sigue yendo de lado a lado porque el padding no
+// mueve el borde, solo el contenido. El borde activo (2px primary) se
+// superpone a esa línea de base vía -mb-px. role="tablist"/"tab" +
 // flechas izquierda/derecha para moverse entre opciones.
 function UnderlineTabs({
   options,
@@ -3372,7 +3408,7 @@ function UnderlineTabs({
   }
 
   return (
-    <div role="tablist" aria-label={ariaLabel} onKeyDown={handleKeyDown} className="flex border-b border-gray-200 shrink-0">
+    <div role="tablist" aria-label={ariaLabel} onKeyDown={handleKeyDown} className="flex border-b border-gray-200 shrink-0 px-5">
       {options.map((opt) => {
         const active = opt.key === activeKey;
         return (
@@ -3383,7 +3419,11 @@ function UnderlineTabs({
             aria-selected={active}
             tabIndex={active ? 0 : -1}
             onClick={() => onSelect(opt.key)}
-            className={`h-10 min-w-24 px-4 text-body border-b-2 -mb-px transition-colors ${
+            // px-4 es igual en TODOS los tabs (pareja) — el primero suma
+            // first:-ml-4 para cancelar su propio pl-4 y que el texto quede
+            // alineado al borde de contenido del contenedor (px-5), en la
+            // misma vertical que la ficha y la descripción de abajo.
+            className={`h-10 min-w-24 px-4 first:-ml-4 text-body border-b-2 -mb-px transition-colors ${
               active ? "border-primary text-secondary font-medium" : "border-transparent text-gray-600 hover:bg-gray-50"
             }`}
           >
@@ -4419,18 +4459,21 @@ function ModificarContent({
           fijos, una sola zona con scroll) en vez del p-5 estándar de
           Modal. headerExtra agrega la segunda línea (Interrupción +
           CopyButton) debajo de título/cerrar, sin tocar el header de los
-          demás modales de la app (ninguno pasa estas props). */}
+          demás modales de la app (ninguno pasa estas props). titleSize
+          "title-sm": el título tiene que pesar más que la referencia de
+          abajo — antes ambos eran text-label y competían. */}
       <Modal
         title="Tablas relacionadas"
         open={relTab !== null}
         onClose={() => setRelTab(null)}
         size="xl"
         bodyPadding={false}
+        titleSize="title-sm"
         height="min(720px, calc(100vh - 40px))"
         headerExtra={
           <div className="px-5 pb-4 flex items-center gap-2">
             <span className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Interrupción</span>
-            <span className="text-label font-semibold font-mono tabular-nums text-gray-900">
+            <span className="text-body font-medium font-mono tabular-nums text-gray-900">
               {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
             </span>
             <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
@@ -4481,7 +4524,10 @@ function ModificarContent({
 
           {/* Contenido del tab — única zona con scroll vertical del modal */}
           <div className="flex-1 min-h-0 overflow-y-auto">
-            {activeTabData?.subtitle && (
+            {/* Tabla 3 no repite descripción: el resultado (Sí/No existe)
+                ya dice todo lo que decía "Existencia en tabla". En el
+                resto de los tabs se mantiene. */}
+            {activeTabData?.subtitle && activeTabData.key !== "tabla3" && (
               <div className="px-5 py-2.5">
                 <p className="text-body-sm text-gray-600 leading-snug">{activeTabData.subtitle}</p>
               </div>
@@ -4512,8 +4558,8 @@ function ModificarContent({
                       </p>
                       <p className="text-body-sm text-gray-500">
                         {existe
-                          ? "Esta interrupción tiene registro en la tabla"
-                          : "Esta interrupción no tiene registro en la tabla"}
+                          ? "Esta reposición tiene registro en la tabla"
+                          : "Esta reposición no tiene registro en la tabla"}
                       </p>
                     </div>
                   </div>
