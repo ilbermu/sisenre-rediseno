@@ -3324,19 +3324,15 @@ function ReposicionesTable({
   );
 }
 
-// Tile de dato de solo lectura — label (micro gray-600) + valor (label
-// font-semibold), mismo borde/fondo/radio/tipografía en los dos lugares
-// donde se usa: los indicadores de "Tablas relacionadas" de la Card B
-// (clickeables — onClick+disabled abren el modal en ese tab) y la grilla
-// de datos de la reposición activa dentro del modal (de solo lectura, sin
-// onClick). Con onClick se renderiza como <button> (mismas clases de
-// hover/disabled/alert que ya tenía el tile de la Card B, sin cambiar);
-// sin onClick, como <div> estática con el mismo aspecto en reposo —
-// nunca "disabled" ni "alert" ahí, esos estados son del modo interactivo.
-// `description` agrega una tercera línea opcional (body-sm gray-600,
-// hasta 2 líneas — line-clamp-2 + title: nunca trunca de a una si el
-// texto entra en esas 2 líneas, solo si las excede) para datos como el
-// código+descripción de un equipo.
+// Tile de dato — label (micro gray-600) + valor (label font-semibold).
+// Hoy solo la usan los indicadores de "Tablas relacionadas" de la Card B
+// (clickeables: onClick+disabled abren el modal en ese tab), pero admite
+// un modo de solo lectura (sin onClick, <div> en vez de <button>, sin
+// "disabled"/"alert" — esos estados son del modo interactivo) para
+// reusarla en otras grillas de datos. `description` agrega una tercera
+// línea opcional (body-sm gray-600, hasta 2 líneas — line-clamp-2 +
+// title: nunca trunca de a una si el texto entra en esas 2 líneas, solo
+// si las excede) para datos como el código+descripción de un equipo.
 function DataTile({
   label,
   value,
@@ -3389,13 +3385,18 @@ function DataTile({
   return <div className={cls}>{content}</div>;
 }
 
-// Cuerpo de la card "Reposición" del modal "Tablas relacionadas" — grilla
-// grid-cols-5 con los datos de solo lectura de la reposición activa, vía
-// DataTile (mismo componente que los tiles de "Tablas relacionadas" en la
-// Card B). Equipo ocupa 2 columnas y suma su descripción como tercera
-// línea (sin truncar de a una, ver DataTile). Fase y el código de Equipo
-// van en mono. Mismo modelo FaseReposicion que ReposicionesTable (misma
-// fuente: filaFaseSeleccionada).
+// Contenido de la card "Reposición" del modal "Tablas relacionadas" — UNA
+// fila compacta (no una grilla de tiles): 6 datos de solo lectura de la
+// reposición activa + el paginador ‹ › al final de esa misma fila. Mismo
+// tratamiento tipográfico que los <th>/<td> de ReposicionesTable (label
+// micro uppercase gray-500 arriba, valor body-sm font-medium gray-900
+// abajo, una línea, whitespace-nowrap) en vez de los tiles con
+// borde/fondo propio que usaba antes — acá no hay tiles ni separadores,
+// solo espacio (`gap-6`). Fase y Equipo operado en mono. Desc. equipo
+// operado es el único dato flexible (flex-1 min-w-0, truncate + title) —
+// el resto tiene ancho natural (shrink-0), así que esa descripción es la
+// que cede espacio si la fila se aprieta. Mismo modelo FaseReposicion que
+// ReposicionesTable (misma fuente: filaFaseSeleccionada).
 //
 // Destello: useMatchMedia sigue prefers-reduced-motion en vivo — con
 // reduce-motion activo, directamente no destella. prevNroRef guarda la
@@ -3405,8 +3406,20 @@ function DataTile({
 // cerrado nunca la deja "premontada" — al reabrir, este componente vuelve
 // a montar de cero y prevNroRef arranca ya en el valor actual, sin
 // comparación previa que dispare un destello espurio. El timeout se limpia
-// tanto al re-disparar como al desmontar.
-function FaseReposicionFicha({ fila }: { fila: FaseReposicion }) {
+// tanto al re-disparar como al desmontar. El destello se aplica a la fila
+// entera (paginador incluido, ahora que ambos viven en un único
+// contenedor) — antes vivía en un header de card aparte.
+function FaseReposicionFicha({
+  fila,
+  reposicionIndex,
+  totalReposiciones,
+  onChangeReposicion,
+}: {
+  fila: FaseReposicion;
+  reposicionIndex: number;
+  totalReposiciones: number;
+  onChangeReposicion: (next: number) => void;
+}) {
   const reduceMotion = useMatchMedia("(prefers-reduced-motion: reduce)");
   const [flash, setFlash] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -3427,17 +3440,63 @@ function FaseReposicionFicha({ fila }: { fila: FaseReposicion }) {
     };
   }, []);
 
+  const labelCls = "text-micro font-semibold uppercase tracking-[0.06em] text-gray-500 whitespace-nowrap";
+  const valorCls = "text-body-sm font-medium text-gray-900 tabular-nums whitespace-nowrap";
+
   return (
     <div
       aria-live="polite"
-      className={`px-4 pb-4 rounded-b-lg transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
+      className={`px-4 py-3 rounded-lg flex items-center gap-6 transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
     >
-      <div className="grid grid-cols-5 gap-3 items-stretch">
-        <DataTile label="Hora reposición" value={fila.horaRep} />
-        <DataTile label="Fase" value={fila.fase} mono />
-        <DataTile className="col-span-2" label="Equipo" value={fila.equipoCodigo} mono description={fila.equipoDesc} />
-        <DataTile label="Usuarios BT" value={fila.usuariosBT} />
+      <div className="shrink-0">
+        <p className={labelCls}>Reposición</p>
+        <p className={valorCls}>{fila.nro}</p>
       </div>
+      <div className="shrink-0">
+        <p className={labelCls}>Hora reposición</p>
+        <p className={valorCls}>{fila.horaRep}</p>
+      </div>
+      <div className="shrink-0">
+        <p className={labelCls}>Fase</p>
+        <p className={`${valorCls} font-mono`}>{fila.fase}</p>
+      </div>
+      <div className="shrink-0">
+        <p className={labelCls}>Equipo operado</p>
+        <p className={`${valorCls} font-mono`}>{fila.equipoCodigo}</p>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className={labelCls}>Desc. equipo operado</p>
+        <p className="text-body-sm font-medium text-gray-900 truncate" title={fila.equipoDesc}>
+          {fila.equipoDesc}
+        </p>
+      </div>
+      <div className="shrink-0 text-right">
+        <p className={labelCls}>Usuarios BT</p>
+        <p className={valorCls}>{fila.usuariosBT}</p>
+      </div>
+      {totalReposiciones > 1 && (
+        <div className="shrink-0 flex items-center gap-1">
+          <span className="text-body-sm text-gray-600 tabular-nums mr-1">{reposicionIndex + 1} de {totalReposiciones}</span>
+          <button
+            type="button"
+            onClick={() => onChangeReposicion(reposicionIndex - 1)}
+            disabled={reposicionIndex <= 0}
+            aria-label="Reposición anterior"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+          >
+            <ChevronLeft size={14} strokeWidth={1.5} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onChangeReposicion(reposicionIndex + 1)}
+            disabled={reposicionIndex >= totalReposiciones - 1}
+            aria-label="Reposición siguiente"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+          >
+            <ChevronRight size={14} strokeWidth={1.5} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -4427,10 +4486,8 @@ function ModificarContent({
                   tile en fila (label + valor una al lado de la otra, tipo
                   "TABLA 3: 12") y ancho ajustado a su contenido: bajo y
                   ancho en vez de angosto y alto. */}
-              {/* Tamaño normal: tiles como siempre — vía DataTile
-                  (compartido con la grilla de datos de la reposición
-                  activa en el modal "Tablas relacionadas"), en su modo
-                  interactivo (onClick+disabled). */}
+              {/* Tamaño normal: tiles como siempre — vía DataTile, en su
+                  modo interactivo (onClick+disabled). */}
               <div className="grid grid-cols-3 gap-2 [@media(max-height:760px)]:hidden">
                 {STATUS_ITEMS.map((item) => (
                   <DataTile
@@ -4545,41 +4602,18 @@ function ModificarContent({
           </div>
         }
       >
-        {/* Card "Reposición" — shrink-0, no scrollea. El número titula la
-            card (ya no es un dato más de la grilla, como antes) y el
-            paginador ‹ › vive en el header de la card, no separado en una
-            barra propia. Sin paginador ni "de N" con una sola
-            reposición. */}
+        {/* Card "Reposición" — shrink-0, no scrollea. Sin header ni tiles
+            propios: todo el contenido es UNA fila compacta (~60px de
+            alto), ver FaseReposicionFicha. */}
         <div className="shrink-0 bg-white border border-gray-200 rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-low)" }}>
-          <div className="px-4 pt-3.5 pb-3 flex items-center justify-between gap-3">
-            <span className="text-label font-semibold text-gray-900">
-              Reposición {filaFaseSeleccionada ? filaFaseSeleccionada.nro : "—"}
-            </span>
-            {tabla4Rows.length > 1 && modSelectedFase !== null && (
-              <div className="flex items-center gap-1 shrink-0">
-                <span className="text-body-sm text-gray-600 tabular-nums mr-1">de {tabla4Rows.length}</span>
-                <button
-                  type="button"
-                  onClick={() => setModSelectedFase(modSelectedFase - 1)}
-                  disabled={modSelectedFase <= 0}
-                  aria-label="Reposición anterior"
-                  className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                >
-                  <ChevronLeft size={14} strokeWidth={1.5} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModSelectedFase(modSelectedFase + 1)}
-                  disabled={modSelectedFase >= tabla4Rows.length - 1}
-                  aria-label="Reposición siguiente"
-                  className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                >
-                  <ChevronRight size={14} strokeWidth={1.5} />
-                </button>
-              </div>
-            )}
-          </div>
-          {filaFaseSeleccionada && <FaseReposicionFicha fila={filaFaseSeleccionada} />}
+          {filaFaseSeleccionada && (
+            <FaseReposicionFicha
+              fila={filaFaseSeleccionada}
+              reposicionIndex={modSelectedFase ?? 0}
+              totalReposiciones={tabla4Rows.length}
+              onChangeReposicion={setModSelectedFase}
+            />
+          )}
         </div>
 
         {/* Card "Tablas relacionadas" — flex-1 min-h-0, mismo estilo de

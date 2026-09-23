@@ -54,7 +54,17 @@ borde a borde del modal. Todo vive contenido en cards:
   flex-col gap-4"` (+ `p-5` del `bodyPadding` default) — el body EN SÍ nunca
   scrollea. Sus hijos directos son cards (`bg-white border border-gray-200
   rounded-lg`, sombra `--shadow-low`): las de alto fijo llevan `shrink-0`,
-  la que contiene la tabla de trabajo lleva `flex-1 min-h-0`.
+  la que contiene la tabla de trabajo lleva `flex-1 min-h-0`. Una card de
+  contexto (ej. "Reposición" — datos de solo lectura de la reposición
+  activa) no necesita título ni grilla de tiles propios si el dato central
+  ya lo dice todo: una sola fila compacta (`px-4 py-3 flex items-center
+  gap-6`, ~60px de alto) con cada dato como label/valor de una línea
+  (mismo tratamiento que un `<th>`/`<td>` de tabla — micro uppercase
+  gray-500 arriba, body-sm font-medium gray-900 abajo, `whitespace-nowrap`,
+  sin bordes/fondos propios) alcanza; el paginador ‹ › va al final de esa
+  misma fila, no en un header aparte. Un solo dato flexible (`flex-1
+  min-w-0`, `truncate` + `title`) si hace falta — el resto a ancho natural
+  (`shrink-0`).
 - **El scroll vive DENTRO de la card de contenido**, en un contenedor propio
   con su propio borde (`border border-gray-200 rounded-md overflow-auto`,
   `mx-4 mb-4` dentro de esa card) — nunca en el body del modal. Ese
@@ -72,24 +82,24 @@ borde a borde del modal. Todo vive contenido en cards:
   centrados vertical y horizontalmente (`h-full flex items-center
   justify-center`) — nunca sueltos en el body ni en la card.
 
-## `DataTile`: dato de solo lectura, label + valor
+## `DataTile`: tile de dato en una grilla, con o sin acción
 
 `DataTile` (`src/App.tsx`, junto a `FaseReposicionFicha`) es el tile
-compartido para mostrar un dato en una grilla — `rounded-sm border px-2 py-2`,
-label `text-micro text-gray-600` arriba, valor `text-label font-semibold`
-abajo. Dos modos, mismo aspecto:
+compartido para mostrar un dato DENTRO DE UNA GRILLA de tiles (borde propio,
+fondo propio, radio) — `rounded-sm border px-2 py-2`, label `text-micro
+text-gray-600` arriba, valor `text-label font-semibold` abajo. Hoy lo usan
+los indicadores de "Tablas relacionadas" en la Card B de Modificar
+interrupción (`onClick`+`disabled` — abren el modal en ese tab; `alert`
+fondo/borde/texto warning) — admite también un modo de solo lectura (sin
+`onClick`, `<div>` en vez de `<button>`) para otra grilla de tiles que lo
+necesite. `mono` para valores de código. `description` agrega una tercera
+línea opcional (`text-body-sm text-gray-600`, `line-clamp-2` + `title`) —
+muestra el texto completo si entra en 2 líneas, solo trunca con "…" si lo
+excede. `className` para ajustes del propio grid item (ej. `col-span-2`).
 
-- **Sin `onClick`**: `<div>` estática, de solo lectura (ej. la grilla de
-  datos de la reposición activa — Hora reposición/Fase/Equipo/Usuarios BT).
-- **Con `onClick`**: `<button>` interactivo, con `disabled` (atenuado,
-  `cursor-not-allowed`) y `alert` (fondo/borde/texto warning) — mismo
-  comportamiento que ya tenían los tiles de "Tablas relacionadas" en la Card
-  B de Modificar interrupción (ahora construidos con este componente).
-- `mono` para valores de código (ej. Fase, el código de un equipo).
-  `description` agrega una tercera línea opcional (`text-body-sm
-  text-gray-600`, `line-clamp-2` + `title`) — muestra el texto completo si
-  entra en 2 líneas, solo trunca con "…" si lo excede. `className` para
-  ajustes del propio grid item (ej. `col-span-2`).
+**No es el patrón para una fila de datos suelta** (sin borde/fondo propio
+por dato, ej. la card "Reposición" de arriba) — ahí cada dato es texto
+plano con el mismo tratamiento que un `<th>`/`<td>` de tabla, sin tile.
 
 ## Tabs de contenido: `UnderlineTabs`
 
