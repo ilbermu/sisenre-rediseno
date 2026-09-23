@@ -3385,30 +3385,25 @@ function DataTile({
   return <div className={cls}>{content}</div>;
 }
 
-// Contenido de la card "Reposición" del modal "Tablas relacionadas" — UNA
-// fila compacta (no una grilla de tiles): 6 datos de solo lectura de la
-// reposición activa + el paginador ‹ › al final de esa misma fila. Mismo
-// tratamiento tipográfico que los <th>/<td> de ReposicionesTable (label
-// micro uppercase gray-500 arriba, valor body-sm font-medium gray-900
-// abajo, una línea, whitespace-nowrap) en vez de los tiles con
-// borde/fondo propio que usaba antes — acá no hay tiles ni separadores,
-// solo espacio (`gap-6`). Fase y Equipo operado en mono. Desc. equipo
-// operado es el único dato flexible (flex-1 min-w-0, truncate + title) —
-// el resto tiene ancho natural (shrink-0), así que esa descripción es la
-// que cede espacio si la fila se aprieta. Mismo modelo FaseReposicion que
-// ReposicionesTable (misma fuente: filaFaseSeleccionada).
+// Segunda línea del header del modal "Tablas relacionadas" (debajo de la
+// línea de Interrupción, dentro de headerExtra) — NO una card, NO tiles:
+// una línea de metadatos de la reposición activa, segmentos separados por
+// "·", + el paginador ‹ › al final de esa misma línea. Fase y el código
+// de Equipo van en mono. La descripción del equipo es el único segmento
+// flexible (min-w-0, truncate + title) — el resto tiene ancho natural
+// (whitespace-nowrap), así que es esa descripción la que cede espacio si
+// la línea se aprieta.
 //
 // Destello: useMatchMedia sigue prefers-reduced-motion en vivo — con
 // reduce-motion activo, directamente no destella. prevNroRef guarda la
 // última reposición mostrada para detectar un cambio REAL — no el montaje
-// inicial: la ficha vive dentro del modal (Modal directamente no renderiza
-// nada si `open` es false), así que un cambio de interrupción con el modal
-// cerrado nunca la deja "premontada" — al reabrir, este componente vuelve
-// a montar de cero y prevNroRef arranca ya en el valor actual, sin
-// comparación previa que dispare un destello espurio. El timeout se limpia
-// tanto al re-disparar como al desmontar. El destello se aplica a la fila
-// entera (paginador incluido, ahora que ambos viven en un único
-// contenedor) — antes vivía en un header de card aparte.
+// inicial: esta línea vive dentro del modal (Modal directamente no
+// renderiza nada si `open` es false), así que un cambio de interrupción
+// con el modal cerrado nunca la deja "premontada" — al reabrir, este
+// componente vuelve a montar de cero y prevNroRef arranca ya en el valor
+// actual, sin comparación previa que dispare un destello espurio. El
+// timeout se limpia tanto al re-disparar como al desmontar. El destello
+// se aplica a la línea entera (paginador incluido).
 function FaseReposicionFicha({
   fila,
   reposicionIndex,
@@ -3440,39 +3435,28 @@ function FaseReposicionFicha({
     };
   }, []);
 
-  const labelCls = "text-micro font-semibold uppercase tracking-[0.06em] text-gray-500 whitespace-nowrap";
-  const valorCls = "text-body-sm font-medium text-gray-900 tabular-nums whitespace-nowrap";
+  const segCls = "text-body-sm text-gray-600 whitespace-nowrap";
+  const dotCls = "text-gray-400 shrink-0";
 
   return (
     <div
       aria-live="polite"
-      className={`px-4 py-3 rounded-lg flex items-center gap-6 transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
+      className={`px-5 pb-3.5 flex items-center gap-4 transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
     >
-      <div className="shrink-0">
-        <p className={labelCls}>Reposición</p>
-        <p className={valorCls}>{fila.nro}</p>
-      </div>
-      <div className="shrink-0">
-        <p className={labelCls}>Hora reposición</p>
-        <p className={valorCls}>{fila.horaRep}</p>
-      </div>
-      <div className="shrink-0">
-        <p className={labelCls}>Fase</p>
-        <p className={`${valorCls} font-mono`}>{fila.fase}</p>
-      </div>
-      <div className="shrink-0">
-        <p className={labelCls}>Equipo operado</p>
-        <p className={`${valorCls} font-mono`}>{fila.equipoCodigo}</p>
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className={labelCls}>Desc. equipo operado</p>
-        <p className="text-body-sm font-medium text-gray-900 truncate" title={fila.equipoDesc}>
+      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+        <span className={segCls}>Reposición {fila.nro}</span>
+        <span className={dotCls}>·</span>
+        <span className={segCls}>{fila.horaRep}</span>
+        <span className={dotCls}>·</span>
+        <span className={`${segCls} font-mono`}>Fase {fila.fase}</span>
+        <span className={dotCls}>·</span>
+        <span className={`${segCls} font-mono`}>{fila.equipoCodigo}</span>
+        <span className={dotCls}>·</span>
+        <span className="text-body-sm text-gray-600 truncate min-w-0" title={fila.equipoDesc}>
           {fila.equipoDesc}
-        </p>
-      </div>
-      <div className="shrink-0 text-right">
-        <p className={labelCls}>Usuarios BT</p>
-        <p className={valorCls}>{fila.usuariosBT}</p>
+        </span>
+        <span className={dotCls}>·</span>
+        <span className={segCls}>{fila.usuariosBT} usuarios BT</span>
       </div>
       {totalReposiciones > 1 && (
         <div className="shrink-0 flex items-center gap-1">
@@ -3503,14 +3487,13 @@ function FaseReposicionFicha({
 
 // Tabs subrayados — EL patrón de tabs de contenido de la app (elegir qué
 // vista mostrar dentro de un mismo contenedor, ej. qué tabla se muestra en
-// la card "Tablas relacionadas" del modal del mismo nombre, en Modificar
-// interrupción). El contenedor respeta el padding horizontal del resto de
-// ese contenedor (px-4, el mismo que usa el resto del contenido de esa
-// card) — el borde inferior gray-200 sigue yendo de lado a lado DE LA
-// CARD (no del modal): el padding mueve el contenido, no el borde. El
-// borde activo (2px primary) se superpone a esa línea de base vía
-// -mb-px. role="tablist"/"tab" + flechas izquierda/derecha para moverse
-// entre opciones.
+// el modal "Tablas relacionadas" de Modificar interrupción). El
+// contenedor respeta el padding horizontal del resto de ese contenedor
+// (px-5, el mismo que el header y el resto del contenido del modal) — el
+// borde inferior gray-200 sigue yendo de lado a lado igual: el padding
+// mueve el contenido, no el borde. El borde activo (2px primary) se
+// superpone a esa línea de base vía -mb-px. role="tablist"/"tab" +
+// flechas izquierda/derecha para moverse entre opciones.
 function UnderlineTabs({
   options,
   activeKey,
@@ -3532,7 +3515,7 @@ function UnderlineTabs({
   }
 
   return (
-    <div role="tablist" aria-label={ariaLabel} onKeyDown={handleKeyDown} className="flex border-b border-gray-200 shrink-0 px-4">
+    <div role="tablist" aria-label={ariaLabel} onKeyDown={handleKeyDown} className="flex border-b border-gray-200 shrink-0 px-5">
       {options.map((opt) => {
         const active = opt.key === activeKey;
         return (
@@ -3545,8 +3528,8 @@ function UnderlineTabs({
             onClick={() => onSelect(opt.key)}
             // px-4 es igual en TODOS los tabs (pareja) — el primero suma
             // first:-ml-4 para cancelar su propio pl-4 y que el texto quede
-            // alineado al borde de contenido del contenedor (px-4), en la
-            // misma vertical que el resto del contenido de la card.
+            // alineado al borde de contenido del contenedor (px-5), en la
+            // misma vertical que el resto del contenido del modal.
             className={`h-10 min-w-24 px-4 first:-ml-4 text-body border-b-2 -mb-px transition-colors ${
               active ? "border-primary text-secondary font-medium" : "border-transparent text-gray-600 hover:bg-gray-50"
             }`}
@@ -4571,57 +4554,52 @@ function ModificarContent({
 
       {/* ── MODAL "Tablas relacionadas" ─────────────────────────── */}
       {/* Alto FIJO (min(720px, 100vh−40px)): el modal no puede saltar de
-          tamaño al cambiar de tab o de reposición. bodyOverflow="hidden" +
-          bodyClassName="bg-gray-50 flex flex-col gap-4": el body deja de
-          scrollear — es una composición de 2 cards sobre fondo gris, y el
-          scroll vive DENTRO de la card de contenido (punto 4), nunca acá.
-          headerExtra agrega la segunda línea (Interrupción + CopyButton)
-          debajo de título/cerrar, sin tocar el header de los demás
-          modales de la app (ninguno pasa estas props). titleSize
-          "title-sm" (22px): no existe un paso de ~20px en la escala
-          (micro/caption/body-sm/body/label=15/title-sm=22/title=26) — es
-          el más cercano a 20px entre label y title-sm, así que es el que
-          se usa acá; el título sigue siendo el elemento más fuerte del
-          header, por encima de la referencia (text-body-sm) de abajo. */}
+          tamaño al cambiar de tab o de reposición. bodyPadding={false} +
+          bodyOverflow="hidden": sin cards ni fondo gris — el contenido va
+          de borde a borde del modal (mismo px-5 que el header), con un
+          wrapper interno `h-full flex flex-col min-h-0` propio (tabs
+          shrink-0, área de tabla flex-1 min-h-0 — la única zona con
+          scroll). headerExtra agrega, debajo de título/cerrar: la línea
+          de Interrupción + CopyButton, y — si hay una reposición
+          seleccionada — la línea de metadatos de esa reposición
+          (FaseReposicionFicha, separados por "·") + el paginador ‹ ›.
+          Ninguna de estas props toca el header de los demás modales de la
+          app (ninguno las pasa). titleSize "title-sm" (22px): no existe
+          un paso de ~20px en la escala (micro/caption/body-sm/body/
+          label=15/title-sm=22/title=26) — es el más cercano a 20px entre
+          label y title-sm, así que es el que se usa acá; el título sigue
+          siendo el elemento más fuerte del header, por encima de la
+          referencia (text-body-sm) y de la línea de metadatos de abajo. */}
       <Modal
         title="Tablas relacionadas"
         open={relTab !== null}
         onClose={() => setRelTab(null)}
         size="xl"
         titleSize="title-sm"
+        bodyPadding={false}
         bodyOverflow="hidden"
-        bodyClassName="bg-gray-50 flex flex-col gap-4"
         height="min(720px, calc(100vh - 40px))"
         headerExtra={
-          <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2">
-            <span className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Interrupción</span>
-            <span className="text-body-sm font-medium font-mono tabular-nums text-gray-800">
-              {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
-            </span>
-            <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
-          </div>
+          <>
+            <div className={`px-5 mt-0.5 flex items-center gap-2 ${filaFaseSeleccionada ? "pb-2" : "pb-3.5"}`}>
+              <span className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Interrupción</span>
+              <span className="text-body-sm font-medium font-mono tabular-nums text-gray-800">
+                {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
+              </span>
+              <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
+            </div>
+            {filaFaseSeleccionada && (
+              <FaseReposicionFicha
+                fila={filaFaseSeleccionada}
+                reposicionIndex={modSelectedFase ?? 0}
+                totalReposiciones={tabla4Rows.length}
+                onChangeReposicion={setModSelectedFase}
+              />
+            )}
+          </>
         }
       >
-        {/* Card "Reposición" — shrink-0, no scrollea. Sin header ni tiles
-            propios: todo el contenido es UNA fila compacta (~60px de
-            alto), ver FaseReposicionFicha. */}
-        <div className="shrink-0 bg-white border border-gray-200 rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-low)" }}>
-          {filaFaseSeleccionada && (
-            <FaseReposicionFicha
-              fila={filaFaseSeleccionada}
-              reposicionIndex={modSelectedFase ?? 0}
-              totalReposiciones={tabla4Rows.length}
-              onChangeReposicion={setModSelectedFase}
-            />
-          )}
-        </div>
-
-        {/* Card "Tablas relacionadas" — flex-1 min-h-0, mismo estilo de
-            card que la de arriba. UnderlineTabs como header de la card
-            (px-4, borde inferior de lado a lado DE LA CARD); fila de
-            descripción + buscador; área de tabla con su propio borde y
-            scroll — la única zona con scroll del modal. */}
-        <div className="flex-1 min-h-0 bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col" style={{ boxShadow: "var(--shadow-low)" }}>
+        <div className="h-full flex flex-col min-h-0">
           <UnderlineTabs
             ariaLabel="Tablas relacionadas"
             options={DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => ({ key: tab.key, label: tab.label }))}
@@ -4633,7 +4611,7 @@ function ModificarContent({
               ~w-72 (derecha) — TableToolbar en modo `bare`, sin su propio
               contenedor/borde/padding: esta fila ya los aporta. Tabla 3 no
               repite descripción, el resultado (Sí/No existe) ya la dice. */}
-          <div className="px-4 py-3 shrink-0 flex items-center justify-between gap-4">
+          <div className="px-5 py-3 shrink-0 flex items-center justify-between gap-4">
             <p className="text-body-sm text-gray-600 leading-snug flex-1 min-w-0">
               {activeTabData && activeTabData.key !== "tabla3" ? activeTabData.subtitle : null}
             </p>
@@ -4646,15 +4624,16 @@ function ModificarContent({
 
           {/* Área de la tabla — única zona con scroll del modal (los dos
               ejes). Tabla 3 y los estados vacíos viven ACÁ ADENTRO,
-              centrados vertical y horizontalmente (antes flotaban sueltos
-              en el body del modal). Header de tabla sticky con fondo
-              opaco (ver SortableTh) — la tabla pasa a border-separate y
-              los separadores de fila se mueven de <tr> a <td>, porque
-              bajo border-collapse un borde de fila se pinta en la capa de
-              bordes de la tabla y puede quedar por encima del <th>
-              sticky al scrollear (mismo criterio que ya usa
-              ReposicionesTable). */}
-          <div className="flex-1 min-h-0 mx-4 mb-4 border border-gray-200 rounded-md overflow-auto">
+              centrados vertical y horizontalmente. Header de tabla sticky
+              con fondo opaco (ver SortableTh) — la tabla pasa a
+              border-separate y los separadores de fila se mueven de <tr>
+              a <td>, porque bajo border-collapse un borde de fila se
+              pinta en la capa de bordes de la tabla y puede quedar por
+              encima del <th> sticky al scrollear (mismo criterio que ya
+              usa ReposicionesTable). mx-5/mb-5 (antes mx-4/mb-4 dentro de
+              la card, ya sin card) para alinear con el padding del resto
+              del modal. */}
+          <div className="flex-1 min-h-0 mx-5 mb-5 border border-gray-200 rounded-md overflow-auto">
             {activeTabData && (
               activeTabData.key === "tabla3" ? (() => {
                 const existe = valoresRelacionadas?.tabla3 === "SI";

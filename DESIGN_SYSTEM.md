@@ -36,40 +36,41 @@ extienden sin tocar cómo se ven los modales que no las pasan:
   vez de dejar que `Modal` les imponga el padding estándar.
 - **`bodyOverflow="hidden"`** (default `"auto"`): el body deja de ser la zona
   que scrollea — ver "Patrón de modal de trabajo" abajo.
-- **`bodyClassName`**: clases extra para el body (ej. `"bg-gray-50 flex
-  flex-col gap-4"` para el patrón de abajo).
+- **`bodyClassName`**: clases extra para el body, cuando `bodyPadding`/
+  `bodyOverflow` no alcanzan (ej. un fondo o un layout propio puntual).
 - **`height`**: un alto CSS fijo (ej. `"min(720px, calc(100vh - 40px))"`) en
   vez del alto-según-contenido de siempre — para cuando el panel no puede
   saltar de tamaño entre estados (ej. cambiar de tab o de reposición).
 
-## Patrón de modal de trabajo: header + cards sobre fondo gris
+## Patrón de modal de trabajo: header con metadatos, contenido de borde a borde
 
 Para un modal con contenido propio de trabajo (no un formulario de acción
-puntual) — ej. "Tablas relacionadas" de Modificar interrupción — nada va de
-borde a borde del modal. Todo vive contenido en cards:
+puntual) — ej. "Tablas relacionadas" de Modificar interrupción — el contenido
+va de borde a borde del modal, alineado al mismo `px-5` que el header. Sin
+cards ni fondo gris: el dato de contexto secundario (ej. qué reposición está
+activa) vive como una línea de metadatos en el HEADER, no en una card del
+body.
 
-- **Header**: blanco, compacto, `headerExtra` para el dato de contexto
-  secundario (ver arriba). Único elemento de borde a borde.
-- **Body**: `bodyOverflow="hidden"` + `bodyClassName="bg-gray-50 flex
-  flex-col gap-4"` (+ `p-5` del `bodyPadding` default) — el body EN SÍ nunca
-  scrollea. Sus hijos directos son cards (`bg-white border border-gray-200
-  rounded-lg`, sombra `--shadow-low`): las de alto fijo llevan `shrink-0`,
-  la que contiene la tabla de trabajo lleva `flex-1 min-h-0`. Una card de
-  contexto (ej. "Reposición" — datos de solo lectura de la reposición
-  activa) no necesita título ni grilla de tiles propios si el dato central
-  ya lo dice todo: una sola fila compacta (`px-4 py-3 flex items-center
-  gap-6`, ~60px de alto) con cada dato como label/valor de una línea
-  (mismo tratamiento que un `<th>`/`<td>` de tabla — micro uppercase
-  gray-500 arriba, body-sm font-medium gray-900 abajo, `whitespace-nowrap`,
-  sin bordes/fondos propios) alcanza; el paginador ‹ › va al final de esa
-  misma fila, no en un header aparte. Un solo dato flexible (`flex-1
-  min-w-0`, `truncate` + `title`) si hace falta — el resto a ancho natural
-  (`shrink-0`).
-- **El scroll vive DENTRO de la card de contenido**, en un contenedor propio
-  con su propio borde (`border border-gray-200 rounded-md overflow-auto`,
-  `mx-4 mb-4` dentro de esa card) — nunca en el body del modal. Ese
+- **Header**: blanco, compacto. `headerExtra` apila ahí, debajo del título,
+  tantas líneas de contexto como haga falta (ver `headerExtra` arriba) — ej.
+  una línea fija (Interrupción + `CopyButton`) y, condicionalmente, una
+  línea de metadatos de un dato seleccionable (reposición activa): segmentos
+  de texto separados por "·" (`text-body-sm text-gray-600`, separador en
+  `text-gray-400`), con el paginador ‹ › al final de esa misma línea. Todos
+  los segmentos `whitespace-nowrap` salvo uno (el más largo/variable, ej. una
+  descripción) que es el único flexible (`min-w-0`, `truncate` + `title`) —
+  ese es el que cede espacio si la línea se aprieta. Es texto plano, sin
+  tiles ni bordes propios (ver "no es el patrón" en `DataTile` abajo).
+- **Body**: `bodyPadding={false}` + `bodyOverflow="hidden"` — el body EN SÍ
+  nunca scrollea ni tiene padding/fondo propios. Su único hijo es un wrapper
+  `h-full flex flex-col min-h-0` que arma el layout interno: filas fijas
+  (`shrink-0`, con su propio `px-5` para alinear con el header) arriba, la
+  zona de contenido de trabajo (`flex-1 min-h-0`) al final.
+- **El scroll vive DENTRO de un contenedor propio** con su propio borde
+  (`border border-gray-200 rounded-md overflow-auto`, `mx-5 mb-5` para
+  alinear con el padding del resto del modal) — nunca en el body. Ese
   contenedor es la única zona con scroll de todo el modal; todo lo demás
-  (header de card, tabs, fila de descripción/buscador) es `shrink-0`.
+  (tabs, fila de descripción/buscador) es `shrink-0`.
 - El header de tabla dentro de ese contenedor necesita ser `sticky top-0` con
   fondo opaco puesto en el propio `<th>` (no en el `<tr>` padre — un fondo en
   el padre no sigue al hijo posicionado). La tabla pasa a `border-separate` +
@@ -80,44 +81,46 @@ borde a borde del modal. Todo vive contenido en cards:
 - Estados especiales de esa zona (un resultado compacto tipo Sí/No, un vacío
   con ícono+texto+acción) van DENTRO del mismo contenedor con borde,
   centrados vertical y horizontalmente (`h-full flex items-center
-  justify-center`) — nunca sueltos en el body ni en la card.
+  justify-center`) — nunca sueltos en el body.
 
 ## `DataTile`: tile de dato en una grilla, con o sin acción
 
-`DataTile` (`src/App.tsx`, junto a `FaseReposicionFicha`) es el tile
-compartido para mostrar un dato DENTRO DE UNA GRILLA de tiles (borde propio,
-fondo propio, radio) — `rounded-sm border px-2 py-2`, label `text-micro
-text-gray-600` arriba, valor `text-label font-semibold` abajo. Hoy lo usan
-los indicadores de "Tablas relacionadas" en la Card B de Modificar
-interrupción (`onClick`+`disabled` — abren el modal en ese tab; `alert`
-fondo/borde/texto warning) — admite también un modo de solo lectura (sin
-`onClick`, `<div>` en vez de `<button>`) para otra grilla de tiles que lo
-necesite. `mono` para valores de código. `description` agrega una tercera
-línea opcional (`text-body-sm text-gray-600`, `line-clamp-2` + `title`) —
-muestra el texto completo si entra en 2 líneas, solo trunca con "…" si lo
-excede. `className` para ajustes del propio grid item (ej. `col-span-2`).
+`DataTile` (`src/App.tsx`) es el tile compartido para mostrar un dato DENTRO
+DE UNA GRILLA de tiles (borde propio, fondo propio, radio) — `rounded-sm
+border px-2 py-2`, label `text-micro text-gray-600` arriba, valor
+`text-label font-semibold` abajo. Hoy lo usan los indicadores de "Tablas
+relacionadas" en la Card B de Modificar interrupción (`onClick`+`disabled` —
+abren el modal en ese tab; `alert` fondo/borde/texto warning) — admite
+también un modo de solo lectura (sin `onClick`, `<div>` en vez de `<button>`)
+para otra grilla de tiles que lo necesite. `mono` para valores de código.
+`description` agrega una tercera línea opcional (`text-body-sm
+text-gray-600`, `line-clamp-2` + `title`) — muestra el texto completo si
+entra en 2 líneas, solo trunca con "…" si lo excede. `className` para
+ajustes del propio grid item (ej. `col-span-2`).
 
-**No es el patrón para una fila de datos suelta** (sin borde/fondo propio
-por dato, ej. la card "Reposición" de arriba) — ahí cada dato es texto
-plano con el mismo tratamiento que un `<th>`/`<td>` de tabla, sin tile.
+**No es el patrón para una línea de metadatos suelta** (sin borde/fondo
+propio por dato, ej. la línea de reposición activa en el header del modal
+"Tablas relacionadas") — ahí cada dato es texto plano separado por "·", sin
+tile.
 
 ## Tabs de contenido: `UnderlineTabs`
 
 `UnderlineTabs` (`src/App.tsx`) es EL patrón de tabs de contenido de la
 app — para elegir qué vista mostrar dentro de un mismo contenedor (ej. qué
-tabla se muestra en la card "Tablas relacionadas" del modal del mismo
-nombre). Reemplaza al `SegmentedSwitch` (riel + pastilla) que se usó
+tabla se muestra en el modal "Tablas relacionadas" de Modificar
+interrupción). Reemplaza al `SegmentedSwitch` (riel + pastilla) que se usó
 brevemente para este mismo propósito — se volvió al lenguaje de tabs
 subrayados, más estándar para contenido tabular con varias vistas anchas.
 
 - El contenedor respeta el padding horizontal del resto del contenedor que lo
-  aloja (ej. `px-4`, el mismo que el resto del contenido de esa card) — el
-  primer tab tiene que quedar alineado en la misma vertical que el resto del
-  contenido, no pegado al borde de lo que lo contiene. El borde inferior
-  (línea de base) sigue yendo de lado a lado de ESE contenedor igual: el
-  padding mueve el contenido, no el borde. Cada botón usa `px-4` parejo — el
-  primero suma `first:-ml-4` para cancelar su propio `pl-4` y que el TEXTO
-  (no el padding) quede exactamente en el borde de contenido.
+  aloja (ej. `px-5`, el mismo que el header y el resto del contenido del
+  modal "Tablas relacionadas") — el primer tab tiene que quedar alineado en
+  la misma vertical que el resto del contenido, no pegado al borde de lo que
+  lo contiene. El borde inferior (línea de base) sigue yendo de lado a lado
+  de ESE contenedor igual: el padding mueve el contenido, no el borde. Cada
+  botón usa `px-4` parejo — el primero suma `first:-ml-4` para cancelar su
+  propio `pl-4` y que el TEXTO (no el padding) quede exactamente en el borde
+  de contenido.
 - Botones `h-10 min-w-24 px-4 text-body`.
   - Reposo: `text-gray-600`, hover `bg-gray-50`.
   - Activo: `text-secondary font-medium` + `border-b-2 border-primary`
