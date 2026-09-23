@@ -7,6 +7,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown,
   Zap, FileText, Pencil, Clipboard, UserPlus, Shield, Calendar, Search, X,
   Filter, Inbox, User, Settings, LogOut, Plus, Download, ChevronsUp, ChevronsDown, Home,
+  Activity,
 } from "lucide-react";
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
@@ -2586,12 +2587,21 @@ function DatosInterrupcionModal({
   referencia,
   fechaInicio,
   fechaUltRepo,
+  duracion,
+  ticks,
 }: {
   open: boolean;
   onClose: () => void;
   referencia: string;
   fechaInicio: string;
   fechaUltRepo: string;
+  // Línea de tiempo (antes vivía como widget clickeable en la Card B de
+  // Reposiciones; ahora se abre desde el botón "Ver datos de interrupción"
+  // del header de esa card, así que el widget se mudó acá adentro,
+  // arriba de los campos — mismos datos, mismos colores, sin el
+  // comportamiento clickeable que tenía afuera).
+  duracion: string;
+  ticks: number[];
 }) {
   const topFields = [
     { label: "Interrupción", value: referencia },
@@ -2621,6 +2631,37 @@ function DatosInterrupcionModal({
       }
     >
       <div className="flex flex-col gap-5">
+        {/* Línea de tiempo — solo visualización acá adentro (sin
+            onClick/cursor-pointer/hover: eso era del widget cuando vivía
+            afuera, clickeable para abrir este mismo modal). */}
+        <div className="rounded-sm border border-gray-300 overflow-hidden">
+          {/* Sparkline: ticks de reposición + apertura/cierre */}
+          <div className="relative bg-white" style={{ height: 34 }}>
+            {ticks.map((pct, i) => {
+              const isEdge = i === 0 || i === ticks.length - 1;
+              return (
+                <div
+                  key={i}
+                  className="absolute top-1/2"
+                  style={{
+                    left: `${pct}%`,
+                    width: isEdge ? 3 : 1.5,
+                    height: isEdge ? 22 : 15,
+                    backgroundColor: isEdge ? "var(--color-gray-900)" : "var(--color-primary)",
+                    transform: "translate(-50%, -50%)",
+                  }}
+                />
+              );
+            })}
+          </div>
+          {/* Barra de resumen */}
+          <div className="px-3 py-2 text-center" style={{ backgroundColor: "var(--color-gray-700)" }}>
+            <span className="text-caption font-medium text-white whitespace-nowrap font-mono">
+              {fechaInicio}  -  {referencia}  -  {fechaUltRepo}  -  {duracion}
+            </span>
+          </div>
+        </div>
+
         <div className="grid grid-cols-6 gap-3">
           {topFields.map((f) => (
             <ReadOnlyField key={f.label} label={f.label} value={f.value} />
@@ -4114,7 +4155,24 @@ function ModificarContent({
           className="flex-1 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden [@media(max-height:760px)]:flex-[3]"
           style={CARD_SHADOW}
         >
-          <CardHeader title="Reposiciones" tag="CDS4" />
+          <CardHeader
+            title="Reposiciones"
+            tag="CDS4"
+            right={
+              <button
+                type="button"
+                onClick={() => setDatosInterrupcionOpen(true)}
+                disabled={!hasSelection}
+                title={hasSelection ? undefined : "Seleccioná una interrupción"}
+                className={actionBtnCls("neutral") + " disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"}
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  <Activity size={14} strokeWidth={1.5} />
+                  Ver datos de interrupción
+                </span>
+              </button>
+            }
+          />
 
           {/* Interrupción seleccionada (+ reposición activa, si hay más de
               una) — franja fija (shrink-0), FUERA del body scrolleable de
@@ -4215,52 +4273,6 @@ function ModificarContent({
               </div>
             </div>
 
-            {/* Datos de la Interrupción — abre el modal del mismo nombre.
-                Sin selección no hay datos que mostrar ni modal que abrir. */}
-            <div className="px-5 py-4 [@media(max-height:760px)]:pt-2">
-              <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2.5">Datos de la Interrupción</p>
-              {selectedRecord ? (
-                <button
-                  type="button"
-                  onClick={() => setDatosInterrupcionOpen(true)}
-                  className="group w-full text-left rounded-sm border border-gray-300 overflow-hidden cursor-pointer transition-all duration-150 hover:border-primary hover:shadow-[0_2px_10px_rgba(77,151,250,0.1)]"
-                >
-                  {/* Sparkline: ticks de reposición + apertura/cierre */}
-                  <div className="relative bg-white" style={{ height: 34 }}>
-                    {timelineTicks.map((pct, i) => {
-                      const isEdge = i === 0 || i === timelineTicks.length - 1;
-                      return (
-                        <div
-                          key={i}
-                          className="absolute top-1/2"
-                          style={{
-                            left: `${pct}%`,
-                            width: isEdge ? 3 : 1.5,
-                            height: isEdge ? 22 : 15,
-                            backgroundColor: isEdge ? "var(--color-gray-900)" : "var(--color-primary)",
-                            transform: "translate(-50%, -50%)",
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                  {/* Barra de resumen */}
-                  <div className="px-3 py-2 text-center" style={{ backgroundColor: "var(--color-gray-700)" }}>
-                    <span
-                      className="text-caption font-medium text-white whitespace-nowrap font-mono"
-                    >
-                      {timelineFechaInicio}  -  {timelineReferencia}  -  {timelineFechaUltRepo}  -  {timelineDuracion}
-                    </span>
-                  </div>
-                </button>
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-2 py-6 rounded-sm border border-gray-200 bg-gray-50 text-center">
-                  <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                  <p className="text-body-sm text-gray-500">Seleccioná una interrupción para ver sus datos</p>
-                </div>
-              )}
-            </div>
-
           </div>
         </div>
 
@@ -4302,6 +4314,8 @@ function ModificarContent({
         referencia={timelineReferencia}
         fechaInicio={timelineFechaInicio}
         fechaUltRepo={timelineFechaUltRepo}
+        duracion={timelineDuracion}
+        ticks={timelineTicks}
       />
 
       {/* ── DRAWER OVERLAY ──────────────────────────────────────── */}
