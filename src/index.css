@@ -129,10 +129,11 @@
        una pantalla marcada aparte, con paddings/gaps en `style` inline en
        px en vez de clases Tailwind — no participa de --spacing/--text-*,
        así que cada valor que aporta alto vertical necesita su propia
-       variable acá. El offset superior (`calc(38vh + 15px)`) es el que más
-       pesa: a 38% del alto de una ventana ya baja, empuja la card entera
-       contra el borde inferior. */
-    --login-top-offset: calc(8vh + 10px);
+       variable acá. El offset superior es el que más pesa: la card en sí
+       es flex-1 (se estira para llenar todo lo que quede debajo de este
+       padding-top), así que un offset muy chico infla la card a casi
+       pantalla completa con espacio vacío adentro. */
+    --login-top-offset: calc(16vh + 10px);
     --login-form-pt: 24px;
     --login-form-pb: 16px;
     --login-title-size: 26px;

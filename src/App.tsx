@@ -1,179 +1,15 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, cloneElement } from "react";
 import { createPortal } from "react-dom";
 import { DayPicker, useDayPicker, type ChevronProps } from "react-day-picker";
 import { es } from "date-fns/locale";
+import { motion } from "motion/react";
+import {
+  ChevronLeft, ChevronRight, ChevronDown,
+  Zap, FileText, Pencil, Clipboard, UserPlus, Shield, Calendar, Search, X,
+  Filter, Inbox, User, Settings, LogOut, Plus, Download, ChevronsUp, ChevronsDown, Home,
+} from "lucide-react";
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
-
-// ─── Icons ───────────────────────────────────────────────────────────────────
-
-const ChevronLeft = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const ChevronRight = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const ChevronDown = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const IcoTable = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <rect x="1.5" y="2.5" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M1.5 6h12M5.5 6v6.5" stroke="currentColor" strokeWidth="1.2" />
-  </svg>
-);
-const IcoZap = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <path d="M8.5 1.5L3.5 8.5H7.5L6.5 13.5L12.5 6.5H8.5L9.5 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const IcoZapOff = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <path d="M8.5 1.5L3.5 8.5H7.5L6.5 13.5L12.5 6.5H8.5L9.5 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="2.5 1.5" />
-  </svg>
-);
-const IcoRefresh = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <path d="M12.5 7.5a5 5 0 1 1-1.4-3.5L12.5 2v4h-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const IcoCpu = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <rect x="3.5" y="3.5" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M5.5 1v2M9.5 1v2M5.5 12v2M9.5 12v2M1 5.5h2M12 5.5h2M1 9.5h2M12 9.5h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
-);
-const IcoUsers = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <circle cx="6" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M1 13c0-2.8 2.2-4.5 5-4.5s5 1.7 5 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-    <path d="M10.5 4a2 2 0 0 1 0 4M13.5 13c0-2.3-1.4-3.8-3-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
-);
-const IcoBuilding = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <rect x="1.5" y="2.5" width="8" height="11" rx="1" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M9.5 6.5h2.5a1 1 0 0 1 1 1v5H9.5" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M4.5 5.5h2M4.5 8.5h2M4.5 11.5h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
-);
-const IcoMsg = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <path d="M13 9a2 2 0 0 1-2 2H5L2 13.5V3.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2V9z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-  </svg>
-);
-const IcoFile = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <path d="M8.5 1.5H3.5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L8.5 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-    <path d="M8.5 1.5V6h3.5M4.5 8.5h6M4.5 11h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
-);
-const IcoEdit = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <path d="M10.5 2a1.41 1.41 0 0 1 2 2L4 12.5l-3 .5.5-3L10.5 2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-  </svg>
-);
-const IcoClipboard = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <rect x="2.5" y="2.5" width="10" height="11" rx="1" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M5.5 2.5V1.5h4v1M5.5 6.5h4M5.5 9.5h2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
-);
-const IcoUserPlus = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <circle cx="6" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M1 13c0-2.8 2.2-4.5 5-4.5S11 10.2 11 13M11.5 6v4M9.5 8h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
-);
-const IcoShield = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <path d="M7.5 1.5L2.5 3.5v4c0 3 2.5 5.5 5 6 2.5-.5 5-3 5-6v-4L7.5 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-  </svg>
-);
-const IcoCalendar = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <rect x="1.5" y="2.5" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M1.5 6.5h12M5 1.5v2M10 1.5v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
-);
-const IcoSearch = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.25" />
-    <path d="M10 10L13.5 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-const IcoX = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-const IcoFilter = () => (
-  <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
-    <path d="M4 5h12M6.5 10h7M9 15h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-  </svg>
-);
-const IcoInbox = () => (
-  <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-    <rect x="6" y="12" width="32" height="24" rx="3" stroke="currentColor" strokeWidth="1.4" />
-    <path d="M6 26h8l3 4h10l3-4h8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M16 8h12M22 5v6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-  </svg>
-);
-const IcoUser = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <circle cx="7.5" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M2.5 13.5c0-3 2.3-4.5 5-4.5s5 1.5 5 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
-);
-const IcoSettings = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M7.5 1v2M7.5 12v2M1 7.5h2M12 7.5h2M3.2 3.2l1.4 1.4M10.4 10.4l1.4 1.4M3.2 11.8l1.4-1.4M10.4 4.6l1.4-1.4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
-);
-const IcoLogOut = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <path d="M5.5 2H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h2.5M10 10.5l3-3-3-3M13 7.5H6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const IcoPlus = () => (
-  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-    <path d="M6.5 1.5v9.5M1.75 6.25h9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-  </svg>
-);
-const IcoDownload = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <path d="M7.5 2v7.5M4.5 6.5L7.5 9.5l3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M2.5 11.5v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
-);
-const IcoChevronsUp = () => (
-  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-    <path d="M2.5 7l4-4 4 4M2.5 11l4-4 4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const IcoChevronsDown = () => (
-  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-    <path d="M2.5 2l4 4 4-4M2.5 6l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-const IcoExternalLink = () => (
-  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-    <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8M8 1h4v4M7 6l4.5-4.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const IcoHome = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <path d="M2 7.5L7.5 2l5.5 5.5M3.5 6v6.5a1 1 0 0 0 1 1h2v-4h2v4h2a1 1 0 0 0 1-1V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -195,11 +31,11 @@ const ABM_ITEMS: { code: string; label: string; screen?: Screen; key?: string }[
 ];
 
 const OTROS_ITEMS: { label: string; icon: React.ReactNode; screen: Screen }[] = [
-  { label: "Generación de txt",    icon: <IcoFile />,      screen: "generaciontxt" },
-  { label: "Planilla consolidada", icon: <IcoClipboard />, screen: "planillaconsolidada" },
-  { label: "Gestor de notas",      icon: <IcoEdit />,      screen: "gestornotas" },
-  { label: "Inserta clientes",     icon: <IcoUserPlus />,  screen: "insertaclientes" },
-  { label: "Auditoría",            icon: <IcoShield />,    screen: "auditoria" },
+  { label: "Generación de txt",    icon: <FileText size={15} strokeWidth={1.5} />,      screen: "generaciontxt" },
+  { label: "Planilla consolidada", icon: <Clipboard size={15} strokeWidth={1.5} />, screen: "planillaconsolidada" },
+  { label: "Gestor de notas",      icon: <Pencil size={15} strokeWidth={1.5} />,      screen: "gestornotas" },
+  { label: "Inserta clientes",     icon: <UserPlus size={15} strokeWidth={1.5} />,  screen: "insertaclientes" },
+  { label: "Auditoría",            icon: <Shield size={15} strokeWidth={1.5} />,    screen: "auditoria" },
 ];
 
 const PERIODS = ["Agosto 2026","Julio 2026","Junio 2026","Mayo 2026","Abril 2026"];
@@ -477,7 +313,7 @@ function SelectWrap({ children, className = "" }: { children: React.ReactNode; c
     <div className={`relative ${className}`}>
       {children}
       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
-        <ChevronDown />
+        <ChevronDown size={16} strokeWidth={1.5} />
       </div>
     </div>
   );
@@ -523,28 +359,50 @@ function NavItem({
       className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-all duration-150 group
         ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
         ${active
-          ? "border-primary bg-primary-tint text-secondary"
+          ? "border-transparent text-secondary"
           : "border-transparent text-gray-700 hover:text-gray-800 hover:bg-gray-100"
         }`}
     >
-      {icon && <span className="shrink-0">{icon}</span>}
-      {!collapsed && (
-        <>
-          <span className={`flex-1 min-w-0 truncate text-body text-left leading-snug ${boldLabel ? "font-semibold" : ""}`}>{label}</span>
-          {code && (
-            <span
-              className={`text-micro font-mono shrink-0 tabular-nums ${active ? "text-secondary/60" : "text-gray-500 group-hover:text-gray-600"}`}
-            >
-              {code}
-            </span>
-          )}
-        </>
+      {/* Pill de fondo del ítem activo — layoutId compartido entre TODOS los
+          NavItem: Motion detecta que "se mudó" de un botón a otro entre
+          renders y anima la transición de posición/tamaño sola, sin que
+          calculemos nada a mano (mismo mecanismo que el selector deslizable
+          de Vaquita). Solo el ítem activo lo renderiza en un momento dado. */}
+      {active && (
+        <motion.span
+          layoutId="nav-active-pill"
+          className="absolute inset-0 rounded-sm bg-secondary/10"
+          transition={{ type: "spring", stiffness: 500, damping: 40 }}
+        />
       )}
-      {collapsed && (
-        <span className="sidebar-item-tooltip">
-          {label}{code && ` · ${code}`}
-        </span>
-      )}
+      {/* relative z-10: el pill de arriba es absolute (stackea por encima de
+          contenido no-posicionado sin importar el orden en el DOM), así que
+          todo el contenido real necesita su propio contexto posicionado con
+          z-index mayor para quedar arriba, no tapado por el pill. */}
+      <span className={`relative z-10 flex items-center gap-2 w-full ${collapsed ? "justify-center" : ""}`}>
+        {icon && (
+          <span className="shrink-0">
+            {cloneElement(icon as React.ReactElement<any>, { fill: active ? "currentColor" : "none" })}
+          </span>
+        )}
+        {!collapsed && (
+          <>
+            <span className={`flex-1 min-w-0 truncate text-body text-left leading-snug ${boldLabel ? "font-semibold" : ""}`}>{label}</span>
+            {code && (
+              <span
+                className={`text-micro font-mono shrink-0 tabular-nums ${active ? "text-secondary/60" : "text-gray-500 group-hover:text-gray-600"}`}
+              >
+                {code}
+              </span>
+            )}
+          </>
+        )}
+        {collapsed && (
+          <span className="sidebar-item-tooltip">
+            {label}{code && ` · ${code}`}
+          </span>
+        )}
+      </span>
     </button>
   );
 }
@@ -568,10 +426,10 @@ function PeriodSelector() {
         className={`${BTN_MD} group flex items-center gap-1.5 border font-medium transition-all duration-150
           ${open ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"}`}
       >
-        <span className={`transition-colors ${open ? "text-secondary" : "text-gray-500 group-hover:text-secondary"}`}><IcoCalendar /></span>
+        <span className={`transition-colors ${open ? "text-secondary" : "text-gray-500 group-hover:text-secondary"}`}><Calendar size={15} strokeWidth={1.5} /></span>
         <span>{selected}</span>
         <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
-          <ChevronDown />
+          <ChevronDown size={16} strokeWidth={1.5} />
         </span>
       </button>
       {open && (
@@ -622,7 +480,7 @@ function formatDateTimeStr(date: Date | undefined, time: string): string {
 }
 
 function DateTimeChevron({ orientation }: ChevronProps) {
-  return orientation === "right" ? <ChevronRight /> : <ChevronLeft />;
+  return orientation === "right" ? <ChevronRight size={16} strokeWidth={1.5} /> : <ChevronLeft size={16} strokeWidth={1.5} />;
 }
 
 const DAY_PICKER_CLASSNAMES = {
@@ -792,7 +650,7 @@ function DateTimeField({
         style={fullWidth ? undefined : { width: 170, flexShrink: 0 }}
       >
         {value ? <span className={muted ? "text-gray-500 truncate" : "text-gray-900 truncate"}>{value}</span> : <span className="text-gray-500 truncate">dd/mm/aaaa hh:mm</span>}
-        <span className="shrink-0 text-gray-500"><IcoCalendar /></span>
+        <span className="shrink-0 text-gray-500"><Calendar size={15} strokeWidth={1.5} /></span>
       </button>
       {!disabled && open && (
         <div
@@ -870,7 +728,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
               <p className="text-caption text-gray-600 mt-0.5 truncate">Operador</p>
             </div>
             <span className={`text-gray-500 transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
-              <ChevronDown />
+              <ChevronDown size={16} strokeWidth={1.5} />
             </span>
           </>
         )}
@@ -881,17 +739,17 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
           style={collapsed ? { boxShadow: "var(--shadow-mid)" } : { ...dropdownAnchorStyle(direction, 6), boxShadow: "var(--shadow-mid)" }}
         >
           <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-gray-50 transition-colors">
-            <IcoUser /> Mi perfil
+            <User size={15} strokeWidth={1.5} /> Mi perfil
           </button>
           <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-gray-50 transition-colors">
-            <IcoSettings /> Configuración
+            <Settings size={15} strokeWidth={1.5} /> Configuración
           </button>
           <div className="my-1 border-t border-gray-200" />
           <button
             onClick={() => { setOpen(false); onLogout(); }}
             className="w-full flex items-center gap-2 px-3 py-2 text-body text-error hover:bg-red-50 transition-colors"
           >
-            <IcoLogOut /> Cerrar sesión
+            <LogOut size={15} strokeWidth={1.5} /> Cerrar sesión
           </button>
         </div>
       )}
@@ -1119,7 +977,7 @@ function TableToolbar({
     <div className="px-4 py-2.5 border-b border-gray-200 bg-white shrink-0 flex items-center justify-between gap-3">
       <div className="relative flex-1 max-w-[320px]">
         <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 text-gray-500">
-          <IcoSearch />
+          <Search size={15} strokeWidth={1.5} />
         </span>
         <input
           value={search}
@@ -1215,7 +1073,7 @@ function Modal({
             onClick={onClose}
             className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
           >
-            <IcoX />
+            <X size={14} strokeWidth={1.5} />
           </button>
         </div>
 
@@ -2093,7 +1951,7 @@ function IntercambioModal({
                   <tr>
                     <td colSpan={4}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                        <span className="text-gray-400"><IcoInbox /></span>
+                        <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
                         <p className="text-body font-medium text-gray-600">No hay registros</p>
                       </div>
                     </td>
@@ -2165,7 +2023,7 @@ function IntercambioModal({
                   <tr>
                     <td colSpan={3}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                        <span className="text-gray-400"><IcoInbox /></span>
+                        <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
                         <p className="text-body font-medium text-gray-600">No hay registros</p>
                       </div>
                     </td>
@@ -2190,7 +2048,7 @@ function IntercambioModal({
           <div className="relative">
             <input placeholder="Buscar destino" className={MOD_FIELD_CLS} style={{ paddingRight: 36 }} />
             <span className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center text-gray-600">
-              <IcoSearch />
+              <Search size={15} strokeWidth={1.5} />
             </span>
           </div>
         </div>
@@ -2361,7 +2219,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
                         transform: isHov ? "translateX(3px)" : "none",
                       }}
                     >
-                      <ChevronRight />
+                      <ChevronRight size={16} strokeWidth={1.5} />
                     </span>
                   )}
                 </div>
@@ -2380,7 +2238,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
 
 // Selector de día acotado al mes de entrega — mismo mecanismo/estilos que
 // DateTimeField (DayPicker/es/DateTimeChevron/DateTimeCaptionLabel/
-// DAY_PICKER_CLASSNAMES/IcoCalendar), pero sin hora y sin navegación de mes:
+// DAY_PICKER_CLASSNAMES/Calendar), pero sin hora y sin navegación de mes:
 // startMonth === endMonth, así que las flechas del calendario quedan sin
 // efecto y clickear un día aplica y cierra al toque (no hay hora que
 // confirmar aparte, no hace falta botón "Aplicar").
@@ -2402,7 +2260,7 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
         className="h-8 px-2.5 flex items-center gap-1.5 border border-gray-400 rounded-sm bg-white text-body-sm font-semibold text-gray-900 hover:border-primary hover:text-secondary transition-colors"
       >
         {value}
-        <span className="text-gray-500"><IcoCalendar /></span>
+        <span className="text-gray-500"><Calendar size={15} strokeWidth={1.5} /></span>
       </button>
       {open && (
         <div
@@ -2599,10 +2457,10 @@ function CronogramaEnre() {
 
 function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }) {
   const quickLinks: { code: string; tableKey: AbmTableKey; label: string; desc: string; icon: React.ReactNode }[] = [
-    { code: "CDS2", tableKey: "cds2", label: "Interrupciones", desc: "Consulta y gestión de interrupciones computadas", icon: <IcoZap /> },
-    { code: "CDS3", tableKey: "cds3", label: "Interrupciones no computables", desc: "Registro de interrupciones no imputables", icon: <IcoZap /> },
-    { code: "CDS4", tableKey: "cds4", label: "Reposiciones", desc: "Seguimiento de reposiciones de servicio", icon: <IcoZap /> },
-    { code: "CDS8", tableKey: "cds8", label: "Reclamos", desc: "Gestión de reclamos de calidad de servicio", icon: <IcoZap /> },
+    { code: "CDS2", tableKey: "cds2", label: "Interrupciones", desc: "Consulta y gestión de interrupciones computadas", icon: <Zap size={15} strokeWidth={1.5} /> },
+    { code: "CDS3", tableKey: "cds3", label: "Interrupciones no computables", desc: "Registro de interrupciones no imputables", icon: <Zap size={15} strokeWidth={1.5} /> },
+    { code: "CDS4", tableKey: "cds4", label: "Reposiciones", desc: "Seguimiento de reposiciones de servicio", icon: <Zap size={15} strokeWidth={1.5} /> },
+    { code: "CDS8", tableKey: "cds8", label: "Reclamos", desc: "Gestión de reclamos de calidad de servicio", icon: <Zap size={15} strokeWidth={1.5} /> },
   ];
 
   return (
@@ -3015,6 +2873,79 @@ function generarTablasRelacionadas(referencia: string): Record<string, string> {
   };
 }
 
+// Filas de cada tab del drawer "Tablas relacionadas" (5/6/8/9) — misma
+// semilla que los tiles (referencia + reposición seleccionada, ver
+// generarTablasRelacionadas): la cantidad SIEMPRE coincide con el valor
+// del tile correspondiente (valoresRelacionadas), y en las tablas con
+// columnas "Interrupción"/"Fase" (5, 6, 9) esas dos columnas quedan fijas
+// en la referencia y el número de reposición seleccionados — el tab
+// muestra solo las filas de esa reposición puntual.
+//
+// ⚠ Antes tabla6/tabla9 tenían UNA fila hardcodeada (misma referencia que
+// una fila igualmente hardcodeada en ABM_TABLE_CONFIGS.cds6/cds9.rows)
+// para que el deep-link "Ir a ABM" siempre encontrara y seleccionara esa
+// fila en destino. Con filas generadas por reposición, ese match dejó de
+// estar garantizado (las referencias sintéticas no van a coincidir con
+// las de cds5/6/8/9, que usan semillas fijas propias) — mismo
+// comportamiento de soft-fail que ya tenía tabla8 (ver
+// AbmScreen: `config.rows.findIndex` sin match → sin crash, sin fila
+// preseleccionada, el buscador queda con el valor precargado nomás).
+// Decisión conversada con el usuario: aceptar ese soft-fail en vez de
+// tocar ABM_TABLE_CONFIGS para forzar un match real.
+function generarFilasTabla5(seed: string, referencia: string, nroReposicion: number, cantidad: number): string[][] {
+  const rng = crearRng(hashSemilla(seed + ":tabla5"));
+  return filasSinteticas(cantidad, () => [
+    referencia,
+    String(nroReposicion),
+    cadenaCodeSintetica(rng),
+    String(enteroEntre(rng, 100, 2000)),
+    elegir(rng, ["R", "S", "T", "RS", "RT", "ST", "RST"]),
+    String(enteroEntre(rng, 1, 900)),
+  ]);
+}
+function generarFilasTabla6(seed: string, referencia: string, nroReposicion: number, cantidad: number): string[][] {
+  const rng = crearRng(hashSemilla(seed + ":tabla6"));
+  return filasSinteticas(cantidad, () => [
+    referencia,
+    String(nroReposicion),
+    clienteIdSintetico(rng),
+    String(enteroEntre(rng, 50, 5000)),
+    cadenaCodeSintetica(rng),
+    cadenaCodeSintetica(rng),
+    elegir(rng, ["1MT", "2MT", "3MT", "4MT"]),
+    String(enteroEntre(rng, 50, 900)),
+    elegir(rng, ["MT", "AT"]),
+  ]);
+}
+function generarFilasTabla8(seed: string, cantidad: number): string[][] {
+  const rng = crearRng(hashSemilla(seed + ":tabla8"));
+  return filasSinteticas(cantidad, () => {
+    const domicilio = elegir(rng, PARTIDOS_LOCALIDADES_SINTETICOS);
+    return [
+      recCodeSintetico(rng),
+      fechaSintetica(rng, 1, 2024),
+      clienteIdSintetico(rng),
+      elegir(rng, NOMBRES_SINTETICOS),
+      elegir(rng, ["1R", "1G", "2", "3"]),
+      elegir(rng, CODIGOS_FALLA_SINTETICOS),
+      elegir(rng, ["", "1", "2", "3", "PB"]),
+      elegir(rng, ["", "A", "B", "C"]),
+      domicilio.partido,
+    ];
+  });
+}
+function generarFilasTabla9(seed: string, referencia: string, nroReposicion: number, cantidad: number): string[][] {
+  const rng = crearRng(hashSemilla(seed + ":tabla9"));
+  return filasSinteticas(cantidad, () => [
+    referencia,
+    String(nroReposicion),
+    clienteIdSintetico(rng),
+    elegir(rng, ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"]),
+    cadenaCodeSintetica(rng),
+    cadenaCodeSintetica(rng),
+  ]);
+}
+
 const DRAWER_TABS = [
   {
     key: "tabla4", label: "Tabla 4",
@@ -3034,38 +2965,30 @@ const DRAWER_TABS = [
     key: "tabla5", label: "Tabla 5",
     subtitle: "Transformadores MT/BT repuestos en interrupciones AT/MT (CDS5)",
     cols: ["Interrupción", "Fase", "Cadena eléctrica", "Potencia (Kva)", "Fase eléctrica", "Cant. clientes BT"],
+    // Sin uso — ModificarContent arma las filas via generarFilasTabla5,
+    // acá solo quedan cols/subtitle/key/label.
     rows: [] as string[][],
   },
   {
     key: "tabla6", label: "Tabla 6",
     subtitle: "Clientes AT/MT afectados en interrupciones AT/MT (CDS6)",
     cols: ["Interrupción", "Fase", "Cliente", "Consumo", "CT T9", "CT T10", "Tarifa", "Demanda media", "Tensión"],
-    // Mismo registro que ABM_TABLE_CONFIGS.cds6.rows[0] — permite que el
-    // deep-link a ABM/CDS6 encuentre y seleccione esta fila en destino.
-    rows: [["MPR202401004095", "1", "9933000000", "808151", "20044#BC-1", "20044#BC-1", "3MT", "290", "MT"]],
+    // Sin uso — ModificarContent arma las filas via generarFilasTabla6.
+    rows: [] as string[][],
   },
   {
     key: "tabla8", label: "Tabla 8",
     subtitle: "Reclamos de clientes (CDS8)",
     cols: ["Reclamo", "Fecha", "Cliente", "Nombre", "Tarifa", "Causa", "Piso", "Dpto", "Partido"],
-    rows: [["78291", "01/07/2026 00:05", "47291038", "GARCIA LUIS", "T1", "Falta de tensión", "3", "A", "SAN ISIDRO"]],
+    // Sin uso — ModificarContent arma las filas via generarFilasTabla8.
+    rows: [] as string[][],
   },
   {
     key: "tabla9", label: "Tabla 9",
     subtitle: "Interrupciones por cliente (CDS9)",
     cols: ["Interrupción", "Fase", "Cliente", "Tarifa", "CT T9", "CT T10"],
-    // Interrupción alineada con ABM_TABLE_CONFIGS.cds9.rows para que el
-    // deep-link a ABM/CDS9 encuentre y seleccione la fila correspondiente.
-    rows: [
-      ["MFZ202401001157", "1", "0932073585", "1R", "9187#B1#9187-TR1", "9187#B1#9187-TR1#1#1"],
-      ["MFZ202401001157", "1", "0420679018", "1R", "9552#B1#9552-TR1", "9552#B1#9552-TR1#1#1"],
-      ["MFZ202401001157", "1", "8064795584", "1G", "9552#B1#9552-TR1", "9552#B1#9552-TR1#1#1"],
-      ["MFZ202401001157", "1", "6332256529", "1R", "9187#B1#9187-TR1", "9187#B1#9187-TR1#1#1"],
-      ["MFZ202401001157", "1", "9212796994", "1R", "9187#B1#9187-TR1", "9187#B1#9187-TR1#1#1"],
-      ["MFZ202401001157", "1", "1835073321", "1R", "9187#B1#9187-TR1", "9187#B1#9187-TR1#1#2"],
-      ["MFZ202401001157", "1", "7423312576", "1R", "9187#B1#9187-TR1", "9187#B1#9187-TR1#1#1"],
-      ["MFZ202401001157", "1", "5265910967", "1R", "9187#B1#9187-TR1", "9187#B1#9187-TR1#1#2"],
-    ],
+    // Sin uso — ModificarContent arma las filas via generarFilasTabla9.
+    rows: [] as string[][],
   },
 ];
 
@@ -3108,6 +3031,114 @@ function CardHeader({ title, tag, right }: { title: string; tag?: string; right?
       <span className="text-label font-semibold text-gray-900">{title}</span>
       {tag && <CodeBadge code={tag} />}
       {right && <div className="ml-auto shrink-0">{right}</div>}
+    </div>
+  );
+}
+
+// Tabla de Reposiciones (Tabla 4) — compartida entre la Card B de
+// "Reposiciones" (Modificar interrupción) y el drawer de "Tablas
+// relacionadas": misma tabla, misma selección (modSelectedFase vive en
+// ModificarContent, única fuente de verdad — acá solo llega vía
+// selectedIndex/onSelect), solo cambia el alto visible entre una
+// instancia y la otra. Header <th> sticky + scroll propio + fila
+// seleccionada con borde izquierdo celeste, mismo criterio en ambos
+// lugares. Ref, hover y navegación por teclado (flechas arriba/abajo) son
+// internos a cada instancia — no hay estado que compartir ahí, solo el
+// índice seleccionado.
+function ReposicionesTable({
+  cols,
+  rows,
+  selectedIndex,
+  onSelect,
+  maxHeight = 220,
+}: {
+  cols: string[];
+  rows: string[][];
+  selectedIndex: number | null;
+  onSelect: (index: number | null) => void;
+  maxHeight?: number;
+}) {
+  const [hovIndex, setHovIndex] = useState<number | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedIndex === null || !listRef.current) return;
+    listRef.current
+      .querySelector<HTMLElement>(`[data-fase-index="${selectedIndex}"]`)
+      ?.scrollIntoView({ block: "nearest" });
+  }, [selectedIndex]);
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (rows.length === 0) return;
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    if (selectedIndex === null) {
+      onSelect(e.key === "ArrowDown" ? 0 : rows.length - 1);
+      return;
+    }
+    const next = e.key === "ArrowDown" ? selectedIndex + 1 : selectedIndex - 1;
+    onSelect(Math.min(Math.max(next, 0), rows.length - 1));
+  }
+
+  return (
+    <div
+      ref={listRef}
+      tabIndex={rows.length > 0 ? 0 : -1}
+      onKeyDown={handleKeyDown}
+      className="border border-gray-200 rounded-sm overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+      style={{ height: maxHeight }}
+    >
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="border-b border-gray-200">
+            {cols.map((c) => (
+              <th key={c} className="sticky top-0 z-10 bg-gray-50 px-3 py-2 text-left text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 whitespace-nowrap">
+                {c}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={cols.length}>
+                <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
+                  <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
+                  <p className="text-body-sm text-gray-500">Sin reposiciones registradas</p>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            rows.map((row, ri) => {
+              const seleccionada = selectedIndex === ri;
+              return (
+                <tr
+                  key={ri}
+                  data-fase-index={ri}
+                  onClick={() => onSelect(seleccionada ? null : ri)}
+                  onMouseEnter={() => setHovIndex(ri)}
+                  onMouseLeave={() => setHovIndex(null)}
+                  className="border-b border-gray-100 last:border-b-0 transition-colors cursor-pointer"
+                  style={{ backgroundColor: seleccionada ? "var(--color-primary-tint)" : hovIndex === ri ? "var(--color-gray-50)" : undefined }}
+                >
+                  {row.map((cell, ci) => (
+                    <td
+                      key={ci}
+                      className={`px-3 py-2.5 text-body-sm whitespace-nowrap ${seleccionada ? "text-secondary font-medium" : "text-gray-700"}`}
+                      // borde de acento en la primera celda, no en el <tr>: con
+                      // border-collapse, un borde puesto directo en la fila no
+                      // renderiza de forma confiable en todos los navegadores.
+                      style={ci === 0 ? { borderLeft: seleccionada ? "3px solid var(--color-primary)" : "3px solid transparent" } : undefined}
+                    >
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -3268,7 +3299,7 @@ function PersistentActionsBar({
         className={actionBtnCls("neutral") + " inline-flex items-center gap-1.5"}
       >
         Acciones
-        <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}><ChevronDown /></span>
+        <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}><ChevronDown size={16} strokeWidth={1.5} /></span>
       </button>
       {open && (
         <div
@@ -3316,7 +3347,6 @@ function ModificarContent({
   initialReferencia?: string | null;
 }) {
   const initialRowIndex = initialReferencia ? SAMPLE_ROWS.findIndex((r) => r.referencia === initialReferencia) : -1;
-  const [hovFase, setHovFase] = useState<number | null>(null);
   const [modShowData, setModShowData] = useState(initialRowIndex >= 0);
   const [modSelectedRow, setModSelectedRow] = useState<number | null>(initialRowIndex >= 0 ? initialRowIndex : null);
   const [drawerTab, setDrawerTab] = useState<string | null>(initialDrawerTab);
@@ -3396,12 +3426,6 @@ function ModificarContent({
   const { search: modSearch, setSearch: setModSearch, sortIdx: modSortIdx, sortDir: modSortDir, toggleSort: modToggleSort, visibleIndices: modVisibleIndices } =
     useTableToolbar(SAMPLE_ROWS, modGetCells);
 
-  // Tabla del drawer de indicadores — se resetea al cambiar de tab
-  const drawerRows = activeTabData?.rows ?? [];
-  const drawerGetCells = (row: string[]) => row;
-  const { search: drawerSearch, setSearch: setDrawerSearch, sortIdx: drawerSortIdx, sortDir: drawerSortDir, toggleSort: drawerToggleSort, visibleIndices: drawerVisibleIndices } =
-    useTableToolbar(drawerRows, drawerGetCells, drawerTab);
-
   // Tabla 4 (Reposiciones) — siempre visible en la Card B, ya no vive detrás
   // de un tab del drawer. Sin interrupción seleccionada no hay reposiciones
   // que mostrar. Con selección, se generan (seed = referencia) filas
@@ -3434,6 +3458,30 @@ function ModificarContent({
     ? generarTablasRelacionadas(`${selectedRecord.referencia}#${filaFaseSeleccionada[0]}`)
     : null;
 
+  // Filas de cada tab del drawer (5/6/8/9) — generadas por reposición
+  // seleccionada (ver generarFilasTabla5/6/8/9), cantidad exactamente
+  // igual al tile correspondiente en valoresRelacionadas. Tabla 3 no pasa
+  // por acá (usa valoresRelacionadas.tabla3 directo, ver JSX).
+  const drawerTabRows: string[][] = (() => {
+    if (!drawerTab || !selectedRecord || !filaFaseSeleccionada || !valoresRelacionadas) return [];
+    const referencia = selectedRecord.referencia;
+    const nroReposicion = Number(filaFaseSeleccionada[0]);
+    const seedBase = `${referencia}#${nroReposicion}`;
+    switch (drawerTab) {
+      case "tabla5": return generarFilasTabla5(seedBase, referencia, nroReposicion, Number(valoresRelacionadas.tabla5));
+      case "tabla6": return generarFilasTabla6(seedBase, referencia, nroReposicion, Number(valoresRelacionadas.tabla6));
+      case "tabla8": return generarFilasTabla8(seedBase, Number(valoresRelacionadas.tabla8));
+      case "tabla9": return generarFilasTabla9(seedBase, referencia, nroReposicion, Number(valoresRelacionadas.tabla9));
+      default: return [];
+    }
+  })();
+
+  // Tabla del drawer de indicadores — se resetea al cambiar de tab O de
+  // reposición seleccionada (el contenido de cada tab depende de ambas).
+  const drawerGetCells = (row: string[]) => row;
+  const { search: drawerSearch, setSearch: setDrawerSearch, sortIdx: drawerSortIdx, sortDir: drawerSortDir, toggleSort: drawerToggleSort, visibleIndices: drawerVisibleIndices } =
+    useTableToolbar(drawerTabRows, drawerGetCells, `${drawerTab}#${modSelectedFase}`);
+
   // Datos de la Interrupción (widget + modal, Card B) — solo tiene sentido
   // con una interrupción seleccionada; sin selección, la sección completa
   // muestra un estado vacío (ver JSX) y estos valores no se usan.
@@ -3444,27 +3492,6 @@ function ModificarContent({
   const timelineFechaUltRepo = filaFaseSeleccionada ? filaFaseSeleccionada[1] : "";
   const timelineDuracion = "0 dias, 2 hs, 8 min";
   const timelineTicks = [0, 14, 22, 38, 47, 63, 81, 100];
-
-  // Navegación por teclado en la tabla de Reposiciones: mismo patrón que
-  // Interrupciones (flecha abajo/arriba mueve la selección entre filas).
-  const modFaseListRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (modSelectedFase === null || !modFaseListRef.current) return;
-    modFaseListRef.current
-      .querySelector<HTMLElement>(`[data-fase-index="${modSelectedFase}"]`)
-      ?.scrollIntoView({ block: "nearest" });
-  }, [modSelectedFase]);
-  function handleModFaseListKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (tabla4Rows.length === 0) return;
-    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-    e.preventDefault();
-    if (modSelectedFase === null) {
-      setModSelectedFase(e.key === "ArrowDown" ? 0 : tabla4Rows.length - 1);
-      return;
-    }
-    const next = e.key === "ArrowDown" ? modSelectedFase + 1 : modSelectedFase - 1;
-    setModSelectedFase(Math.min(Math.max(next, 0), tabla4Rows.length - 1));
-  }
 
   // Navegación por teclado en la tabla de Interrupciones: flecha abajo/arriba
   // mueve la selección entre filas visibles y actualiza en vivo la Card B,
@@ -3506,7 +3533,7 @@ function ModificarContent({
           : "bg-white border-gray-400 text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
       }`}
     >
-      <IcoFilter />
+      <Filter size={14} strokeWidth={1.5} />
       Más filtros
       {activeFlyoutFields.length > 0 && (
         <span className="w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center">
@@ -3671,7 +3698,7 @@ function ModificarContent({
                     onClick={() => setFlyoutOpen(false)}
                     className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-all"
                   >
-                    <IcoX />
+                    <X size={14} strokeWidth={1.5} />
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-x-3.5 gap-y-3">
@@ -3826,7 +3853,7 @@ function ModificarContent({
         >
           {!modShowData ? (
             <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
-              <span className="text-gray-300 scale-90"><IcoInbox /></span>
+              <span className="text-gray-300 scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
               <p className="text-body-sm font-medium text-gray-500">Sin resultados</p>
               <p className="text-caption text-gray-500">Completá los filtros y presioná Buscar</p>
             </div>
@@ -3869,91 +3896,48 @@ function ModificarContent({
           style={CARD_SHADOW}
         >
           <CardHeader title="Reposiciones" tag="CDS4" />
+
+          {/* Interrupción seleccionada (+ reposición activa, si hay más de
+              una) — franja fija (shrink-0), FUERA del body scrolleable de
+              abajo: antes vivía adentro de overflow-y-auto y se perdía al
+              scrollear. Oculta en tier 760px: no aporta lo suficiente para
+              el espacio que ocupa ahí (en tamaño normal se queda como
+              está). */}
+          {selectedRecord && (
+            <div className="px-5 py-2.5 border-b border-gray-100 shrink-0 flex items-center gap-2 [@media(max-height:760px)]:hidden">
+              <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Interrupción</span>
+              <span className="text-body-sm font-medium text-gray-800 tabular-nums font-mono">
+                {selectedRecord.referencia}
+              </span>
+              {tabla4Rows.length > 1 && filaFaseSeleccionada && (
+                <>
+                  <span className="text-gray-400">·</span>
+                  <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Reposición</span>
+                  <span className="text-body-sm font-medium text-gray-800 tabular-nums">
+                    {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length}
+                  </span>
+                  <span className="text-gray-400">·</span>
+                  <span className="text-body-sm font-medium text-gray-800 tabular-nums">{filaFaseSeleccionada[1]}</span>
+                </>
+              )}
+            </div>
+          )}
+
           <div className="flex-1 min-h-0 overflow-y-auto">
 
-            {/* Interrupción seleccionada — solo aparece con una fila activa
-                en la tabla de la derecha. Oculto en tier 760px: no aporta
-                lo suficiente para el espacio que ocupa ahí (en tamaño
-                normal se queda como está). */}
-            {selectedRecord && (
-              <div className="px-5 py-2.5 border-b border-gray-100 flex items-center gap-2 [@media(max-height:760px)]:hidden">
-                <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Interrupción</span>
-                <span
-                  className="text-body-sm font-medium text-gray-800 tabular-nums font-mono"
-                >
-                  {selectedRecord.referencia}
-                </span>
-              </div>
-            )}
-
             {/* Tabla 4 — siempre visible, nunca detrás de un modal/drawer.
-                Vacía hasta que se selecciona una interrupción. */}
+                Vacía hasta que se selecciona una interrupción. Altura fija
+                (no maxHeight: siempre ocupa el mismo alto, sin achicarse
+                con pocas filas) + scroll propio + header sticky, ver
+                ReposicionesTable (compartida con el drawer). */}
             <div className="px-5 py-3 border-b border-gray-100">
-              {/* Altura fija (no maxHeight: siempre ocupa el mismo alto, sin
-                  achicarse con pocas filas) + scroll propio, mismo criterio
-                  que la lista de Interrupciones — con muchas filas no debe
-                  empujar el scroll general de la página. Header pegajoso
-                  (sticky) para que las columnas sigan visibles al
-                  scrollear el body. */}
-              <div
-                ref={modFaseListRef}
-                tabIndex={tabla4Rows.length > 0 ? 0 : -1}
-                onKeyDown={handleModFaseListKeyDown}
-                className="border border-gray-200 rounded-sm overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
-                style={{ height: 220 }}
-              >
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      {tabla4Data.cols.map((c) => (
-                        <th key={c} className="sticky top-0 z-10 bg-gray-50 px-3 py-2 text-left text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 whitespace-nowrap">
-                          {c}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tabla4Rows.length === 0 ? (
-                      <tr>
-                        <td colSpan={tabla4Data.cols.length}>
-                          <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
-                            <span className="text-gray-400"><IcoInbox /></span>
-                            <p className="text-body-sm text-gray-500">Sin reposiciones registradas</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      tabla4Rows.map((row, ri) => {
-                        const faseSeleccionada = modSelectedFase === ri;
-                        return (
-                          <tr
-                            key={ri}
-                            data-fase-index={ri}
-                            onClick={() => setModSelectedFase(faseSeleccionada ? null : ri)}
-                            onMouseEnter={() => setHovFase(ri)}
-                            onMouseLeave={() => setHovFase(null)}
-                            className="border-b border-gray-100 last:border-b-0 transition-colors cursor-pointer"
-                            style={{ backgroundColor: faseSeleccionada ? "var(--color-primary-tint)" : hovFase === ri ? "var(--color-gray-50)" : undefined }}
-                          >
-                            {row.map((cell, ci) => (
-                              <td
-                                key={ci}
-                                className={`px-3 py-2.5 text-body-sm whitespace-nowrap ${faseSeleccionada ? "text-secondary font-medium" : "text-gray-700"}`}
-                                // borde de acento en la primera celda, no en el <tr>: con
-                                // border-collapse, un borde puesto directo en la fila no
-                                // renderiza de forma confiable en todos los navegadores.
-                                style={ci === 0 ? { borderLeft: faseSeleccionada ? "3px solid var(--color-primary)" : "3px solid transparent" } : undefined}
-                              >
-                                {cell}
-                              </td>
-                            ))}
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <ReposicionesTable
+                cols={tabla4Data.cols}
+                rows={tabla4Rows}
+                selectedIndex={modSelectedFase}
+                onSelect={setModSelectedFase}
+                maxHeight={220}
+              />
             </div>
 
             {/* Indicadores de las tablas relacionadas — siguen abriendo el drawer */}
@@ -4052,7 +4036,7 @@ function ModificarContent({
                 </button>
               ) : (
                 <div className="flex flex-col items-center justify-center gap-2 py-6 rounded-sm border border-gray-200 bg-gray-50 text-center">
-                  <span className="text-gray-400"><IcoInbox /></span>
+                  <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
                   <p className="text-body-sm text-gray-500">Seleccioná una interrupción para ver sus datos</p>
                 </div>
               )}
@@ -4119,23 +4103,49 @@ function ModificarContent({
           transition: "transform 280ms cubic-bezier(0.4,0,0.2,1)",
         }}
       >
-        {/* Drawer header */}
+        {/* Drawer header — además de Interrupción, la reposición activa
+            (mismo formato del punto 1: label micro + valor body-sm), solo
+            si hay más de una. */}
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center justify-between">
           <div>
             <p className="text-caption text-gray-600 uppercase tracking-[0.08em] font-semibold mb-0.5">Interrupción</p>
             <p className="text-[14px] font-semibold text-gray-900 font-mono">
               {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
             </p>
+            {tabla4Rows.length > 1 && filaFaseSeleccionada && (
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Reposición</span>
+                <span className="text-body-sm font-medium text-gray-800 tabular-nums">
+                  {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length}
+                </span>
+                <span className="text-gray-400">·</span>
+                <span className="text-body-sm font-medium text-gray-800 tabular-nums">{filaFaseSeleccionada[1]}</span>
+              </div>
+            )}
           </div>
           <button
             onClick={() => setDrawerTab(null)}
             className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
           >
-            <IcoX />
+            <X size={14} strokeWidth={1.5} />
           </button>
         </div>
 
-        {/* Tabs — Tabla 4 vive ahora siempre visible en la Card B, ya no acá */}
+        {/* Tabla de reposiciones — misma tabla/selección que la Card B
+            (modSelectedFase es la única fuente de verdad: cambiar de
+            reposición acá se refleja en la card al cerrar el drawer, y
+            viceversa). shrink-0, alto acotado a ~4 filas visibles. */}
+        <div className="px-6 py-3 border-b border-gray-200 shrink-0">
+          <ReposicionesTable
+            cols={tabla4Data.cols}
+            rows={tabla4Rows}
+            selectedIndex={modSelectedFase}
+            onSelect={setModSelectedFase}
+            maxHeight={176}
+          />
+        </div>
+
+        {/* Tabs */}
         <div className="flex border-b border-gray-200 px-6 shrink-0">
           {DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => (
             <button
@@ -4197,7 +4207,7 @@ function ModificarContent({
               })() : (
                 /* Tabla con scroll horizontal para columnas anchas */
                 <div className="flex-1 flex flex-col overflow-hidden">
-                  {activeTabData.rows.length > 0 && (
+                  {drawerTabRows.length > 0 && (
                     <TableToolbar
                       search={drawerSearch}
                       onSearchChange={setDrawerSearch}
@@ -4205,7 +4215,7 @@ function ModificarContent({
                         exportRowsToCsv(
                           activeTabData.label.replace(/\s+/g, "_").toLowerCase(),
                           activeTabData.cols,
-                          drawerVisibleIndices.map((i) => drawerGetCells(activeTabData.rows[i]))
+                          drawerVisibleIndices.map((i) => drawerGetCells(drawerTabRows[i]))
                         )
                       }
                     />
@@ -4226,11 +4236,11 @@ function ModificarContent({
                         </tr>
                       </thead>
                       <tbody>
-                        {activeTabData.rows.length === 0 ? (
+                        {drawerTabRows.length === 0 ? (
                           <tr>
                             <td colSpan={activeTabData.cols.length}>
                               <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-                                <span className="text-gray-400"><IcoInbox /></span>
+                                <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
                                 <p className="text-body font-medium text-gray-600">Sin registros</p>
                                 <p className="text-body-sm text-gray-500">Esta tabla no tiene datos para esta interrupción</p>
                                 {abmMapping && (
@@ -4256,11 +4266,14 @@ function ModificarContent({
                             </td>
                           </tr>
                         ) : drawerVisibleIndices.map((ri) => {
-                          const row = activeTabData.rows[ri];
+                          const row = drawerTabRows[ri];
                           // Cuando la tabla mapea a ABM y la primera columna es
                           // "Interrupción", esa celda es el valor más confiable
-                          // para el deep-link (garantiza match en destino);
-                          // si no, se usa la interrupción actual como fallback.
+                          // para el deep-link; si no, se usa la interrupción
+                          // actual como fallback. Con filas generadas (ver
+                          // generarFilasTabla5/6/8/9) este valor no está
+                          // garantizado a existir en ABM_TABLE_CONFIGS —
+                          // soft-fail aceptado, ver comentario en DRAWER_TABS.
                           const valorDeepLink =
                             activeTabData.cols[0] === "Interrupción" ? row[0] : interrupcionActualRef;
                           return (
@@ -5031,7 +5044,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
         {/* Lápiz fijo — no el ícono por tabla: el masthead del panel de
             trabajo siempre representa "estás en la herramienta de ABM",
             no una tabla en particular (esa distinción vive en el badge). */}
-        <span className="shrink-0 text-gray-500 group-hover:text-secondary transition-colors"><IcoEdit /></span>
+        <span className="shrink-0 text-gray-500 group-hover:text-secondary transition-colors"><Pencil size={15} strokeWidth={1.5} /></span>
         <span className="text-label font-semibold text-gray-900 leading-none truncate">{current.titulo}</span>
         <span
           className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-gray-400 text-[#1565C0] shrink-0"
@@ -5040,7 +5053,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
           {current.code}
         </span>
         <span className={`shrink-0 text-gray-500 transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
-          <ChevronDown />
+          <ChevronDown size={16} strokeWidth={1.5} />
         </span>
       </button>
       {open && (
@@ -5399,7 +5412,7 @@ function ValuePicker({
           <span className="block truncate">{seleccionado?.label || currentValue || placeholder}</span>
         </button>
         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
-          <ChevronDown />
+          <ChevronDown size={16} strokeWidth={1.5} />
         </div>
         {!modal && open && !isDisabled && (
           <div
@@ -5433,7 +5446,7 @@ function ValuePicker({
                 onClick={cerrar}
                 className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
               >
-                <IcoX />
+                <X size={14} strokeWidth={1.5} />
               </button>
             </div>
             {buscador}
@@ -5998,7 +6011,7 @@ function AbmScreen({
                     atada a una selección (corrige un comportamiento heredado
                     del producto original que la ataba a un registro). */}
                 <button type="button" title="Auditoría" aria-label="Auditoría" className={actionBtnCls("neutral")}>
-                  <span className="inline-flex items-center gap-1.5"><IcoShield /> <span className="[@media(max-height:760px)]:hidden">Auditoría</span></span>
+                  <span className="inline-flex items-center gap-1.5"><Shield size={15} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Auditoría</span></span>
                 </button>
                 {showData && (
                   <button
@@ -6014,12 +6027,12 @@ function AbmScreen({
                     }
                     className={actionBtnCls("neutral")}
                   >
-                    <span className="inline-flex items-center gap-1.5"><IcoDownload /> <span className="[@media(max-height:760px)]:hidden">Exportar</span></span>
+                    <span className="inline-flex items-center gap-1.5"><Download size={15} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Exportar</span></span>
                   </button>
                 )}
                 {config.hasInsertar && (
                   <button type="button" title="Insertar" aria-label="Insertar" onClick={handleAbrirAlta} className={actionBtnCls("neutral")}>
-                    <span className="inline-flex items-center gap-1.5"><IcoPlus /> <span className="[@media(max-height:760px)]:hidden">Insertar</span></span>
+                    <span className="inline-flex items-center gap-1.5"><Plus size={13} strokeWidth={1.6} /> <span className="[@media(max-height:760px)]:hidden">Insertar</span></span>
                   </button>
                 )}
               </div>
@@ -6058,7 +6071,7 @@ function AbmScreen({
           >
             {!showData ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400">
-                <IcoInbox />
+                <Inbox size={44} strokeWidth={1.2} />
                 <p className="text-label font-medium text-gray-600 mt-1">
                   No hay resultados para los filtros aplicados
                 </p>
@@ -6451,7 +6464,7 @@ function GestorNotasContent() {
                 {visibles.length === 0 ? (
                   <tr><td colSpan={3}>
                     <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                      <span className="text-gray-400"><IcoInbox /></span>
+                      <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
                       <p className="text-body font-medium text-gray-600">No hay notas</p>
                     </div>
                   </td></tr>
@@ -6470,7 +6483,7 @@ function GestorNotasContent() {
                         className="w-7 h-7 flex items-center justify-center rounded-sm text-gray-500 hover:bg-primary-tint hover:text-secondary transition-colors"
                         title="Editar"
                       >
-                        <IcoEdit />
+                        <Pencil size={15} strokeWidth={1.5} />
                       </button>
                     </td>
                   </tr>
@@ -6503,10 +6516,10 @@ function GestorNotasContent() {
         {/* Reordenar — actúa sobre la fila seleccionada de la tabla (click en la fila) */}
         <div className="flex flex-col gap-1.5 pt-14 shrink-0">
           {([
-            { dir: "top" as const, icon: <IcoChevronsUp />, title: "Mover al principio" },
-            { dir: "up" as const, icon: <span className="inline-flex rotate-180"><ChevronDown /></span>, title: "Subir" },
-            { dir: "down" as const, icon: <ChevronDown />, title: "Bajar" },
-            { dir: "bottom" as const, icon: <IcoChevronsDown />, title: "Mover al final" },
+            { dir: "top" as const, icon: <ChevronsUp size={13} strokeWidth={1.6} />, title: "Mover al principio" },
+            { dir: "up" as const, icon: <span className="inline-flex rotate-180"><ChevronDown size={16} strokeWidth={1.5} /></span>, title: "Subir" },
+            { dir: "down" as const, icon: <ChevronDown size={16} strokeWidth={1.5} />, title: "Bajar" },
+            { dir: "bottom" as const, icon: <ChevronsDown size={13} strokeWidth={1.6} />, title: "Mover al final" },
           ]).map((b) => (
             <button
               key={b.dir}
@@ -6855,7 +6868,7 @@ export default function App() {
                 className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-gray-600 hover:text-gray-800 hover:bg-gray-200 transition-colors"
                 title="Colapsar"
               >
-                <ChevronLeft />
+                <ChevronLeft size={16} strokeWidth={1.5} />
               </button>
             </>
           ) : (
@@ -6878,14 +6891,14 @@ export default function App() {
           <div className="flex flex-col gap-0.5">
             <NavItem
               label="Inicio"
-              icon={<IcoHome />}
+              icon={<Home size={15} strokeWidth={1.5} />}
               active={screen === "welcome"}
               collapsed={collapsed}
               onClick={irAInicio}
             />
             <NavItem
               label="Consultas de interrupción"
-              icon={<IcoSearch />}
+              icon={<Search size={15} strokeWidth={1.5} />}
               active={screen === "modificar"}
               collapsed={collapsed}
               onClick={irAConsultas}
@@ -6908,16 +6921,16 @@ export default function App() {
             className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-all duration-150 group
               ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
               ${isAbmTableKey(screen)
-                ? "border-primary bg-primary-tint text-secondary"
+                ? "border-transparent bg-secondary/10 text-secondary"
                 : "border-transparent text-gray-700 hover:text-gray-800 hover:bg-gray-100"
               }`}
           >
-            <span className="shrink-0"><IcoEdit /></span>
+            <span className="shrink-0"><Pencil size={15} strokeWidth={1.5} fill={isAbmTableKey(screen) ? "currentColor" : "none"} /></span>
             {!collapsed && (
               <>
                 <span className="flex-1 min-w-0 truncate text-body text-left leading-snug">Alta, Baja y Modificación</span>
                 <span className={`shrink-0 transition-transform duration-150 ${abmExpanded ? "" : "-rotate-90"}`}>
-                  <ChevronDown />
+                  <ChevronDown size={16} strokeWidth={1.5} />
                 </span>
               </>
             )}
@@ -6956,7 +6969,7 @@ export default function App() {
             >
               <span className="flex-1 text-left">Otros</span>
               <span className={`shrink-0 transition-transform duration-150 ${otrosExpanded ? "" : "-rotate-90"}`}>
-                <ChevronDown />
+                <ChevronDown size={16} strokeWidth={1.5} />
               </span>
             </button>
           ) : (
