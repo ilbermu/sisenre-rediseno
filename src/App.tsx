@@ -3108,6 +3108,7 @@ function ReposicionesTable({
   onSelect,
   heightMode = "fixed",
   maxHeight = REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 5,
+  bare = false,
 }: {
   cols: string[];
   rows: FaseReposicion[];
@@ -3115,6 +3116,11 @@ function ReposicionesTable({
   onSelect: (index: number | null) => void;
   heightMode?: "fixed" | "auto";
   maxHeight?: number;
+  // true dentro de un contenedor que ya aporta su propio borde/radio (ej.
+  // DrawerSection) — evita el borde doble. La card de Modificar interrupción
+  // sigue usando el default (con borde), porque ahí la tabla ES el borde
+  // visible de esa zona.
+  bare?: boolean;
 }) {
   const [hovIndex, setHovIndex] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -3143,7 +3149,9 @@ function ReposicionesTable({
       ref={listRef}
       tabIndex={rows.length > 0 ? 0 : -1}
       onKeyDown={handleKeyDown}
-      className="border border-gray-200 rounded-sm overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+      className={`overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30 ${
+        bare ? "" : "border border-gray-200 rounded-sm"
+      }`}
       style={heightMode === "auto" ? { maxHeight } : { height: maxHeight }}
     >
       <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
@@ -3249,23 +3257,73 @@ function ContextChip({
   );
 }
 
-// Segmented control de "Tablas relacionadas" en el drawer — reemplaza los
-// tabs subrayados de antes: grupo inline-flex con borde exterior y
-// divisores internos, botones h-8. Estado activo = tint celeste (el mismo
-// "seleccionado persistente" que usa el resto del design system —
-// STATUS_ITEMS, ButtonSelectGroup —, nunca bg-primary relleno). Cada
-// opción muestra su conteo (mismo valor que el tile correspondiente en
-// valoresRelacionadas); un conteo en 0 se atenúa a gray-400 pero la opción
-// sigue siendo clickeable (lleva a su estado vacío). role="tablist"/"tab" +
-// flechas izquierda/derecha para moverse entre opciones.
-function RelatedTablesSegmented({
+// Card de sección dentro de un drawer — reemplaza las franjas de borde a
+// borde de antes (título/tabla/toolbar todo al mismo nivel, separados solo
+// por líneas divisorias) por contenedores propios: cada sección es una
+// card visualmente distinta, así la jerarquía se lee de un vistazo en vez
+// de flotar entre bordes. Patrón documentado en DESIGN_SYSTEM.md
+// ("Secciones dentro de drawers").
+//
+// Fila de título: label semibold + CodeBadge opcional + meta opcional a la
+// izquierda; un control o acción opcional (`right`) a la derecha —
+// típicamente un SegmentedSwitch para elegir qué muestra la card.
+// Descripción opcional debajo. El contenido (`children`) no tiene padding
+// propio: tablas y toolbars van de borde a borde dentro de la card, con un
+// borde superior que las separa del título — la card las contiene, no hace
+// falta repetir el borde adentro de cada una.
+function DrawerSection({
+  title,
+  tag,
+  meta,
+  description,
+  right,
+  children,
+}: {
+  title: string;
+  tag?: string;
+  meta?: React.ReactNode;
+  description?: React.ReactNode;
+  right?: React.ReactNode;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-low)" }}>
+      <div className="px-4 pt-4 pb-3 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-label font-semibold text-gray-900">{title}</span>
+          {tag && <CodeBadge code={tag} />}
+          {meta && <span className="text-body-sm text-gray-500">{meta}</span>}
+        </div>
+        {right && <div className="shrink-0">{right}</div>}
+      </div>
+      {description && (
+        <div className="px-4 pb-3">
+          <p className="text-body-sm text-gray-600 leading-snug">{description}</p>
+        </div>
+      )}
+      {children && <div className="border-t border-gray-100">{children}</div>}
+    </div>
+  );
+}
+
+// Riel + pastilla — para cambiar de VISTA dentro de un mismo contenedor
+// (tabs de contenido: qué tabla se muestra en la card de "Tablas
+// relacionadas"). Distinto del estado "seleccionado persistente" (tint +
+// borde celeste + texto navy, ver ContextChip/STATUS_ITEMS/
+// ButtonSelectGroup), que es para SELECCIÓN DE DATOS (filas, chips,
+// filtros, toggles de valor como Origen/Tipo) — no mezclar los dos
+// lenguajes. Ver DESIGN_SYSTEM.md. role="tablist"/"tab" + flechas
+// izquierda/derecha para moverse entre opciones.
+function SegmentedSwitch({
   options,
   activeKey,
   onSelect,
+  ariaLabel,
 }: {
-  options: { key: string; label: string; value: string; empty: boolean }[];
+  options: { key: string; label: string }[];
   activeKey: string | null;
   onSelect: (key: string) => void;
+  ariaLabel: string;
 }) {
   function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
@@ -3279,9 +3337,9 @@ function RelatedTablesSegmented({
   return (
     <div
       role="tablist"
-      aria-label="Tablas relacionadas"
+      aria-label={ariaLabel}
       onKeyDown={handleKeyDown}
-      className="inline-flex items-stretch rounded-sm border border-gray-300 overflow-hidden divide-x divide-gray-300 shrink-0"
+      className="inline-flex items-center gap-0.5 bg-gray-100 rounded-md p-0.5 shrink-0"
     >
       {options.map((opt) => {
         const active = opt.key === activeKey;
@@ -3293,13 +3351,12 @@ function RelatedTablesSegmented({
             aria-selected={active}
             tabIndex={active ? 0 : -1}
             onClick={() => onSelect(opt.key)}
-            className={`h-8 px-3 flex items-center gap-1 text-body-sm font-medium transition-colors ${
-              active ? "bg-primary-tint text-secondary" : "bg-white text-gray-700 hover:bg-gray-50"
+            style={active ? { boxShadow: "var(--shadow-low)" } : undefined}
+            className={`h-7 px-3 rounded-sm text-body-sm transition-all duration-150 ${
+              active ? "bg-white text-gray-900 font-medium" : "text-gray-600 hover:text-gray-800"
             }`}
           >
-            <span>{opt.label}</span>
-            <span className="text-gray-400">·</span>
-            <span className={`font-semibold tabular-nums ${opt.empty ? "text-gray-400" : ""}`}>{opt.value}</span>
+            {opt.label}
           </button>
         );
       })}
@@ -4265,17 +4322,19 @@ function ModificarContent({
           transition: "transform 280ms cubic-bezier(0.4,0,0.2,1)",
         }}
       >
-        {/* Drawer header — una sola línea alineada con el botón cerrar:
-            chip de Interrupción (variante neutra, dato fijo de contexto) +
-            chip de Reposición (variante activa, MISMO tint que la fila
-            seleccionada de ReposicionesTable — decisión: reposición y
-            fecha van en UN solo chip con separador "·" interno en vez de
-            dos chips separados, porque describen una sola cosa — la
-            reposición elegida — no dos hechos independientes; separarlos
-            hubiera sumado dos bordes/fondos más al h-14 sin aportar
-            lectura extra). Solo aparece con más de una reposición (mismo
-            criterio de siempre). Alto h-14 consistente con CardHeader. */}
-        <div className="h-14 px-6 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center justify-between gap-3">
+        {/* Header — shrink-0, fijo, fondo BLANCO (no gray-50: el gris ahora
+            es del body, para que el header se lea como la superficie de
+            "arriba" y el body como la superficie de "adentro" que contiene
+            las cards). Único elemento de borde a borde del drawer. Una
+            sola línea alineada con el botón cerrar: chip de Interrupción
+            (variante neutra, dato fijo de contexto) + chip de Reposición
+            (variante activa, MISMO tint que la fila seleccionada de
+            ReposicionesTable — decisión: reposición y fecha van en UN solo
+            chip con separador "·" interno en vez de dos chips separados,
+            porque describen una sola cosa — la reposición elegida — no dos
+            hechos independientes). Chip de reposición solo con más de una
+            reposición. Alto h-14 consistente con CardHeader. */}
+        <div className="h-14 px-6 border-b border-gray-200 bg-white shrink-0 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <ContextChip label="Interrupción" value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} mono />
             {tabla4Rows.length > 1 && filaFaseSeleccionada && (
@@ -4300,78 +4359,75 @@ function ModificarContent({
           </button>
         </div>
 
-        {/* Tabla de reposiciones — zona "maestro", sin fondo propio (se lee
-            como una extensión del header, no como una card aparte). Misma
-            tabla/selección que la Card B (modSelectedFase es la única
-            fuente de verdad: cambiar de reposición acá se refleja en la
-            card al cerrar el drawer, y viceversa). shrink-0, heightMode
-            "auto": se ajusta al contenido (2 filas no dejan un bloque
-            vacío) con tope de ~4 filas visibles antes de scrollear. Sin
-            border-b propio — el borde que la separa de la banda de abajo
-            es el border-t de esa banda. */}
-        <div className="px-6 py-3 shrink-0">
-          <ReposicionesTable
-            cols={tabla4Data.cols}
-            rows={tabla4Rows}
-            selectedIndex={modSelectedFase}
-            onSelect={setModSelectedFase}
-            heightMode="auto"
-            maxHeight={REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 4}
-          />
-        </div>
+        {/* Body — único scroll principal del drawer (además del scroll
+            propio de ReposicionesTable, la excepción documentada: es una
+            lista navegable por teclado con su propio tope de filas, no un
+            bloque de lectura). Fondo gray-50, las secciones son cards
+            (DrawerSection) apiladas con gap-4 en vez de franjas de borde a
+            borde — cada card mide lo que mide su contenido, ninguna usa
+            flex-1 para estirarse al alto del drawer. */}
+        <div className="flex-1 overflow-y-auto bg-gray-50 p-5 flex flex-col gap-4">
 
-        {/* Banda "Tablas relacionadas" — abre la zona de datos relacionados:
-            título (mismo estilo de label de sección que la card) a la
-            izquierda, segmented control a la derecha (envuelve si no
-            entra). Reemplaza los tabs subrayados de antes, que quedaban
-            flotando sin pertenecer ni a la tabla de arriba ni al contenido
-            de abajo. */}
-        <div className="shrink-0 bg-gray-50 border-t border-b border-gray-200 px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600">Tablas relacionadas</p>
-          <RelatedTablesSegmented
-            options={DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => {
-              const valor = valoresRelacionadas?.[tab.key] ?? "0";
-              return { key: tab.key, label: tab.label, value: valor, empty: tab.key !== "tabla3" && valor === "0" };
-            })}
-            activeKey={drawerTab}
-            onSelect={setDrawerTab}
-          />
-        </div>
+          {/* Card "Reposiciones" — misma tabla/selección que la Card B
+              (modSelectedFase es la única fuente de verdad: cambiar de
+              reposición acá se refleja en la card al cerrar el drawer, y
+              viceversa). `bare`: el borde/radio ahora los pone la
+              DrawerSection, no la tabla. heightMode "auto": se ajusta al
+              contenido (2 filas no dejan un bloque vacío) con tope de ~4
+              filas visibles antes de scrollear. */}
+          <DrawerSection title="Reposiciones" tag="CDS4" meta={`${tabla4Rows.length} registro${tabla4Rows.length === 1 ? "" : "s"}`}>
+            <ReposicionesTable
+              cols={tabla4Data.cols}
+              rows={tabla4Rows}
+              selectedIndex={modSelectedFase}
+              onSelect={setModSelectedFase}
+              heightMode="auto"
+              maxHeight={REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 4}
+              bare
+            />
+          </DrawerSection>
 
-        {/* Tab content */}
-        <div className="flex-1 overflow-y-auto flex flex-col">
-          {activeTabData && (
-            <>
-              {/* Subtitle — pegado a la toolbar de búsqueda de abajo (o al
-                  contenido de Tabla 3), no una franja bordeada aparte. */}
-              {activeTabData.subtitle && (
-                <div className="px-5 pt-3 pb-2 shrink-0">
-                  <p className="text-body-sm text-gray-600 leading-snug">{activeTabData.subtitle}</p>
-                </div>
-              )}
-
-              {/* Tabla 3: existencia simple */}
-              {activeTabData.key === "tabla3" ? (() => {
+          {/* Card "Tablas relacionadas" — el SegmentedSwitch (solo nombres
+              de tabla, sin conteos) va en el slot `right` del título; la
+              descripción es el subtitle del tab activo (ya no una franja
+              bordeada aparte); el contenido (toolbar + tabla, o el
+              resultado compacto de Tabla 3) va de borde a borde adentro,
+              sin scroll propio — fluye en el scroll del body. */}
+          <DrawerSection
+            title="Tablas relacionadas"
+            meta={tabla4Rows.length > 1 && modSelectedFase !== null ? `Reposición ${modSelectedFase + 1}` : undefined}
+            description={activeTabData?.subtitle}
+            right={
+              <SegmentedSwitch
+                ariaLabel="Tablas relacionadas"
+                options={DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => ({ key: tab.key, label: tab.label }))}
+                activeKey={drawerTab}
+                onSelect={setDrawerTab}
+              />
+            }
+          >
+            {activeTabData && (
+              activeTabData.key === "tabla3" ? (() => {
                 const existe = valoresRelacionadas?.tabla3 === "SI";
                 return (
-                  <div className="flex flex-col items-center justify-center flex-1 gap-4 py-16">
+                  <div className="px-4 py-4 flex items-center gap-3">
                     <div
-                      className="w-20 h-20 rounded-full flex items-center justify-center"
+                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                       style={{ backgroundColor: existe ? "var(--color-success-bg)" : "var(--color-error-bg)" }}
                     >
                       {existe ? (
-                        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                          <path d="M8 18l7 7 13-13" stroke="var(--color-success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <path d="M4.5 10.5l3.5 3.5 7.5-7.5" stroke="var(--color-success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       ) : (
-                        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                          <path d="M10 10l16 16M26 10L10 26" stroke="var(--color-error)" strokeWidth="3" strokeLinecap="round" />
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <path d="M5.5 5.5l9 9M14.5 5.5l-9 9" stroke="var(--color-error)" strokeWidth="2.2" strokeLinecap="round" />
                         </svg>
                       )}
                     </div>
-                    <div className="text-center">
-                      <p className="text-[16px] font-semibold mb-1" style={{ color: existe ? "var(--color-success-text-strong)" : "var(--color-error-text-strong)" }}>
-                        {existe ? "SÍ existe en Tabla 3" : "NO existe en Tabla 3"}
+                    <div>
+                      <p className="text-body font-semibold" style={{ color: existe ? "var(--color-success-text-strong)" : "var(--color-error-text-strong)" }}>
+                        {existe ? "Sí existe en Tabla 3" : "No existe en Tabla 3"}
                       </p>
                       <p className="text-body-sm text-gray-500">
                         {existe
@@ -4382,8 +4438,7 @@ function ModificarContent({
                   </div>
                 );
               })() : (
-                /* Tabla con scroll horizontal para columnas anchas */
-                <div className="flex-1 flex flex-col overflow-hidden">
+                <>
                   {drawerTabRows.length > 0 && (
                     <TableToolbar
                       search={drawerSearch}
@@ -4397,7 +4452,9 @@ function ModificarContent({
                       }
                     />
                   )}
-                  <div className="flex-1 overflow-x-auto overflow-y-auto">
+                  {/* Solo scroll horizontal — la vertical la maneja el body
+                      del drawer, la tabla fluye con el resto del contenido. */}
+                  <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="bg-gray-50 border-b border-gray-200">
@@ -4416,7 +4473,7 @@ function ModificarContent({
                         {drawerTabRows.length === 0 ? (
                           <tr>
                             <td colSpan={activeTabData.cols.length}>
-                              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                              <div className="flex flex-col items-center justify-center py-8 gap-3 text-center">
                                 <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
                                 <p className="text-body font-medium text-gray-600">Sin registros</p>
                                 <p className="text-body-sm text-gray-500">Esta tabla no tiene datos para esta interrupción</p>
@@ -4483,10 +4540,11 @@ function ModificarContent({
                       </tbody>
                     </table>
                   </div>
-                </div>
-              )}
-            </>
-          )}
+                </>
+              )
+            )}
+          </DrawerSection>
+
         </div>
       </div>
 
