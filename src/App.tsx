@@ -4900,7 +4900,7 @@ function ModificarContent({
       {/* ── Tabla de datos — navegador de referencias, mismo alto y mismo
           tratamiento de card que Card B ── */}
       <div
-        className="flex-1 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden [@media(max-height:760px)]:flex-[2]"
+        className="flex-[2] min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
         style={CARD_SHADOW}
       >
 
@@ -4987,12 +4987,12 @@ function ModificarContent({
         {/* Card B — Reposiciones (CDS4). Mismo criterio que la card de
             Interrupciones: nunca crece con el contenido (banner de
             selección, filas de la Tabla 4, etc.) — body scrolleable propio
-            en vez de empujar el scroll de la página. En tier 760px el split
-            de la fila pasa de 50/50 a 40/60 (ver flex-[2]/flex-[3] acá y en
-            Interrupciones) — esta card es la que más necesita el ancho
-            extra para sus columnas. */}
+            en vez de empujar el scroll de la página. Split de la fila 40/60
+            a favor de esta card en todos los tamaños (flex-[2]/flex-[3] acá
+            y en Interrupciones) — es la que más necesita el ancho para sus
+            columnas y la grilla de reclamos. */}
         <div
-          className="flex-1 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden [@media(max-height:760px)]:flex-[3]"
+          className="flex-[3] min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
           style={CARD_SHADOW}
         >
           <CardHeader
