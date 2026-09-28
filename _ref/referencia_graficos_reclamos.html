@@ -1,0 +1,181 @@
+<!--
+  REFERENCIA VISUAL — Gráficos de reclamos de la interrupción (SISENRE)
+  Dos componentes:
+    1. Sparkline compacto  -> va debajo de la card de reposiciones
+    2. Histograma completo -> va arriba del formulario, en el modal "Datos de la Interrupción"
+
+  Los colores están hardcodeados SOLO para que esta referencia se vea aislada.
+  En la implementación real hay que reemplazarlos por tokens del design system:
+    #1A2B3C  -> texto primario
+    #33475B / #5A6B7A -> texto secundario
+    #8A99A8  -> texto terciario / etiquetas
+    #1D558C  -> --color-secondary (navy)  = barra del pico
+    #D9E2EC  -> borde hairline
+    #EDF1F5  -> línea de grilla
+  Los grises de las barras van del más oscuro al más claro según altura:
+    #8FA6BE  #A3B6CA  #B4C4D5  #C4D1DF  #D3DDE8
+-->
+<div style="font-family: system-ui, -apple-system, sans-serif; background:#F5F7F9; padding:24px;">
+
+<!-- ============================================================
+     1. SPARKLINE COMPACTO
+     ============================================================ -->
+<div style="font-size:11px;letter-spacing:.06em;color:#7A8B9A;margin-bottom:8px">1 · SPARKLINE COMPACTO (CARD DE REPOSICIONES)</div>
+
+<div style="background:#FFFFFF;border:.5px solid #D9E2EC;border-radius:10px;padding:14px 16px;margin-bottom:28px;cursor:pointer">
+
+  <div style="font-size:10px;letter-spacing:.06em;color:#8A99A8;margin-bottom:12px">RECLAMOS DURANTE LA INTERRUPCIÓN</div>
+
+  <div style="display:flex;align-items:center;gap:24px">
+
+    <!-- KPIs: ancho fijo, NO se comprimen -->
+    <div style="display:flex;gap:20px;flex-shrink:0">
+      <div>
+        <span style="font-size:9px;letter-spacing:.05em;color:#9AA8B5;display:block;margin-bottom:2px">TOTAL</span>
+        <span style="font-size:16px;font-weight:500;color:#1D558C;line-height:1">937</span>
+      </div>
+      <div>
+        <span style="font-size:9px;letter-spacing:.05em;color:#9AA8B5;display:block;margin-bottom:2px">PICO</span>
+        <span style="font-size:16px;font-weight:500;color:#1D558C;line-height:1">182 <span style="font-size:11px;color:#8A99A8;font-weight:400">· 12:30</span></span>
+      </div>
+    </div>
+
+    <!-- Gráfico: ocupa el resto -->
+    <div style="flex:1;min-width:0">
+      <!-- viewBox con el ancho real del contenedor. SIN preserveAspectRatio="none" -->
+      <svg viewBox="0 0 420 60" width="100%" height="60" role="img">
+        <title>Distribución de 937 reclamos en franjas de 30 minutos</title>
+        <!-- 28 barras. anchoBarra=13, gap=2.07 -> la última termina exactamente en 420 -->
+        <rect x="0"      y="18" width="13" height="42" fill="#A3B6CA" rx="1.5"/>
+        <rect x="15.07"  y="4"  width="13" height="56" fill="#1D558C" rx="1.5"/>
+        <rect x="30.15"  y="14" width="13" height="46" fill="#A3B6CA" rx="1.5"/>
+        <rect x="45.22"  y="25" width="13" height="35" fill="#A3B6CA" rx="1.5"/>
+        <rect x="60.30"  y="32" width="13" height="28" fill="#B4C4D5" rx="1.5"/>
+        <rect x="75.37"  y="38" width="13" height="22" fill="#B4C4D5" rx="1.5"/>
+        <rect x="90.44"  y="41" width="13" height="19" fill="#B4C4D5" rx="1.5"/>
+        <rect x="105.52" y="44" width="13" height="16" fill="#C4D1DF" rx="1.5"/>
+        <rect x="120.59" y="45" width="13" height="15" fill="#C4D1DF" rx="1.5"/>
+        <rect x="135.67" y="46" width="13" height="14" fill="#C4D1DF" rx="1.5"/>
+        <rect x="150.74" y="48" width="13" height="12" fill="#C4D1DF" rx="1.5"/>
+        <rect x="165.81" y="49" width="13" height="11" fill="#D3DDE8" rx="1.5"/>
+        <rect x="180.89" y="49" width="13" height="11" fill="#D3DDE8" rx="1.5"/>
+        <rect x="195.96" y="50" width="13" height="10" fill="#D3DDE8" rx="1.5"/>
+        <rect x="211.04" y="50" width="13" height="10" fill="#D3DDE8" rx="1.5"/>
+        <rect x="226.11" y="51" width="13" height="9"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="241.19" y="51" width="13" height="9"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="256.26" y="52" width="13" height="8"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="271.33" y="52" width="13" height="8"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="286.41" y="53" width="13" height="7"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="301.48" y="53" width="13" height="7"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="316.56" y="53" width="13" height="7"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="331.63" y="54" width="13" height="6"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="346.70" y="54" width="13" height="6"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="361.78" y="55" width="13" height="5"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="376.85" y="55" width="13" height="5"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="391.93" y="56" width="13" height="4"  fill="#D3DDE8" rx="1.5"/>
+        <rect x="407"    y="56" width="13" height="4"  fill="#D3DDE8" rx="1.5"/>
+      </svg>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#5A6B7A;margin-top:5px">
+        <span>20/07/2026 11:30</span>
+        <span>21/07/2026 01:38 · <span style="font-weight:500">14 hs 8 min</span></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ============================================================
+     2. HISTOGRAMA COMPLETO (MODAL)
+     ============================================================ -->
+<div style="font-size:11px;letter-spacing:.06em;color:#7A8B9A;margin-bottom:8px">2 · HISTOGRAMA COMPLETO (MODAL "DATOS DE LA INTERRUPCIÓN")</div>
+
+<div style="background:#FFFFFF;border:.5px solid #D9E2EC;border-radius:10px;padding:16px 20px">
+
+  <!-- Encabezado: título izquierda, ID derecha -->
+  <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:5px">
+    <span style="font-size:13px;font-weight:500;color:#1A2B3C">Reclamos durante la interrupción</span>
+    <span style="font-size:11px;color:#8A99A8">MPR202607511773</span>
+  </div>
+
+  <!-- Línea de resumen -->
+  <div style="font-size:11px;color:#5A6B7A;margin-bottom:16px">
+    20/07/2026 11:30 → 21/07/2026 01:38 · <span style="font-weight:500;color:#33475B">14 hs 8 min</span>
+  </div>
+
+  <!-- KPIs: DEBAJO del resumen, alineados a la izquierda, NO arriba a la derecha -->
+  <div style="display:flex;gap:22px;margin-bottom:16px">
+    <div>
+      <span style="font-size:10px;letter-spacing:.05em;color:#9AA8B5;display:block;margin-bottom:2px">TOTAL</span>
+      <span style="font-size:15px;font-weight:500;color:#1D558C">937</span>
+    </div>
+    <div>
+      <span style="font-size:10px;letter-spacing:.05em;color:#9AA8B5;display:block;margin-bottom:2px">PICO</span>
+      <span style="font-size:15px;font-weight:500;color:#1D558C">182</span>
+    </div>
+    <div>
+      <span style="font-size:10px;letter-spacing:.05em;color:#9AA8B5;display:block;margin-bottom:2px">HORA DEL PICO</span>
+      <span style="font-size:15px;font-weight:500;color:#1D558C">12:30</span>
+    </div>
+  </div>
+
+  <!-- Gráfico -->
+  <svg viewBox="0 0 660 160" width="100%" role="img">
+    <title>Histograma de 937 reclamos por franja de 30 minutos</title>
+
+    <!-- Grilla: 3 niveles -->
+    <line x1="34" y1="130" x2="652" y2="130" stroke="#D9E2EC" stroke-width="1"/>
+    <line x1="34" y1="74"  x2="652" y2="74"  stroke="#EDF1F5" stroke-width="1"/>
+    <line x1="34" y1="18"  x2="652" y2="18"  stroke="#EDF1F5" stroke-width="1"/>
+
+    <!-- Eje Y: números alineados a la derecha, separados 10px del área de barras -->
+    <text x="26" y="22"  text-anchor="end" font-size="10" fill="#9AA8B5">182</text>
+    <text x="26" y="78"  text-anchor="end" font-size="10" fill="#9AA8B5">91</text>
+    <text x="26" y="134" text-anchor="end" font-size="10" fill="#9AA8B5">0</text>
+
+    <!-- 28 barras. Área de dibujo: x de 38 a 652 (614px). anchoBarra=18, gap=4.07 -->
+    <rect x="38"     y="46"  width="18" height="84"  fill="#A3B6CA" rx="2"/>
+    <rect x="60.07"  y="18"  width="18" height="112" fill="#1D558C" rx="2"/>
+    <rect x="82.15"  y="39"  width="18" height="91"  fill="#A3B6CA" rx="2"/>
+    <rect x="104.22" y="58"  width="18" height="72"  fill="#A3B6CA" rx="2"/>
+    <rect x="126.30" y="72"  width="18" height="58"  fill="#B4C4D5" rx="2"/>
+    <rect x="148.37" y="83"  width="18" height="47"  fill="#B4C4D5" rx="2"/>
+    <rect x="170.44" y="90"  width="18" height="40"  fill="#B4C4D5" rx="2"/>
+    <rect x="192.52" y="96"  width="18" height="34"  fill="#C4D1DF" rx="2"/>
+    <rect x="214.59" y="101" width="18" height="29"  fill="#C4D1DF" rx="2"/>
+    <rect x="236.67" y="104" width="18" height="26"  fill="#C4D1DF" rx="2"/>
+    <rect x="258.74" y="107" width="18" height="23"  fill="#C4D1DF" rx="2"/>
+    <rect x="280.81" y="110" width="18" height="20"  fill="#D3DDE8" rx="2"/>
+    <rect x="302.89" y="112" width="18" height="18"  fill="#D3DDE8" rx="2"/>
+    <rect x="324.96" y="113" width="18" height="17"  fill="#D3DDE8" rx="2"/>
+    <rect x="347.04" y="115" width="18" height="15"  fill="#D3DDE8" rx="2"/>
+    <rect x="369.11" y="116" width="18" height="14"  fill="#D3DDE8" rx="2"/>
+    <rect x="391.19" y="117" width="18" height="13"  fill="#D3DDE8" rx="2"/>
+    <rect x="413.26" y="118" width="18" height="12"  fill="#D3DDE8" rx="2"/>
+    <rect x="435.33" y="119" width="18" height="11"  fill="#D3DDE8" rx="2"/>
+    <rect x="457.41" y="120" width="18" height="10"  fill="#D3DDE8" rx="2"/>
+    <rect x="479.48" y="120" width="18" height="10"  fill="#D3DDE8" rx="2"/>
+    <rect x="501.56" y="121" width="18" height="9"   fill="#D3DDE8" rx="2"/>
+    <rect x="523.63" y="122" width="18" height="8"   fill="#D3DDE8" rx="2"/>
+    <rect x="545.70" y="122" width="18" height="8"   fill="#D3DDE8" rx="2"/>
+    <rect x="567.78" y="123" width="18" height="7"   fill="#D3DDE8" rx="2"/>
+    <rect x="589.85" y="124" width="18" height="6"   fill="#D3DDE8" rx="2"/>
+    <rect x="611.93" y="124" width="18" height="6"   fill="#D3DDE8" rx="2"/>
+    <rect x="634"    y="125" width="18" height="5"   fill="#D3DDE8" rx="2"/>
+
+    <!-- Eje X: marcas de hora + INICIO/FIN en los extremos -->
+    <text x="38"  y="145" font-size="10" fill="#5A6B7A">11:30</text>
+    <text x="192" y="145" font-size="10" fill="#5A6B7A">14:30</text>
+    <text x="347" y="145" font-size="10" fill="#5A6B7A">17:30</text>
+    <text x="501" y="145" font-size="10" fill="#5A6B7A">20:30</text>
+    <text x="652" y="145" font-size="10" fill="#5A6B7A" text-anchor="end">01:38</text>
+    <text x="38"  y="157" font-size="9"  fill="#BCC7D2">INICIO</text>
+    <text x="652" y="157" font-size="9"  fill="#BCC7D2" text-anchor="end">FIN</text>
+  </svg>
+
+  <!-- Leyenda del bin -->
+  <div style="font-size:10px;color:#9AA8B5;margin-top:8px">Franjas de 30 minutos</div>
+
+</div>
+
+</div>

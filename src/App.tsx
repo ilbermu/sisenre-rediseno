@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, cloneElement } from "react";
+import { useState, useRef, useEffect, useMemo, useId, cloneElement } from "react";
 import { createPortal } from "react-dom";
 import { DayPicker, useDayPicker, type ChevronProps } from "react-day-picker";
 import { es } from "date-fns/locale";
@@ -1101,13 +1101,29 @@ function Modal({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  // Foco: al abrir entra al panel (para que Tab siga dentro del modal y un
+  // lector de pantalla anuncie el diálogo); al cerrar vuelve al elemento
+  // que lo abrió (ej. el gráfico de reclamos de la Card B).
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const previo = document.activeElement as HTMLElement | null;
+    panelRef.current?.focus();
+    return () => previo?.focus?.();
+  }, [open]);
+
   if (!open) return null;
 
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/25" onClick={onClose} />
       <div
-        className="fixed z-50 flex flex-col bg-white rounded-lg overflow-hidden"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        tabIndex={-1}
+        className="fixed z-50 flex flex-col bg-white rounded-lg overflow-hidden outline-none"
         style={{
           top: "50%",
           left: "50%",
@@ -2664,21 +2680,15 @@ function DatosInterrupcionModal({
   referencia,
   fechaInicio,
   fechaUltRepo,
-  duracion,
-  ticks,
+  reclamos,
 }: {
   open: boolean;
   onClose: () => void;
   referencia: string;
   fechaInicio: string;
   fechaUltRepo: string;
-  // Línea de tiempo (antes vivía como widget clickeable en la Card B de
-  // Reposiciones; ahora se abre desde el botón "Ver datos de interrupción"
-  // del header de esa card, así que el widget se mudó acá adentro,
-  // arriba de los campos — mismos datos, mismos colores, sin el
-  // comportamiento clickeable que tenía afuera).
-  duracion: string;
-  ticks: number[];
+  // Misma data que el gráfico de reclamos de la Card B (null = sin selección).
+  reclamos: ReclamosInterrupcion | null;
 }) {
   const topFields = [
     { label: "Interrupción", value: referencia },
@@ -2708,37 +2718,9 @@ function DatosInterrupcionModal({
       }
     >
       <div className="flex flex-col gap-5">
-        {/* Línea de tiempo — solo visualización acá adentro (sin
-            onClick/cursor-pointer/hover: eso era del widget cuando vivía
-            afuera, clickeable para abrir este mismo modal). */}
-        <div className="rounded-sm border border-gray-300 overflow-hidden">
-          {/* Sparkline: ticks de reposición + apertura/cierre */}
-          <div className="relative bg-white" style={{ height: 34 }}>
-            {ticks.map((pct, i) => {
-              const isEdge = i === 0 || i === ticks.length - 1;
-              return (
-                <div
-                  key={i}
-                  className="absolute top-1/2"
-                  style={{
-                    left: `${pct}%`,
-                    width: isEdge ? 3 : 1.5,
-                    height: isEdge ? 22 : 15,
-                    backgroundColor: isEdge ? "var(--color-gray-900)" : "var(--color-primary)",
-                    transform: "translate(-50%, -50%)",
-                  }}
-                />
-              );
-            })}
-          </div>
-          {/* Barra de resumen */}
-          <div className="px-3 py-2 text-center" style={{ backgroundColor: "var(--color-gray-700)" }}>
-            <span className="text-caption font-medium text-white whitespace-nowrap font-mono">
-              {fechaInicio}  -  {referencia}  -  {fechaUltRepo}  -  {duracion}
-            </span>
-          </div>
-        </div>
-
+        {/* Gráfico de reclamos — el mismo ReclamosTimeline de la Card B,
+            ampliado, siempre visible arriba de la grilla de campos. */}
+        {reclamos && <ReclamosTimeline datos={reclamos} />}
         <div className="grid grid-cols-6 gap-3">
           {topFields.map((f) => (
             <ReadOnlyField key={f.label} label={f.label} value={f.value} />
@@ -3012,6 +2994,47 @@ function generarTablasRelacionadas(referencia: string): Record<string, string> {
   };
 }
 
+// Reclamos recibidos durante la interrupción seleccionada — mismo criterio
+// de semilla = referencia. Devuelve inicio/fin de la interrupción y el
+// instante de cada reclamo, en minutos desde el inicio (ver
+// ReclamosTimeline). Duración sesgada a pocas horas, con cortes largos
+// (días) ocasionales. Cantidad según la distribución real (agosto 2026:
+// 54% 1 reclamo, 40% 2, 4,8% 3-15, 1,5% 16-337), con las colas un poco
+// infladas para que las 40 filas de muestra cubran los cuatro casos del
+// gráfico: ~10% sin reclamos; del resto 50% 1, 35% 2, 10% 3-15, 5% 16-400.
+// La curva típica: arranca rápido, pica al rato y decae.
+type ReclamosInterrupcion = { inicio: Date; fin: Date; minutos: number[] };
+
+function parseFechaHora(texto: string): Date {
+  const [fecha, hora = "00:00"] = texto.split(" ");
+  const [d, m, a] = fecha.split("/").map(Number);
+  const [hh, mm] = hora.split(":").map(Number);
+  return new Date(a, m - 1, d, hh, mm);
+}
+
+function generarReclamosSinteticos(referencia: string, fechaInicio: string): ReclamosInterrupcion {
+  const rng = crearRng(hashSemilla(referencia + ":reclamos"));
+  const dado = rng();
+  const duracionMin =
+    dado < 0.6 ? enteroEntre(rng, 40, 240)
+    : dado < 0.85 ? enteroEntre(rng, 241, 720)
+    : dado < 0.96 ? enteroEntre(rng, 721, 2880)
+    : enteroEntre(rng, 2881, 7200);
+  const inicio = parseFechaHora(fechaInicio);
+  const fin = new Date(inicio.getTime() + duracionMin * 60000);
+  const dadoCantidad = rng();
+  const cantidad =
+    dadoCantidad < 0.1 ? 0
+    : dadoCantidad < 0.55 ? 1
+    : dadoCantidad < 0.865 ? 2
+    : dadoCantidad < 0.955 ? enteroEntre(rng, 3, 15)
+    : enteroEntre(rng, 16, 400);
+  const minutos = Array.from({ length: cantidad }, () =>
+    Math.min(duracionMin - 1, Math.floor(duracionMin * (0.02 + rng() * 0.12 + Math.pow(rng(), 2.2) * 0.86))),
+  );
+  return { inicio, fin, minutos };
+}
+
 // Filas de cada tab del drawer "Tablas relacionadas" (5/6/8/9) — misma
 // semilla que los tiles (referencia + reposición seleccionada, ver
 // generarTablasRelacionadas): la cantidad SIEMPRE coincide con el valor
@@ -3222,12 +3245,16 @@ function ReposicionesTable({
   selectedIndex,
   onSelect,
   maxHeight = REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 5,
+  footer,
 }: {
   cols: string[];
   rows: FaseReposicion[];
   selectedIndex: number | null;
   onSelect: (index: number | null) => void;
   maxHeight?: number;
+  // Pie dentro del mismo borde de la tabla, fuera del área que scrollea
+  // (hoy: "Tablas relacionadas"). El alto fijo sigue siendo solo el de las filas.
+  footer?: React.ReactNode;
 }) {
   const [hovIndex, setHovIndex] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -3252,11 +3279,12 @@ function ReposicionesTable({
   }
 
   return (
+    <div className="border border-gray-200 rounded-sm overflow-hidden bg-white">
     <div
       ref={listRef}
       tabIndex={rows.length > 0 ? 0 : -1}
       onKeyDown={handleKeyDown}
-      className="border border-gray-200 rounded-sm overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+      className="overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
       style={{ height: maxHeight }}
     >
       <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
@@ -3324,12 +3352,514 @@ function ReposicionesTable({
         </tbody>
       </table>
     </div>
+    {footer && <div className="border-t border-gray-100 bg-white px-3 py-3">{footer}</div>}
+    </div>
+  );
+}
+
+// Chip de "Tablas relacionadas" (Modificar interrupción) — etiqueta arriba,
+// valor abajo. `raw` es el valor tal cual sale de generarTablasRelacionadas
+// ("SI"/"NO" para la booleana, conteo como string para el resto);
+// undefined = sin interrupción seleccionada ("—" + disabled).
+// En reposo NUNCA lleva tint ni borde celeste: el azul relleno queda
+// reservado para la fila seleccionada de ReposicionesTable, justo arriba.
+// Con contenido (conteo > 0 o "Sí"): blanco + borde de card + valor navy;
+// vacío: todo un paso más apagado, pero sigue clickeable (para dar de
+// alta). El azul aparece solo en hover (tint + borde primary) y foco.
+// El ancho lo fija la etiqueta: el valor tiene w-0 + min-w-full, así no
+// aporta al ancho intrínseco y los chips quedan parejos entre sí.
+function RelacionadaChip({
+  label,
+  raw,
+  booleana,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  raw: string | undefined;
+  booleana: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  let valor = "—";
+  let conContenido = false;
+  if (raw !== undefined) {
+    if (booleana) {
+      conContenido = raw === "SI";
+      valor = conContenido ? "Sí" : "No";
+    } else {
+      const n = Number(raw);
+      conContenido = n > 0;
+      valor = n.toLocaleString("es-AR");
+    }
+  }
+  const stateCls = conContenido
+    ? "bg-white border-gray-200 enabled:hover:bg-primary-tint enabled:hover:border-primary enabled:active:bg-chip-border-hover"
+    : "bg-gray-50 border-gray-100 enabled:hover:bg-gray-100 enabled:hover:border-gray-300 enabled:active:bg-gray-200";
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`inline-flex flex-col items-start px-[14px] py-[6px] rounded-md border text-left transition-[background-color,border-color] duration-[120ms] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${stateCls}`}
+    >
+      <span className={`text-[10px] leading-tight tracking-[0.05em] whitespace-nowrap ${conContenido ? "text-gray-500" : "text-gray-400"}`}>
+        {label}
+      </span>
+      <span className={`w-0 min-w-full text-[14px] leading-snug whitespace-nowrap ${conContenido ? "font-medium text-secondary" : "text-gray-500"}`}>
+        {valor}
+      </span>
+    </button>
+  );
+}
+
+// ── Reclamos durante la interrupción ─────────────────────────────────
+// Dos piezas: el gráfico completo (ReclamosTimeline) en el modal "Datos de
+// la Interrupción" — un solo patrón para todos los volúmenes: línea de la
+// interrupción con un hito por reclamo, con marcas de hora sobre el eje — y
+// un resumen compacto de una línea, sin gráfico, en la Card B de Modificar
+// interrupción (ReclamosResumenCompacto), que abre ese modal.
+//
+// Fuente de verdad visual: _ref/_ref_grafico_reclamos_timeline.html —
+// estructura (header + chip DURACIÓN → KPIs → pista → INICIO/FIN),
+// tipografía, espaciados y coordenadas Y del SVG replicados de ahí. Hex de
+// la referencia → tokens:
+//   #5A6B7A → gray-700 · #8A99A8 → gray-600 · #9AA8B5 → gray-500
+//   #BCC7D2 → gray-400 · #D9E2EC → gray-300 (borde) · #DCE5EE → gray-300 (pista)
+//   #1D558C → secondary (primer reclamo, valores) · #4D97FA → primary (banda)
+//   #EAF1FC / #C6DCFA → primary-tint / chip-border (chip de duración)
+//   #8FA6BE → gray-500 (hito dentro del 80%) · #AEC0D3 → gray-500 al 70% (fuera)
+//   #5F84A8 (rótulo del chip) y #7FA8DB (rótulo de la banda) no tienen token:
+//   se arman con color-mix sobre secondary / primary.
+// La X no sale de un viewBox fijo: el viewBox usa el ancho real medido, la
+// pista va de x=8 a ancho−8 y cada reclamo se ubica proporcional a su
+// tiempo desde el inicio — así la separación mínima de 5px es en px reales.
+//
+// Qué se dibuja en la pista:
+//   1 reclamo  → pista base + hito del primer reclamo.
+//   2+         → banda del 80% (del primer reclamo al percentil 80), pista
+//                base y un hito por reclamo (más oscuro y alto dentro de la
+//                banda).
+//   saturado   → cuando los hitos ya no entran separados (desplazamientos en
+//                cadena o se pasan del final), la pista sube de alto y se tiñe
+//                con un degradé cuyos stops salen de la densidad real por tramo.
+// El primer reclamo (barra 3×N + círculo blanco con borde navy) es siempre
+// igual y es lo único navy de la pista; el celeste queda solo para la banda
+// (y hover/foco del bloque).
+
+type GeometriaTimeline = {
+  alto: number;
+  pistaY: number; pistaH: number;
+  satY: number; satH: number;
+  bandaY: number; bandaH: number; rotuloY: number;
+  dentroY: number; dentroH: number;
+  fueraY: number; fueraH: number;
+  hitoW: number;
+  primeroY: number; primeroH: number; circuloY: number; circuloR: number;
+  ejeY: number | null; // y de las marcas de hora (solo modal)
+};
+
+// Geometría del modal: la composición de la referencia (SVG de 52px: pista
+// y=33 h=5, banda y=14 h=24, hitos 14/12, primer reclamo 3×20 + r 3.5)
+// ampliada — pista e hitos más altos, todo apoyado en la misma base — más
+// marcas de hora debajo de la pista.
+const TIMELINE_MODAL: GeometriaTimeline = {
+  alto: 78,
+  pistaY: 50, pistaH: 7,
+  satY: 39, satH: 18,
+  bandaY: 21, bandaH: 36, rotuloY: 16,
+  dentroY: 35, dentroH: 22,
+  fueraY: 39, fueraH: 18,
+  hitoW: 3,
+  primeroY: 27, primeroH: 30, circuloY: 24, circuloR: 4.5,
+  ejeY: 73,
+};
+
+const TIMELINE_X0 = 8;
+const TIMELINE_SEP_MIN = 5; // px mínimos entre hitos consecutivos
+const TIMELINE_CADENA_SATURADA = 3; // desplazamientos seguidos → modo saturado
+
+// "3 h 8 min", "1 d 23 h".
+function fmtDuracion(min: number): string {
+  const d = Math.floor(min / 1440);
+  const h = Math.floor((min % 1440) / 60);
+  const m = min % 60;
+  if (d > 0) return h > 0 ? `${d} d ${h} h` : `${d} d`;
+  if (h > 0) return m > 0 ? `${h} h ${m} min` : `${h} h`;
+  return `${m} min`;
+}
+
+// Delta desde el inicio: "+8 min", "+1 h 14 min".
+function fmtDelta(min: number): string {
+  return `+${fmtDuracion(min)}`;
+}
+
+// "80% llegó en": número grande + última unidad en chico ("1 h 14" + "min").
+function partesDuracion(min: number): [string, string] {
+  const txt = fmtDuracion(min);
+  const i = txt.lastIndexOf(" ");
+  return [txt.slice(0, i), txt.slice(i + 1)];
+}
+
+function fmtFechaHora(d: Date): string {
+  return `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)}/${d.getFullYear()} ${ceros(d.getHours(), 2)}:${ceros(d.getMinutes(), 2)}`;
+}
+
+// "HH:mm", o "dd/mm HH:mm" cuando la interrupción dura más de un día.
+function fmtHoraCorta(d: Date, conDia: boolean): string {
+  const hora = `${ceros(d.getHours(), 2)}:${ceros(d.getMinutes(), 2)}`;
+  return conDia ? `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)} ${hora}` : hora;
+}
+
+// Ancho en px de un elemento, en vivo (ResizeObserver).
+function useAncho<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [ancho, setAncho] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setAncho(Math.floor(entry.contentRect.width)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, ancho] as const;
+}
+
+type ResumenReclamos = {
+  duracionMin: number;
+  ordenados: number[]; // minutos desde el inicio, ascendente
+  total: number;
+  primero: number;
+  p80: number; // minuto del reclamo en el percentil 80 (nearest-rank)
+};
+
+function resumirReclamos(datos: ReclamosInterrupcion): ResumenReclamos {
+  const duracionMin = Math.max(1, Math.round((datos.fin.getTime() - datos.inicio.getTime()) / 60000));
+  const ordenados = [...datos.minutos].sort((a, b) => a - b);
+  const total = ordenados.length;
+  const primero = ordenados[0] ?? 0;
+  const p80 = total > 0 ? ordenados[Math.ceil(0.8 * total) - 1] : 0;
+  return { duracionMin, ordenados, total, primero, p80 };
+}
+
+// Posiciones X de los hitos (centro), con la separación mínima forzada, y
+// si la pista pasa a modo saturado.
+function layoutHitos(ordenados: number[], duracionMin: number, x0: number, x1: number) {
+  const xs: number[] = [];
+  let cadena = 0;
+  let saturado = false;
+  for (const m of ordenados) {
+    const natural = x0 + (m / duracionMin) * (x1 - x0);
+    const previo = xs[xs.length - 1];
+    if (previo !== undefined && natural < previo + TIMELINE_SEP_MIN) {
+      xs.push(previo + TIMELINE_SEP_MIN);
+      if (++cadena >= TIMELINE_CADENA_SATURADA) saturado = true;
+    } else {
+      xs.push(natural);
+      cadena = 0;
+    }
+  }
+  if (xs.length && xs[xs.length - 1] > x1) saturado = true;
+  return { xs, saturado };
+}
+
+// Stops del degradé de densidad (modo saturado): la pista se parte en
+// tramos (~1 cada 48px, entre 6 y 14), se cuentan los reclamos de cada uno,
+// se suaviza con dos pasadas de [1,2,1] (sin eso el degradé queda rayado
+// tipo código de barras) y cada stop mezcla navy con el gris de la pista
+// según la densidad relativa (más reclamos = más oscuro).
+function stopsDensidad(ordenados: number[], duracionMin: number, anchoPista: number) {
+  const tramos = Math.max(6, Math.min(14, Math.floor(anchoPista / 48)));
+  let cuentas = new Array<number>(tramos).fill(0);
+  for (const m of ordenados) cuentas[Math.min(tramos - 1, Math.floor((m / duracionMin) * tramos))]++;
+  for (let pasada = 0; pasada < 2; pasada++) {
+    cuentas = cuentas.map((c, i) => (cuentas[Math.max(0, i - 1)] + 2 * c + cuentas[Math.min(tramos - 1, i + 1)]) / 4);
+  }
+  const max = Math.max(...cuentas, 1);
+  const color = (c: number) => `color-mix(in srgb, var(--color-secondary) ${Math.round((c / max) * 100)}%, var(--color-gray-300))`;
+  // Extremos en 0% y 100% con el valor del primer/último tramo.
+  return [
+    { offset: "0%", color: color(cuentas[0]) },
+    ...cuentas.map((c, i) => ({ offset: `${((i + 0.5) / tramos) * 100}%`, color: color(c) })),
+    { offset: "100%", color: color(cuentas[tramos - 1]) },
+  ];
+}
+
+// Marcas de hora intermedias (solo modal): el paso "redondo" más chico que
+// deja ≤5 marcas, alineadas al reloj; se saltean las pegadas a los bordes.
+const TIMELINE_PASOS_MIN = [5, 10, 15, 30, 60, 120, 180, 360, 720, 1440, 2880];
+function marcasHora(inicio: Date, duracionMin: number, px: (m: number) => number, x0: number, x1: number) {
+  const paso = TIMELINE_PASOS_MIN.find((p) => duracionMin / p <= 5) ?? 10080;
+  const inicioMin = inicio.getHours() * 60 + inicio.getMinutes();
+  const marcas: number[] = [];
+  for (let t = paso - (inicioMin % paso); t < duracionMin; t += paso) {
+    if (px(t) - x0 > 36 && x1 - px(t) > 36) marcas.push(t);
+  }
+  return marcas;
+}
+
+function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
+  const g = TIMELINE_MODAL;
+  const [pistaRef, ancho] = useAncho<HTMLDivElement>();
+  const idBase = useId().replace(/:/g, "");
+  const resumen = useMemo(() => (datos ? resumirReclamos(datos) : null), [datos]);
+
+  const total = resumen?.total ?? 0;
+  const conDia = !!resumen && resumen.duracionMin > 1440;
+  const x0 = TIMELINE_X0;
+  const x1 = Math.max(x0, ancho - TIMELINE_X0);
+  const px = (m: number) => x0 + (m / (resumen?.duracionMin ?? 1)) * (x1 - x0);
+  const { xs, saturado } = useMemo(
+    () => (resumen && ancho > 0 ? layoutHitos(resumen.ordenados, resumen.duracionMin, x0, x1) : { xs: [], saturado: false }),
+    [resumen, ancho, x0, x1],
+  );
+  const hayBanda = total >= 2;
+  // Banda: 4px antes del primer hito hasta 4px después del hito del p80.
+  const indiceP80 = Math.ceil(0.8 * total) - 1;
+  const bandaX = xs.length ? Math.max(x0, xs[0] - 4) : x0;
+  const bandaFin = xs.length ? Math.min(x1, (saturado ? px(resumen!.p80) : xs[indiceP80]) + g.hitoW / 2 + 4) : x0;
+  const rotuloX = Math.min(bandaX + 6, x1 - 112);
+
+  const kLabel = "block text-[9px] tracking-[0.05em] text-gray-500 mb-[3px]";
+  const kValor = "text-[18px] font-medium leading-none text-secondary tabular-nums";
+  const kSufijo = "text-[11px] font-normal text-gray-600";
+
+  const contenido = (
+    <>
+      {/* Header: label + chip DURACIÓN */}
+      <div className="flex items-center justify-between gap-[12px] mb-[14px]">
+        <span className="text-[10px] tracking-[0.06em] text-gray-600">RECLAMOS DURANTE LA INTERRUPCIÓN</span>
+        {resumen && <ChipDuracion minutos={resumen.duracionMin} />}
+      </div>
+
+      {/* KPIs: TOTAL + RECLAMO (1) · TOTAL + PRIMER RECLAMO + 80% LLEGÓ EN (2+) */}
+      <div className="flex gap-[26px] mb-[14px]">
+        <div>
+          <span className={kLabel}>TOTAL</span>
+          <span className={kValor}>{resumen ? total.toLocaleString("es-AR") : "—"}</span>
+        </div>
+        {resumen && total >= 1 && (
+          <div>
+            <span className={kLabel}>{total === 1 ? "RECLAMO" : "PRIMER RECLAMO"}</span>
+            <span className={kValor}>
+              {fmtHoraCorta(new Date(datos!.inicio.getTime() + resumen.primero * 60000), conDia)}{" "}
+              <span className={kSufijo}>{fmtDelta(resumen.primero)}</span>
+            </span>
+          </div>
+        )}
+        {resumen && total >= 2 && (() => {
+          const [num, unidad] = partesDuracion(resumen.p80 - resumen.primero);
+          return (
+            <div>
+              <span className={kLabel}>80% LLEGÓ EN</span>
+              <span className={kValor}>
+                {num} <span className={kSufijo}>{unidad}</span>
+              </span>
+            </div>
+          );
+        })()}
+      </div>
+
+      {/* Pista */}
+      <div ref={pistaRef} style={{ height: g.alto }}>
+        {resumen && total > 0 && ancho > 0 ? (
+          <svg viewBox={`0 0 ${ancho} ${g.alto}`} width="100%" height={g.alto} role="img" className="block overflow-visible">
+            <title>{`${total.toLocaleString("es-AR")} ${total === 1 ? "reclamo" : "reclamos"} sobre la línea de la interrupción`}</title>
+            <defs>
+              <linearGradient id={`${idBase}-banda`} x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" style={{ stopColor: "var(--color-primary)", stopOpacity: 0.14 }} />
+                <stop offset="100%" style={{ stopColor: "var(--color-primary)", stopOpacity: 0 }} />
+              </linearGradient>
+              {saturado && (
+                <linearGradient id={`${idBase}-densidad`} x1="0" y1="0" x2="1" y2="0">
+                  {stopsDensidad(resumen.ordenados, resumen.duracionMin, x1 - x0).map((s, i) => (
+                    <stop key={i} offset={s.offset} style={{ stopColor: s.color }} />
+                  ))}
+                </linearGradient>
+              )}
+            </defs>
+
+            {/* Banda de concentración (2+ reclamos) */}
+            {hayBanda && (
+              <>
+                <rect x={bandaX} y={g.bandaY} width={Math.max(0, bandaFin - bandaX)} height={g.bandaH} rx={4} fill={`url(#${idBase}-banda)`} />
+                <text x={rotuloX} y={g.rotuloY} fontSize={9} letterSpacing="0.04em" className="fill-[color-mix(in_srgb,var(--color-primary)_60%,var(--color-gray-500))]">
+                  80% DE LOS RECLAMOS
+                </text>
+              </>
+            )}
+
+            {/* Pista: base (con hitos) o teñida por densidad (saturada) */}
+            {saturado ? (
+              <rect x={x0} y={g.satY} width={x1 - x0} height={g.satH} rx={g.satH / 2} fill={`url(#${idBase}-densidad)`} />
+            ) : (
+              <>
+                <rect x={x0} y={g.pistaY} width={x1 - x0} height={g.pistaH} rx={g.pistaH / 2} className="fill-gray-300" />
+                {xs.slice(1).map((x, j) => {
+                  const dentro = j + 1 <= indiceP80;
+                  return (
+                    <rect
+                      key={j}
+                      x={x - g.hitoW / 2}
+                      y={dentro ? g.dentroY : g.fueraY}
+                      width={g.hitoW}
+                      height={dentro ? g.dentroH : g.fueraH}
+                      rx={g.hitoW / 2}
+                      className={dentro ? "fill-gray-500" : "fill-[color-mix(in_srgb,var(--color-gray-500)_70%,white)]"}
+                    />
+                  );
+                })}
+              </>
+            )}
+
+            {/* Hito del primer reclamo — siempre igual */}
+            <rect x={xs[0] - 1.5} y={g.primeroY} width={3} height={g.primeroH} rx={1.5} className="fill-secondary" />
+            <circle cx={xs[0]} cy={g.circuloY} r={g.circuloR} strokeWidth={2} className="fill-white stroke-secondary" />
+
+            {/* Marcas de hora (modal) */}
+            {g.ejeY !== null &&
+              marcasHora(datos!.inicio, resumen.duracionMin, px, x0, x1).map((t) => (
+                <g key={t}>
+                  <line x1={px(t)} x2={px(t)} y1={g.pistaY + g.pistaH + 2} y2={g.pistaY + g.pistaH + 6} strokeWidth={1} className="stroke-gray-400" />
+                  <text x={px(t)} y={g.ejeY!} textAnchor="middle" fontSize={10} className="fill-gray-700 tabular-nums">
+                    {fmtHoraCorta(new Date(datos!.inicio.getTime() + t * 60000), conDia)}
+                  </text>
+                </g>
+              ))}
+          </svg>
+        ) : (
+          <div className="h-full flex items-center text-[12px] text-gray-600">
+            {!datos ? "Seleccioná una interrupción" : resumen && total === 0 ? "Sin reclamos registrados" : ""}
+          </div>
+        )}
+      </div>
+
+      {/* Footer: INICIO / FIN */}
+      <div className="flex justify-between text-[11px] text-gray-700 mt-[7px] tabular-nums">
+        <span>
+          <span className="block text-[9px] tracking-[0.05em] text-gray-400 mb-[1px]">INICIO</span>
+          {datos ? fmtFechaHora(datos.inicio) : "—"}
+        </span>
+        <span className="text-right">
+          <span className="block text-[9px] tracking-[0.05em] text-gray-400 mb-[1px]">FIN</span>
+          {datos ? fmtFechaHora(datos.fin) : "—"}
+        </span>
+      </div>
+    </>
+  );
+
+  return (
+    <section className="block w-full text-left leading-[normal] bg-white border-[0.5px] border-gray-300 rounded-[10px] px-[18px] py-[16px]">
+      {contenido}
+    </section>
+  );
+}
+
+// Chip DURACIÓN del gráfico del modal (en el resumen compacto de la card
+// la duración es una columna más, sin chip).
+function ChipDuracion({ minutos }: { minutos: number }) {
+  return (
+    <span className="inline-flex items-center gap-[6px] bg-primary-tint border border-chip-border rounded-full px-[12px] py-[4px] whitespace-nowrap">
+      <span className="text-[9px] tracking-[0.05em] text-[color-mix(in_srgb,var(--color-secondary)_70%,white)]">DURACIÓN</span>
+      <span className="text-[13px] font-medium text-secondary">{fmtDuracion(minutos)}</span>
+    </span>
+  );
+}
+
+// Resumen compacto de reclamos (Card B de Modificar interrupción, debajo
+// de la tabla de Reposiciones) — sin gráfico. Título en sentence case
+// (text-label, peso medio, texto principal) y cuatro columnas de ancho
+// parejo (grid-cols-4 = minmax(0,1fr): el ancho no depende del contenido)
+// separadas por un divisor hairline: RECLAMOS / INICIO INTERRUPCIÓN / FIN
+// INTERRUPCIÓN / DURACIÓN TOTAL, con el micro-label como único nivel de
+// etiqueta. Valores en text-title-sm, todos en el mismo color; la cantidad
+// de reclamos (el dato accionable) sube un paso más (text-title, semibold).
+// Estados = patrón secundario/outline de la app (Más filtros, Exportar,
+// Limpiar…): reposo con borde neutro, hover con borde primary + fondo
+// primary-tint + texto navy (título, valores y chevron), foco con el token
+// --color-focus. Todo el bloque es un <button> que abre "Datos de la
+// Interrupción", donde está el gráfico completo (ReclamosTimeline).
+function ReclamosResumenCompacto({
+  datos,
+  onClick,
+}: {
+  // null = sin interrupción seleccionada (bloque deshabilitado).
+  datos: ReclamosInterrupcion | null;
+  onClick: () => void;
+}) {
+  const resumen = useMemo(() => (datos ? resumirReclamos(datos) : null), [datos]);
+  // Fecha: el año solo se muestra si la columna tiene ancho para la fecha
+  // completa (container query); si ni "dd/mm HH:mm" entra, parte entre
+  // fecha y hora en vez de cortarse — nunca se trunca un dato.
+  const fecha = (d: Date) => (
+    <>
+      <span className="whitespace-nowrap">
+        {ceros(d.getDate(), 2)}/{ceros(d.getMonth() + 1, 2)}
+        <span className="hidden @[230px]:inline">/{d.getFullYear()}</span>
+      </span>{" "}
+      <span className="whitespace-nowrap">{ceros(d.getHours(), 2)}:{ceros(d.getMinutes(), 2)}</span>
+    </>
+  );
+  const columnas: { etiqueta: string; valor: React.ReactNode; titulo?: string; principal: boolean }[] = [
+    { etiqueta: "RECLAMOS", valor: resumen ? resumen.total.toLocaleString("es-AR") : "—", principal: true },
+    { etiqueta: "INICIO INTERRUPCIÓN", valor: datos ? fecha(datos.inicio) : "—", titulo: datos ? fmtFechaHora(datos.inicio) : undefined, principal: false },
+    { etiqueta: "FIN INTERRUPCIÓN", valor: datos ? fecha(datos.fin) : "—", titulo: datos ? fmtFechaHora(datos.fin) : undefined, principal: false },
+    { etiqueta: "DURACIÓN TOTAL", valor: resumen ? fmtDuracion(resumen.duracionMin) : "—", principal: false },
+  ];
+  // Texto que pasa a navy junto con la card en hover.
+  const navyEnHover = "transition-colors duration-150 group-enabled:group-hover:text-secondary";
+
+  return (
+    <button
+      type="button"
+      disabled={!datos}
+      onClick={onClick}
+      title={datos ? "Ver datos de la interrupción" : "Seleccioná una interrupción"}
+      className="group w-full flex flex-col text-left bg-white border border-gray-200 rounded-sm px-4 py-4 cursor-pointer transition-all duration-150 enabled:hover:bg-primary-tint enabled:hover:border-primary focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed"
+    >
+      <span className={`block text-label font-medium text-gray-900 mb-3 ${navyEnHover}`}>Reclamos durante la interrupción</span>
+
+      {/* Grilla de valores + chevron centrado verticalmente respecto a ella */}
+      <span className="flex items-center gap-2">
+        {/* Etiquetas en la fila 1 y valores en la fila 2 de la misma
+            grilla: si una etiqueta parte en dos líneas (card angosta), los
+            valores siguen alineados. El divisor va en ambas celdas de cada
+            columna, así la línea es continua. */}
+        <span className="flex-1 min-w-0 grid grid-cols-4">
+          {columnas.map((c, i) => (
+            <span
+              key={`l-${c.etiqueta}`}
+              className={`min-w-0 self-end text-micro uppercase tracking-[0.05em] text-gray-500 pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}
+            >
+              {c.etiqueta}
+            </span>
+          ))}
+          {columnas.map((c, i) => (
+            <span
+              key={`v-${c.etiqueta}`}
+              title={c.titulo}
+              className={`@container min-w-0 self-end leading-tight tabular-nums text-gray-900 ${navyEnHover} ${
+                c.principal ? "text-title font-semibold" : "text-title-sm font-medium"
+              } ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}
+            >
+              {c.valor}
+            </span>
+          ))}
+        </span>
+        <ChevronRight
+          size={16}
+          strokeWidth={1.5}
+          aria-hidden="true"
+          className="shrink-0 text-gray-500 transition-[color,transform] duration-150 group-enabled:group-hover:text-secondary group-enabled:group-hover:translate-x-0.5"
+        />
+      </span>
+    </button>
   );
 }
 
 // Tile de dato — label (micro gray-600) + valor (label font-semibold).
-// Hoy solo la usan los indicadores de "Tablas relacionadas" de la Card B
-// (clickeables: onClick+disabled abren el modal en ese tab), pero admite
+// Hoy sin usos (los indicadores de "Tablas relacionadas" pasaron a
+// RelacionadaChip). Modo interactivo: onClick+disabled; admite
 // un modo de solo lectura (sin onClick, <div> en vez de <button>, sin
 // "disabled"/"alert" — esos estados son del modo interactivo) para
 // reusarla en otras grillas de datos. `description` agrega una tercera
@@ -4072,8 +4602,12 @@ function ModificarContent({
   const timelineReferencia = selectedRecord?.referencia ?? "";
   const timelineFechaInicio = selectedRecord?.fecha ?? "";
   const timelineFechaUltRepo = filaFaseSeleccionada ? filaFaseSeleccionada.horaRep : "";
-  const timelineDuracion = "0 dias, 2 hs, 8 min";
-  const timelineTicks = [0, 14, 22, 38, 47, 63, 81, 100];
+  // Reclamos de la interrupción seleccionada (gráfico debajo de la
+  // Tabla 4) — por interrupción, no por reposición.
+  const reclamosInterrupcion = useMemo(
+    () => (selectedRecord ? generarReclamosSinteticos(selectedRecord.referencia, selectedRecord.fecha) : null),
+    [selectedRecord],
+  );
 
   // Navegación por teclado en la tabla de Interrupciones: flecha abajo/arriba
   // mueve la selección entre filas visibles y actualiza en vivo la Card B,
@@ -4522,71 +5056,46 @@ function ModificarContent({
             </div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
 
             {/* Tabla 4 — siempre visible, nunca detrás de un modal/drawer.
                 Vacía hasta que se selecciona una interrupción. Altura fija
                 (~5 filas, sin achicarse con pocas) + scroll propio + header
-                sticky, ver ReposicionesTable. */}
-            <div className="px-5 py-3 border-b border-gray-100">
+                sticky, ver ReposicionesTable. Debajo, el gráfico de
+                reclamos llena el resto del alto de la card (flex-1) — sin
+                bloque muerto abajo. */}
+            <div className="flex-1 flex flex-col px-5 py-3">
               <ReposicionesTable
                 cols={tabla4Data.cols}
                 rows={tabla4Rows}
                 selectedIndex={modSelectedFase}
                 onSelect={setModSelectedFase}
                 maxHeight={REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 5}
+                footer={
+                  /* Indicadores de las tablas relacionadas, como pie de la
+                     tabla — abren el modal "Tablas relacionadas",
+                     preseleccionado en la reposición actual (modSelectedFase
+                     es la única fuente de verdad, compartida entre esta card
+                     y el modal) y en el tab del chip clickeado. */
+                  <>
+                    <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 mb-2">Tablas relacionadas</p>
+                    <div className="flex flex-wrap gap-[6px]">
+                      {STATUS_ITEMS.map((item) => (
+                        <RelacionadaChip
+                          key={item.tabKey}
+                          label={item.label}
+                          raw={hasSelection ? valoresRelacionadas?.[item.tabKey] : undefined}
+                          booleana={item.tabKey === "tabla3"}
+                          disabled={!hasSelection}
+                          onClick={() => setRelTab(item.tabKey)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                }
               />
-            </div>
-
-            {/* Indicadores de las tablas relacionadas — abren el modal "Tablas
-                relacionadas", preseleccionado en la reposición actual (modSelectedFase
-                es la única fuente de verdad, compartida entre esta card y el modal —
-                no hace falta pasar nada extra) y en el tab del tile clickeado. */}
-            <div className="px-5 py-3 border-b border-gray-100 [@media(max-height:760px)]:pb-2">
-              <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">Tablas relacionadas</p>
-              {/* Tier 760px: los 5 tiles (Tabla 3/5/6/8/9) tienen que entrar
-                  en una sola fila. El ancho acá es el recurso escaso (esta
-                  card es la mitad de la fila inferior), no el alto — así
-                  que en vez de columnas parejas y angostas (grid-cols-N
-                  estira cada tile a lo alto), pasan a flex-wrap con cada
-                  tile en fila (label + valor una al lado de la otra, tipo
-                  "TABLA 3: 12") y ancho ajustado a su contenido: bajo y
-                  ancho en vez de angosto y alto. */}
-              {/* Tamaño normal: tiles como siempre — vía DataTile, en su
-                  modo interactivo (onClick+disabled). */}
-              <div className="grid grid-cols-3 gap-2 [@media(max-height:760px)]:hidden">
-                {STATUS_ITEMS.map((item) => (
-                  <DataTile
-                    key={item.tabKey}
-                    label={item.label}
-                    value={hasSelection ? valoresRelacionadas?.[item.tabKey] : "—"}
-                    alert={item.alert}
-                    disabled={!hasSelection}
-                    onClick={() => setRelTab(item.tabKey)}
-                  />
-                ))}
-              </div>
-
-              {/* Tier 760px: mismo patrón de chip/pill que "Filtros
-                  aplicados" (recap-chips) — clickeables igual que los
-                  tiles, todos en una fila (con wrap si no entran). Label
-                  (caption, atenuado) y valor (más peso, color secundario)
-                  separados — antes se leían empastados con el mismo peso. */}
-              <div className="hidden [@media(max-height:760px)]:flex items-center flex-wrap gap-2">
-                {STATUS_ITEMS.map((item) => (
-                  <button
-                    key={item.tabKey}
-                    type="button"
-                    disabled={!hasSelection}
-                    onClick={() => setRelTab(item.tabKey)}
-                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full bg-primary-tint border border-chip-border transition-all duration-150 hover:brightness-95 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <span className="text-caption text-secondary/60">{item.label}:</span>
-                    <span className="text-body-sm font-bold text-secondary">
-                      {hasSelection ? valoresRelacionadas?.[item.tabKey] : "—"}
-                    </span>
-                  </button>
-                ))}
+              <div className="mt-3">
+                <ReclamosResumenCompacto datos={reclamosInterrupcion} onClick={() => setDatosInterrupcionOpen(true)} />
               </div>
             </div>
 
@@ -4631,8 +5140,7 @@ function ModificarContent({
         referencia={timelineReferencia}
         fechaInicio={timelineFechaInicio}
         fechaUltRepo={timelineFechaUltRepo}
-        duracion={timelineDuracion}
-        ticks={timelineTicks}
+        reclamos={reclamosInterrupcion}
       />
 
       {/* ── MODAL "Tablas relacionadas" ─────────────────────────── */}
