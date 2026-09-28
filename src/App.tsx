@@ -3767,8 +3767,11 @@ function ChipDuracion({ minutos }: { minutos: number }) {
 }
 
 // Resumen de reclamos (Card B de Modificar interrupción, debajo de la
-// tabla de Reposiciones) — informativo, sin gráfico ni interacción (el
-// gráfico completo está en "Datos de la Interrupción", ReclamosTimeline).
+// tabla de Reposiciones) — sin gráfico. Es un <button> que abre "Datos de
+// la Interrupción" (ahí está el gráfico completo, ReclamosTimeline), con el
+// hover secundario de la app (el de "Ver datos de interrupción", ver
+// actionBtnCls): borde primary + fondo primary-tint + texto navy; foco con
+// --color-focus. Sin chevron.
 // Sin estilos propios: todo copiado de elementos del mismo panel —
 //   contenedor → el de la tabla de Reposiciones (ReposicionesTable), con
 //                padding 5 (el mismo px-5 del wrapper del panel);
@@ -3784,7 +3787,14 @@ function ChipDuracion({ minutos }: { minutos: number }) {
 // hairline: RECLAMOS / INICIO INTERRUPCIÓN / FIN INTERRUPCIÓN / DURACIÓN
 // TOTAL. Fechas completas dd/mm/aaaa hh:mm; si la columna es angosta parten
 // entre fecha y hora, nunca a mitad de la fecha.
-function ReclamosResumenCompacto({ datos }: { datos: ReclamosInterrupcion | null }) {
+function ReclamosResumenCompacto({
+  datos,
+  onClick,
+}: {
+  // null = sin interrupción seleccionada (bloque deshabilitado).
+  datos: ReclamosInterrupcion | null;
+  onClick: () => void;
+}) {
   const resumen = useMemo(() => (datos ? resumirReclamos(datos) : null), [datos]);
   const fecha = (d: Date) => (
     <>
@@ -3802,8 +3812,14 @@ function ReclamosResumenCompacto({ datos }: { datos: ReclamosInterrupcion | null
   ];
 
   return (
-    <div className="border border-gray-200 rounded-sm overflow-hidden bg-white px-5 py-5">
-      <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 mb-2">Reclamos durante la interrupción</p>
+    <button
+      type="button"
+      disabled={!datos}
+      onClick={onClick}
+      title={datos ? "Ver datos de la interrupción" : "Seleccioná una interrupción"}
+      className="group block w-full text-left border border-gray-200 rounded-sm overflow-hidden bg-white px-5 py-5 cursor-pointer transition-all enabled:hover:bg-primary-tint enabled:hover:border-primary focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed"
+    >
+      <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 mb-2 group-enabled:group-hover:text-secondary">Reclamos durante la interrupción</p>
       {/* Etiquetas en la fila 1 y valores en la fila 2 de la misma grilla:
           si una etiqueta parte en dos líneas (card angosta), los valores
           siguen alineados. El divisor va en ambas celdas de cada columna,
@@ -3811,7 +3827,7 @@ function ReclamosResumenCompacto({ datos }: { datos: ReclamosInterrupcion | null
       <div className="grid grid-cols-4">
         {columnas.map((c, i) => (
           <span key={`l-${c.etiqueta}`} className={`min-w-0 self-end pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}>
-            <span className="block text-[10px] leading-tight tracking-[0.05em] text-gray-500">{c.etiqueta}</span>
+            <span className="block text-[10px] leading-tight tracking-[0.05em] text-gray-500 group-enabled:group-hover:text-secondary">{c.etiqueta}</span>
           </span>
         ))}
         {columnas.map((c, i) => (
@@ -3820,7 +3836,7 @@ function ReclamosResumenCompacto({ datos }: { datos: ReclamosInterrupcion | null
           </span>
         ))}
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -5062,7 +5078,7 @@ function ModificarContent({
                 }
               />
               <div className="mt-3">
-                <ReclamosResumenCompacto datos={reclamosInterrupcion} />
+                <ReclamosResumenCompacto datos={reclamosInterrupcion} onClick={() => setDatosInterrupcionOpen(true)} />
               </div>
             </div>
 
