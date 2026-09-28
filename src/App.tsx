@@ -3766,94 +3766,61 @@ function ChipDuracion({ minutos }: { minutos: number }) {
   );
 }
 
-// Resumen compacto de reclamos (Card B de Modificar interrupción, debajo
-// de la tabla de Reposiciones) — sin gráfico. Título en sentence case
-// (text-label, peso medio, texto principal) y cuatro columnas de ancho
-// parejo (grid-cols-4 = minmax(0,1fr): el ancho no depende del contenido)
-// separadas por un divisor hairline: RECLAMOS / INICIO INTERRUPCIÓN / FIN
-// INTERRUPCIÓN / DURACIÓN TOTAL, con el micro-label como único nivel de
-// etiqueta. Valores en text-title-sm, todos en el mismo color; la cantidad
-// de reclamos (el dato accionable) sube un paso más (text-title, semibold).
-// Estados = patrón secundario/outline de la app (Más filtros, Exportar,
-// Limpiar…): reposo con borde neutro, hover con borde primary + fondo
-// primary-tint + texto navy (título, valores y chevron), foco con el token
-// --color-focus. Todo el bloque es un <button> que abre "Datos de la
-// Interrupción", donde está el gráfico completo (ReclamosTimeline).
-function ReclamosResumenCompacto({
-  datos,
-  onClick,
-}: {
-  // null = sin interrupción seleccionada (bloque deshabilitado).
-  datos: ReclamosInterrupcion | null;
-  onClick: () => void;
-}) {
+// Resumen de reclamos (Card B de Modificar interrupción, debajo de la
+// tabla de Reposiciones) — informativo, sin gráfico ni interacción (el
+// gráfico completo está en "Datos de la Interrupción", ReclamosTimeline).
+// Sin estilos propios: todo copiado de elementos del mismo panel —
+//   contenedor → el de la tabla de Reposiciones (ReposicionesTable), con
+//                padding 5 (el mismo px-5 del wrapper del panel);
+//   título     → el título de sección "Tablas relacionadas";
+//   etiquetas  → las etiquetas de RelacionadaChip ("TABLA 3"…);
+//   valores    → los valores de RelacionadaChip en estado con contenido.
+// De los chips se copia la tipografía (tamaño, leading, tracking, peso,
+// color), no su `whitespace-nowrap`: el chip toma su ancho de la etiqueta,
+// acá las columnas tienen ancho fijo y el texto tiene que poder partir.
+// Los spans de texto van `block` (en el chip son ítems flex, que se
+// comportan igual): inline heredarían el line-height de la celda.
+// Cuatro columnas de ancho parejo (grid-cols-4 = minmax(0,1fr)) con divisor
+// hairline: RECLAMOS / INICIO INTERRUPCIÓN / FIN INTERRUPCIÓN / DURACIÓN
+// TOTAL. Fechas completas dd/mm/aaaa hh:mm; si la columna es angosta parten
+// entre fecha y hora, nunca a mitad de la fecha.
+function ReclamosResumenCompacto({ datos }: { datos: ReclamosInterrupcion | null }) {
   const resumen = useMemo(() => (datos ? resumirReclamos(datos) : null), [datos]);
-  // Fecha: el año solo se muestra si la columna tiene ancho para la fecha
-  // completa (container query); si ni "dd/mm HH:mm" entra, parte entre
-  // fecha y hora en vez de cortarse — nunca se trunca un dato.
   const fecha = (d: Date) => (
     <>
       <span className="whitespace-nowrap">
-        {ceros(d.getDate(), 2)}/{ceros(d.getMonth() + 1, 2)}
-        <span className="hidden @[230px]:inline">/{d.getFullYear()}</span>
+        {ceros(d.getDate(), 2)}/{ceros(d.getMonth() + 1, 2)}/{d.getFullYear()}
       </span>{" "}
       <span className="whitespace-nowrap">{ceros(d.getHours(), 2)}:{ceros(d.getMinutes(), 2)}</span>
     </>
   );
-  const columnas: { etiqueta: string; valor: React.ReactNode; titulo?: string; principal: boolean }[] = [
-    { etiqueta: "RECLAMOS", valor: resumen ? resumen.total.toLocaleString("es-AR") : "—", principal: true },
-    { etiqueta: "INICIO INTERRUPCIÓN", valor: datos ? fecha(datos.inicio) : "—", titulo: datos ? fmtFechaHora(datos.inicio) : undefined, principal: false },
-    { etiqueta: "FIN INTERRUPCIÓN", valor: datos ? fecha(datos.fin) : "—", titulo: datos ? fmtFechaHora(datos.fin) : undefined, principal: false },
-    { etiqueta: "DURACIÓN TOTAL", valor: resumen ? fmtDuracion(resumen.duracionMin) : "—", principal: false },
+  const columnas: { etiqueta: string; valor: React.ReactNode }[] = [
+    { etiqueta: "RECLAMOS", valor: resumen ? resumen.total.toLocaleString("es-AR") : "—" },
+    { etiqueta: "INICIO INTERRUPCIÓN", valor: datos ? fecha(datos.inicio) : "—" },
+    { etiqueta: "FIN INTERRUPCIÓN", valor: datos ? fecha(datos.fin) : "—" },
+    { etiqueta: "DURACIÓN TOTAL", valor: resumen ? fmtDuracion(resumen.duracionMin) : "—" },
   ];
-  // Texto que pasa a navy junto con la card en hover.
-  const navyEnHover = "transition-colors duration-150 group-enabled:group-hover:text-secondary";
 
   return (
-    <button
-      type="button"
-      disabled={!datos}
-      onClick={onClick}
-      title={datos ? "Ver datos de la interrupción" : "Seleccioná una interrupción"}
-      className="group w-full flex flex-col text-left bg-white border border-gray-200 rounded-sm px-4 py-4 cursor-pointer transition-all duration-150 enabled:hover:bg-primary-tint enabled:hover:border-primary focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed"
-    >
-      <span className={`block text-label font-medium text-gray-900 mb-3 ${navyEnHover}`}>Reclamos durante la interrupción</span>
-
-      {/* Grilla de valores + chevron centrado verticalmente respecto a ella */}
-      <span className="flex items-center gap-2">
-        {/* Etiquetas en la fila 1 y valores en la fila 2 de la misma
-            grilla: si una etiqueta parte en dos líneas (card angosta), los
-            valores siguen alineados. El divisor va en ambas celdas de cada
-            columna, así la línea es continua. */}
-        <span className="flex-1 min-w-0 grid grid-cols-4">
-          {columnas.map((c, i) => (
-            <span
-              key={`l-${c.etiqueta}`}
-              className={`min-w-0 self-end text-micro uppercase tracking-[0.05em] text-gray-500 pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}
-            >
-              {c.etiqueta}
-            </span>
-          ))}
-          {columnas.map((c, i) => (
-            <span
-              key={`v-${c.etiqueta}`}
-              title={c.titulo}
-              className={`@container min-w-0 self-end leading-tight tabular-nums text-gray-900 ${navyEnHover} ${
-                c.principal ? "text-title font-semibold" : "text-title-sm font-medium"
-              } ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}
-            >
-              {c.valor}
-            </span>
-          ))}
-        </span>
-        <ChevronRight
-          size={16}
-          strokeWidth={1.5}
-          aria-hidden="true"
-          className="shrink-0 text-gray-500 transition-[color,transform] duration-150 group-enabled:group-hover:text-secondary group-enabled:group-hover:translate-x-0.5"
-        />
-      </span>
-    </button>
+    <div className="border border-gray-200 rounded-sm overflow-hidden bg-white px-5 py-5">
+      <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 mb-2">Reclamos durante la interrupción</p>
+      {/* Etiquetas en la fila 1 y valores en la fila 2 de la misma grilla:
+          si una etiqueta parte en dos líneas (card angosta), los valores
+          siguen alineados. El divisor va en ambas celdas de cada columna,
+          así la línea es continua. */}
+      <div className="grid grid-cols-4">
+        {columnas.map((c, i) => (
+          <span key={`l-${c.etiqueta}`} className={`min-w-0 self-end pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}>
+            <span className="block text-[10px] leading-tight tracking-[0.05em] text-gray-500">{c.etiqueta}</span>
+          </span>
+        ))}
+        {columnas.map((c, i) => (
+          <span key={`v-${c.etiqueta}`} className={`min-w-0 self-end ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}>
+            <span className="block text-[14px] leading-snug font-medium text-secondary">{c.valor}</span>
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -5095,7 +5062,7 @@ function ModificarContent({
                 }
               />
               <div className="mt-3">
-                <ReclamosResumenCompacto datos={reclamosInterrupcion} onClick={() => setDatosInterrupcionOpen(true)} />
+                <ReclamosResumenCompacto datos={reclamosInterrupcion} />
               </div>
             </div>
 
