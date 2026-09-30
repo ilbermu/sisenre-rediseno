@@ -17,7 +17,8 @@ Cuando el usuario escriba "buen día" (o "buen dia", "buenos días"), antes de c
 Cuando el usuario escriba "listo por hoy":
 
 1. `git status` y `git diff` para revisar qué cambió.
-2. Si hay cambios → stagear los archivos del proyecto (nunca secretos, `.env` ni archivos temporales) y commitear con un mensaje descriptivo en español, siguiendo el estilo de los commits existentes.
-3. `git push` (si la rama no tiene upstream, `git push -u origin <rama>`).
-4. Si el push es rechazado porque el remoto avanzó → `git pull --rebase`, y si hay conflictos, frenar y preguntar.
-5. Informar un resumen: commits creados, qué se subió, y estado final (working tree limpio y sincronizado).
+2. Agregar a `docs/PROGRESO.md` una entrada `## AAAA-MM-DD` (fecha de hoy) con el mismo formato que las anteriores: "Qué se hizo" (los commits de la jornada, agrupados por tema), "Pendientes abiertos" (lo que quedó sin resolver o sin probar, con archivo/línea cuando aplique) y, si cambió algo, "Cómo levantar el proyecto". Si ya existe una entrada de hoy, actualizarla en vez de duplicarla. Revisar que los pendientes de entradas anteriores que se resolvieron no sigan figurando como abiertos.
+3. Si hay cambios → stagear los archivos del proyecto (nunca secretos, `.env` ni archivos temporales) y commitear con un mensaje descriptivo en español, siguiendo el estilo de los commits existentes.
+4. `git push` (si la rama no tiene upstream, `git push -u origin <rama>`).
+5. Si el push es rechazado porque el remoto avanzó → `git pull --rebase`, y si hay conflictos, frenar y preguntar.
+6. Informar un resumen: commits creados, qué se subió, y estado final (working tree limpio y sincronizado).
