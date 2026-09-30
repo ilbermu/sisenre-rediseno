@@ -202,3 +202,29 @@ contenedor scrollee — un bug real que ya pasó acá: sin `shrink-0`, elegir un
 tab con más contenido comprimía y recortaba una tabla vecina en vez de
 activar el scroll del contenedor. El que scrollea es siempre el contenedor
 exterior, nunca sus secciones.
+
+## Patrones de contenedor y tabla
+
+1. **Header de contenedor** (`CardHeader`) = título + tag de código
+   (`CodeBadge`) + contexto opcional (el registro padre de los datos de la
+   card, prop `context`: `· RÓTULO valor`, ej. "· INTERRUPCIÓN `<ref>`" en
+   Reposiciones) + acciones de alcance **TABLA** en `right` (Insertar,
+   Exportar, Auditoría). **Nunca** acciones sobre el registro seleccionado.
+2. **Registro seleccionado**: se marca como fila resaltada en su tabla
+   (`--color-primary-tint` + acento `inset 3px 0 0 var(--color-primary)`).
+   En paneles que muestran datos hijos de ese registro, el registro va como
+   `context` en el header. El detalle completo se abre desde la card de
+   detalle clickeable (ej. `ReclamosResumenCompacto` → "Datos de la
+   Interrupción"), sin un botón duplicado en ningún header.
+3. **Trigger de filtro sin borde** (`FilterTrigger`): es el **ÚNICO** uso
+   permitido de un botón sin borde en reposo, y solo como trigger de filtro
+   dentro del toolbar de una tabla. Hover = el hover secundario de la app
+   (`border-primary` + `bg-primary-tint` + `text-secondary`, el de
+   `actionBtnCls`), nunca gris. Abierto = seleccionado persistente. Con filtro
+   aplicado queda **siempre pintado** ("`{columna}: {valor}`" + ×, la × como
+   botón hermano, nunca anidado). Las acciones siempre son outline
+   (`actionBtnCls`).
+4. **Toolbar de tabla**, de izquierda a derecha: buscador (`TableToolbar`
+   `bare`) → divisor (`w-px h-5 bg-gray-300`, el de `PersistentActionsBar`)
+   → triggers de filtro → a la derecha (`ml-auto`) "Limpiar filtros" (solo
+   con ≥1 filtro activo) + contador "`N` de `M` registros".

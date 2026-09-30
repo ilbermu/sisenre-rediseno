@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown,
   Zap, FileText, Pencil, Clipboard, UserPlus, Shield, Calendar, Search, X,
   Filter, Inbox, User, Settings, LogOut, Plus, Download, ChevronsUp, ChevronsDown, Home,
-  Activity, Copy, Check, Clock, Users, ClipboardList,
+  ChevronUp, Copy, Check, Clock, Users, ClipboardList,
 } from "lucide-react";
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
@@ -452,6 +452,127 @@ function PeriodSelector() {
               {p}
             </button>
           ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Filter trigger ───────────────────────────────────────────────────────────
+// Trigger de filtro por columna para el toolbar de una tabla (hoy: modal
+// "Tablas relacionadas"). ÚNICO botón sin borde en reposo de la app, y solo
+// como trigger de filtro — ver DESIGN_SYSTEM.md, "Patrones de contenedor y
+// tabla". Dropdown con el mismo mecanismo que PeriodSelector (ref +
+// click afuera, useDropdownDirection/dropdownAnchorStyle, panel e ítem
+// seleccionado con las mismas clases) + Escape, que corta la propagación
+// para cerrar solo la lista y no el Modal que la contiene (Modal escucha
+// Escape en document).
+// Estados: reposo sin borde ni fondo, hover = hover secundario de la app
+// (el de actionBtnCls); abierto = seleccionado persistente; con filtro =
+// siempre pintado, "{label}: {value}" + ×. La × es un botón HERMANO del
+// principal dentro de un contenedor con el estilo de pill (nunca un botón
+// dentro de otro).
+function FilterTrigger({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: { value: string; count: number }[];
+  value: string | null;
+  onChange: (value: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+  const direction = useDropdownDirection(ref, open, 260);
+  const focusCls = "focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2";
+
+  function elegir(v: string | null) {
+    onChange(v);
+    setOpen(false);
+  }
+
+  return (
+    <div
+      ref={ref}
+      style={{ position: "relative" }}
+      className="shrink-0"
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && open) {
+          e.stopPropagation();
+          setOpen(false);
+        }
+      }}
+    >
+      {value === null ? (
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className={`h-8 px-2.5 rounded-sm text-body-sm font-medium border inline-flex items-center gap-1.5 transition-all ${focusCls} ${
+            open
+              ? "bg-primary-tint border-primary text-secondary"
+              : "border-transparent bg-transparent text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
+          }`}
+        >
+          {label}
+          {open ? <ChevronUp size={12} strokeWidth={1.5} /> : <ChevronDown size={12} strokeWidth={1.5} />}
+        </button>
+      ) : (
+        <div className="h-8 rounded-sm text-body-sm font-medium border inline-flex items-center bg-primary-tint border-primary text-secondary">
+          <button
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className={`h-full pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 ${focusCls}`}
+          >
+            {label}: {value}
+            {open ? <ChevronUp size={12} strokeWidth={1.5} /> : <ChevronDown size={12} strokeWidth={1.5} />}
+          </button>
+          <button
+            type="button"
+            aria-label={`Quitar filtro ${label}`}
+            onClick={() => elegir(null)}
+            className={`h-full px-1.5 rounded-sm inline-flex items-center ${focusCls}`}
+          >
+            <X size={12} strokeWidth={1.5} />
+          </button>
+        </div>
+      )}
+      {open && (
+        <div
+          role="listbox"
+          aria-label={label}
+          className="absolute left-0 min-w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
+        >
+          <div className="p-1.5 flex flex-col gap-0.5 overflow-y-auto" style={{ maxHeight: 260 }}>
+            {[{ value: null as string | null, count: null as number | null }, ...options].map((o) => {
+              const sel = o.value === value;
+              return (
+                <button
+                  key={o.value ?? "__todas"}
+                  type="button"
+                  role="option"
+                  aria-selected={sel}
+                  onClick={() => elegir(o.value)}
+                  className={`w-full px-2.5 py-2 rounded-sm border text-left text-body transition-colors flex items-center justify-between gap-4 whitespace-nowrap
+                    ${sel ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-gray-100"}`}
+                >
+                  <span>{o.value ?? "Todas"}</span>
+                  {o.count !== null && <span className="text-caption text-gray-500 tabular-nums">{o.count}</span>}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -3118,6 +3239,7 @@ const DRAWER_TABS = [
     // nombre, dos significados distintos dentro del drawer — reportado,
     // sin resolver a propósito (ver mensaje de entrega).
     cols: ["Reposición", "Hora reposición", "Fase", "Equipo", "Usuarios BT"],
+    filtrables: [] as string[],
     // Sin uso — Card B arma sus propias filas via generarFasesSinteticas,
     // acá solo quedan cols/subtitle/key/label.
     rows: [] as string[][],
@@ -3126,12 +3248,15 @@ const DRAWER_TABS = [
     key: "tabla3", label: "Tabla 3",
     subtitle: "Existencia en tabla",
     cols: ["Existencia"],
+    filtrables: [] as string[],
     rows: [] as string[][],
   },
   {
     key: "tabla5", label: "Tabla 5",
     subtitle: "Transformadores MT/BT repuestos en interrupciones AT/MT (CDS5)",
     cols: ["Interrupción", "Fase", "Cadena eléctrica", "Potencia (Kva)", "Fase eléctrica", "Cant. clientes BT"],
+    // Columnas con FilterTrigger en el toolbar del modal (por nombre de `cols`).
+    filtrables: ["Fase eléctrica"],
     // Sin uso — ModificarContent arma las filas via generarFilasTabla5,
     // acá solo quedan cols/subtitle/key/label.
     rows: [] as string[][],
@@ -3140,6 +3265,7 @@ const DRAWER_TABS = [
     key: "tabla6", label: "Tabla 6",
     subtitle: "Clientes AT/MT afectados en interrupciones AT/MT (CDS6)",
     cols: ["Interrupción", "Fase", "Cliente", "Consumo", "CT T9", "CT T10", "Tarifa", "Demanda media", "Tensión"],
+    filtrables: ["Tarifa", "Tensión", "CT T9", "CT T10"],
     // Sin uso — ModificarContent arma las filas via generarFilasTabla6.
     rows: [] as string[][],
   },
@@ -3147,6 +3273,7 @@ const DRAWER_TABS = [
     key: "tabla8", label: "Tabla 8",
     subtitle: "Reclamos de clientes (CDS8)",
     cols: ["Reclamo", "Fecha", "Cliente", "Nombre", "Tarifa", "Causa", "Piso", "Dpto", "Partido"],
+    filtrables: ["Tarifa", "Causa", "Partido"],
     // Sin uso — ModificarContent arma las filas via generarFilasTabla8.
     rows: [] as string[][],
   },
@@ -3154,6 +3281,7 @@ const DRAWER_TABS = [
     key: "tabla9", label: "Tabla 9",
     subtitle: "Interrupciones por cliente (CDS9)",
     cols: ["Interrupción", "Fase", "Cliente", "Tarifa", "CT T9", "CT T10"],
+    filtrables: ["Tarifa", "CT T9", "CT T10"],
     // Sin uso — ModificarContent arma las filas via generarFilasTabla9.
     rows: [] as string[][],
   },
@@ -3192,11 +3320,35 @@ function CodeBadge({ code }: { code: string }) {
 // md ahí (ej. Resultados, con Auditoría/Exportar/Insertar a h-9), y las
 // cards no alineaban entre sí. items-center centra título/tag/right dentro
 // de ese alto fijo, tengan o no acciones.
-function CardHeader({ title, tag, right }: { title: string; tag?: string; right?: React.ReactNode }) {
+// `context` (opcional): el registro padre de los datos de la card (ej.
+// "Interrupción <ref>" en Reposiciones), en la misma línea después del
+// tag — "·" de Tablas relacionadas + rótulo y valor con las clases que
+// tenía la franja "INTERRUPCIÓN" de Reposiciones. No suma alto, así que se
+// ve en todos los tiers. Sin `context` el header queda igual que siempre.
+// `right` es solo para acciones de alcance tabla, nunca sobre el registro
+// seleccionado (ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla").
+function CardHeader({
+  title,
+  tag,
+  context,
+  right,
+}: {
+  title: string;
+  tag?: string;
+  context?: { label: string; value: string };
+  right?: React.ReactNode;
+}) {
   return (
     <div className="h-14 px-5 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center gap-2">
       <span className="text-label font-semibold text-gray-900">{title}</span>
       {tag && <CodeBadge code={tag} />}
+      {context && (
+        <>
+          <span className="text-gray-400">·</span>
+          <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">{context.label}</span>
+          <span className="text-body-sm font-medium text-gray-800 tabular-nums font-mono">{context.value}</span>
+        </>
+      )}
       {right && <div className="ml-auto shrink-0">{right}</div>}
     </div>
   );
@@ -3779,8 +3931,8 @@ function ChipDuracion({ minutos }: { minutos: number }) {
 //                padding 5 (el mismo px-5 del wrapper del panel);
 //   título     → el título de sección "Tablas relacionadas", y la línea
 //                replica su estructura (título · registro): "·" gray-400 +
-//                la referencia con las clases del valor de la franja
-//                "INTERRUPCIÓN" de Reposiciones (+ el group-hover a
+//                la referencia con las clases del valor de `context` en
+//                el header de Reposiciones (+ el group-hover a
 //                secondary del resto de la card). Solo con selección;
 //                sin rótulo "INTERRUPCIÓN", el título ya lo dice;
 //   etiquetas  → las etiquetas de RelacionadaChip ("TABLA 3"…);
@@ -4589,11 +4741,44 @@ function ModificarContent({
     }
   })();
 
+  // Filtros por columna del toolbar (FilterTrigger): columna → valor, null
+  // o ausente = sin filtro. Viven acá y no en useTableToolbar (compartido
+  // con los ABM). Se resetean con la misma clave que el buscador.
+  const relResetKey = `${relTab}#${modSelectedFase}`;
+  const [relFiltros, setRelFiltros] = useState<Record<string, string | null>>({});
+  useEffect(() => {
+    setRelFiltros({});
+  }, [relResetKey]);
+  const relFiltrables = activeTabData?.filtrables ?? [];
+  const relColIdx = (col: string) => activeTabData?.cols.indexOf(col) ?? -1;
+  // Filas que pasan todos los filtros activos (AND, igualdad exacta),
+  // salvo el de `excepto` — para calcular las opciones de cada trigger
+  // sobre los DEMÁS filtros.
+  const relFiltrarFilas = (excepto?: string) =>
+    relTabRows.filter((row) =>
+      relFiltrables.every((col) => {
+        const v = relFiltros[col];
+        return col === excepto || v == null || row[relColIdx(col)] === v;
+      })
+    );
+  const relFilteredRows = relFiltrarFilas();
+  const relFiltrosActivos = relFiltrables.filter((col) => relFiltros[col] != null).length;
+  const relOpcionesFiltro = (col: string) => {
+    const ci = relColIdx(col);
+    const conteo = new Map<string, number>();
+    for (const row of relFiltrarFilas(col)) conteo.set(row[ci], (conteo.get(row[ci]) ?? 0) + 1);
+    return [...conteo.entries()]
+      .map(([value, count]) => ({ value, count }))
+      .sort((a, b) => a.value.localeCompare(b.value, "es", { numeric: true }));
+  };
+
   // Tabla del tab activo — se resetea al cambiar de tab O de reposición
-  // seleccionada (el contenido de cada tab depende de ambas).
+  // seleccionada (el contenido de cada tab depende de ambas). Recibe las
+  // filas YA filtradas: relVisibleIndices indexa relFilteredRows, no
+  // relTabRows.
   const relGetCells = (row: string[]) => row;
   const { search: relSearch, setSearch: setRelSearch, sortIdx: relSortIdx, sortDir: relSortDir, toggleSort: relToggleSort, visibleIndices: relVisibleIndices } =
-    useTableToolbar(relTabRows, relGetCells, `${relTab}#${modSelectedFase}`);
+    useTableToolbar(relFilteredRows, relGetCells, relResetKey);
 
   // Datos de la Interrupción (widget + modal, Card B) — solo tiene sentido
   // con una interrupción seleccionada; sin selección, la sección completa
@@ -4923,25 +5108,10 @@ function ModificarContent({
       >
 
         {/* Header — mismo componente/tratamiento que el de Card B (Reposiciones).
-            "Ver datos de interrupción" vive acá (antes en el header de Card B). */}
-        <CardHeader
-          title="Interrupciones"
-          tag="CDS2"
-          right={
-            <button
-              type="button"
-              onClick={() => setDatosInterrupcionOpen(true)}
-              disabled={!hasSelection}
-              title={hasSelection ? undefined : "Seleccioná una interrupción"}
-              className={actionBtnCls("neutral") + " disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"}
-            >
-              <span className="inline-flex items-center gap-1.5">
-                <Activity size={14} strokeWidth={1.5} />
-                Ver datos de interrupción
-              </span>
-            </button>
-          }
-        />
+            Sin acciones: el header lleva solo acciones de alcance tabla, y
+            "Datos de la Interrupción" se abre desde la card de Reclamos
+            (ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla"). */}
+        <CardHeader title="Interrupciones" tag="CDS2" />
 
         {/* Table toolbar — solo buscador, sin Exportar. En tier 760px suma
             el dropdown "Acciones" a la derecha del buscador (children,
@@ -5056,23 +5226,15 @@ function ModificarContent({
           className="flex-1 min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
           style={CARD_SHADOW}
         >
-          <CardHeader title="Reposiciones" tag="CDS4" />
-
-          {/* Interrupción seleccionada (la reposición activa se muestra en
-              el título de "Tablas relacionadas", en el pie de la tabla de
-              Reposiciones) — franja fija (shrink-0), FUERA del body scrolleable de
-              abajo: antes vivía adentro de overflow-y-auto y se perdía al
-              scrollear. Oculta en tier 760px: no aporta lo suficiente para
-              el espacio que ocupa ahí (en tamaño normal se queda como
-              está). */}
-          {selectedRecord && (
-            <div className="px-5 py-2.5 border-b border-gray-100 shrink-0 flex items-center gap-2 [@media(max-height:760px)]:hidden">
-              <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Interrupción</span>
-              <span className="text-body-sm font-medium text-gray-800 tabular-nums font-mono">
-                {selectedRecord.referencia}
-              </span>
-            </div>
-          )}
+          {/* La interrupción seleccionada (registro padre de las
+              reposiciones) va como `context` del header — reemplaza a la
+              franja "INTERRUPCIÓN" que vivía debajo y se ocultaba en tier
+              760px. */}
+          <CardHeader
+            title="Reposiciones"
+            tag="CDS4"
+            context={selectedRecord ? { label: "Interrupción", value: selectedRecord.referencia } : undefined}
+          />
 
           <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
 
@@ -5237,20 +5399,55 @@ function ModificarContent({
             onSelect={setRelTab}
           />
 
-          {/* Descripción del tab activo (izquierda) + buscador acotado a
-              ~w-72 (derecha) — TableToolbar en modo `bare`, sin su propio
-              contenedor/borde/padding: esta fila ya los aporta. Tabla 3 no
+          {/* Descripción del tab activo, sola en su fila. Tabla 3 no
               repite descripción, el resultado (Sí/No existe) ya la dice. */}
-          <div className="px-5 py-3 shrink-0 flex items-center justify-between gap-4">
-            <p className="text-body-sm text-gray-600 leading-snug flex-1 min-w-0">
+          <div className="px-5 pt-3 pb-1 shrink-0">
+            <p className="text-body-sm text-gray-600 leading-snug">
               {activeTabData && activeTabData.key !== "tabla3" ? activeTabData.subtitle : null}
             </p>
-            <div className="w-72 shrink-0">
-              {relTabRows.length > 0 && (
-                <TableToolbar search={relSearch} onSearchChange={setRelSearch} hideExport bare />
-              )}
-            </div>
           </div>
+
+          {/* Toolbar de la tabla (ver DESIGN_SYSTEM.md, "Patrones de
+              contenedor y tabla"): buscador (TableToolbar `bare`) → divisor
+              (el de PersistentActionsBar) → un FilterTrigger por columna
+              filtrable del tab → a la derecha "Limpiar filtros" (clases del
+              flyout "Más filtros", solo con ≥1 filtro activo) + contador.
+              Tabla 3 no tiene toolbar. */}
+          {relTabRows.length > 0 && (
+            <div className="px-5 py-2.5 shrink-0 flex items-center gap-2">
+              <div className="w-64 shrink-0">
+                <TableToolbar search={relSearch} onSearchChange={setRelSearch} hideExport bare />
+              </div>
+              {relFiltrables.length > 0 && (
+                <>
+                  <div className="w-px h-5 bg-gray-300 shrink-0" />
+                  {relFiltrables.map((col) => (
+                    <FilterTrigger
+                      key={col}
+                      label={col}
+                      options={relOpcionesFiltro(col)}
+                      value={relFiltros[col] ?? null}
+                      onChange={(v) => setRelFiltros((prev) => ({ ...prev, [col]: v }))}
+                    />
+                  ))}
+                </>
+              )}
+              <div className="ml-auto shrink-0 flex items-center gap-4">
+                {relFiltrosActivos > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setRelFiltros({})}
+                    className="text-body-sm font-medium text-primary hover:text-secondary transition-colors"
+                  >
+                    Limpiar filtros
+                  </button>
+                )}
+                <span className="text-caption text-gray-600 tabular-nums">
+                  <span className="font-semibold text-gray-700">{relVisibleIndices.length}</span> de {relTabRows.length} registros
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Área de la tabla — única zona con scroll del modal (los dos
               ejes). Tabla 3 y los estados vacíos viven ACÁ ADENTRO,
@@ -5325,6 +5522,15 @@ function ModificarContent({
                     )}
                   </div>
                 </div>
+              ) : relFiltrosActivos > 0 && relVisibleIndices.length === 0 ? (
+                /* Los filtros dejaron 0 filas — mismo empty state (Inbox)
+                   que "Sin registros". */
+                <div className="h-full min-h-[180px] flex items-center justify-center p-6">
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
+                    <p className="text-body font-medium text-gray-600">Sin resultados para los filtros aplicados</p>
+                  </div>
+                </div>
               ) : (
                 <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
                   <thead>
@@ -5342,7 +5548,7 @@ function ModificarContent({
                   </thead>
                   <tbody>
                     {relVisibleIndices.map((ri) => {
-                      const row = relTabRows[ri];
+                      const row = relFilteredRows[ri];
                       // Cuando la tabla mapea a ABM y la primera columna es
                       // "Interrupción", esa celda es el valor más confiable
                       // para el deep-link; si no, se usa la interrupción
