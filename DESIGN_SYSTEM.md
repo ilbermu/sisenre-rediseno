@@ -72,7 +72,8 @@ contenido de trabajo — no en el header ni en una card.
   panel). Su único hijo es un wrapper `h-full flex flex-col min-h-0` que arma
   el layout interno: filas fijas (`shrink-0`, con su propio `px-5` para
   alinear con el header) arriba — la primera de ellas el dato interactivo del
-  momento (ver `MetaChip`/`FaseIndicador` abajo), sin `border-b` propio (lo
+  momento (la barra de contexto de registro, ver regla 7 de "Patrones de
+  contenedor y tabla"), sin `border-b` propio (lo
   pone la fila de tabs de abajo) — la zona de contenido de trabajo (`flex-1
   min-h-0`) al final.
 - **El scroll vive DENTRO de un contenedor propio** con su propio borde
@@ -107,37 +108,25 @@ text-gray-600`, `line-clamp-2` + `title`) — muestra el texto completo si
 entra en 2 líneas, solo trunca con "…" si lo excede. `className` para
 ajustes del propio grid item (ej. `col-span-2`).
 
-**No es el patrón para un grupo de chips sutiles** (más liviano que un tile
-de grilla, para datos alineados en una fila — ver `MetaChip` abajo).
+**No es el patrón para datos alineados en una fila** — para eso, texto plano
+separado por "·" (ver "Barra de contexto de registro", regla 7 de "Patrones
+de contenedor y tabla"). `MetaChip` (chips sutiles por dato) se retiró: la
+fila de la reposición activa del modal "Tablas relacionadas" pasó a esa
+barra, sin cajas dentro de la caja.
 
-## `MetaChip`: chip sutil de metadato en una fila
+## `FaseIndicador`: fases de solo lectura
 
-`MetaChip` (`src/App.tsx`, junto a `FaseReposicionFicha`) es un chip más
-liviano que `DataTile` — `inline-flex h-7 px-2.5 rounded-md border
-text-body-sm`, para datos de solo lectura alineados en una FILA (no una
-grilla) — ej. el grupo de datos de la reposición activa en el modal "Tablas
-relacionadas". Label opcional + valor + ícono opcional a la izquierda (el
-ícono se pasa sin color propio — solo la forma — `MetaChip` lo envuelve con
-el color de la variante). Dos variantes:
-
-- **`"neutral"`** (default): fondo `gray-50`, borde `gray-200`, label
-  `gray-500`, valor `gray-800 font-medium tabular-nums`, ícono `gray-400`. La
-  mayoría de los datos.
-- **`"accent"`**: fondo `--color-primary-tint`, borde `--color-chip-border`,
-  texto `secondary` (label a `/60` de opacidad) — el mismo lenguaje del
-  estado "seleccionado persistente" del sistema (ver `UnderlineTabs` abajo).
-  Para la ENTIDAD seleccionada del grupo (ej. "Reposición {n}"), no para un
-  dato cualquiera — no mezclar con `"neutral"` dentro del mismo grupo salvo
-  para marcar justo esa diferencia.
-
-`FaseIndicador` (mismo archivo) es un indicador compuesto de 3 mini-cajas
-fijas R/S/T (`18×18` — tamaño pedido explícitamente, sin paso de la escala de
-spacing que dé ese valor) — SIEMPRE en ese orden, resaltando con el mismo
-tint+borde celeste de `"accent"` las letras presentes en el valor real (ej.
-"RS" resalta R y S) y `gray-300`/`border-gray-200` las ausentes. Es un
-indicador ÚNICO, no 3 datos independientes: `role="img"` + `aria-label` con
-el valor real en el contenedor, cada caja individual `aria-hidden`. Se usa
-como `value` de un `MetaChip` (ej. `label="Fase"`).
+`FaseIndicador` (`src/App.tsx`, junto a `FaseReposicionFicha`) es un
+indicador compuesto de 3 mini-cajas fijas R/S/T (`18×18` — tamaño pedido
+explícitamente, sin paso de la escala de spacing que dé ese valor) — SIEMPRE
+en ese orden, resaltando con tint + `border-chip-border` + `text-secondary`
+las letras presentes en el valor real (ej. "RS" resalta R y S) y
+`gray-300`/`border-gray-200` las ausentes. Es de **solo lectura** (la
+selección de fase existe en ABM y consultas, no acá): `<span>`, sin hover ni
+cursor, fuera del orden de tabulación. Cada caja es `aria-hidden` y un
+`sr-only` describe el estado con las fases presentes (ej. "Fases: R, S y T").
+Es la única excepción a "sin cajas dentro de la caja" en la barra de
+contexto: cada letra es un estado.
 
 ## `CopyButton`: acción de copiar con feedback real
 
@@ -152,8 +141,9 @@ copiada" en un `sr-only aria-live="polite"` — nunca simula el estado de éxito
 si la operación falló o no está implementada.
 
 Ese último punto es la razón por la que el botón "Copiar datos de la
-reposición" (mismo estilo visual, ícono `ClipboardList`, junto a los
-`MetaChip` de la reposición activa en "Tablas relacionadas") es una EXCEPCIÓN
+reposición" (ícono `ClipboardList`, al final de los datos de la barra de
+contexto de la reposición en "Tablas relacionadas"; sin borde en reposo, con
+el hover secundario de la app) es una EXCEPCIÓN
 deliberada: su `onClick` está vacío (`TODO` en el código, pendiente de definir
 qué copia y en qué formato) y por eso NO usa el patrón de feedback de
 `CopyButton` — mostrar el ícono de "copiado" sin haber copiado nada sería
@@ -266,3 +256,14 @@ exterior, nunca sus secciones.
    tabulación, `cursor-default`, sin hover) con borde punteado
    (`border-dashed border-gray-300`, sin fondo) y texto `gray-500` — ej.
    los tiles de "Tablas relacionadas" con 0, "No" o sin selección.
+7. **Barra de contexto de registro**: cuando una vista (modal, drawer) opera
+   sobre un registro, arriba va un contenedor único (borde de card, fondo
+   blanco) con identificador en semibold + tag de código de origen
+   (`CodeBadge`, el de `CardHeader`) + metadatos como texto plano separados
+   por "·", valor en `gray-700` y unidades/labels en `gray-500`. Sin chips
+   internos, salvo estados de solo lectura (p. ej. fases, `FaseIndicador`)
+   o controles. Navegación entre registros anclada a la derecha
+   (`ml-auto self-start`: con el grupo izquierdo en wrap, queda arriba a la
+   derecha; nunca scroll horizontal). Todo el contenido debajo pertenece a
+   ese registro. Ej.: `FaseReposicionFicha` en "Tablas relacionadas"
+   ("Reposición 1 `CDS4` · hora · Fase R S T · equipo · usuarios BT").

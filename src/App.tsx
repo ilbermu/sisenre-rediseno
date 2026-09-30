@@ -4322,51 +4322,25 @@ function DataTile({
   return <div className={cls}>{content}</div>;
 }
 
-// Chip sutil de metadato — label opcional + valor + ícono opcional a la
-// izquierda. Dos variantes: "neutral" (fondo gray-50/borde gray-200 — la
-// mayoría de los datos, de solo lectura) y "accent" (fondo
-// --color-primary-tint/borde --color-chip-border/texto secondary — el
-// mismo lenguaje del estado "seleccionado persistente" del sistema, para
-// la ENTIDAD seleccionada, no para un dato cualquiera). El ícono se pasa
-// sin color propio (solo la forma) — MetaChip lo envuelve con el color que
-// corresponda a la variante, así el llamador no repite esa lógica.
-function MetaChip({
-  icon,
-  label,
-  value,
-  variant = "neutral",
-}: {
-  icon?: React.ReactNode;
-  label?: string;
-  value: React.ReactNode;
-  variant?: "neutral" | "accent";
-}) {
-  const accent = variant === "accent";
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md border text-body-sm whitespace-nowrap ${
-        accent ? "bg-primary-tint border-chip-border text-secondary" : "bg-gray-50 border-gray-200 text-gray-800"
-      }`}
-    >
-      {icon && <span className={accent ? "text-secondary/60" : "text-gray-400"}>{icon}</span>}
-      {label && <span className={accent ? "text-secondary/60" : "text-gray-500"}>{label}</span>}
-      <span className={`font-medium tabular-nums ${accent ? "text-secondary" : "text-gray-800"}`}>{value}</span>
-    </span>
-  );
-}
-
 // Indicador de fase eléctrica — 3 mini-cajas fijas R/S/T (18×18, tamaño
 // pedido explícitamente, no hay un paso de la escala de spacing que dé
 // justo ese valor). Siempre las 3 en ese orden, resalta las presentes en
 // `fase` (ej. "RS" resalta R y S) con el mismo tint+borde celeste que el
 // resto de los indicadores "accent" del sistema; las ausentes quedan en
-// gray-300/border-gray-200. Es un indicador compuesto, no 3 datos
-// independientes — role="img" + aria-label con el valor real en el
-// contenedor, cada caja individual aria-hidden.
+// gray-300/border-gray-200. Es un indicador compuesto de SOLO LECTURA (la
+// selección de fase existe en ABM y consultas, no acá): <span>, sin hover
+// ni cursor, fuera del orden de tabulación. Cada caja es aria-hidden y un
+// sr-only describe el estado con las fases presentes (ej. "Fases: R, S y T").
 function FaseIndicador({ fase }: { fase: string }) {
   const letras = ["R", "S", "T"] as const;
+  const presentes = letras.filter((l) => fase.includes(l));
+  const textoFases =
+    presentes.length <= 1
+      ? `Fase: ${presentes[0] ?? "—"}`
+      : `Fases: ${presentes.slice(0, -1).join(", ")} y ${presentes[presentes.length - 1]}`;
   return (
-    <span className="flex items-center gap-0.5" role="img" aria-label={`Fase ${fase}`}>
+    <span className="flex items-center gap-0.5">
+      <span className="sr-only">{textoFases}</span>
       {letras.map((letra) => {
         const presente = fase.includes(letra);
         return (
@@ -4387,9 +4361,14 @@ function FaseIndicador({ fase }: { fase: string }) {
 
 // Reposición activa — primer elemento del body del modal "Tablas
 // relacionadas", en fondo blanco arriba de UnderlineTabs (antes vivía en
-// headerExtra). Grupo de MetaChip (Reposición activa en "accent" — es la
-// entidad seleccionada — el resto en "neutral") + botón "Copiar datos de
-// la reposición" a la izquierda, paginador ‹ › a la derecha.
+// headerExtra). Barra de contexto de registro (DESIGN_SYSTEM.md, regla 7):
+// identifica la reposición de CDS4 a la que pertenecen todos los tabs de
+// abajo. Contenedor único, estilo "latest commit": "Reposición {n}" en
+// semibold + CodeBadge CDS4 (el tag de CardHeader) + metadatos como texto
+// plano separados por "·" (el separador del `context` de CardHeader),
+// valores gray-700 y labels/unidades gray-500; sin chips adentro salvo
+// FaseIndicador (estado de solo lectura). Botón "Copiar datos de la
+// reposición" al final del grupo izquierdo, paginador ‹ › a la derecha.
 //
 // Destello: useMatchMedia sigue prefers-reduced-motion en vivo — con
 // reduce-motion activo, directamente no destella. prevNroRef guarda la
@@ -4400,7 +4379,7 @@ function FaseIndicador({ fase }: { fase: string }) {
 // componente vuelve a montar de cero y prevNroRef arranca ya en el valor
 // actual, sin comparación previa que dispare un destello espurio. El
 // timeout se limpia tanto al re-disparar como al desmontar. El destello
-// se aplica al grupo entero (chips + botón copiar + paginador).
+// se aplica al contenedor entero (datos + botón copiar + paginador).
 function FaseReposicionFicha({
   fila,
   reposicionIndex,
@@ -4438,46 +4417,62 @@ function FaseReposicionFicha({
   // TODO: definir contenido y formato del copiado (pendiente de definición)
   function handleCopiarDatosReposicion() {}
 
+  const sep = <span className="text-gray-400">·</span>;
   return (
-    <div
-      aria-live="polite"
-      className={`px-5 py-3 shrink-0 flex items-center justify-between gap-4 transition-colors duration-300 ${flash ? "bg-primary-tint" : ""}`}
-    >
-      <div className="flex items-center gap-2 flex-wrap min-w-0">
-        <MetaChip variant="accent" value={<>Reposición {fila.nro}</>} />
-        <MetaChip icon={<Clock size={13} strokeWidth={1.5} />} value={fila.horaRep} />
-        <MetaChip label="Fase" value={<FaseIndicador fase={fila.fase} />} />
-        <MetaChip
-          value={
-            <span className="inline-flex items-center gap-1.5">
-              <span className="font-mono text-gray-800 font-medium">{fila.equipoCodigo}</span>
-              <span className="font-normal text-gray-500 truncate max-w-[220px]" title={fila.equipoDesc}>
-                {fila.equipoDesc}
-              </span>
-            </span>
-          }
-        />
-        <MetaChip
-          icon={<Users size={13} strokeWidth={1.5} />}
-          value={
-            <>
-              <span className="font-medium">{fila.usuariosBT}</span> <span className="font-normal">usuarios BT</span>
-            </>
-          }
-        />
+    // Wrapper px-5 py-3 (el de antes: mismo margen horizontal que el resto
+    // del modal y misma separación con los tabs) + contenedor único con
+    // borde/radio de card y fondo blanco — el destello pinta este
+    // contenedor. Sin cajas adentro salvo los badges de Fase (estado de
+    // solo lectura). La navegación va self-start: con el grupo izquierdo
+    // en wrap queda anclada arriba a la derecha.
+    <div aria-live="polite" className="px-5 py-3 shrink-0">
+      <div
+        className={`border border-gray-200 rounded-sm px-4 py-2.5 flex items-center gap-3 transition-colors duration-300 ${flash ? "bg-primary-tint" : "bg-white"}`}
+      >
+      <div className="flex items-center flex-wrap gap-x-2 gap-y-1 min-w-0 text-body-sm">
+        <span className="font-semibold text-gray-900 whitespace-nowrap">Reposición {fila.nro}</span>
+        <CodeBadge code="CDS4" />
+        {sep}
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+          <span className="text-gray-500"><Clock size={14} strokeWidth={1.5} /></span>
+          <span className="text-gray-700 tabular-nums">{fila.horaRep}</span>
+        </span>
+        {sep}
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+          <span className="text-gray-500">Fase</span>
+          <FaseIndicador fase={fila.fase} />
+        </span>
+        {sep}
+        <span className="inline-flex items-center gap-1.5 min-w-0">
+          <span className="font-mono text-gray-700">{fila.equipoCodigo}</span>
+          <span className="text-gray-500 truncate max-w-[220px]" title={fila.equipoDesc}>
+            {fila.equipoDesc}
+          </span>
+        </span>
+        {sep}
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+          <span className="text-gray-500"><Users size={14} strokeWidth={1.5} /></span>
+          <span className="text-gray-700 font-medium tabular-nums">{fila.usuariosBT}</span>
+          <span className="text-gray-500">usuarios BT</span>
+        </span>
+        {/* Sin borde en reposo, hover secundario de la app. Hoy no copia
+            nada (handler vacío, ver TODO arriba) y por eso tampoco tiene
+            feedback de "copiado" — se conserva tal cual. */}
         <button
           type="button"
           onClick={handleCopiarDatosReposicion}
           aria-label="Copiar datos de la reposición"
           title="Copiar datos de la reposición"
-          className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all shrink-0"
+          className="w-8 h-8 flex items-center justify-center rounded-sm border border-transparent text-gray-600 hover:bg-primary-tint hover:border-primary hover:text-secondary focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 transition-all shrink-0"
         >
           <ClipboardList size={14} strokeWidth={1.5} />
         </button>
       </div>
       {totalReposiciones > 1 && (
-        <div className="shrink-0 flex items-center gap-1">
-          <span className="text-body-sm text-gray-600 tabular-nums mr-1">{reposicionIndex + 1} de {totalReposiciones}</span>
+        <div className="ml-auto self-start shrink-0 flex items-center gap-1">
+          <span className="text-caption text-gray-600 tabular-nums mr-1">
+            <span className="font-semibold text-gray-700">{reposicionIndex + 1}</span> de {totalReposiciones}
+          </span>
           <button
             type="button"
             onClick={() => onChangeReposicion(reposicionIndex - 1)}
@@ -4498,6 +4493,7 @@ function FaseReposicionFicha({
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 }
