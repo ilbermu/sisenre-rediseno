@@ -3546,20 +3546,31 @@ function CodeBadge({ code }: { code: string }) {
 // tenía la franja "INTERRUPCIÓN" de Reposiciones. No suma alto, así que se
 // ve en todos los tiers. Sin `context` el header queda igual que siempre.
 // `right` es solo para acciones de alcance tabla, nunca sobre el registro
-// seleccionado (ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla").
+// seleccionado (ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla") —
+// salvo el botón "stretched" de una card de detalle clickeable (ver
+// ReclamosResumenCompacto). `tag` es opcional: sin tag no hay chip.
+// `size="compact"`: header compacto (py-2 con alto según contenido, en vez
+// del h-14 fijo) SOLO en el tier ≤760px — el tier de esta pantalla es CSS
+// ([@media(max-height:760px)]), no una prop que cambie en JS, así que
+// "compact" ya trae el tier adentro; fuera del tier es igual al default.
+// Hoy: las cards de detalle Reclamos y Tablas relacionadas. Sin `size`, el
+// header queda exactamente igual que siempre.
 function CardHeader({
   title,
   tag,
   context,
   right,
+  size = "default",
 }: {
   title: string;
   tag?: string;
   context?: { label: string; value: string };
   right?: React.ReactNode;
+  size?: "default" | "compact";
 }) {
+  const sizeCls = size === "compact" ? "h-14 [@media(max-height:760px)]:h-auto [@media(max-height:760px)]:py-2" : "h-14";
   return (
-    <div className="h-14 px-5 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center gap-2">
+    <div className={`${sizeCls} px-5 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center gap-2`}>
       <span className="text-label font-semibold text-gray-900">{title}</span>
       {tag && <CodeBadge code={tag} />}
       {context && (
@@ -3733,25 +3744,26 @@ function ReposicionesTable({
 // Chip de "Tablas relacionadas" (Modificar interrupción) — etiqueta arriba,
 // valor abajo. `raw` es el valor tal cual sale de generarTablasRelacionadas
 // ("SI"/"NO" para la booleana, conteo como string para el resto);
-// undefined = sin interrupción seleccionada ("—" + disabled).
+// undefined = sin interrupción seleccionada ("—").
 // En reposo NUNCA lleva tint ni borde celeste: el azul relleno queda
 // reservado para la fila seleccionada de ReposicionesTable, justo arriba.
-// Con contenido (conteo > 0 o "Sí"): blanco + borde de card + valor navy;
-// vacío: todo un paso más apagado, pero sigue clickeable (para dar de
-// alta). El azul aparece solo en hover (tint + borde primary) y foco.
+// Con contenido (conteo > 0 o "Sí"): <button> blanco + borde de card +
+// valor navy, abre el modal en ese tab; el azul aparece solo en hover
+// (tint + borde primary) y foco. Sin contenido (0, "No" o sin selección):
+// <div> NO interactivo (fuera del orden de tabulación), borde punteado
+// gray-300, sin fondo ni hover, label y valor gray-500 — nunca opacidad
+// reducida: el valor es información (ver DESIGN_SYSTEM.md, regla 6).
 // El ancho lo fija la etiqueta: el valor tiene w-0 + min-w-full, así no
 // aporta al ancho intrínseco y los chips quedan parejos entre sí.
 function RelacionadaChip({
   label,
   raw,
   booleana,
-  disabled,
   onClick,
 }: {
   label: string;
   raw: string | undefined;
   booleana: boolean;
-  disabled: boolean;
   onClick: () => void;
 }) {
   let valor = "—";
@@ -3766,22 +3778,29 @@ function RelacionadaChip({
       valor = n.toLocaleString("es-AR");
     }
   }
-  const stateCls = conContenido
-    ? "bg-white border-gray-200 enabled:hover:bg-primary-tint enabled:hover:border-primary enabled:active:bg-chip-border-hover"
-    : "bg-gray-50 border-gray-100 enabled:hover:bg-gray-100 enabled:hover:border-gray-300 enabled:active:bg-gray-200";
+  const baseCls = "inline-flex flex-col items-start px-[14px] py-[6px] rounded-md border text-left";
+  const etiqueta = (
+    <span className="text-[10px] leading-tight tracking-[0.05em] whitespace-nowrap text-gray-500">{label}</span>
+  );
+  if (!conContenido) {
+    return (
+      <div className={`${baseCls} border-dashed border-gray-300 bg-transparent cursor-default`}>
+        {etiqueta}
+        <span className="w-0 min-w-full text-[14px] leading-snug whitespace-nowrap text-gray-500">{valor}</span>
+      </div>
+    );
+  }
+  // "TABLA 5" → "Tabla 5"
+  const nombre = label.charAt(0) + label.slice(1).toLowerCase();
   return (
     <button
       type="button"
-      disabled={disabled}
       onClick={onClick}
-      className={`inline-flex flex-col items-start px-[14px] py-[6px] rounded-md border text-left transition-[background-color,border-color] duration-[120ms] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:opacity-40 disabled:cursor-not-allowed ${stateCls}`}
+      aria-label={booleana ? `${nombre}: ${valor}, abrir` : `${nombre}: ${valor} registros, abrir`}
+      className={`${baseCls} bg-white border-gray-200 hover:bg-primary-tint hover:border-primary active:bg-chip-border-hover transition-[background-color,border-color] duration-[120ms] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2`}
     >
-      <span className={`text-[10px] leading-tight tracking-[0.05em] whitespace-nowrap ${conContenido ? "text-gray-500" : "text-gray-400"}`}>
-        {label}
-      </span>
-      <span className={`w-0 min-w-full text-[14px] leading-snug whitespace-nowrap ${conContenido ? "font-medium text-secondary" : "text-gray-500"}`}>
-        {valor}
-      </span>
+      {etiqueta}
+      <span className="w-0 min-w-full text-[14px] leading-snug whitespace-nowrap font-medium text-secondary">{valor}</span>
     </button>
   );
 }
@@ -4141,20 +4160,18 @@ function ChipDuracion({ minutos }: { minutos: number }) {
 }
 
 // Resumen de reclamos (card Interrupciones de Modificar interrupción,
-// debajo de la tabla de Interrupciones) — sin gráfico. Es un <button> que abre "Datos de
-// la Interrupción" (ahí está el gráfico completo, ReclamosTimeline), con el
-// hover secundario de la app (el de "Ver datos de interrupción", ver
-// actionBtnCls): borde primary + fondo primary-tint + texto navy; foco con
-// --color-focus. Sin chevron.
+// debajo de la tabla de Interrupciones) — sin gráfico. Card clickeable que
+// abre "Datos de la Interrupción" (ahí está el gráfico completo,
+// ReclamosTimeline): patrón stretched button (ver el JSX), con el hover
+// secundario de la app sobre toda la card (borde primary + fondo
+// primary-tint + texto navy) y foco con --color-focus.
 // Sin estilos propios: todo copiado de elementos del mismo panel —
-//   contenedor → el de la tabla de Reposiciones (ReposicionesTable), con
-//                padding 5 (el mismo px-5 del wrapper del panel);
-//   título     → el título de sección "Tablas relacionadas", y la línea
-//                replica su estructura (título · registro): "·" gray-400 +
-//                la referencia con las clases del valor de `context` en
-//                el header de Reposiciones (+ el group-hover a
-//                secondary del resto de la card). Solo con selección;
-//                sin rótulo "INTERRUPCIÓN", el título ya lo dice;
+//   contenedor → el de la tabla de Reposiciones (ReposicionesTable): borde
+//                y radio de card, cuerpo blanco (px-5 del panel);
+//   header     → CardHeader, como toda card: título + `context`
+//                "· INTERRUPCIÓN <ref>" (mismo patrón que Reposiciones,
+//                solo con selección) + ChevronRight decorativo en `right`
+//                como señal de que la card se abre; `size="compact"`;
 //   etiquetas  → las etiquetas de RelacionadaChip ("TABLA 3"…);
 //   valores    → los valores de RelacionadaChip en estado con contenido.
 // De los chips se copia la tipografía (tamaño, leading, tracking, peso,
@@ -4173,7 +4190,7 @@ function ReclamosResumenCompacto({
 }: {
   // null = sin interrupción seleccionada (bloque deshabilitado).
   datos: ReclamosInterrupcion | null;
-  // Referencia de la interrupción, para el título; null = sin selección.
+  // Referencia de la interrupción, para el `context` del header; null = sin selección.
   referencia: string | null;
   onClick: () => void;
 }) {
@@ -4193,31 +4210,45 @@ function ReclamosResumenCompacto({
     { etiqueta: "DURACIÓN TOTAL", valor: resumen ? fmtDuracion(resumen.duracionMin) : "—" },
   ];
 
+  const habilitada = datos !== null;
   return (
-    <button
-      type="button"
-      disabled={!datos}
-      onClick={onClick}
-      title={datos ? "Ver datos de la interrupción" : "Seleccioná una interrupción"}
-      className="group block w-full text-left border border-gray-200 rounded-sm overflow-hidden bg-gray-50 px-5 py-5 cursor-pointer transition-all enabled:hover:bg-primary-tint enabled:hover:border-primary focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed"
+    // Stretched button: la card NO es un <button> (CardHeader adentro de un
+    // botón sería HTML inválido). El botón vive en `right` del header y su
+    // ::after (absolute inset-0) cubre toda la card, que es `relative`.
+    // Hover (con datos): el hover secundario de hoy sobre TODA la card —
+    // borde primary + fondo primary-tint, también en el header (el
+    // [&>:first-child] le gana al bg-gray-50 de CardHeader) + textos del
+    // cuerpo a secondary. Foco: el focus-visible del botón se pinta en la
+    // card entera (has-[:focus-visible]).
+    <div
+      data-habilitada={habilitada || undefined}
+      className="group relative rounded-sm border border-gray-200 overflow-hidden bg-white transition-all data-[habilitada]:hover:border-primary data-[habilitada]:hover:bg-primary-tint data-[habilitada]:hover:[&>:first-child]:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:outline-offset-2"
     >
-      <div className="flex items-center flex-wrap gap-2 mb-2">
-        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 group-enabled:group-hover:text-secondary">Reclamos durante la interrupción</p>
-        {datos && referencia && (
-          <>
-            <span className="text-gray-400">·</span>
-            <span className="text-body-sm font-medium text-gray-800 tabular-nums font-mono group-enabled:group-hover:text-secondary">{referencia}</span>
-          </>
-        )}
-      </div>
+      <CardHeader
+        title="Reclamos durante la interrupción"
+        size="compact"
+        context={habilitada && referencia ? { label: "Interrupción", value: referencia } : undefined}
+        right={
+          <button
+            type="button"
+            disabled={!habilitada}
+            onClick={onClick}
+            aria-label="Abrir datos de la interrupción"
+            title={habilitada ? "Ver datos de la interrupción" : "Seleccioná una interrupción"}
+            className="flex items-center text-gray-500 cursor-pointer disabled:cursor-not-allowed focus-visible:outline-none after:absolute after:inset-0"
+          >
+            <ChevronRight size={14} strokeWidth={1.5} aria-hidden />
+          </button>
+        }
+      />
       {/* Etiquetas en la fila 1 y valores en la fila 2 de la misma grilla:
           si una etiqueta parte en dos líneas (card angosta), los valores
           siguen alineados. El divisor va en ambas celdas de cada columna,
           así la línea es continua. */}
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-4 px-5 py-4">
         {columnas.map((c, i) => (
           <span key={`l-${c.etiqueta}`} className={`min-w-0 self-end pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}>
-            <span className="block text-[10px] leading-tight tracking-[0.05em] text-gray-500 group-enabled:group-hover:text-secondary">{c.etiqueta}</span>
+            <span className="block text-[10px] leading-tight tracking-[0.05em] text-gray-500 group-data-[habilitada]:group-hover:text-secondary">{c.etiqueta}</span>
           </span>
         ))}
         {columnas.map((c, i) => (
@@ -4226,7 +4257,7 @@ function ReclamosResumenCompacto({
           </span>
         ))}
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -5530,35 +5561,29 @@ function ModificarContent({
                   preseleccionado en la reposición actual (modSelectedFase
                   es la única fuente de verdad, compartida entre esta card
                   y el modal) y en el tab del chip clickeado. Wrapper mt-3
-                  → el de Reclamos en Interrupciones; contenedor → el
-                  <button> de ReclamosResumenCompacto sin lo interactivo
-                  (es un div: sin hover, cursor ni foco — lo clickeable son
-                  los chips). */}
-              <div className="mt-3 border border-gray-200 rounded-sm overflow-hidden bg-gray-50 px-5 py-5">
-                {/* Título + reposición activa (bloque movido desde la
-                    meta-línea, mismas clases y misma condición). */}
-                <div className="flex items-center flex-wrap gap-2 mb-2">
-                  <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-600">Tablas relacionadas</p>
-                  {tabla4Rows.length > 1 && filaFaseSeleccionada && (
-                    <>
-                      <span className="text-gray-400">·</span>
-                      <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Reposición</span>
-                      <span className="text-body-sm font-medium text-gray-800 tabular-nums">
-                        {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length}
-                      </span>
-                      <span className="text-gray-400">·</span>
-                      <span className="text-body-sm font-medium text-gray-800 tabular-nums">{filaFaseSeleccionada.horaRep}</span>
-                    </>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-[6px]">
+                  → el de Reclamos en Interrupciones; contenedor → el de
+                  ReclamosResumenCompacto sin lo interactivo (sin hover,
+                  cursor ni foco — lo clickeable son los chips): CardHeader
+                  gris + cuerpo blanco. La reposición activa ("Reposición
+                  X de N · hora", misma condición de antes) va como
+                  `context` del header. */}
+              <div className="mt-3 border border-gray-200 rounded-sm overflow-hidden bg-white">
+                <CardHeader
+                  title="Tablas relacionadas"
+                  size="compact"
+                  context={
+                    tabla4Rows.length > 1 && filaFaseSeleccionada
+                      ? { label: "Reposición", value: `${modSelectedFase !== null ? modSelectedFase + 1 : "—"} de ${tabla4Rows.length} · ${filaFaseSeleccionada.horaRep}` }
+                      : undefined
+                  }
+                />
+                <div className="flex flex-wrap gap-[6px] px-5 py-4">
                   {STATUS_ITEMS.map((item) => (
                     <RelacionadaChip
                       key={item.tabKey}
                       label={item.label}
                       raw={hasSelection ? valoresRelacionadas?.[item.tabKey] : undefined}
                       booleana={item.tabKey === "tabla3"}
-                      disabled={!hasSelection}
                       onClick={() => setRelTab(item.tabKey)}
                     />
                   ))}

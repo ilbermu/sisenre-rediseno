@@ -210,12 +210,24 @@ exterior, nunca sus secciones.
    card, prop `context`: `· RÓTULO valor`, ej. "· INTERRUPCIÓN `<ref>`" en
    Reposiciones) + acciones de alcance **TABLA** en `right` (Insertar,
    Exportar, Auditoría). **Nunca** acciones sobre el registro seleccionado.
+   Toda card lleva `CardHeader`, también las de resumen (ej. Reclamos,
+   Tablas relacionadas). El fondo gris es exclusivo del header; el cuerpo
+   es siempre blanco. El tag es opcional. `size="compact"` achica el header
+   (`py-2` con alto según contenido, en vez del `h-14` fijo) solo en el tier
+   ≤760px — hoy, en las dos cards de detalle.
 2. **Registro seleccionado**: se marca como fila resaltada en su tabla
    (`--color-primary-tint` + acento `inset 3px 0 0 var(--color-primary)`).
    En paneles que muestran datos hijos de ese registro, el registro va como
    `context` en el header. El detalle completo se abre desde la card de
    detalle clickeable (ej. `ReclamosResumenCompacto` → "Datos de la
-   Interrupción"), sin un botón duplicado en ningún header.
+   Interrupción"), sin un botón duplicado en ningún header. La card de
+   detalle clickeable usa el patrón **stretched button**: el botón vive en
+   el header (`right` de `CardHeader`, con `aria-label`) y su `::after`
+   (`after:absolute after:inset-0`) cubre la card, que es `relative`; nunca
+   se envuelve la card en un `<button>` (un heading dentro de un botón es
+   HTML inválido). Hover y foco sobre toda la card (`hover:` en la card,
+   `has-[:focus-visible]:outline-*`), y `ChevronRight` decorativo en el
+   header como señal de que se abre.
 3. **Trigger de filtro sin borde** (`FilterTrigger`): es el **ÚNICO** uso
    permitido de un botón sin borde en reposo, y solo como trigger de filtro
    dentro del toolbar de una tabla. Hover = el hover secundario de la app
@@ -248,3 +260,9 @@ exterior, nunca sus secciones.
    "Buscar referencia…"; el `aria-label` es el mismo texto sin los puntos
    suspensivos). Prohibido "Buscar en la tabla…" en tablas nuevas. Con
    filtros por columna, el buscador cubre solo las columnas no filtrables.
+6. **Estados sin datos**: nunca con opacidad reducida si el elemento muestra
+   un valor (el valor es información, no decoración). Si no es interactivo,
+   se renderiza como elemento no interactivo (`<div>`, fuera del orden de
+   tabulación, `cursor-default`, sin hover) con borde punteado
+   (`border-dashed border-gray-300`, sin fondo) y texto `gray-500` — ej.
+   los tiles de "Tablas relacionadas" con 0, "No" o sin selección.
