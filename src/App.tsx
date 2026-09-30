@@ -3220,7 +3220,10 @@ const REPOSICIONES_ROW_H = 50;
 // FaseReposicionFicha y el paginador ‹ › del modal), así que esas dos
 // props quedaron sin uso y se sacaron junto con su lógica; modSelectedFase
 // sigue siendo la única fuente de verdad, compartida vía el paginador del
-// modal en vez de esta tabla. Columnas fijas (Reposición/Hora/Fase/
+// modal en vez de esta tabla. Mismo criterio con `footer`: "Tablas
+// relacionadas" pasó de pie de la tabla a card propia debajo de ella (por
+// coherencia con Reclamos en la card Interrupciones), y la prop se sacó.
+// Columnas fijas (Reposición/Hora/Fase/
 // Equipo/Usuarios BT vienen de FaseReposicion, no de un array genérico) —
 // `cols` solo aporta las etiquetas de header, para que DRAWER_TABS siga
 // siendo la única fuente de los títulos. Header <th> sticky + scroll propio
@@ -3246,16 +3249,12 @@ function ReposicionesTable({
   selectedIndex,
   onSelect,
   maxHeight = REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 5,
-  footer,
 }: {
   cols: string[];
   rows: FaseReposicion[];
   selectedIndex: number | null;
   onSelect: (index: number | null) => void;
   maxHeight?: number;
-  // Pie dentro del mismo borde de la tabla, fuera del área que scrollea
-  // (hoy: "Tablas relacionadas"). El alto fijo sigue siendo solo el de las filas.
-  footer?: React.ReactNode;
 }) {
   const [hovIndex, setHovIndex] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -3353,7 +3352,6 @@ function ReposicionesTable({
         </tbody>
       </table>
     </div>
-    {footer && <div className="border-t border-gray-200 bg-gray-50 px-3 py-3">{footer}</div>}
     </div>
   );
 }
@@ -3777,7 +3775,12 @@ function ChipDuracion({ minutos }: { minutos: number }) {
 // Sin estilos propios: todo copiado de elementos del mismo panel —
 //   contenedor → el de la tabla de Reposiciones (ReposicionesTable), con
 //                padding 5 (el mismo px-5 del wrapper del panel);
-//   título     → el título de sección "Tablas relacionadas";
+//   título     → el título de sección "Tablas relacionadas", y la línea
+//                replica su estructura (título · registro): "·" gray-400 +
+//                la referencia con las clases del valor de la franja
+//                "INTERRUPCIÓN" de Reposiciones (+ el group-hover a
+//                secondary del resto de la card). Solo con selección;
+//                sin rótulo "INTERRUPCIÓN", el título ya lo dice;
 //   etiquetas  → las etiquetas de RelacionadaChip ("TABLA 3"…);
 //   valores    → los valores de RelacionadaChip en estado con contenido.
 // De los chips se copia la tipografía (tamaño, leading, tracking, peso,
@@ -3791,10 +3794,13 @@ function ChipDuracion({ minutos }: { minutos: number }) {
 // entre fecha y hora, nunca a mitad de la fecha.
 function ReclamosResumenCompacto({
   datos,
+  referencia,
   onClick,
 }: {
   // null = sin interrupción seleccionada (bloque deshabilitado).
   datos: ReclamosInterrupcion | null;
+  // Referencia de la interrupción, para el título; null = sin selección.
+  referencia: string | null;
   onClick: () => void;
 }) {
   const resumen = useMemo(() => (datos ? resumirReclamos(datos) : null), [datos]);
@@ -3821,7 +3827,15 @@ function ReclamosResumenCompacto({
       title={datos ? "Ver datos de la interrupción" : "Seleccioná una interrupción"}
       className="group block w-full text-left border border-gray-200 rounded-sm overflow-hidden bg-gray-50 px-5 py-5 cursor-pointer transition-all enabled:hover:bg-primary-tint enabled:hover:border-primary focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed"
     >
-      <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 mb-2 group-enabled:group-hover:text-secondary">Reclamos durante la interrupción</p>
+      <div className="flex items-center flex-wrap gap-2 mb-2">
+        <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 group-enabled:group-hover:text-secondary">Reclamos durante la interrupción</p>
+        {datos && referencia && (
+          <>
+            <span className="text-gray-400">·</span>
+            <span className="text-body-sm font-medium text-gray-800 tabular-nums font-mono group-enabled:group-hover:text-secondary">{referencia}</span>
+          </>
+        )}
+      </div>
       {/* Etiquetas en la fila 1 y valores en la fila 2 de la misma grilla:
           si una etiqueta parte en dos líneas (card angosta), los valores
           siguen alineados. El divisor va en ambas celdas de cada columna,
@@ -5020,7 +5034,11 @@ function ModificarContent({
             </div>
           </div>
           <div className="mt-3">
-            <ReclamosResumenCompacto datos={reclamosInterrupcion} onClick={() => setDatosInterrupcionOpen(true)} />
+            <ReclamosResumenCompacto
+              datos={reclamosInterrupcion}
+              referencia={selectedRecord?.referencia ?? null}
+              onClick={() => setDatosInterrupcionOpen(true)}
+            />
           </div>
         </div>
       </div>
@@ -5067,44 +5085,46 @@ function ModificarContent({
                 selectedIndex={modSelectedFase}
                 onSelect={setModSelectedFase}
                 maxHeight={REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 5}
-                footer={
-                  /* Indicadores de las tablas relacionadas, como pie de la
-                     tabla — abren el modal "Tablas relacionadas",
-                     preseleccionado en la reposición actual (modSelectedFase
-                     es la única fuente de verdad, compartida entre esta card
-                     y el modal) y en el tab del chip clickeado. */
-                  <>
-                    {/* Título + reposición activa (bloque movido desde la
-                        meta-línea, mismas clases y misma condición). */}
-                    <div className="flex items-center flex-wrap gap-2 mb-2">
-                      <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-600">Tablas relacionadas</p>
-                      {tabla4Rows.length > 1 && filaFaseSeleccionada && (
-                        <>
-                          <span className="text-gray-400">·</span>
-                          <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Reposición</span>
-                          <span className="text-body-sm font-medium text-gray-800 tabular-nums">
-                            {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length}
-                          </span>
-                          <span className="text-gray-400">·</span>
-                          <span className="text-body-sm font-medium text-gray-800 tabular-nums">{filaFaseSeleccionada.horaRep}</span>
-                        </>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-[6px]">
-                      {STATUS_ITEMS.map((item) => (
-                        <RelacionadaChip
-                          key={item.tabKey}
-                          label={item.label}
-                          raw={hasSelection ? valoresRelacionadas?.[item.tabKey] : undefined}
-                          booleana={item.tabKey === "tabla3"}
-                          disabled={!hasSelection}
-                          onClick={() => setRelTab(item.tabKey)}
-                        />
-                      ))}
-                    </div>
-                  </>
-                }
               />
+              {/* Indicadores de las tablas relacionadas, card propia debajo
+                  de la tabla — abren el modal "Tablas relacionadas",
+                  preseleccionado en la reposición actual (modSelectedFase
+                  es la única fuente de verdad, compartida entre esta card
+                  y el modal) y en el tab del chip clickeado. Wrapper mt-3
+                  → el de Reclamos en Interrupciones; contenedor → el
+                  <button> de ReclamosResumenCompacto sin lo interactivo
+                  (es un div: sin hover, cursor ni foco — lo clickeable son
+                  los chips). */}
+              <div className="mt-3 border border-gray-200 rounded-sm overflow-hidden bg-gray-50 px-5 py-5">
+                {/* Título + reposición activa (bloque movido desde la
+                    meta-línea, mismas clases y misma condición). */}
+                <div className="flex items-center flex-wrap gap-2 mb-2">
+                  <p className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-600">Tablas relacionadas</p>
+                  {tabla4Rows.length > 1 && filaFaseSeleccionada && (
+                    <>
+                      <span className="text-gray-400">·</span>
+                      <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">Reposición</span>
+                      <span className="text-body-sm font-medium text-gray-800 tabular-nums">
+                        {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length}
+                      </span>
+                      <span className="text-gray-400">·</span>
+                      <span className="text-body-sm font-medium text-gray-800 tabular-nums">{filaFaseSeleccionada.horaRep}</span>
+                    </>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-[6px]">
+                  {STATUS_ITEMS.map((item) => (
+                    <RelacionadaChip
+                      key={item.tabKey}
+                      label={item.label}
+                      raw={hasSelection ? valoresRelacionadas?.[item.tabKey] : undefined}
+                      booleana={item.tabKey === "tabla3"}
+                      disabled={!hasSelection}
+                      onClick={() => setRelTab(item.tabKey)}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
 
           </div>
