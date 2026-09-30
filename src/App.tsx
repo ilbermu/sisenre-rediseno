@@ -3418,8 +3418,9 @@ function RelacionadaChip({
 // Dos piezas: el gráfico completo (ReclamosTimeline) en el modal "Datos de
 // la Interrupción" — un solo patrón para todos los volúmenes: línea de la
 // interrupción con un hito por reclamo, con marcas de hora sobre el eje — y
-// un resumen compacto de una línea, sin gráfico, en la Card B de Modificar
-// interrupción (ReclamosResumenCompacto), que abre ese modal.
+// un resumen compacto de una línea, sin gráfico, en la card Interrupciones
+// de Modificar interrupción, debajo de su tabla (ReclamosResumenCompacto),
+// que abre ese modal.
 //
 // Fuente de verdad visual: _ref/_ref_grafico_reclamos_timeline.html —
 // estructura (header + chip DURACIÓN → KPIs → pista → INICIO/FIN),
@@ -3767,8 +3768,8 @@ function ChipDuracion({ minutos }: { minutos: number }) {
   );
 }
 
-// Resumen de reclamos (Card B de Modificar interrupción, debajo de la
-// tabla de Reposiciones) — sin gráfico. Es un <button> que abre "Datos de
+// Resumen de reclamos (card Interrupciones de Modificar interrupción,
+// debajo de la tabla de Interrupciones) — sin gráfico. Es un <button> que abre "Datos de
 // la Interrupción" (ahí está el gráfico completo, ReclamosTimeline), con el
 // hover secundario de la app (el de "Ver datos de interrupción", ver
 // actionBtnCls): borde primary + fondo primary-tint + texto navy; foco con
@@ -4898,14 +4899,33 @@ function ModificarContent({
       <div className={`flex-1 min-h-0 flex gap-5 transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
 
       {/* ── Tabla de datos — navegador de referencias, mismo alto y mismo
-          tratamiento de card que Card B ── */}
+          tratamiento de card que Card B. Split 50/50 con Card B (flex-1
+          en las dos). ── */}
       <div
-        className="flex-[2] min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
+        className="flex-1 min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
         style={CARD_SHADOW}
       >
 
-        {/* Header — mismo componente/tratamiento que el de Card B (Reposiciones) */}
-        <CardHeader title="Interrupciones" tag="CDS2" />
+        {/* Header — mismo componente/tratamiento que el de Card B (Reposiciones).
+            "Ver datos de interrupción" vive acá (antes en el header de Card B). */}
+        <CardHeader
+          title="Interrupciones"
+          tag="CDS2"
+          right={
+            <button
+              type="button"
+              onClick={() => setDatosInterrupcionOpen(true)}
+              disabled={!hasSelection}
+              title={hasSelection ? undefined : "Seleccioná una interrupción"}
+              className={actionBtnCls("neutral") + " disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"}
+            >
+              <span className="inline-flex items-center gap-1.5">
+                <Activity size={14} strokeWidth={1.5} />
+                Ver datos de interrupción
+              </span>
+            </button>
+          }
+        />
 
         {/* Table toolbar — solo buscador, sin Exportar. En tier 760px suma
             el dropdown "Acciones" a la derecha del buscador (children,
@@ -4923,96 +4943,100 @@ function ModificarContent({
           </div>
         )}
 
-        {/* Tabla Referencia / Fecha */}
-        <div className="grid grid-cols-2 px-4 border-b border-gray-100 bg-gray-50 shrink-0">
-          <SortableHeaderCell
-            label="Referencia"
-            active={modSortIdx === 0}
-            dir={modSortDir}
-            onClick={() => modToggleSort(0)}
-            className="py-1.5 text-micro"
-          />
-          <SortableHeaderCell
-            label="Fecha"
-            active={modSortIdx === 1}
-            dir={modSortDir}
-            onClick={() => modToggleSort(1)}
-            className="py-1.5 text-micro"
-          />
-        </div>
-        {/* La card tiene altura fija (arriba) — esta lista ocupa todo el
-            espacio que queda dentro de ese alto fijo (flex-1) y scrollea
-            internamente, en vez de empujar el scroll general de la página.
-            min-h-0 es necesario para que un hijo flex con overflow pueda
-            angostarse por debajo de su alto de contenido natural. */}
-        <div
-          ref={modListRef}
-          tabIndex={modShowData ? 0 : -1}
-          onKeyDown={handleModListKeyDown}
-          className="flex-1 min-h-0 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
-        >
-          {!modShowData ? (
-            <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
-              <span className="text-gray-300 scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
-              <p className="text-body-sm font-medium text-gray-500">Sin resultados</p>
-              <p className="text-caption text-gray-500">Completá los filtros y presioná Buscar</p>
+        {/* Body — px-4 (no px-5) para alinear con el buscador de
+            TableToolbar. Tabla Referencia / Fecha dentro del mismo
+            contenedor con borde que ReposicionesTable, y debajo el resumen
+            de reclamos (antes en Card B). */}
+        <div className="flex-1 min-h-0 flex flex-col px-4 py-3">
+          {/* Replica el estilo de ReposicionesTable (copia de clases, no usa
+              el componente): header bg-gray-50 de alto REPOSICIONES_HEADER_H,
+              celdas px-3 py-2 text-body-sm, separador gray-100, acento de
+              selección con boxShadow inset en la primera celda. Excepciones:
+              sin alto fijo de fila (acá las filas son de una línea, el 50px
+              de REPOSICIONES_ROW_H responde a la celda Equipo de dos) y la
+              paginación va como pie dentro del borde. */}
+          <div className="flex-1 min-h-0 flex flex-col border border-gray-200 rounded-sm overflow-hidden bg-white">
+            <div className="grid grid-cols-2 shrink-0 bg-gray-50 border-b border-gray-200" style={{ height: REPOSICIONES_HEADER_H }}>
+              <SortableHeaderCell
+                label="Referencia"
+                active={modSortIdx === 0}
+                dir={modSortDir}
+                onClick={() => modToggleSort(0)}
+                className="px-3 py-2 text-micro"
+              />
+              <SortableHeaderCell
+                label="Fecha"
+                active={modSortIdx === 1}
+                dir={modSortDir}
+                onClick={() => modToggleSort(1)}
+                className="px-3 py-2 text-micro"
+              />
             </div>
-          ) : modVisibleIndices.map((i) => {
-            const row = SAMPLE_ROWS[i];
-            const selected = modSelectedRow === i;
-            return (
-              <div
-                key={i}
-                data-row-index={i}
-                className="grid grid-cols-2 px-4 border-b border-gray-50 transition-colors cursor-pointer hover:bg-gray-50"
-                style={{ backgroundColor: selected ? "var(--color-primary-tint)" : undefined, borderLeft: selected ? "3px solid var(--color-primary)" : "3px solid transparent" }}
-                onClick={() => setModSelectedRow(selected ? null : i)}
-              >
-                <div className="py-1.5 text-caption tabular-nums pr-3 font-mono"
-                  style={{ color: selected ? "var(--color-secondary)" : "var(--color-gray-700)", fontWeight: selected ? 600 : 400 }}>
-                  {row.referencia}
+            {/* La card tiene altura fija (arriba) — esta lista ocupa todo el
+                espacio que queda dentro de ese alto fijo (flex-1) y scrollea
+                internamente, en vez de empujar el scroll general de la página.
+                min-h-0 es necesario para que un hijo flex con overflow pueda
+                angostarse por debajo de su alto de contenido natural. */}
+            <div
+              ref={modListRef}
+              tabIndex={modShowData ? 0 : -1}
+              onKeyDown={handleModListKeyDown}
+              className="flex-1 min-h-0 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+            >
+              {!modShowData ? (
+                <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
+                  <span className="text-gray-300 scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
+                  <p className="text-body-sm font-medium text-gray-500">Sin resultados</p>
+                  <p className="text-caption text-gray-500">Completá los filtros y presioná Buscar</p>
                 </div>
-                <div className={`py-1.5 text-caption ${selected ? "text-secondary font-medium" : "text-gray-600"}`}>{row.fecha}</div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="px-4 py-1.5 border-t border-gray-100 bg-gray-50 shrink-0 flex items-center justify-between">
-          <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-caption text-gray-500 disabled:opacity-40" disabled>Anterior</button>
-          <span className="text-caption text-gray-500">Página <span className="font-medium text-gray-700">1</span> de <span className="font-medium text-gray-700">2.213</span></span>
-          <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-caption text-gray-500 hover:bg-gray-50 transition-colors">Siguiente</button>
+              ) : modVisibleIndices.map((i, vi) => {
+                const row = SAMPLE_ROWS[i];
+                const selected = modSelectedRow === i;
+                const esUltima = vi === modVisibleIndices.length - 1;
+                const textCls = selected ? "text-secondary font-medium" : "text-gray-700";
+                return (
+                  <div
+                    key={i}
+                    data-row-index={i}
+                    className={`grid grid-cols-2 transition-colors cursor-pointer hover:bg-gray-50 ${esUltima ? "" : "border-b border-gray-100"}`}
+                    style={{ backgroundColor: selected ? "var(--color-primary-tint)" : undefined }}
+                    onClick={() => setModSelectedRow(selected ? null : i)}
+                  >
+                    <div
+                      className={`px-3 py-2 text-body-sm tabular-nums whitespace-nowrap font-mono ${textCls}`}
+                      style={{ boxShadow: selected ? "inset 3px 0 0 var(--color-primary)" : undefined }}
+                    >
+                      {row.referencia}
+                    </div>
+                    <div className={`px-3 py-2 text-body-sm tabular-nums whitespace-nowrap ${textCls}`}>{row.fecha}</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="shrink-0 border-t border-gray-200 bg-gray-50 px-3 py-1.5 flex items-center justify-between">
+              <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-caption text-gray-500 disabled:opacity-40" disabled>Anterior</button>
+              <span className="text-caption text-gray-500">Página <span className="font-medium text-gray-700">1</span> de <span className="font-medium text-gray-700">2.213</span></span>
+              <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-caption text-gray-500 hover:bg-gray-50 transition-colors">Siguiente</button>
+            </div>
+          </div>
+          <div className="mt-3">
+            <ReclamosResumenCompacto datos={reclamosInterrupcion} onClick={() => setDatosInterrupcionOpen(true)} />
+          </div>
         </div>
       </div>
 
         {/* Card B — Reposiciones (CDS4). Mismo criterio que la card de
             Interrupciones: nunca crece con el contenido (banner de
             selección, filas de la Tabla 4, etc.) — body scrolleable propio
-            en vez de empujar el scroll de la página. Split de la fila 40/60
-            a favor de esta card en todos los tamaños (flex-[2]/flex-[3] acá
-            y en Interrupciones) — es la que más necesita el ancho para sus
-            columnas y la grilla de reclamos. */}
+            en vez de empujar el scroll de la página. Split de la fila 50/50
+            en todos los tamaños (flex-1 acá y en Interrupciones) — antes era
+            40/60 a favor de esta card, pero el resumen de reclamos pasó a
+            vivir en Interrupciones. */}
         <div
-          className="flex-[3] min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
+          className="flex-1 min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
           style={CARD_SHADOW}
         >
-          <CardHeader
-            title="Reposiciones"
-            tag="CDS4"
-            right={
-              <button
-                type="button"
-                onClick={() => setDatosInterrupcionOpen(true)}
-                disabled={!hasSelection}
-                title={hasSelection ? undefined : "Seleccioná una interrupción"}
-                className={actionBtnCls("neutral") + " disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <Activity size={14} strokeWidth={1.5} />
-                  Ver datos de interrupción
-                </span>
-              </button>
-            }
-          />
+          <CardHeader title="Reposiciones" tag="CDS4" />
 
           {/* Interrupción seleccionada (la reposición activa se muestra en
               el título de "Tablas relacionadas", en el pie de la tabla de
@@ -5035,9 +5059,7 @@ function ModificarContent({
             {/* Tabla 4 — siempre visible, nunca detrás de un modal/drawer.
                 Vacía hasta que se selecciona una interrupción. Altura fija
                 (~5 filas, sin achicarse con pocas) + scroll propio + header
-                sticky, ver ReposicionesTable. Debajo, el gráfico de
-                reclamos llena el resto del alto de la card (flex-1) — sin
-                bloque muerto abajo. */}
+                sticky, ver ReposicionesTable. */}
             <div className="flex-1 flex flex-col px-5 py-3">
               <ReposicionesTable
                 cols={tabla4Data.cols}
@@ -5083,9 +5105,6 @@ function ModificarContent({
                   </>
                 }
               />
-              <div className="mt-3">
-                <ReclamosResumenCompacto datos={reclamosInterrupcion} onClick={() => setDatosInterrupcionOpen(true)} />
-              </div>
             </div>
 
           </div>
