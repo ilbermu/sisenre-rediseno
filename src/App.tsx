@@ -460,30 +460,130 @@ function PeriodSelector() {
 }
 
 // ─── Filter trigger ───────────────────────────────────────────────────────────
-// Trigger de filtro por columna para el toolbar de una tabla (hoy: modal
-// "Tablas relacionadas"). ÚNICO botón sin borde en reposo de la app, y solo
-// como trigger de filtro — ver DESIGN_SYSTEM.md, "Patrones de contenedor y
-// tabla". Dropdown con el mismo mecanismo que PeriodSelector (ref +
-// click afuera, useDropdownDirection/dropdownAnchorStyle, panel e ítem
-// seleccionado con las mismas clases) + Escape, que corta la propagación
-// para cerrar solo la lista y no el Modal que la contiene (Modal escucha
-// Escape en document).
-// Estados: reposo sin borde ni fondo, hover = hover secundario de la app
-// (el de actionBtnCls); abierto = seleccionado persistente; con filtro =
-// siempre pintado, "{label}: {value}" + ×. La × es un botón HERMANO del
-// principal dentro de un contenedor con el estilo de pill (nunca un botón
-// dentro de otro).
-function FilterTrigger({
+// Trigger de filtro por columna para el toolbar de una tabla (Interrupciones,
+// modal "Tablas relacionadas"). ÚNICO botón sin borde en reposo de la app, y
+// solo como trigger de filtro — ver DESIGN_SYSTEM.md, "Patrones de contenedor
+// y tabla". Dos variantes con el MISMO trigger (FilterTriggerButton):
+//   list       → lista de valores con conteo, selección única;
+//   date-range → rango desde/hasta (FilterDateRangePanel), la única con botón
+//                Aplicar, porque un rango se arma en dos pasos.
+// Dropdown con el mismo mecanismo que PeriodSelector (ref + click afuera,
+// useDropdownDirection/dropdownAnchorStyle, panel e ítem seleccionado con las
+// mismas clases) + Escape, que corta la propagación para cerrar solo el panel
+// y no el Modal que lo contiene (Modal escucha Escape en document).
+
+type RangoFecha = { desde: Date | null; hasta: Date | null };
+
+type FilterTriggerProps =
+  | {
+      variant?: "list";
+      label: string;
+      options: { value: string; count: number }[];
+      value: string | null;
+      onChange: (value: string | null) => void;
+    }
+  | {
+      variant: "date-range";
+      label: string;
+      value: RangoFecha | null;
+      onChange: (value: RangoFecha | null) => void;
+    };
+
+// "dd/mm hh:mm" — texto del trigger con un rango aplicado.
+function fmtDiaHora(d: Date): string {
+  return `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)} ${ceros(d.getHours(), 2)}:${ceros(d.getMinutes(), 2)}`;
+}
+
+function textoRangoFecha(r: RangoFecha): string {
+  if (r.desde && r.hasta) return `${fmtDiaHora(r.desde)} – ${fmtDiaHora(r.hasta)}`;
+  if (r.desde) return `desde ${fmtDiaHora(r.desde)}`;
+  return r.hasta ? `hasta ${fmtDiaHora(r.hasta)}` : "";
+}
+
+// "dd/mm/aaaa hh:mm" → Date, sobre parseDateTimeStr (null si no parsea).
+function fechaHoraDeStr(v: string): Date | null {
+  const { date, time } = parseDateTimeStr(v);
+  if (!date) return null;
+  const [hh, mm] = time.split(":").map(Number);
+  const d = new Date(date);
+  d.setHours(hh || 0, mm || 0, 0, 0);
+  return d;
+}
+
+// Rango inclusivo; se permite un solo extremo. Sin rango, todo pasa.
+function fechaEnRango(d: Date | null, r: RangoFecha | null): boolean {
+  if (!r) return true;
+  if (!d) return false;
+  if (r.desde && d < r.desde) return false;
+  if (r.hasta && d > r.hasta) return false;
+  return true;
+}
+
+const FILTER_FOCUS_CLS = "focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2";
+
+// Trigger compartido por las dos variantes. Reposo: sin borde ni fondo,
+// hover = hover secundario de la app (el de actionBtnCls). Abierto:
+// seleccionado persistente. Con filtro (`aplicado`): siempre pintado,
+// "{label}: {aplicado}" + ×, la × como botón HERMANO del principal dentro de
+// un contenedor con el estilo de pill (nunca un botón dentro de otro).
+function FilterTriggerButton({
   label,
-  options,
-  value,
-  onChange,
+  aplicado,
+  open,
+  onToggle,
+  onClear,
 }: {
   label: string;
-  options: { value: string; count: number }[];
-  value: string | null;
-  onChange: (value: string | null) => void;
+  aplicado: string | null;
+  open: boolean;
+  onToggle: () => void;
+  onClear: () => void;
 }) {
+  const chevron = open ? <ChevronUp size={12} strokeWidth={1.5} /> : <ChevronDown size={12} strokeWidth={1.5} />;
+  if (aplicado === null) {
+    return (
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={onToggle}
+        className={`h-8 px-2.5 rounded-sm text-body-sm font-medium border inline-flex items-center gap-1.5 transition-all ${FILTER_FOCUS_CLS} ${
+          open
+            ? "bg-primary-tint border-primary text-secondary"
+            : "border-transparent bg-transparent text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
+        }`}
+      >
+        {label}
+        {chevron}
+      </button>
+    );
+  }
+  return (
+    <div className="h-8 rounded-sm text-body-sm font-medium border inline-flex items-center bg-primary-tint border-primary text-secondary">
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={onToggle}
+        className={`h-full pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 whitespace-nowrap ${FILTER_FOCUS_CLS}`}
+      >
+        {label}: <span className="tabular-nums">{aplicado}</span>
+        {chevron}
+      </button>
+      <button
+        type="button"
+        aria-label={`Quitar filtro ${label}`}
+        onClick={onClear}
+        className={`h-full px-1.5 rounded-sm inline-flex items-center ${FILTER_FOCUS_CLS}`}
+      >
+        <X size={12} strokeWidth={1.5} />
+      </button>
+    </div>
+  );
+}
+
+function FilterTrigger(props: FilterTriggerProps) {
+  const { label } = props;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -491,13 +591,12 @@ function FilterTrigger({
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
-  const direction = useDropdownDirection(ref, open, 260);
-  const focusCls = "focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2";
+  const direction = useDropdownDirection(ref, open, props.variant === "date-range" ? 340 : 260);
 
-  function elegir(v: string | null) {
-    onChange(v);
-    setOpen(false);
-  }
+  const aplicado =
+    props.variant === "date-range"
+      ? props.value ? textoRangoFecha(props.value) : null
+      : props.value;
 
   return (
     <div
@@ -511,71 +610,165 @@ function FilterTrigger({
         }
       }}
     >
-      {value === null ? (
+      <FilterTriggerButton
+        label={label}
+        aplicado={aplicado}
+        open={open}
+        onToggle={() => setOpen((v) => !v)}
+        onClear={() => props.onChange(null)}
+      />
+      {open && (
+        props.variant === "date-range" ? (
+          <FilterDateRangePanel
+            label={label}
+            direction={direction}
+            value={props.value}
+            onApply={(v) => { props.onChange(v); setOpen(false); }}
+          />
+        ) : (
+          <div
+            role="listbox"
+            aria-label={label}
+            className="absolute left-0 min-w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+            style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
+          >
+            <div className="p-1.5 flex flex-col gap-0.5 overflow-y-auto" style={{ maxHeight: 260 }}>
+              {[{ value: null as string | null, count: null as number | null }, ...props.options].map((o) => {
+                const sel = o.value === props.value;
+                return (
+                  <button
+                    key={o.value ?? "__todas"}
+                    type="button"
+                    role="option"
+                    aria-selected={sel}
+                    onClick={() => { props.onChange(o.value); setOpen(false); }}
+                    className={`w-full px-2.5 py-2 rounded-sm border text-left text-body transition-colors flex items-center justify-between gap-4 whitespace-nowrap
+                      ${sel ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-gray-100"}`}
+                  >
+                    <span>{o.value ?? "Todas"}</span>
+                    {o.count !== null && <span className="text-caption text-gray-500 tabular-nums">{o.count}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+// Panel de la variante date-range. Borrador local (se inicializa del valor
+// aplicado cada vez que se abre, porque se monta al abrir): los atajos y los
+// inputs COMPLETAN el borrador, solo "Aplicar" lo aplica. Inputs nativos
+// date/time con MOD_FIELD_CLS — DateTimeField no sirve acá: junta fecha y hora
+// en un solo campo, fuerza 00:00 con la hora vacía (el "hasta" necesita 23:59)
+// y trae su propio Aplicar relleno.
+function FilterDateRangePanel({
+  label,
+  direction,
+  value,
+  onApply,
+}: {
+  label: string;
+  direction: "down" | "up";
+  value: RangoFecha | null;
+  onApply: (value: RangoFecha | null) => void;
+}) {
+  const aFecha = (d: Date | null | undefined) => (d ? `${d.getFullYear()}-${ceros(d.getMonth() + 1, 2)}-${ceros(d.getDate(), 2)}` : "");
+  const aHora = (d: Date | null | undefined) => (d ? `${ceros(d.getHours(), 2)}:${ceros(d.getMinutes(), 2)}` : "");
+  const [desdeFecha, setDesdeFecha] = useState(aFecha(value?.desde));
+  const [desdeHora, setDesdeHora] = useState(aHora(value?.desde));
+  const [hastaFecha, setHastaFecha] = useState(aFecha(value?.hasta));
+  const [hastaHora, setHastaHora] = useState(aHora(value?.hasta));
+
+  // Hora vacía con fecha cargada: desde → 00:00, hasta → 23:59.
+  const armar = (fecha: string, hora: string, finDeDia: boolean): Date | null => {
+    if (!fecha) return null;
+    const [y, m, d] = fecha.split("-").map(Number);
+    const [hh, mm] = (hora || (finDeDia ? "23:59" : "00:00")).split(":").map(Number);
+    return new Date(y, m - 1, d, hh, mm);
+  };
+  const desde = armar(desdeFecha, desdeHora, false);
+  const hasta = armar(hastaFecha, hastaHora, true);
+  const invalido = desde !== null && hasta !== null && desde > hasta;
+
+  function completar(d: Date, h: Date) {
+    setDesdeFecha(aFecha(d)); setDesdeHora(aHora(d));
+    setHastaFecha(aFecha(h)); setHastaHora(aHora(h));
+  }
+  const atajos: { label: string; rango: () => [Date, Date] }[] = [
+    {
+      label: "Hoy",
+      rango: () => {
+        const n = new Date();
+        return [new Date(n.getFullYear(), n.getMonth(), n.getDate(), 0, 0), new Date(n.getFullYear(), n.getMonth(), n.getDate(), 23, 59)];
+      },
+    },
+    { label: "Últimas 24 h", rango: () => { const n = new Date(); return [new Date(n.getTime() - 24 * 3600_000), n]; } },
+    { label: "Últimos 7 días", rango: () => { const n = new Date(); return [new Date(n.getTime() - 7 * 24 * 3600_000), n]; } },
+  ];
+
+  const rotuloCls = "block mb-1 text-micro font-semibold uppercase tracking-[0.08em] text-gray-500";
+  const extremo = (nombre: "Desde" | "Hasta", fecha: string, setFecha: (v: string) => void, hora: string, setHora: (v: string) => void) => (
+    <div>
+      <span className={rotuloCls}>{nombre}</span>
+      <div className="flex gap-2">
+        <div className="flex-1 min-w-0">
+          <input type="date" aria-label={`Fecha ${nombre.toLowerCase()}`} value={fecha} onChange={(e) => setFecha(e.target.value)} className={MOD_FIELD_CLS} />
+        </div>
+        <div className="w-24 shrink-0">
+          <input type="time" aria-label={`Hora ${nombre.toLowerCase()}`} value={hora} onChange={(e) => setHora(e.target.value)} className={MOD_FIELD_CLS} />
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div
+      role="dialog"
+      aria-label={`Filtrar por ${label.toLowerCase()}`}
+      className="absolute left-0 bg-white rounded-sm border border-gray-300 z-50 p-3"
+      style={{ ...dropdownAnchorStyle(direction, 5), width: 300, boxShadow: "var(--shadow-mid)" }}
+    >
+      {/* Atajos — clases de chip de ButtonSelectGroup (reposo). Completan
+          los campos, no aplican. */}
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {atajos.map((a) => (
+          <button
+            key={a.label}
+            type="button"
+            onClick={() => completar(...a.rango())}
+            className={`${BTN_SM} font-medium border transition-all duration-150 shrink-0 bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]`}
+          >
+            {a.label}
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-col gap-3">
+        {extremo("Desde", desdeFecha, setDesdeFecha, desdeHora, setDesdeHora)}
+        {extremo("Hasta", hastaFecha, setHastaFecha, hastaHora, setHastaHora)}
+      </div>
+      {invalido && (
+        <p className="mt-2 text-caption text-error">La fecha desde no puede ser posterior a la fecha hasta</p>
+      )}
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
         <button
           type="button"
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className={`h-8 px-2.5 rounded-sm text-body-sm font-medium border inline-flex items-center gap-1.5 transition-all ${focusCls} ${
-            open
-              ? "bg-primary-tint border-primary text-secondary"
-              : "border-transparent bg-transparent text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
-          }`}
+          onClick={() => onApply(null)}
+          className="text-body-sm font-medium text-primary hover:text-secondary transition-colors"
         >
-          {label}
-          {open ? <ChevronUp size={12} strokeWidth={1.5} /> : <ChevronDown size={12} strokeWidth={1.5} />}
+          Limpiar
         </button>
-      ) : (
-        <div className="h-8 rounded-sm text-body-sm font-medium border inline-flex items-center bg-primary-tint border-primary text-secondary">
-          <button
-            type="button"
-            aria-haspopup="listbox"
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
-            className={`h-full pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 ${focusCls}`}
-          >
-            {label}: {value}
-            {open ? <ChevronUp size={12} strokeWidth={1.5} /> : <ChevronDown size={12} strokeWidth={1.5} />}
-          </button>
-          <button
-            type="button"
-            aria-label={`Quitar filtro ${label}`}
-            onClick={() => elegir(null)}
-            className={`h-full px-1.5 rounded-sm inline-flex items-center ${focusCls}`}
-          >
-            <X size={12} strokeWidth={1.5} />
-          </button>
-        </div>
-      )}
-      {open && (
-        <div
-          role="listbox"
-          aria-label={label}
-          className="absolute left-0 min-w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
+        <button
+          type="button"
+          disabled={invalido}
+          onClick={() => onApply(desde || hasta ? { desde, hasta } : null)}
+          className={actionBtnCls("neutral") + " disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"}
         >
-          <div className="p-1.5 flex flex-col gap-0.5 overflow-y-auto" style={{ maxHeight: 260 }}>
-            {[{ value: null as string | null, count: null as number | null }, ...options].map((o) => {
-              const sel = o.value === value;
-              return (
-                <button
-                  key={o.value ?? "__todas"}
-                  type="button"
-                  role="option"
-                  aria-selected={sel}
-                  onClick={() => elegir(o.value)}
-                  className={`w-full px-2.5 py-2 rounded-sm border text-left text-body transition-colors flex items-center justify-between gap-4 whitespace-nowrap
-                    ${sel ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-gray-100"}`}
-                >
-                  <span>{o.value ?? "Todas"}</span>
-                  {o.count !== null && <span className="text-caption text-gray-500 tabular-nums">{o.count}</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+          Aplicar
+        </button>
+      </div>
     </div>
   );
 }
@@ -955,7 +1148,10 @@ function SelectionActionBar({ recordLabel }: { recordLabel: string }) {
 
 type SortDir = "asc" | "desc";
 
-function useTableToolbar<T>(rows: T[], getCells: (row: T) => string[], resetKey: unknown = undefined) {
+// `searchCols` (opcional): índices de getCells sobre los que busca el texto
+// (misma convención que sortIdx). Sin él busca en todas las celdas, como
+// siempre — los ABM no lo pasan.
+function useTableToolbar<T>(rows: T[], getCells: (row: T) => string[], resetKey: unknown = undefined, searchCols?: number[]) {
   const [search, setSearch] = useState("");
   const [sortIdx, setSortIdx] = useState<number | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -969,7 +1165,11 @@ function useTableToolbar<T>(rows: T[], getCells: (row: T) => string[], resetKey:
   const term = search.trim().toLowerCase();
   const filtered = rows
     .map((_, i) => i)
-    .filter((i) => !term || getCells(rows[i]).some((c) => c.toLowerCase().includes(term)));
+    .filter((i) => {
+      if (!term) return true;
+      const cells = getCells(rows[i]);
+      return (searchCols ? searchCols.map((ci) => cells[ci] ?? "") : cells).some((c) => c.toLowerCase().includes(term));
+    });
 
   const visibleIndices = sortIdx === null
     ? filtered
@@ -1076,12 +1276,24 @@ function SortableTh({
   );
 }
 
+// Contador del toolbar de tabla ("N de M registros") — siempre visible,
+// también sin filtros, para que el layout no salte al aplicar uno.
+function TableCounter({ visibles, total }: { visibles: number; total: number }) {
+  return (
+    <span className="text-caption text-gray-600 tabular-nums whitespace-nowrap">
+      <span className="font-semibold text-gray-700">{visibles}</span> de {total} registros
+    </span>
+  );
+}
+
 // Barra de herramientas de tabla — buscador cliente-side a la izquierda,
-// Exportar a la derecha. Siempre se integra como franja superior dentro del
-// card que ya contiene la tabla (mismo lenguaje que SelectionActionBar
-// embedded), nunca como card propia flotando encima. Se le pueden agregar
-// mas botones a la derecha de Exportar pasandolos como children, sin
-// reestructurar nada.
+// Exportar a la derecha. Va FUERA del contenedor de la tabla, sobre la
+// superficie de la card, sin fondo propio ni líneas (px-4 pb-3: alineada a
+// 16px con el título de CardHeader y con el borde del contenedor de la
+// tabla) — ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla". Se le
+// pueden agregar mas botones a la derecha de Exportar pasandolos como
+// children, sin reestructurar nada. El aria-label del buscador es el
+// placeholder sin los puntos suspensivos.
 function TableToolbar({
   search,
   onSearchChange,
@@ -1101,8 +1313,8 @@ function TableToolbar({
   children?: React.ReactNode;
   // true: sin el contenedor propio (px-4 py-2.5 border-b bg-white,
   // flex justify-between) — solo el buscador, para vivir dentro de una
-  // fila que ya arma su propio layout (ej. la fila de descripción +
-  // buscador del modal "Tablas relacionadas"). Ignora onExport/children
+  // fila que ya arma su propio layout (ej. los toolbars con filtros de
+  // Interrupciones y del modal "Tablas relacionadas"). Ignora onExport/children
   // (un buscador "bare" con botones al lado no tiene sentido — para eso
   // está el modo normal). El ancho lo controla quien lo envuelve. Default
   // false — ningún llamado existente cambia.
@@ -1117,6 +1329,7 @@ function TableToolbar({
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder={searchPlaceholder}
+        aria-label={searchPlaceholder.replace(/…$/, "")}
         className="w-full h-8 pl-8 pr-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150"
       />
     </div>
@@ -1125,7 +1338,7 @@ function TableToolbar({
   if (bare) return searchBox;
 
   return (
-    <div className="px-4 py-2.5 border-b border-gray-200 bg-white shrink-0 flex items-center justify-between gap-3">
+    <div className="px-4 pb-3 shrink-0 flex items-center justify-between gap-3">
       {searchBox}
       {(!hideExport || children) && (
         <div className="flex items-center gap-2 shrink-0">
@@ -1256,8 +1469,9 @@ function Modal({
           boxShadow: "var(--shadow-high)",
         }}
       >
-        {/* Header — bg-gray-50 (mismo tratamiento que CardHeader: Búsqueda/
-            Interrupciones/Reposiciones), aplica a los 13 usos de Modal por
+        {/* Header — bg-gray-50 (era el mismo tratamiento que CardHeader;
+            CardHeader pasó a ir sin fondo ni border-b y este header quedó
+            como estaba — pendiente decidir si se alinean), aplica a los 13 usos de Modal por
             igual, no es una prop opt-in. border-b como divisor con el body
             (bg-white, sin cambios). título/cerrar siempre; headerExtra (si
             viene) se apila debajo, todavía dentro de este mismo bloque. Con
@@ -3257,6 +3471,10 @@ const DRAWER_TABS = [
     cols: ["Interrupción", "Fase", "Cadena eléctrica", "Potencia (Kva)", "Fase eléctrica", "Cant. clientes BT"],
     // Columnas con FilterTrigger en el toolbar del modal (por nombre de `cols`).
     filtrables: ["Fase eléctrica"],
+    // Buscador = columnas de `cols` que NO están en `filtrables`. Con 3+
+    // columnas buscables el placeholder es obligatorio (si no, se arma solo:
+    // "Buscar {col}…" / "Buscar {col1} o {col2}…").
+    searchPlaceholder: "Buscar interrupción o cadena…",
     // Sin uso — ModificarContent arma las filas via generarFilasTabla5,
     // acá solo quedan cols/subtitle/key/label.
     rows: [] as string[][],
@@ -3266,6 +3484,7 @@ const DRAWER_TABS = [
     subtitle: "Clientes AT/MT afectados en interrupciones AT/MT (CDS6)",
     cols: ["Interrupción", "Fase", "Cliente", "Consumo", "CT T9", "CT T10", "Tarifa", "Demanda media", "Tensión"],
     filtrables: ["Tarifa", "Tensión", "CT T9", "CT T10"],
+    searchPlaceholder: "Buscar interrupción o cliente…",
     // Sin uso — ModificarContent arma las filas via generarFilasTabla6.
     rows: [] as string[][],
   },
@@ -3274,6 +3493,7 @@ const DRAWER_TABS = [
     subtitle: "Reclamos de clientes (CDS8)",
     cols: ["Reclamo", "Fecha", "Cliente", "Nombre", "Tarifa", "Causa", "Piso", "Dpto", "Partido"],
     filtrables: ["Tarifa", "Causa", "Partido"],
+    searchPlaceholder: "Buscar reclamo, cliente o nombre…",
     // Sin uso — ModificarContent arma las filas via generarFilasTabla8.
     rows: [] as string[][],
   },
@@ -3282,6 +3502,7 @@ const DRAWER_TABS = [
     subtitle: "Interrupciones por cliente (CDS9)",
     cols: ["Interrupción", "Fase", "Cliente", "Tarifa", "CT T9", "CT T10"],
     filtrables: ["Tarifa", "CT T9", "CT T10"],
+    searchPlaceholder: "Buscar interrupción o cliente…",
     // Sin uso — ModificarContent arma las filas via generarFilasTabla9.
     rows: [] as string[][],
   },
@@ -3314,12 +3535,15 @@ function CodeBadge({ code }: { code: string }) {
 }
 
 // Header compartido de toda card contenedora (Búsqueda, Resultados,
-// Interrupciones, Reposiciones, etc.) — altura fija (h-14, ni más ni menos)
-// en vez de dejar que py-2.5 defina el alto según el contenido: sin esto,
-// una card sin `right` (ej. Búsqueda) quedaba más baja que una con botones
-// md ahí (ej. Resultados, con Auditoría/Exportar/Insertar a h-9), y las
-// cards no alineaban entre sí. items-center centra título/tag/right dentro
-// de ese alto fijo, tengan o no acciones.
+// Interrupciones, Reposiciones, etc.) — sobre el blanco de la card, sin
+// border-b ni fondo tintado: la separación con lo de abajo es solo espacio
+// (pb-3). px-4 alinea el título a 16px con el buscador del toolbar y con el
+// borde del contenedor de la tabla. Altura fija (h-16 = pt-4 + h-9 + pb-3,
+// el alto de un botón md) en vez de dejar que el contenido la defina: sin
+// esto, una card sin `right` (ej. Búsqueda) quedaba más baja que una con
+// botones md ahí (ej. Resultados, con Auditoría/Exportar/Insertar a h-9), y
+// las cards no alineaban entre sí. items-center centra título/tag/right
+// dentro de ese alto fijo, tengan o no acciones.
 // `context` (opcional): el registro padre de los datos de la card (ej.
 // "Interrupción <ref>" en Reposiciones), en la misma línea después del
 // tag — "·" de Tablas relacionadas + rótulo y valor con las clases que
@@ -3339,7 +3563,7 @@ function CardHeader({
   right?: React.ReactNode;
 }) {
   return (
-    <div className="h-14 px-5 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center gap-2">
+    <div className="px-4 pt-4 pb-3 shrink-0 h-16 flex items-center gap-2">
       <span className="text-label font-semibold text-gray-900">{title}</span>
       {tag && <CodeBadge code={tag} />}
       {context && (
@@ -4665,10 +4889,20 @@ function ModificarContent({
 
   const CARD_SHADOW = { boxShadow: "var(--shadow-low)" };
 
-  // Tabla Referencia / Fecha (columna derecha)
+  // Tabla Referencia / Fecha (columna derecha). El buscador cubre solo
+  // Referencia (searchCols [0]); la fecha se filtra con el FilterTrigger
+  // date-range. El filtro se aplica DESPUÉS del hook, sobre los índices de
+  // SAMPLE_ROWS (mismo criterio que las filas borradas de ABM): así
+  // modVisibleIndices sigue indexando SAMPLE_ROWS, que es lo que usan
+  // modSelectedRow, data-row-index y la navegación por teclado. Si la
+  // interrupción seleccionada queda fuera del filtro, NO se deselecciona.
   const modGetCells = (row: (typeof SAMPLE_ROWS)[number]) => [row.referencia, row.fecha];
-  const { search: modSearch, setSearch: setModSearch, sortIdx: modSortIdx, sortDir: modSortDir, toggleSort: modToggleSort, visibleIndices: modVisibleIndices } =
-    useTableToolbar(SAMPLE_ROWS, modGetCells);
+  const [modFiltroFecha, setModFiltroFecha] = useState<RangoFecha | null>(null);
+  const { search: modSearch, setSearch: setModSearch, sortIdx: modSortIdx, sortDir: modSortDir, toggleSort: modToggleSort, visibleIndices: modVisibleIndicesBusqueda } =
+    useTableToolbar(SAMPLE_ROWS, modGetCells, undefined, [0]);
+  const modVisibleIndices = modFiltroFecha
+    ? modVisibleIndicesBusqueda.filter((i) => fechaEnRango(fechaHoraDeStr(SAMPLE_ROWS[i].fecha), modFiltroFecha))
+    : modVisibleIndicesBusqueda;
 
   // Tabla 4 (Reposiciones) — siempre visible en la Card B, ya no vive detrás
   // de un tab del drawer. Sin interrupción seleccionada no hay reposiciones
@@ -4772,13 +5006,27 @@ function ModificarContent({
       .sort((a, b) => a.value.localeCompare(b.value, "es", { numeric: true }));
   };
 
+  // Buscador con alcance explícito: las columnas de `cols` que NO son
+  // filtrables (el buscador cubre identificadores, los triggers
+  // categorías; no se superponen). Placeholder: el de DRAWER_TABS, o uno
+  // armado con los nombres si son 1 o 2 columnas.
+  const relSearchCols = (activeTabData?.cols ?? [])
+    .map((col, ci) => (relFiltrables.includes(col) ? -1 : ci))
+    .filter((ci) => ci >= 0);
+  const relSearchNombres = relSearchCols.map((ci) => activeTabData!.cols[ci].toLowerCase());
+  const relSearchPlaceholder =
+    activeTabData?.searchPlaceholder ??
+    (relSearchNombres.length <= 1
+      ? `Buscar ${relSearchNombres[0] ?? ""}…`
+      : `Buscar ${relSearchNombres.slice(0, -1).join(", ")} o ${relSearchNombres[relSearchNombres.length - 1]}…`);
+
   // Tabla del tab activo — se resetea al cambiar de tab O de reposición
   // seleccionada (el contenido de cada tab depende de ambas). Recibe las
   // filas YA filtradas: relVisibleIndices indexa relFilteredRows, no
   // relTabRows.
   const relGetCells = (row: string[]) => row;
   const { search: relSearch, setSearch: setRelSearch, sortIdx: relSortIdx, sortDir: relSortDir, toggleSort: relToggleSort, visibleIndices: relVisibleIndices } =
-    useTableToolbar(relFilteredRows, relGetCells, relResetKey);
+    useTableToolbar(relFilteredRows, relGetCells, relResetKey, relSearchCols);
 
   // Datos de la Interrupción (widget + modal, Card B) — solo tiene sentido
   // con una interrupción seleccionada; sin selección, la sección completa
@@ -4884,7 +5132,10 @@ function ModificarContent({
             style={CARD_SHADOW}
           >
             <CardHeader title="Búsqueda" tag="CDS2" />
-            <div className="relative z-30 flex items-center gap-2 px-3 py-2.5 [@media(max-height:760px)]:flex-wrap">
+            {/* px-4 pb-3 (antes px-3 py-2.5): sin el border-b del header,
+                el aire de arriba lo da el pb-3 de CardHeader, y px-4
+                alinea los campos con el título. */}
+            <div className="relative z-30 flex items-center gap-2 px-4 pb-3 [@media(max-height:760px)]:flex-wrap">
             {/* Ancho fijo (no crece a ocupar el sobrante) para que se vea
                 proporcionado contra Nivel/Fase — 190px en tamaño normal,
                 bastante más chico en tier 760px vía el `!` important de
@@ -5113,27 +5364,48 @@ function ModificarContent({
             (ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla"). */}
         <CardHeader title="Interrupciones" tag="CDS2" />
 
-        {/* Table toolbar — solo buscador, sin Exportar. En tier 760px suma
-            el dropdown "Acciones" a la derecha del buscador (children,
-            tiene lugar de sobra ahí) en vez de una fila propia. Con
-            resultados vacíos no hay buscador que mostrar, así que el slot
-            vive en una franja mínima aparte — Desarmes/Lotes siguen
-            disponibles sin selección, no pueden depender de modShowData. */}
+        {/* Toolbar de tabla — FUERA del contenedor de la tabla, sin fondo ni
+            líneas (ver DESIGN_SYSTEM.md, "Patrones de contenedor y
+            tabla"): buscador de Referencia → divisor → filtro de Fecha →
+            (derecha) Limpiar filtros + contador. En tier 760px suma el
+            dropdown "Acciones" al final (slot acciones-tier2) en vez de una
+            fila propia. Con resultados vacíos no hay toolbar que mostrar,
+            así que el slot vive en una franja mínima aparte — Desarmes/
+            Lotes siguen disponibles sin selección, no pueden depender de
+            modShowData. "Limpiar filtros" quita el filtro, no el texto
+            del buscador. */}
         {modShowData ? (
-          <TableToolbar search={modSearch} onSearchChange={setModSearch} hideExport>
-            <div id="acciones-tier2-slot" className="hidden [@media(max-height:760px)]:flex items-center" />
-          </TableToolbar>
+          <div className="px-4 pb-3 shrink-0 flex items-center flex-wrap gap-2">
+            <div className="w-60 shrink-0">
+              <TableToolbar search={modSearch} onSearchChange={setModSearch} searchPlaceholder="Buscar referencia…" hideExport bare />
+            </div>
+            <div className="w-px h-5 bg-gray-300 shrink-0" />
+            <FilterTrigger variant="date-range" label="Fecha" value={modFiltroFecha} onChange={setModFiltroFecha} />
+            <div className="ml-auto shrink-0 flex items-center gap-4">
+              {modFiltroFecha && (
+                <button
+                  type="button"
+                  onClick={() => setModFiltroFecha(null)}
+                  className="text-body-sm font-medium text-primary hover:text-secondary transition-colors"
+                >
+                  Limpiar filtros
+                </button>
+              )}
+              <TableCounter visibles={modVisibleIndices.length} total={SAMPLE_ROWS.length} />
+              <div id="acciones-tier2-slot" className="hidden [@media(max-height:760px)]:flex items-center" />
+            </div>
+          </div>
         ) : (
-          <div className="hidden [@media(max-height:760px)]:flex items-center justify-end px-4 py-2 border-b border-gray-200 bg-white shrink-0">
+          <div className="hidden [@media(max-height:760px)]:flex items-center justify-end px-4 pb-3 shrink-0">
             <div id="acciones-tier2-slot" className="flex items-center" />
           </div>
         )}
 
-        {/* Body — px-4 (no px-5) para alinear con el buscador de
-            TableToolbar. Tabla Referencia / Fecha dentro del mismo
-            contenedor con borde que ReposicionesTable, y debajo el resumen
-            de reclamos (antes en Card B). */}
-        <div className="flex-1 min-h-0 flex flex-col px-4 py-3">
+        {/* Body — px-4 pb-4, alineado con el título y el toolbar (el aire
+            de arriba lo da el pb-3 del toolbar). Tabla Referencia / Fecha
+            dentro del mismo contenedor con borde que ReposicionesTable, y
+            debajo el resumen de reclamos (antes en Card B). */}
+        <div className="flex-1 min-h-0 flex flex-col px-4 pb-4">
           {/* Replica el estilo de ReposicionesTable (copia de clases, no usa
               el componente): header bg-gray-50 de alto REPOSICIONES_HEADER_H,
               celdas px-3 py-2 text-body-sm, separador gray-100, acento de
@@ -5174,6 +5446,12 @@ function ModificarContent({
                   <span className="text-gray-300 scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
                   <p className="text-body-sm font-medium text-gray-500">Sin resultados</p>
                   <p className="text-caption text-gray-500">Completá los filtros y presioná Buscar</p>
+                </div>
+              ) : modFiltroFecha && modVisibleIndices.length === 0 ? (
+                /* El filtro dejó 0 filas — mismo empty state de arriba. */
+                <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
+                  <span className="text-gray-300 scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
+                  <p className="text-body-sm font-medium text-gray-500">Sin resultados para los filtros aplicados</p>
                 </div>
               ) : modVisibleIndices.map((i, vi) => {
                 const row = SAMPLE_ROWS[i];
@@ -5245,7 +5523,10 @@ function ModificarContent({
                 Tablas relacionadas queda al fondo, alineada con Reclamos.
                 min-h-0 en este wrapper: sin él la tabla no puede achicarse
                 y terminaría scrolleando la card entera. */}
-            <div className="flex-1 min-h-0 flex flex-col px-5 py-3">
+            {/* px-4 pb-4 (antes px-5 py-3): alineado a 16px con el título,
+                igual que Interrupciones; sin el border-b del header, el aire
+                de arriba lo da el pb-3 de CardHeader. */}
+            <div className="flex-1 min-h-0 flex flex-col px-4 pb-4">
               <ReposicionesTable
                 cols={tabla4Data.cols}
                 rows={tabla4Rows}
@@ -5401,22 +5682,24 @@ function ModificarContent({
 
           {/* Descripción del tab activo, sola en su fila. Tabla 3 no
               repite descripción, el resultado (Sí/No existe) ya la dice. */}
-          <div className="px-5 pt-3 pb-1 shrink-0">
+          <div className="px-5 pt-3 pb-3 shrink-0">
             <p className="text-body-sm text-gray-600 leading-snug">
               {activeTabData && activeTabData.key !== "tabla3" ? activeTabData.subtitle : null}
             </p>
           </div>
 
           {/* Toolbar de la tabla (ver DESIGN_SYSTEM.md, "Patrones de
-              contenedor y tabla"): buscador (TableToolbar `bare`) → divisor
-              (el de PersistentActionsBar) → un FilterTrigger por columna
-              filtrable del tab → a la derecha "Limpiar filtros" (clases del
-              flyout "Más filtros", solo con ≥1 filtro activo) + contador.
-              Tabla 3 no tiene toolbar. */}
+              contenedor y tabla"): FUERA del contenedor de la tabla, sin
+              fondo ni líneas (px-5 pb-3, alineado con el resto del modal).
+              Buscador (TableToolbar `bare`, solo columnas no filtrables) →
+              divisor (el de PersistentActionsBar) → un FilterTrigger por
+              columna filtrable del tab → a la derecha "Limpiar filtros"
+              (clases del flyout "Más filtros", solo con ≥1 filtro activo) +
+              contador. Tabla 3 no tiene toolbar. */}
           {relTabRows.length > 0 && (
-            <div className="px-5 py-2.5 shrink-0 flex items-center gap-2">
+            <div className="px-5 pb-3 shrink-0 flex items-center gap-2">
               <div className="w-64 shrink-0">
-                <TableToolbar search={relSearch} onSearchChange={setRelSearch} hideExport bare />
+                <TableToolbar search={relSearch} onSearchChange={setRelSearch} searchPlaceholder={relSearchPlaceholder} hideExport bare />
               </div>
               {relFiltrables.length > 0 && (
                 <>
@@ -5442,9 +5725,7 @@ function ModificarContent({
                     Limpiar filtros
                   </button>
                 )}
-                <span className="text-caption text-gray-600 tabular-nums">
-                  <span className="font-semibold text-gray-700">{relVisibleIndices.length}</span> de {relTabRows.length} registros
-                </span>
+                <TableCounter visibles={relVisibleIndices.length} total={relTabRows.length} />
               </div>
             </div>
           )}
@@ -7331,6 +7612,11 @@ function AbmScreen({
             <TableToolbar search={search} onSearchChange={setSearch} hideExport />
           )}
 
+          {/* Contenedor de la tabla — mx-4 mb-4 con borde propio, separado
+              del toolbar (que va sobre la superficie de la card, ver
+              TableToolbar). Adentro: la línea de registro seleccionado, la
+              tabla con scroll propio y el pie de paginación. */}
+          <div className="flex-1 min-h-0 mx-4 mb-4 flex flex-col border border-gray-200 rounded-sm overflow-hidden">
           {hasSelection && (
             <SelectionActionBar recordLabel={config.rows[selectedRow!][columnKeys[0]]} />
           )}
@@ -7356,7 +7642,7 @@ function AbmScreen({
             ref={resultadosListRef}
             tabIndex={showData ? 0 : -1}
             onKeyDown={handleResultadosKeyDown}
-            className="flex-1 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+            className="flex-1 min-h-0 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
           >
             {!showData ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400">
@@ -7487,6 +7773,7 @@ function AbmScreen({
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 
