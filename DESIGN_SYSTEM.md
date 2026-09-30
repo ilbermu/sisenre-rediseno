@@ -7,10 +7,6 @@ esos tokens), no repite los tokens en sí.
 
 ## `Modal`: header = mismo tratamiento que `CardHeader`
 
-> **Desalineado, pendiente de decisión:** `CardHeader` pasó a ir sin fondo
-> ni `border-b` (ver "Patrones de contenedor y tabla"). El header de `Modal`
-> sigue como se describe abajo.
-
 El bloque de header de `Modal` (título/cerrar + `headerExtra`, si viene) es
 `bg-gray-50` con `border-b border-gray-200` como divisor con el body — EL
 MISMO tratamiento que `CardHeader` (Búsqueda/Interrupciones/Reposiciones:
@@ -214,10 +210,6 @@ exterior, nunca sus secciones.
    card, prop `context`: `· RÓTULO valor`, ej. "· INTERRUPCIÓN `<ref>`" en
    Reposiciones) + acciones de alcance **TABLA** en `right` (Insertar,
    Exportar, Auditoría). **Nunca** acciones sobre el registro seleccionado.
-   Va sobre el blanco de la card, **sin `border-b` ni fondo tintado**:
-   `px-4 pt-4 pb-3`, alto fijo `h-16` (el de un botón md + el padding, para
-   que cards con y sin acciones alineen). `px-4` deja el título alineado a
-   16px con el buscador y con el borde del contenedor de la tabla.
 2. **Registro seleccionado**: se marca como fila resaltada en su tabla
    (`--color-primary-tint` + acento `inset 3px 0 0 var(--color-primary)`).
    En paneles que muestran datos hijos de ese registro, el registro va como
@@ -241,16 +233,16 @@ exterior, nunca sus secciones.
      Aplicar, porque un rango se arma en dos pasos. Se permite un solo
      extremo; desde > hasta deshabilita Aplicar. Texto aplicado:
      `dd/mm hh:mm – dd/mm hh:mm`, `desde …` o `hasta …`.
-4. **Toolbar de tabla**: va **FUERA** del contenedor de la tabla, sobre la
-   superficie de la card, sin fondo propio ni líneas divisorias
-   horizontales. Orden: buscador → divisor vertical (`w-px h-5
+4. **Toolbar de tabla**: va **FUERA** del contenedor de la tabla, sin fondo
+   propio y **sin línea divisoria** entre el toolbar y la tabla; se vincula
+   a la tabla por proximidad (toolbar `px-4 py-3`, contenedor de tabla
+   `mx-4 mb-4`; en el modal "Tablas relacionadas", `px-5 pb-3` y
+   `mx-5 mb-5`). Orden: buscador → divisor vertical (`w-px h-5
    bg-gray-300`, el de `PersistentActionsBar`) → triggers de filtro →
    (derecha, `ml-auto`) "Limpiar filtros" (solo con ≥1 filtro activo; quita
    los filtros, no el texto del buscador) + contador "`N` de `M` registros"
    (`TableCounter`, siempre visible, también sin filtros, para que el layout
-   no salte). La jerarquía título → controles → datos se resuelve solo con
-   espaciado (`pb-3` entre header y toolbar, `pb-3` entre toolbar y tabla).
-   El `thead` es el único elemento con fondo gris del bloque.
+   no salte). El `thead` mantiene su fondo gris.
 5. **Búsqueda con alcance explícito**: el buscador declara sus columnas
    (`searchCols` de `useTableToolbar`) y el placeholder las nombra (ej.
    "Buscar referencia…"; el `aria-label` es el mismo texto sin los puntos

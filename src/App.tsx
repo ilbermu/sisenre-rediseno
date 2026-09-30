@@ -1287,10 +1287,10 @@ function TableCounter({ visibles, total }: { visibles: number; total: number }) 
 }
 
 // Barra de herramientas de tabla — buscador cliente-side a la izquierda,
-// Exportar a la derecha. Va FUERA del contenedor de la tabla, sobre la
-// superficie de la card, sin fondo propio ni líneas (px-4 pb-3: alineada a
-// 16px con el título de CardHeader y con el borde del contenedor de la
-// tabla) — ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla". Se le
+// Exportar a la derecha. Va FUERA del contenedor de la tabla, sin fondo
+// propio y sin línea divisoria con la tabla: se vincula a ella por
+// proximidad (px-4 py-3, alineada con el borde del contenedor de la tabla,
+// mx-4) — ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla". Se le
 // pueden agregar mas botones a la derecha de Exportar pasandolos como
 // children, sin reestructurar nada. El aria-label del buscador es el
 // placeholder sin los puntos suspensivos.
@@ -1338,7 +1338,7 @@ function TableToolbar({
   if (bare) return searchBox;
 
   return (
-    <div className="px-4 pb-3 shrink-0 flex items-center justify-between gap-3">
+    <div className="px-4 py-3 shrink-0 flex items-center justify-between gap-3">
       {searchBox}
       {(!hideExport || children) && (
         <div className="flex items-center gap-2 shrink-0">
@@ -1469,9 +1469,8 @@ function Modal({
           boxShadow: "var(--shadow-high)",
         }}
       >
-        {/* Header — bg-gray-50 (era el mismo tratamiento que CardHeader;
-            CardHeader pasó a ir sin fondo ni border-b y este header quedó
-            como estaba — pendiente decidir si se alinean), aplica a los 13 usos de Modal por
+        {/* Header — bg-gray-50 (mismo tratamiento que CardHeader: Búsqueda/
+            Interrupciones/Reposiciones), aplica a los 13 usos de Modal por
             igual, no es una prop opt-in. border-b como divisor con el body
             (bg-white, sin cambios). título/cerrar siempre; headerExtra (si
             viene) se apila debajo, todavía dentro de este mismo bloque. Con
@@ -3535,15 +3534,12 @@ function CodeBadge({ code }: { code: string }) {
 }
 
 // Header compartido de toda card contenedora (Búsqueda, Resultados,
-// Interrupciones, Reposiciones, etc.) — sobre el blanco de la card, sin
-// border-b ni fondo tintado: la separación con lo de abajo es solo espacio
-// (pb-3). px-4 alinea el título a 16px con el buscador del toolbar y con el
-// borde del contenedor de la tabla. Altura fija (h-16 = pt-4 + h-9 + pb-3,
-// el alto de un botón md) en vez de dejar que el contenido la defina: sin
-// esto, una card sin `right` (ej. Búsqueda) quedaba más baja que una con
-// botones md ahí (ej. Resultados, con Auditoría/Exportar/Insertar a h-9), y
-// las cards no alineaban entre sí. items-center centra título/tag/right
-// dentro de ese alto fijo, tengan o no acciones.
+// Interrupciones, Reposiciones, etc.) — altura fija (h-14, ni más ni menos)
+// en vez de dejar que py-2.5 defina el alto según el contenido: sin esto,
+// una card sin `right` (ej. Búsqueda) quedaba más baja que una con botones
+// md ahí (ej. Resultados, con Auditoría/Exportar/Insertar a h-9), y las
+// cards no alineaban entre sí. items-center centra título/tag/right dentro
+// de ese alto fijo, tengan o no acciones.
 // `context` (opcional): el registro padre de los datos de la card (ej.
 // "Interrupción <ref>" en Reposiciones), en la misma línea después del
 // tag — "·" de Tablas relacionadas + rótulo y valor con las clases que
@@ -3563,7 +3559,7 @@ function CardHeader({
   right?: React.ReactNode;
 }) {
   return (
-    <div className="px-4 pt-4 pb-3 shrink-0 h-16 flex items-center gap-2">
+    <div className="h-14 px-5 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center gap-2">
       <span className="text-label font-semibold text-gray-900">{title}</span>
       {tag && <CodeBadge code={tag} />}
       {context && (
@@ -5132,10 +5128,7 @@ function ModificarContent({
             style={CARD_SHADOW}
           >
             <CardHeader title="Búsqueda" tag="CDS2" />
-            {/* px-4 pb-3 (antes px-3 py-2.5): sin el border-b del header,
-                el aire de arriba lo da el pb-3 de CardHeader, y px-4
-                alinea los campos con el título. */}
-            <div className="relative z-30 flex items-center gap-2 px-4 pb-3 [@media(max-height:760px)]:flex-wrap">
+            <div className="relative z-30 flex items-center gap-2 px-3 py-2.5 [@media(max-height:760px)]:flex-wrap">
             {/* Ancho fijo (no crece a ocupar el sobrante) para que se vea
                 proporcionado contra Nivel/Fase — 190px en tamaño normal,
                 bastante más chico en tier 760px vía el `!` important de
@@ -5365,8 +5358,8 @@ function ModificarContent({
         <CardHeader title="Interrupciones" tag="CDS2" />
 
         {/* Toolbar de tabla — FUERA del contenedor de la tabla, sin fondo ni
-            líneas (ver DESIGN_SYSTEM.md, "Patrones de contenedor y
-            tabla"): buscador de Referencia → divisor → filtro de Fecha →
+            línea divisoria con la tabla (ver DESIGN_SYSTEM.md, "Patrones
+            de contenedor y tabla"): buscador de Referencia → divisor → filtro de Fecha →
             (derecha) Limpiar filtros + contador. En tier 760px suma el
             dropdown "Acciones" al final (slot acciones-tier2) en vez de una
             fila propia. Con resultados vacíos no hay toolbar que mostrar,
@@ -5375,7 +5368,7 @@ function ModificarContent({
             modShowData. "Limpiar filtros" quita el filtro, no el texto
             del buscador. */}
         {modShowData ? (
-          <div className="px-4 pb-3 shrink-0 flex items-center flex-wrap gap-2">
+          <div className="px-4 py-3 shrink-0 flex items-center flex-wrap gap-2">
             <div className="w-60 shrink-0">
               <TableToolbar search={modSearch} onSearchChange={setModSearch} searchPlaceholder="Buscar referencia…" hideExport bare />
             </div>
@@ -5396,16 +5389,18 @@ function ModificarContent({
             </div>
           </div>
         ) : (
-          <div className="hidden [@media(max-height:760px)]:flex items-center justify-end px-4 pb-3 shrink-0">
+          <div className="hidden [@media(max-height:760px)]:flex items-center justify-end px-4 py-3 shrink-0">
             <div id="acciones-tier2-slot" className="flex items-center" />
           </div>
         )}
 
-        {/* Body — px-4 pb-4, alineado con el título y el toolbar (el aire
-            de arriba lo da el pb-3 del toolbar). Tabla Referencia / Fecha
-            dentro del mismo contenedor con borde que ReposicionesTable, y
-            debajo el resumen de reclamos (antes en Card B). */}
-        <div className="flex-1 min-h-0 flex flex-col px-4 pb-4">
+        {/* Body — px-4 pb-4, alineado con el toolbar (con toolbar, el aire
+            de arriba lo da su py-3; sin datos no hay toolbar y el body suma
+            pt-3 para no quedar pegado al border-b del header). Tabla
+            Referencia / Fecha dentro del mismo contenedor con borde que
+            ReposicionesTable, y debajo el resumen de reclamos (antes en
+            Card B). */}
+        <div className={`flex-1 min-h-0 flex flex-col px-4 pb-4 ${modShowData ? "" : "pt-3"}`}>
           {/* Replica el estilo de ReposicionesTable (copia de clases, no usa
               el componente): header bg-gray-50 de alto REPOSICIONES_HEADER_H,
               celdas px-3 py-2 text-body-sm, separador gray-100, acento de
@@ -5523,10 +5518,7 @@ function ModificarContent({
                 Tablas relacionadas queda al fondo, alineada con Reclamos.
                 min-h-0 en este wrapper: sin él la tabla no puede achicarse
                 y terminaría scrolleando la card entera. */}
-            {/* px-4 pb-4 (antes px-5 py-3): alineado a 16px con el título,
-                igual que Interrupciones; sin el border-b del header, el aire
-                de arriba lo da el pb-3 de CardHeader. */}
-            <div className="flex-1 min-h-0 flex flex-col px-4 pb-4">
+            <div className="flex-1 min-h-0 flex flex-col px-5 py-3">
               <ReposicionesTable
                 cols={tabla4Data.cols}
                 rows={tabla4Rows}
@@ -7612,11 +7604,12 @@ function AbmScreen({
             <TableToolbar search={search} onSearchChange={setSearch} hideExport />
           )}
 
-          {/* Contenedor de la tabla — mx-4 mb-4 con borde propio, separado
-              del toolbar (que va sobre la superficie de la card, ver
-              TableToolbar). Adentro: la línea de registro seleccionado, la
-              tabla con scroll propio y el pie de paginación. */}
-          <div className="flex-1 min-h-0 mx-4 mb-4 flex flex-col border border-gray-200 rounded-sm overflow-hidden">
+          {/* Contenedor de la tabla — mx-4 mb-4 con borde propio, sin línea
+              entre él y el toolbar (proximidad, ver TableToolbar); sin datos
+              no hay toolbar y suma mt-3 para no quedar pegado al header.
+              Adentro: la línea de registro seleccionado, la tabla con
+              scroll propio y el pie de paginación. */}
+          <div className={`flex-1 min-h-0 mx-4 mb-4 flex flex-col border border-gray-200 rounded-sm overflow-hidden ${showData ? "" : "mt-3"}`}>
           {hasSelection && (
             <SelectionActionBar recordLabel={config.rows[selectedRow!][columnKeys[0]]} />
           )}
