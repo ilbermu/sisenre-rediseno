@@ -3208,8 +3208,10 @@ function CardHeader({ title, tag, right }: { title: string; tag?: string; right?
 // header = micro 15 + py-2 16 + borde 1 = 32. En los tiers compactos
 // (--spacing y --text-* más chicos, ver index.css) el contenido mide menos
 // (47,6/29,6 a ≤900px, 45,3/28,8 a ≤760px), así que el alto se FIJA en el
-// <tr> (style height) — si no, maxHeight = HEADER + ROW·5 no coincidía con
-// ningún tier (la 5ª fila salía cortada o asomaba una 6ª).
+// <tr> (style height), para que las filas queden parejas entre tiers. Ya
+// no se usan para calcular un alto de 5 filas: la tabla toma el alto
+// disponible (flex-1, igual que la lista de Interrupciones) y puede asomar
+// una fila cortada abajo.
 const REPOSICIONES_HEADER_H = 32;
 const REPOSICIONES_ROW_H = 50;
 
@@ -3226,8 +3228,11 @@ const REPOSICIONES_ROW_H = 50;
 // Columnas fijas (Reposición/Hora/Fase/
 // Equipo/Usuarios BT vienen de FaseReposicion, no de un array genérico) —
 // `cols` solo aporta las etiquetas de header, para que DRAWER_TABS siga
-// siendo la única fuente de los títulos. Header <th> sticky + scroll propio
-// + fila seleccionada con acento celeste. Ref, hover y navegación por
+// siendo la única fuente de los títulos. Alto flexible: el contenedor y el
+// área scrolleable son flex-1 min-h-0, así que la tabla llena el alto que
+// le deja su padre (el mismo mecanismo que la lista de Interrupciones) —
+// antes era un alto fijo de 5 filas vía la prop maxHeight, que se sacó.
+// Header <th> sticky + scroll propio + fila seleccionada con acento celeste. Ref, hover y navegación por
 // teclado (flechas arriba/abajo) son internos — no hay estado que
 // compartir ahí, solo el índice seleccionado.
 //
@@ -3248,13 +3253,11 @@ function ReposicionesTable({
   rows,
   selectedIndex,
   onSelect,
-  maxHeight = REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 5,
 }: {
   cols: string[];
   rows: FaseReposicion[];
   selectedIndex: number | null;
   onSelect: (index: number | null) => void;
-  maxHeight?: number;
 }) {
   const [hovIndex, setHovIndex] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -3279,13 +3282,12 @@ function ReposicionesTable({
   }
 
   return (
-    <div className="border border-gray-200 rounded-sm overflow-hidden bg-white">
+    <div className="flex-1 min-h-0 flex flex-col border border-gray-200 rounded-sm overflow-hidden bg-white">
     <div
       ref={listRef}
       tabIndex={rows.length > 0 ? 0 : -1}
       onKeyDown={handleKeyDown}
-      className="overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
-      style={{ height: maxHeight }}
+      className="flex-1 min-h-0 overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
     >
       <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
         <thead>
@@ -5075,16 +5077,18 @@ function ModificarContent({
           <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
 
             {/* Tabla 4 — siempre visible, nunca detrás de un modal/drawer.
-                Vacía hasta que se selecciona una interrupción. Altura fija
-                (~5 filas, sin achicarse con pocas) + scroll propio + header
-                sticky, ver ReposicionesTable. */}
-            <div className="flex-1 flex flex-col px-5 py-3">
+                Vacía hasta que se selecciona una interrupción. Llena el alto
+                disponible (flex-1, igual que la lista de Interrupciones) +
+                scroll propio + header sticky, ver ReposicionesTable; así
+                Tablas relacionadas queda al fondo, alineada con Reclamos.
+                min-h-0 en este wrapper: sin él la tabla no puede achicarse
+                y terminaría scrolleando la card entera. */}
+            <div className="flex-1 min-h-0 flex flex-col px-5 py-3">
               <ReposicionesTable
                 cols={tabla4Data.cols}
                 rows={tabla4Rows}
                 selectedIndex={modSelectedFase}
                 onSelect={setModSelectedFase}
-                maxHeight={REPOSICIONES_HEADER_H + REPOSICIONES_ROW_H * 5}
               />
               {/* Indicadores de las tablas relacionadas, card propia debajo
                   de la tabla — abren el modal "Tablas relacionadas",
