@@ -334,7 +334,7 @@ function SectionDivider({ title }: { title: string }) {
       <span className="text-heading-xs uppercase tracking-[0.09em] text-gray-600 whitespace-nowrap select-none">
         {title}
       </span>
-      <div className="flex-1 h-px bg-gray-200" />
+      <div className="flex-1 h-px bg-border" />
     </div>
   );
 }
@@ -361,7 +361,7 @@ function NavItem({
         ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
         ${active
           ? "border-transparent text-secondary"
-          : "border-transparent text-gray-700 hover:text-gray-800 hover:bg-gray-100"
+          : "border-transparent text-gray-700 hover:text-gray-800 hover:bg-fill-muted"
         }`}
     >
       {/* Pill de fondo del ítem activo — layoutId compartido entre TODOS los
@@ -425,7 +425,7 @@ function PeriodSelector() {
       <button
         onClick={() => setOpen(!open)}
         className={`${BTN_MD} group flex items-center gap-1.5 border transition-all duration-150
-          ${open ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"}`}
+          ${open ? "bg-primary-tint border-primary text-secondary" : "bg-surface border-border-strong text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"}`}
       >
         <span className={`transition-colors ${open ? "text-secondary" : "text-gray-500 group-hover:text-secondary"}`}><Calendar size={15} strokeWidth={1.5} /></span>
         <span>{selected}</span>
@@ -435,10 +435,10 @@ function PeriodSelector() {
       </button>
       {open && (
         <div
-          className="shadow-md absolute right-0 w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+          className="shadow-md absolute right-0 w-48 bg-surface rounded-md border border-border z-50 overflow-hidden"
           style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
-          <div className="px-3 py-2.5 border-b border-gray-100">
+          <div className="px-3 py-2.5 border-b border-border-subtle">
             <p className="text-heading-xs text-gray-600 uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
           </div>
           <div className="p-1.5 flex flex-col gap-0.5">
@@ -447,7 +447,7 @@ function PeriodSelector() {
               key={p}
               onClick={() => { setSelected(p); setOpen(false); }}
               className={`w-full px-2.5 py-2 rounded-sm border text-left text-body transition-colors
-                ${p === selected ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-gray-100"}`}
+                ${p === selected ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-fill-muted"}`}
             >
               {p}
             </button>
@@ -629,7 +629,7 @@ function FilterTrigger(props: FilterTriggerProps) {
           <div
             role="listbox"
             aria-label={label}
-            className="shadow-md absolute left-0 min-w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+            className="shadow-md absolute left-0 min-w-48 bg-surface rounded-md border border-border z-50 overflow-hidden"
             style={{ ...dropdownAnchorStyle(direction, 5) }}
           >
             <div className="p-1.5 flex flex-col gap-0.5 overflow-y-auto" style={{ maxHeight: 260 }}>
@@ -643,7 +643,7 @@ function FilterTrigger(props: FilterTriggerProps) {
                     aria-selected={sel}
                     onClick={() => { props.onChange(o.value); setOpen(false); }}
                     className={`w-full px-2.5 py-2 rounded-sm border text-left text-body transition-colors flex items-center justify-between gap-4 whitespace-nowrap
-                      ${sel ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-gray-100"}`}
+                      ${sel ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-fill-muted"}`}
                   >
                     <span>{o.value ?? "Todas"}</span>
                     {o.count !== null && <span className="text-caption text-gray-500 tabular-nums">{o.count}</span>}
@@ -728,7 +728,7 @@ function FilterDateRangePanel({
     <div
       role="dialog"
       aria-label={`Filtrar por ${label.toLowerCase()}`}
-      className="shadow-md absolute left-0 bg-white rounded-sm border border-gray-300 z-50 p-3"
+      className="shadow-md absolute left-0 bg-surface rounded-md border border-border z-50 p-3"
       style={{ ...dropdownAnchorStyle(direction, 5), width: 300 }}
     >
       {/* Atajos — clases de chip de ButtonSelectGroup (reposo). Completan
@@ -739,7 +739,7 @@ function FilterDateRangePanel({
             key={a.label}
             type="button"
             onClick={() => completar(...a.rango())}
-            className={`${BTN_SM} border transition-all duration-150 shrink-0 bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]`}
+            className={`${BTN_SM} border transition-all duration-150 shrink-0 bg-surface border-border-strong text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]`}
           >
             {a.label}
           </button>
@@ -752,7 +752,7 @@ function FilterDateRangePanel({
       {invalido && (
         <p className="mt-2 text-caption text-error">La fecha desde no puede ser posterior a la fecha hasta</p>
       )}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
         <button
           type="button"
           onClick={() => onApply(null)}
@@ -801,8 +801,8 @@ function DateTimeChevron({ orientation }: ChevronProps) {
 const DAY_PICKER_CLASSNAMES = {
   month: "relative flex flex-col",
   month_caption: "flex items-center justify-center h-6 mb-2",
-  button_previous: "absolute left-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
-  button_next: "absolute right-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
+  button_previous: "absolute left-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all",
+  button_next: "absolute right-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all",
   month_grid: "w-full border-collapse",
   weekdays: "",
   weekday: "text-heading-xs uppercase text-gray-500 pb-1",
@@ -846,7 +846,7 @@ function MiniCaptionDropdown({
       </button>
       {open && (
         <div
-          className="shadow-md absolute left-1/2 z-40 bg-white border border-gray-300 rounded-lg p-1.5 flex flex-col gap-0.5 overflow-y-auto"
+          className="shadow-md absolute left-1/2 z-40 bg-surface border border-border rounded-md p-1.5 flex flex-col gap-0.5 overflow-y-auto"
           style={{ ...dropdownAnchorStyle(direction, 4), transform: "translateX(-50%)", minWidth: 96, maxHeight: 224 }}
         >
           {options.map((o) => (
@@ -956,10 +956,10 @@ function DateTimeField({
         className={
           MOD_SELECT_CLS +
           " w-full flex items-center justify-between gap-2 text-left" +
-          // `!` (important): MOD_SELECT_CLS ya trae bg-white/text-gray-900, que en
+          // `!` (important): MOD_SELECT_CLS ya trae bg-surface/text-gray-900, que en
           // el CSS compilado ganan igual sin importar el orden en que se
           // concatenan los strings acá (ver mismo fix en AbmCampo/disabledCls).
-          (muted ? " !bg-gray-100 !text-gray-500" : disabled ? " !bg-gray-50 !text-gray-900" : "") +
+          (muted ? " !bg-fill-muted !text-gray-500" : disabled ? " !bg-fill-subtle !text-gray-900" : "") +
           (className ? ` ${className}` : "")
         }
         style={fullWidth ? undefined : { width: 170, flexShrink: 0 }}
@@ -969,7 +969,7 @@ function DateTimeField({
       </button>
       {!disabled && open && (
         <div
-          className="shadow-md absolute z-30 bg-white border border-gray-300 rounded-lg p-4"
+          className="shadow-md absolute z-30 bg-surface border border-border rounded-md p-4"
           style={{ ...dropdownAnchorStyle(direction, 6), width: "max-content" }}
         >
           <DayPicker
@@ -987,11 +987,11 @@ function DateTimeField({
             <FieldLabel>Hora</FieldLabel>
             <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} className={MOD_FIELD_CLS} />
           </div>
-          <div className="flex items-center justify-end gap-2.5 mt-4 pt-3 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-2.5 mt-4 pt-3 border-t border-border">
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className={`${BTN_MD} border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all`}
+              className={`${BTN_MD} border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all`}
             >
               Cerrar
             </button>
@@ -1028,7 +1028,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center gap-2 rounded-sm px-1.5 py-1.5 transition-colors hover:bg-gray-100 ${open ? "bg-gray-100" : ""}`}
+        className={`w-full flex items-center gap-2 rounded-sm px-1.5 py-1.5 transition-colors hover:bg-fill-muted ${open ? "bg-fill-muted" : ""}`}
       >
         <div
           className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-label text-white"
@@ -1050,16 +1050,16 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
       </button>
       {open && (
         <div
-          className={`shadow-md absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "left-0 right-0"} bg-white rounded-sm border border-gray-300 py-1 z-50 min-w-[160px]`}
+          className={`shadow-md absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "left-0 right-0"} bg-surface rounded-md border border-border py-1 z-50 min-w-[160px]`}
           style={collapsed ? undefined : dropdownAnchorStyle(direction, 6)}
         >
-          <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-gray-50 transition-colors">
+          <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-fill-muted transition-colors">
             <User size={15} strokeWidth={1.5} /> Mi perfil
           </button>
-          <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-gray-50 transition-colors">
+          <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-fill-muted transition-colors">
             <Settings size={15} strokeWidth={1.5} /> Configuración
           </button>
-          <div className="my-1 border-t border-gray-200" />
+          <div className="my-1 border-t border-border" />
           <button
             onClick={() => { setOpen(false); onLogout(); }}
             className="w-full flex items-center gap-2 px-3 py-2 text-body text-error hover:bg-red-50 transition-colors"
@@ -1089,7 +1089,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
 //        Exportar, Auditoría) y botones dropdown-trigger (selector de
 //        período, "Cambiar de tabla")
 const BTN_SM = "h-7 px-2.5 rounded-sm text-label";
-const BTN_MD = "h-9 px-4 rounded-md text-body font-medium";
+const BTN_MD = "h-9 px-4 rounded-sm text-body font-medium";
 
 // ─── Login screen ─────────────────────────────────────────────────────────────
 
@@ -1102,9 +1102,9 @@ type ActionItem = {
 
 function actionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return `${BTN_MD} border border-error-border bg-white text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.98] whitespace-nowrap`;
+    return `${BTN_MD} border border-error-border bg-surface text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.98] whitespace-nowrap`;
   }
-  return `${BTN_MD} border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.98] whitespace-nowrap`;
+  return `${BTN_MD} border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.98] whitespace-nowrap`;
 }
 
 // Variante compacta de actionBtnCls — mismo botón outline/secundario ya
@@ -1115,9 +1115,9 @@ function actionBtnCls(variant?: ActionItem["variant"]) {
 // Resultados) donde el tamaño md no entra prolijo.
 function rowActionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return `${BTN_SM} border border-error-border bg-white text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.97] whitespace-nowrap`;
+    return `${BTN_SM} border border-error-border bg-surface text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.97] whitespace-nowrap`;
   }
-  return `${BTN_SM} border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.97] whitespace-nowrap`;
+  return `${BTN_SM} border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.97] whitespace-nowrap`;
 }
 
 // Confirmación visual de qué registro está seleccionado — solo la línea
@@ -1126,7 +1126,7 @@ function rowActionBtnCls(variant?: ActionItem["variant"]) {
 // (junto a Exportar) — ver AbmScreen.
 function SelectionActionBar({ recordLabel }: { recordLabel: string }) {
   return (
-    <div className="px-4 py-3 border-b border-gray-200 bg-white shrink-0 flex items-center gap-2.5">
+    <div className="px-4 py-3 border-b border-border bg-surface shrink-0 flex items-center gap-2.5">
       <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
       <span className="text-heading-xs text-secondary uppercase tracking-wide select-none">
         Registro seleccionado
@@ -1261,7 +1261,7 @@ function SortableTh({
   onClick: () => void;
 }) {
   return (
-    <th className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] select-none whitespace-nowrap">
+    <th className="sticky top-0 z-10 bg-fill-subtle-solid border-b border-border px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] select-none whitespace-nowrap">
       <button
         type="button"
         onClick={onClick}
@@ -1311,7 +1311,7 @@ function TableToolbar({
   hideExport?: boolean;
   searchPlaceholder?: string;
   children?: React.ReactNode;
-  // true: sin el contenedor propio (px-4 py-2.5 border-b bg-white,
+  // true: sin el contenedor propio (px-4 py-2.5 border-b bg-surface,
   // flex justify-between) — solo el buscador, para vivir dentro de una
   // fila que ya arma su propio layout (ej. los toolbars con filtros de
   // Interrupciones y del modal "Tablas relacionadas"). Ignora onExport/children
@@ -1330,7 +1330,7 @@ function TableToolbar({
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder={searchPlaceholder}
         aria-label={searchPlaceholder.replace(/…$/, "")}
-        className="w-full h-8 pl-8 pr-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150"
+        className="w-full h-8 pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150"
       />
     </div>
   );
@@ -1363,9 +1363,9 @@ function TableToolbar({
 // outline para cancelar, azul solido para la accion primaria). Cierra con X,
 // click en el overlay o Escape.
 const modalPrimaryBtnCls =
-  "h-9 px-5 rounded-md text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-9 px-5 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 const modalNeutralBtnCls =
-  "h-9 px-5 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-9 px-5 rounded-sm text-body font-medium border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 
 function Modal({
   title,
@@ -1409,7 +1409,7 @@ function Modal({
   // nunca en el body entero. Default "auto" (overflow-y-auto, como
   // siempre) — ningún modal existente cambia.
   bodyOverflow?: "auto" | "hidden";
-  // Clases extra para el body (ej. "bg-gray-50 flex flex-col gap-4" para
+  // Clases extra para el body (ej. "bg-fill-subtle flex flex-col gap-4" para
   // el patrón de modal de trabajo con cards, ver DESIGN_SYSTEM.md).
   // Default "" — ningún modal existente cambia.
   bodyClassName?: string;
@@ -1451,7 +1451,7 @@ function Modal({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="shadow-lg fixed z-50 flex flex-col bg-white rounded-lg overflow-hidden outline-none"
+        className="shadow-lg fixed z-50 flex flex-col bg-surface rounded-xl overflow-hidden outline-none"
         style={{
           top: "50%",
           left: "50%",
@@ -1462,16 +1462,16 @@ function Modal({
           height,
         }}
       >
-        {/* Header — bg-gray-50 (mismo tratamiento que CardHeader: Búsqueda/
+        {/* Header — bg-surface (mismo tratamiento que CardHeader: Búsqueda/
             Interrupciones/Reposiciones), aplica a los 13 usos de Modal por
             igual, no es una prop opt-in. border-b como divisor con el body
-            (bg-white, sin cambios). título/cerrar siempre; headerExtra (si
+            (bg-surface, sin cambios). título/cerrar siempre; headerExtra (si
             viene) se apila debajo, todavía dentro de este mismo bloque. Con
             headerExtra, el título pasa a pt-3.5/pb-0 (en vez de py-4) — el
             padding inferior del bloque entero lo aporta headerExtra (su
             propio pb-3.5, ver call site), con solo mt-0.5 de gap interno
             entre las dos líneas. */}
-        <div className="bg-gray-50 border-b border-gray-200 shrink-0">
+        <div className="bg-surface border-b border-border shrink-0">
           <div className={`px-5 flex items-center justify-between gap-3 ${headerExtra ? "pt-3.5 pb-0" : "py-4"}`}>
             <p className={`min-w-0 truncate text-heading-md text-gray-900`}>
               {title}
@@ -1486,7 +1486,7 @@ function Modal({
             <button
               type="button"
               onClick={onClose}
-              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
+              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all"
             >
               <X size={14} strokeWidth={1.5} />
             </button>
@@ -1503,7 +1503,7 @@ function Modal({
 
         {/* Footer */}
         {footer && (
-          <div className="px-5 py-4 border-t border-gray-200 shrink-0 flex items-center justify-end gap-3">
+          <div className="px-5 py-4 border-t border-border shrink-0 flex items-center justify-end gap-3">
             {footer}
           </div>
         )}
@@ -1516,8 +1516,8 @@ function Modal({
 // "Interrupción/Reclamo" / "Errores".
 function ListBox({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="flex flex-col border border-gray-300 rounded-sm overflow-hidden" style={{ height: 160 }}>
-      <div className="px-3 py-2 border-b border-gray-300 bg-gray-50 text-heading-xs uppercase tracking-[0.07em] text-gray-600 shrink-0">
+    <div className="flex flex-col border border-border rounded-md overflow-hidden" style={{ height: 160 }}>
+      <div className="px-3 py-2 border-b border-border bg-fill-subtle text-heading-xs uppercase tracking-[0.07em] text-gray-600 shrink-0">
         {title}
       </div>
       <div className="flex-1 overflow-y-auto p-2">{children}</div>
@@ -1526,7 +1526,7 @@ function ListBox({ title, children }: { title: string; children?: React.ReactNod
 }
 
 // Checkbox custom (no accent-color nativo) — mismo lenguaje que el resto de
-// la app: borde var(--color-gray-400) en reposo, relleno var(--color-primary) + check blanco al marcar.
+// la app: borde var(--color-border-strong) en reposo (primary en hover), relleno var(--color-primary) + check blanco al marcar.
 // El <input> real queda oculto (sr-only) para mantener accesibilidad/teclado;
 // el estado visual lo maneja React, nunca CSS nativo del navegador.
 // Sin "checked"/"onChange" queda no-controlado (estado propio, como en
@@ -1559,8 +1559,8 @@ function ModalCheckbox({
         className="sr-only"
       />
       <span
-        className={`w-4 h-4 rounded-[3px] border flex items-center justify-center shrink-0 transition-colors duration-150 ${
-          checked ? "bg-primary border-primary" : "bg-white border-gray-400 hover:border-gray-500"
+        className={`w-4 h-4 rounded-xs border flex items-center justify-center shrink-0 transition-colors duration-150 ${
+          checked ? "bg-primary border-primary" : "bg-surface border-border-strong hover:border-primary"
         }`}
       >
         {checked && (
@@ -1585,7 +1585,7 @@ function ModalRadio({ label, checked, onSelect }: { label: string; checked: bool
     >
       <span
         className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-150 ${
-          checked ? "border-primary" : "border-gray-400 hover:border-gray-500"
+          checked ? "border-primary" : "border-border-strong hover:border-primary"
         }`}
       >
         <span className={`w-2 h-2 rounded-full bg-primary transition-transform duration-150 ${checked ? "scale-100" : "scale-0"}`} />
@@ -1725,7 +1725,7 @@ function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
-          <div className="w-full h-8 px-2.5 flex items-center text-body bg-gray-100 border border-gray-300 rounded-sm text-gray-400 select-none cursor-not-allowed">
+          <div className="w-full h-8 px-2.5 flex items-center text-body bg-fill-muted border border-border rounded-sm text-gray-400 select-none cursor-not-allowed">
             —
           </div>
         </div>
@@ -1773,7 +1773,7 @@ function ReplicarModal({
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
-          <div className="w-full h-8 px-2.5 flex items-center text-body bg-gray-100 border border-gray-300 rounded-sm text-gray-400 select-none cursor-not-allowed">
+          <div className="w-full h-8 px-2.5 flex items-center text-body bg-fill-muted border border-border rounded-sm text-gray-400 select-none cursor-not-allowed">
             —
           </div>
         </div>
@@ -1824,10 +1824,10 @@ function CambiaFasesModal({
         </button>
       }
     >
-      <div className="border border-gray-300 rounded-sm overflow-hidden">
+      <div className="border border-border rounded-md overflow-hidden">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
+            <tr className="bg-fill-subtle border-b border-border">
               {["Fase", "Fecha", "Id elemento", "Tipo elemento", "Cadena", "Cliente"].map((c) => (
                 <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 select-none whitespace-nowrap">
                   {c}
@@ -1838,7 +1838,7 @@ function CambiaFasesModal({
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={r.idElemento} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              <tr key={r.idElemento} className="border-b border-border-subtle hover:bg-fill-muted transition-colors">
                 <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.fase}</td>
                 <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
                 <td className="px-4 py-3 text-code text-gray-700 whitespace-nowrap font-mono">
@@ -1922,17 +1922,17 @@ function AltaClientesModal({
           type="button"
           onClick={() => setFiltroActivo((v) => !v)}
           className={`${BTN_SM} border transition-colors ${
-            filtroActivo ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"
+            filtroActivo ? "bg-primary-tint border-primary text-secondary" : "bg-surface border-border-strong text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"
           }`}
         >
           {filtroActivo ? "Activo" : "Inactivo"}
         </button>
       </div>
 
-      <div className="border border-gray-300 rounded-sm overflow-hidden">
+      <div className="border border-border rounded-md overflow-hidden">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
+            <tr className="bg-fill-subtle border-b border-border">
               {["Interrupción", "Repo", "Cadena/Cuenta", "Clientes T4", "Clientes T6", "Clientes T9", "Clientes T10"].map((c) => (
                 <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 select-none whitespace-nowrap">
                   {c}
@@ -1943,7 +1943,7 @@ function AltaClientesModal({
           </thead>
           <tbody>
             {ALTA_CLIENTES_ROWS.map((r) => (
-              <tr key={r.interrupcion} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              <tr key={r.interrupcion} className="border-b border-border-subtle hover:bg-fill-muted transition-colors">
                 <td className="px-4 py-3 text-code tabular-nums font-mono" style={{ color: "var(--color-gray-800)" }}>
                   {r.interrupcion}
                 </td>
@@ -1965,12 +1965,12 @@ function AltaClientesModal({
       </div>
 
       <div className="flex items-center justify-between mt-4">
-        <div className="inline-flex rounded-sm border border-gray-400 overflow-hidden">
+        <div className="inline-flex rounded-sm border border-border-strong overflow-hidden">
           <button
             type="button"
             onClick={() => setPeriodicidad("mensual")}
             className={`h-7 px-2.5 text-label transition-colors ${
-              periodicidad === "mensual" ? "bg-primary text-white" : "bg-white text-gray-700 hover:bg-gray-50"
+              periodicidad === "mensual" ? "bg-primary text-white" : "bg-surface text-gray-700 hover:bg-fill-muted"
             }`}
           >
             Mensual
@@ -1978,8 +1978,8 @@ function AltaClientesModal({
           <button
             type="button"
             onClick={() => setPeriodicidad("semestral")}
-            className={`h-7 px-2.5 text-label border-l border-gray-400 transition-colors ${
-              periodicidad === "semestral" ? "bg-primary text-white" : "bg-white text-gray-700 hover:bg-gray-50"
+            className={`h-7 px-2.5 text-label border-l border-border-strong transition-colors ${
+              periodicidad === "semestral" ? "bg-primary text-white" : "bg-surface text-gray-700 hover:bg-fill-muted"
             }`}
           >
             Semestral
@@ -2114,8 +2114,8 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       <div className="grid grid-cols-2 gap-6">
         {/* Izquierda: archivo + porcentajes */}
         <div className="flex flex-col gap-4">
-          <div className="border border-gray-300 rounded-sm overflow-hidden" style={{ height: 160 }}>
-            <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-300">
+          <div className="border border-border rounded-md overflow-hidden" style={{ height: 160 }}>
+            <div className="grid grid-cols-3 bg-fill-subtle border-b border-border">
               {["Campo 1", "Campo 2", "Campo 3"].map((c) => (
                 <div key={c} className="px-3 py-2 text-heading-xs uppercase tracking-[0.07em] text-gray-600">
                   {c}
@@ -2171,7 +2171,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           <ListBox title="Errores" />
 
           <div>
-            <div className="flex items-center gap-1 border-b border-gray-200 overflow-x-auto">
+            <div className="flex items-center gap-1 border-b border-border overflow-x-auto">
               {LOTES_TIPOS.map((t) => (
                 <button
                   key={t.key}
@@ -2220,7 +2220,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               ))}
             </div>
 
-            <div className="w-full h-8 px-2.5 flex items-center text-body-sm bg-gray-100 border border-gray-300 rounded-sm text-gray-600 select-none">
+            <div className="w-full h-8 px-2.5 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-gray-600 select-none">
               {tipoData.desc}
             </div>
           </div>
@@ -2304,7 +2304,7 @@ function IntercambioModal({
       <div className="flex gap-5">
         {/* Sidebar izquierda */}
         <div className="flex flex-col gap-4 shrink-0" style={{ width: 190 }}>
-          <div className="border border-gray-300 rounded-sm divide-y divide-gray-100 overflow-hidden">
+          <div className="border border-border rounded-md divide-y divide-border-subtle overflow-hidden">
             <div className="flex items-center justify-between gap-2 px-3 py-2">
               <span
                 className="text-code tabular-nums text-gray-800 truncate font-mono"
@@ -2341,10 +2341,10 @@ function IntercambioModal({
 
         {/* Tabla origen */}
         <div className="flex-1 flex flex-col gap-2 min-w-0">
-          <div className="border border-gray-300 rounded-sm overflow-y-auto" style={{ height: 240 }}>
+          <div className="border border-border rounded-md overflow-y-auto" style={{ height: 240 }}>
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
+                <tr className="bg-fill-subtle border-b border-border">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
                     <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 whitespace-nowrap">
                       {c}
@@ -2360,7 +2360,7 @@ function IntercambioModal({
                     </div>
                   </th>
                 </tr>
-                <tr className="border-b border-gray-200">
+                <tr className="border-b border-border">
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
@@ -2379,7 +2379,7 @@ function IntercambioModal({
                   </tr>
                 ) : (
                   leftRows.map((r, i) => (
-                    <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <tr key={r.id} className="border-b border-border-subtle hover:bg-fill-muted transition-colors">
                       <td className="px-3 py-2 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
                       <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.clientes}</td>
                       <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.repo}</td>
@@ -2395,9 +2395,9 @@ function IntercambioModal({
             </table>
           </div>
           <div className="flex items-center justify-between text-body-sm text-gray-600">
-            <button className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40" disabled>Anterior</button>
+            <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Anterior</button>
             <span>Página <span className="font-medium text-gray-800">1</span> de <span className="font-medium text-gray-800">1</span></span>
-            <button className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40" disabled>Siguiente</button>
+            <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Siguiente</button>
           </div>
           <ModalCheckbox label="Ocultar existentes en ambas interrupciones" checked={ocultarExistentes} onChange={setOcultarExistentes} />
         </div>
@@ -2423,17 +2423,17 @@ function IntercambioModal({
 
         {/* Tabla destino */}
         <div className="flex-1 flex flex-col gap-2 min-w-0">
-          <div className="border border-gray-300 rounded-sm overflow-y-auto" style={{ height: 240 }}>
+          <div className="border border-border rounded-md overflow-y-auto" style={{ height: 240 }}>
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
+                <tr className="bg-fill-subtle border-b border-border">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
                     <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 whitespace-nowrap">
                       {c}
                     </th>
                   ))}
                 </tr>
-                <tr className="border-b border-gray-200">
+                <tr className="border-b border-border">
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
                   <td className="p-1.5"><input className={MOD_FIELD_CLS} style={{ height: 26 }} /></td>
@@ -2451,7 +2451,7 @@ function IntercambioModal({
                   </tr>
                 ) : (
                   rightRows.map((r) => (
-                    <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <tr key={r.id} className="border-b border-border-subtle hover:bg-fill-muted transition-colors">
                       <td className="px-3 py-2 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
                       <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.clientes}</td>
                       <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.repo}</td>
@@ -2462,9 +2462,9 @@ function IntercambioModal({
             </table>
           </div>
           <div className="flex items-center justify-between text-body-sm text-gray-600">
-            <button className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40" disabled>Anterior</button>
+            <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Anterior</button>
             <span>Página <span className="font-medium text-gray-800">1</span> de <span className="font-medium text-gray-800">1</span></span>
-            <button className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40" disabled>Siguiente</button>
+            <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Siguiente</button>
           </div>
           <div className="relative">
             <input placeholder="Buscar destino" className={MOD_FIELD_CLS} style={{ paddingRight: 36 }} />
@@ -2495,7 +2495,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     }
   }
 
-  const inputCls = "w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-gray-500 rounded-sm bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
+  const inputCls = "w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-border-strong rounded-sm bg-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
   const inputStyle: React.CSSProperties = { color: "var(--color-gray-900)", letterSpacing: "0.14px" };
   const labelStyle: React.CSSProperties = { color: "var(--color-gray-700)", letterSpacing: "0.14px" };
 
@@ -2521,7 +2521,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           vertical usa var(--login-*, valor-normal) para poder achicarse en
           tier 760px (ver index.css) sin tocar el tamaño normal. */}
       <div className="relative flex-1 flex flex-col" style={{ paddingTop: "var(--login-top-offset, calc(38vh + 15px))" }}>
-        <div className="bg-gray-50 rounded-tl-[12px] rounded-tr-[12px] flex flex-col overflow-hidden flex-1 min-h-0" style={{ width: 600, margin: "0 auto" }}>
+        <div className="bg-surface rounded-tl-lg rounded-tr-lg flex flex-col overflow-hidden flex-1 min-h-0" style={{ width: 600, margin: "0 auto" }}>
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0" style={{ paddingTop: "var(--login-form-pt, 60px)", paddingLeft: 32, paddingRight: 32, paddingBottom: "var(--login-form-pb, 32px)" }}>
             {/* Header */}
             <div className="flex flex-col gap-[8px] [@media(max-height:760px)]:gap-[var(--login-header-gap,8px)] shrink-0">
@@ -2597,11 +2597,11 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
   return (
     <div
       className="w-full h-screen flex items-center justify-center font-sans"
-      style={{ backgroundColor: "var(--color-gray-100)" }}
+      style={{ backgroundColor: "var(--color-bg-app)" }}
     >
       <div className="w-full max-w-[520px] px-6">
         {/* Header */}
-        <div className="mb-6 pb-5 border-b border-gray-300">
+        <div className="mb-6 pb-5 border-b border-border">
           <h1 className="text-heading-lg text-gray-900 mb-1">Bienvenido a SISENRE</h1>
           <p className="text-body-lg text-gray-600">Seleccioná con qué herramienta comenzarás a trabajar</p>
         </div>
@@ -2617,7 +2617,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
                 onClick={() => !opt.disabled && onSelect(opt.id)}
                 onMouseEnter={() => setHovered(opt.id)}
                 onMouseLeave={() => setHovered(null)}
-                className="group w-full text-left px-5 py-4 rounded-lg border border-gray-300 bg-white shadow-sm transition-all duration-150 enabled:hover:bg-primary-tint enabled:hover:border-primary enabled:hover:shadow-md"
+                className="group w-full text-left px-5 py-4 rounded-lg border border-border bg-surface shadow-sm transition-all duration-150 enabled:hover:bg-primary-tint enabled:hover:border-primary enabled:hover:shadow-md"
                 style={{
                   cursor: opt.disabled ? "not-allowed" : "pointer",
                   opacity: opt.disabled ? 0.55 : 1,
@@ -2674,14 +2674,14 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="h-8 px-2.5 flex items-center gap-1.5 border border-gray-400 rounded-sm bg-white text-label text-gray-900 hover:border-primary hover:text-secondary transition-colors"
+        className="h-8 px-2.5 flex items-center gap-1.5 border border-border-strong rounded-sm bg-surface text-label text-gray-900 hover:border-primary hover:text-secondary transition-colors"
       >
         {value}
         <span className="text-gray-500"><Calendar size={15} strokeWidth={1.5} /></span>
       </button>
       {open && (
         <div
-          className="shadow-md absolute z-30 bg-white border border-gray-300 rounded-lg p-3"
+          className="shadow-md absolute z-30 bg-surface border border-border rounded-md p-3"
           style={{ ...dropdownAnchorStyle(direction, 6), right: 0, width: "max-content" }}
         >
           <DayPicker
@@ -2768,10 +2768,10 @@ function CronogramaEnre() {
   const CAL_CELL = 34;
   const CAL_WIDTH = CAL_CELL * 7 + 3 * 6;
 
-  const claseCeldaBase = "rounded-[3px] flex items-center justify-center text-caption border";
+  const claseCeldaBase = "rounded-xs flex items-center justify-center text-caption border";
 
   return (
-    <div className="bg-white rounded-md border border-gray-300 px-5 py-4" style={{ maxWidth: 760 }}>
+    <div className="bg-surface rounded-lg border border-border px-5 py-4" style={{ maxWidth: 760 }}>
       <div className="mb-4">
         <span className="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-3 rounded-full bg-primary-tint border border-chip-border text-secondary text-label">
           <span className="shrink-0 rounded-full" style={{ width: 6, height: 6, backgroundColor: "var(--color-primary)" }} />
@@ -2795,7 +2795,7 @@ function CronogramaEnre() {
               const etapa = esFinDeSemana ? null : etapaReal;
               const esHoy = c.dia === HOY;
 
-              let clase = claseCeldaBase + " border-transparent bg-gray-100 text-gray-500";
+              let clase = claseCeldaBase + " border-transparent bg-fill-muted text-gray-500";
               let estiloExtra: React.CSSProperties = {};
               if (etapa === "entrega") {
                 clase = claseCeldaBase + " bg-primary-tint border-primary text-secondary";
@@ -2828,25 +2828,25 @@ function CronogramaEnre() {
         <div className="flex-1 min-w-0 flex flex-col">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="shrink-0 rounded-[2px]" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.entrega }} />
+              <span className="shrink-0 rounded-xs" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.entrega }} />
               <span className="text-body-sm text-gray-600 flex-1 min-w-0">Entrega de tablas</span>
               <span className="text-label text-gray-900 shrink-0">{diaEntrega} de {nombreMesEntrega}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="shrink-0 rounded-[2px]" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.correccion }} />
+              <span className="shrink-0 rounded-xs" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.correccion }} />
               <span className="text-body-sm text-gray-600 flex-1 min-w-0">Ventana de corrección</span>
               <span className="text-label text-gray-900 shrink-0">
                 {hayCorreccion ? `${correccionDesde} – ${correccionHasta} de ${nombreMesEntrega}` : "—"}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="shrink-0 rounded-[2px]" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.tentativa }} />
+              <span className="shrink-0 rounded-xs" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.tentativa }} />
               <span className="text-body-sm text-gray-600 flex-1 min-w-0">Entrega tentativa final</span>
               <span className="text-label text-gray-900 shrink-0">{diaTentativa} de {nombreMesEntrega}</span>
             </div>
           </div>
 
-          <div className="border-t border-gray-200 my-3" />
+          <div className="border-t border-border my-3" />
 
           <p className="text-heading-xs uppercase tracking-[0.07em] text-gray-600 mb-2">Fechas clave</p>
           <div className="grid grid-cols-2 gap-3">
@@ -2895,7 +2895,7 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
           <div
             key={item.code}
             onClick={() => onIrATabla(item.tableKey)}
-            className="group bg-white rounded-md border border-gray-300 px-5 py-4 cursor-pointer shadow-sm transition-all duration-150 hover:bg-primary-tint hover:border-primary hover:shadow-md"
+            className="group bg-surface rounded-lg border border-border px-5 py-4 cursor-pointer shadow-sm transition-all duration-150 hover:bg-primary-tint hover:border-primary hover:shadow-md"
           >
             <div className="flex items-start gap-3">
               <span className="mt-0.5 text-primary shrink-0">{item.icon}</span>
@@ -2903,7 +2903,7 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="text-heading-md text-gray-900 group-hover:text-secondary transition-colors">{item.label}</p>
                   <span
-                    className="text-caption font-mono px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600"
+                    className="text-caption font-mono px-1.5 py-0.5 rounded-xs border border-border-strong text-gray-600"
                   >
                     {item.code}
                   </span>
@@ -2934,7 +2934,7 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <p className="text-heading-xs uppercase tracking-[0.05em] text-gray-600 mb-1 truncate">{label}</p>
-      <div className="h-7 px-2 flex items-center text-body-sm bg-gray-100 border border-gray-300 rounded-sm text-gray-700 truncate">
+      <div className="h-7 px-2 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-gray-700 truncate">
         {value || " "}
       </div>
     </div>
@@ -3164,7 +3164,7 @@ function ConfirmarModificarModal({
           ) : (
             <div className="flex flex-col gap-2">
               {cambios.map((c) => (
-                <div key={c.label} className="flex items-center gap-3 px-3 py-2 rounded-sm bg-gray-50 border border-gray-200">
+                <div key={c.label} className="flex items-center gap-3 px-3 py-2 rounded-sm bg-fill-subtle border border-border">
                   <span className="w-[38%] shrink-0 text-label text-gray-700">{c.label}</span>
                   <span className="flex-1 min-w-0 text-body-sm text-gray-500 line-through truncate">{c.anterior || "(vacío)"}</span>
                   <span className="shrink-0 text-gray-400">→</span>
@@ -3175,7 +3175,7 @@ function ConfirmarModificarModal({
           )}
         </div>
 
-        <div className="rounded-sm border border-primary bg-primary-tint p-4">
+        <div className="rounded-md border border-primary bg-primary-tint p-4">
           <p className="text-heading-xs uppercase tracking-[0.07em] text-secondary mb-1">Motivo</p>
           <p className="text-body-sm text-gray-600 mb-3">
             Seleccioná una nota o ingresá una manual para justificar este cambio.
@@ -3191,7 +3191,7 @@ function ConfirmarModificarModal({
               value={notaManual}
               onChange={(e) => setNotaManual(e.target.value)}
               placeholder="Escribí el motivo de la modificación"
-              className="mt-2 w-full h-9 px-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10"
+              className="mt-2 w-full h-9 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10"
             />
           )}
         </div>
@@ -3208,11 +3208,11 @@ const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
 // Modificar, Alta/Búsqueda ABM y ValuePicker comparten estas dos (antes
 // existían por separado como inputCls/selectCls, ya unificadas acá).
 const MOD_FIELD_CLS =
-  "w-full h-8 px-2.5 text-body bg-white border border-gray-400 rounded-sm text-gray-900 " +
+  "w-full h-8 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-gray-900 " +
   "placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150";
 
 const MOD_SELECT_CLS =
-  "h-8 px-2.5 pr-7 text-body bg-white border border-gray-400 rounded-sm text-gray-900 appearance-none " +
+  "h-8 px-2.5 pr-7 text-body bg-surface border border-border-strong rounded-sm text-gray-900 appearance-none " +
   "cursor-pointer focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150 shrink-0";
 
 // Campos del flyout "Más filtros" de la Card A. Cada uno se puede aplicar,
@@ -3514,7 +3514,7 @@ const DRAWER_TAB_TO_ABM: Partial<Record<string, { tableKey: AbmTableKey; campoCo
 function CodeBadge({ code }: { code: string }) {
   return (
     <span
-      className="text-caption px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600 shrink-0 font-mono"
+      className="text-caption px-1.5 py-0.5 rounded-xs border border-border-strong text-gray-600 shrink-0 font-mono"
     >
       {code}
     </span>
@@ -3558,7 +3558,7 @@ function CardHeader({
 }) {
   const sizeCls = size === "compact" ? "h-14 [@media(max-height:760px)]:h-auto [@media(max-height:760px)]:py-2" : "h-14";
   return (
-    <div className={`${sizeCls} px-5 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center gap-2`}>
+    <div className={`${sizeCls} px-5 border-b border-border bg-surface shrink-0 flex items-center gap-2`}>
       <span className="text-heading-md text-gray-900">{title}</span>
       {tag && <CodeBadge code={tag} />}
       {context && (
@@ -3653,7 +3653,7 @@ function ReposicionesTable({
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col border border-gray-200 rounded-sm overflow-hidden bg-white">
+    <div className="flex-1 min-h-0 flex flex-col border border-border rounded-md overflow-hidden bg-surface">
     <div
       ref={listRef}
       tabIndex={rows.length > 0 ? 0 : -1}
@@ -3666,7 +3666,7 @@ function ReposicionesTable({
             {cols.map((c, ci) => (
               <th
                 key={c}
-                className={`sticky top-0 z-10 bg-gray-50 px-3 py-2 border-b border-gray-200 text-heading-xs uppercase tracking-[0.06em] text-gray-600 whitespace-nowrap ${
+                className={`sticky top-0 z-10 bg-fill-subtle-solid px-3 py-2 border-b border-border text-heading-xs uppercase tracking-[0.06em] text-gray-600 whitespace-nowrap ${
                   ci === cols.length - 1 ? "text-right" : "text-left"
                 }`}
               >
@@ -3689,7 +3689,7 @@ function ReposicionesTable({
             rows.map((fila, ri) => {
               const seleccionada = selectedIndex === ri;
               const esUltima = ri === rows.length - 1;
-              const tdCls = `px-3 py-2 ${esUltima ? "" : "border-b border-gray-100"}`;
+              const tdCls = `px-3 py-2 ${esUltima ? "" : "border-b border-border-subtle"}`;
               const textCls = seleccionada ? "text-secondary font-medium" : "text-gray-700";
               return (
                 <tr
@@ -3699,7 +3699,7 @@ function ReposicionesTable({
                   onMouseEnter={() => setHovIndex(ri)}
                   onMouseLeave={() => setHovIndex(null)}
                   className="transition-colors cursor-pointer"
-                  style={{ height: REPOSICIONES_ROW_H, backgroundColor: seleccionada ? "var(--color-primary-tint)" : hovIndex === ri ? "var(--color-gray-50)" : undefined }}
+                  style={{ height: REPOSICIONES_ROW_H, backgroundColor: seleccionada ? "var(--color-primary-tint)" : hovIndex === ri ? "var(--color-fill-muted)" : undefined }}
                 >
                   <td
                     className={`${tdCls} text-body-sm tabular-nums whitespace-nowrap ${textCls} ${seleccionada ? "inset-shadow-row-selected" : ""}`}
@@ -3771,7 +3771,7 @@ function RelacionadaChip({
   );
   if (!conContenido) {
     return (
-      <div className={`${baseCls} border-dashed border-gray-300 bg-transparent cursor-default`}>
+      <div className={`${baseCls} border-dashed border-border bg-transparent cursor-default`}>
         {etiqueta}
         <span className="w-0 min-w-full text-body-lg whitespace-nowrap text-gray-500">{valor}</span>
       </div>
@@ -3784,7 +3784,7 @@ function RelacionadaChip({
       type="button"
       onClick={onClick}
       aria-label={booleana ? `${nombre}: ${valor}, abrir` : `${nombre}: ${valor} registros, abrir`}
-      className={`${baseCls} bg-white border-gray-200 hover:bg-primary-tint hover:border-primary active:bg-chip-border-hover transition-[background-color,border-color] duration-[120ms] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2`}
+      className={`${baseCls} bg-surface border-border hover:bg-primary-tint hover:border-primary active:bg-chip-border-hover transition-[background-color,border-color] duration-[120ms] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2`}
     >
       {etiqueta}
       <span className="w-0 min-w-full text-body-lg whitespace-nowrap font-medium text-secondary">{valor}</span>
@@ -4129,7 +4129,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
   );
 
   return (
-    <section className="block w-full text-left bg-white border-[0.5px] border-gray-300 rounded-[10px] px-[18px] py-[16px]">
+    <section className="block w-full text-left bg-surface border border-border rounded-md px-[18px] py-[16px]">
       {contenido}
     </section>
   );
@@ -4204,12 +4204,12 @@ function ReclamosResumenCompacto({
     // ::after (absolute inset-0) cubre toda la card, que es `relative`.
     // Hover (con datos): el hover secundario de hoy sobre TODA la card —
     // borde primary + fondo primary-tint, también en el header (el
-    // [&>:first-child] le gana al bg-gray-50 de CardHeader) + textos del
+    // [&>:first-child] le gana al bg-surface de CardHeader) + textos del
     // cuerpo a secondary. Foco: el focus-visible del botón se pinta en la
     // card entera (has-[:focus-visible]).
     <div
       data-habilitada={habilitada || undefined}
-      className="group relative rounded-sm border border-gray-200 overflow-hidden bg-white transition-all data-[habilitada]:hover:border-primary data-[habilitada]:hover:bg-primary-tint data-[habilitada]:hover:[&>:first-child]:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:outline-offset-2"
+      className="group relative rounded-md border border-border overflow-hidden bg-surface transition-all data-[habilitada]:hover:border-primary data-[habilitada]:hover:bg-primary-tint data-[habilitada]:hover:[&>:first-child]:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:outline-offset-2"
     >
       <CardHeader
         title="Reclamos durante la interrupción"
@@ -4234,12 +4234,12 @@ function ReclamosResumenCompacto({
           así la línea es continua. */}
       <div className="grid grid-cols-4 px-5 py-4">
         {columnas.map((c, i) => (
-          <span key={`l-${c.etiqueta}`} className={`min-w-0 self-end pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}>
+          <span key={`l-${c.etiqueta}`} className={`min-w-0 self-end pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-border"}`}>
             <span className="block text-caption tracking-[0.05em] text-gray-500 group-data-[habilitada]:group-hover:text-secondary">{c.etiqueta}</span>
           </span>
         ))}
         {columnas.map((c, i) => (
-          <span key={`v-${c.etiqueta}`} className={`min-w-0 self-end ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}>
+          <span key={`v-${c.etiqueta}`} className={`min-w-0 self-end ${i === 0 ? "pr-3" : "px-3 border-l border-border"}`}>
             <span className="block text-body-lg font-medium text-secondary">{c.valor}</span>
           </span>
         ))}
@@ -4253,7 +4253,7 @@ function ReclamosResumenCompacto({
 // justo ese valor). Siempre las 3 en ese orden, resalta las presentes en
 // `fase` (ej. "RS" resalta R y S) con el mismo tint+borde celeste que el
 // resto de los indicadores "accent" del sistema; las ausentes quedan en
-// gray-300/border-gray-200. Es un indicador compuesto de SOLO LECTURA (la
+// gray-300/border-border. Es un indicador compuesto de SOLO LECTURA (la
 // selección de fase existe en ABM y consultas, no acá): <span>, sin hover
 // ni cursor, fuera del orden de tabulación. Cada caja es aria-hidden y un
 // sr-only describe el estado con las fases presentes (ej. "Fases: R, S y T").
@@ -4273,8 +4273,8 @@ function FaseIndicador({ fase }: { fase: string }) {
           <span
             key={letra}
             aria-hidden="true"
-            className={`w-[18px] h-[18px] flex items-center justify-center rounded-sm border text-caption font-mono ${
-              presente ? "bg-primary-tint border-chip-border text-secondary" : "border-gray-200 text-gray-300"
+            className={`w-[18px] h-[18px] flex items-center justify-center rounded-xs border text-caption font-mono ${
+              presente ? "bg-primary-tint border-chip-border text-secondary" : "border-border text-gray-300"
             }`}
           >
             {letra}
@@ -4353,7 +4353,7 @@ function FaseReposicionFicha({
     // en wrap queda anclada arriba a la derecha.
     <div aria-live="polite" className="px-5 py-3 shrink-0">
       <div
-        className={`border border-gray-200 rounded-sm px-4 py-2.5 flex items-center gap-3 transition-colors duration-300 ${flash ? "bg-primary-tint" : "bg-white"}`}
+        className={`border border-border rounded-md px-4 py-2.5 flex items-center gap-3 transition-colors duration-300 ${flash ? "bg-primary-tint" : "bg-surface"}`}
       >
       <div className="flex items-center flex-wrap gap-x-2 gap-y-1 min-w-0 text-body-sm">
         <span className="font-semibold text-gray-900 whitespace-nowrap">Reposición {fila.nro}</span>
@@ -4404,7 +4404,7 @@ function FaseReposicionFicha({
             onClick={() => onChangeReposicion(reposicionIndex - 1)}
             disabled={reposicionIndex <= 0}
             aria-label="Reposición anterior"
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             <ChevronLeft size={14} strokeWidth={1.5} />
           </button>
@@ -4413,7 +4413,7 @@ function FaseReposicionFicha({
             onClick={() => onChangeReposicion(reposicionIndex + 1)}
             disabled={reposicionIndex >= totalReposiciones - 1}
             aria-label="Reposición siguiente"
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             <ChevronRight size={14} strokeWidth={1.5} />
           </button>
@@ -4454,7 +4454,7 @@ function UnderlineTabs({
   }
 
   return (
-    <div role="tablist" aria-label={ariaLabel} onKeyDown={handleKeyDown} className="flex border-b border-gray-200 shrink-0 px-5">
+    <div role="tablist" aria-label={ariaLabel} onKeyDown={handleKeyDown} className="flex border-b border-border shrink-0 px-5">
       {options.map((opt) => {
         const active = opt.key === activeKey;
         return (
@@ -4470,7 +4470,7 @@ function UnderlineTabs({
             // alineado al borde de contenido del contenedor (px-5), en la
             // misma vertical que el resto del contenido del modal.
             className={`h-10 min-w-24 px-4 first:-ml-4 text-body border-b-2 -mb-px transition-colors ${
-              active ? "border-primary text-secondary font-medium" : "border-transparent text-gray-600 hover:bg-gray-50"
+              active ? "border-primary text-secondary font-medium" : "border-transparent text-gray-600 hover:bg-fill-muted"
             }`}
           >
             {opt.label}
@@ -4482,7 +4482,7 @@ function UnderlineTabs({
 }
 
 // Botón ícono para copiar un valor al portapapeles — mismo tratamiento visual
-// que el botón cerrar de Modal (gray-600, hover bg-gray-100 + texto
+// que el botón cerrar de Modal (gray-600, hover bg-fill-muted + texto
 // gray-800), mismo tamaño/strokeWidth de ícono. navigator.clipboard es la vía
 // principal; si la Clipboard API no existe o falla (contexto no seguro,
 // permiso denegado, etc.) cae a un <textarea> temporal fuera de pantalla +
@@ -4542,7 +4542,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
         onClick={handleCopy}
         aria-label={`Copiar ${label}`}
         title={copied ? "Copiada" : `Copiar ${label}`}
-        className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all shrink-0"
+        className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all shrink-0"
       >
         {copied ? <Check size={14} strokeWidth={1.5} className="text-success" /> : <Copy size={14} strokeWidth={1.5} />}
       </button>
@@ -4584,10 +4584,10 @@ function ButtonSelectGroup({
               disabled
                 ? isSel
                   ? "bg-primary-tint/60 border-primary/50 text-secondary/80 cursor-not-allowed"
-                  : "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
+                  : "bg-fill-muted border-border text-gray-400 cursor-not-allowed"
                 : isSel
                 ? "bg-primary-tint border-primary text-secondary"
-                : "bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]"
+                : "bg-surface border-border-strong text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]"
             }`}
           >
             {opt}
@@ -4646,7 +4646,7 @@ function PersistentActionsBar({
         disabled={a.disabled}
         onClick={() => { a.onClick?.(); setOpen(false); }}
         className={`w-full flex items-center px-2.5 py-2 rounded-sm text-left text-body transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none ${
-          a.variant === "destructive" ? "text-error hover:bg-red-50" : "text-gray-700 hover:bg-gray-100"
+          a.variant === "destructive" ? "text-error hover:bg-red-50" : "text-gray-700 hover:bg-fill-muted"
         }`}
       >
         {a.label}
@@ -4686,11 +4686,11 @@ function PersistentActionsBar({
       </button>
       {open && (
         <div
-          className="shadow-md absolute left-0 w-56 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden p-1.5 flex flex-col gap-0.5"
+          className="shadow-md absolute left-0 w-56 bg-surface rounded-md border border-border z-50 overflow-hidden p-1.5 flex flex-col gap-0.5"
           style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           {siempreHabilitadas.map(ItemMenu)}
-          <div className="h-px bg-gray-200 my-0.5" />
+          <div className="h-px bg-border my-0.5" />
           {condicionales.map(ItemMenu)}
         </div>
       )}
@@ -4703,10 +4703,10 @@ function PersistentActionsBar({
           solo se vacía) en tier 760px, porque el dropdown que la reemplaza
           vive en el header (portal de acá abajo), no en este lugar. */}
       <div
-        className="shadow-sm rounded-sm border border-gray-300 bg-white shrink-0 flex items-center gap-2 flex-wrap px-3 py-2.5 [@media(max-height:760px)]:hidden"
+        className="shadow-sm rounded-lg border border-border bg-surface shrink-0 flex items-center gap-2 flex-wrap px-3 py-2.5 [@media(max-height:760px)]:hidden"
       >
         {siempreHabilitadas.map(Boton)}
-        <div className="w-px h-5 bg-gray-300 shrink-0" />
+        <div className="w-px h-5 bg-border shrink-0" />
         {condicionales.map(Boton)}
       </div>
       {portalNode && createPortal(dropdown, portalNode)}
@@ -5002,7 +5002,7 @@ function ModificarContent({
       className={`${BTN_MD} border flex items-center gap-1.5 transition-all duration-150 ${
         activeFlyoutFields.length > 0
           ? "bg-primary-tint border-primary text-secondary"
-          : "bg-white border-gray-400 text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
+          : "bg-surface border-border-strong text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
       }`}
     >
       <Filter size={14} strokeWidth={1.5} />
@@ -5029,7 +5029,7 @@ function ModificarContent({
           setFaseSel("");
         }}
         disabled={!modShowData}
-        className={`${BTN_MD} border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
+        className={`${BTN_MD} border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
       >Limpiar</button>
       <button
         type="button"
@@ -5050,7 +5050,7 @@ function ModificarContent({
             barra de filtros compacta, una sola fila, + flyout "Más filtros" */}
         <div className="relative shrink-0">
           <div
-            className="shadow-sm relative rounded-sm border border-gray-300 bg-white"
+            className="shadow-sm relative rounded-lg border border-border bg-surface"
           >
             <CardHeader title="Búsqueda" tag="CDS2" />
             <div className="relative z-30 flex items-center gap-2 px-3 py-2.5 [@media(max-height:760px)]:flex-wrap">
@@ -5062,7 +5062,7 @@ function ModificarContent({
             <input
               disabled={hasSelection}
               placeholder={`Ej: ${RECORD.referencia}`}
-              className={MOD_FIELD_CLS + " !text-code font-mono" + (hasSelection ? " !bg-gray-50 !text-gray-900" : "") + " [@media(max-height:760px)]:!w-[112px]"}
+              className={MOD_FIELD_CLS + " !text-code font-mono" + (hasSelection ? " !bg-fill-subtle !text-gray-900" : "") + " [@media(max-height:760px)]:!w-[112px]"}
               style={{ width: 190, flexShrink: 0 }}
               value={codigoBusqueda}
               onChange={(e) => setCodigoBusqueda(e.target.value)}
@@ -5078,7 +5078,7 @@ function ModificarContent({
 
             <ValuePicker
               isDisabled={hasSelection}
-              triggerExtraClassName={hasSelection ? " !bg-gray-50 !text-gray-900" : ""}
+              triggerExtraClassName={hasSelection ? " !bg-fill-subtle !text-gray-900" : ""}
               triggerStyle={{ fontWeight: nivelSel ? 600 : 400 }}
               value={nivelSel}
               onChange={setNivelSel}
@@ -5089,7 +5089,7 @@ function ModificarContent({
 
             <ValuePicker
               isDisabled={hasSelection}
-              triggerExtraClassName={hasSelection ? " !bg-gray-50 !text-gray-900" : ""}
+              triggerExtraClassName={hasSelection ? " !bg-fill-subtle !text-gray-900" : ""}
               value={faseSel}
               onChange={setFaseSel}
               opts={["R", "S", "T", "RS", "RT", "ST", "RST"]}
@@ -5097,7 +5097,7 @@ function ModificarContent({
               wrapClassName="w-[84px] shrink-0"
             />
 
-            <div className="w-px h-5 bg-gray-300 shrink-0" />
+            <div className="w-px h-5 bg-border shrink-0" />
 
             {/* Toggle Origen/Tipo — tamaño normal. En tier 760px pasan a
                 <select> nativo (ver más abajo): ocupan menos ancho por lo
@@ -5159,7 +5159,7 @@ function ModificarContent({
             {/* Flyout "Más filtros" */}
             {flyoutOpen && (
               <div
-                className="shadow-md absolute right-0 z-30 bg-white border border-gray-300 rounded-lg p-4"
+                className="shadow-md absolute right-0 z-30 bg-surface border border-border rounded-md p-4"
                 style={{ top: "calc(100% + 6px)", width: 520 }}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -5167,7 +5167,7 @@ function ModificarContent({
                   <button
                     type="button"
                     onClick={() => setFlyoutOpen(false)}
-                    className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-all"
+                    className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-500 hover:bg-fill-muted hover:text-gray-800 transition-all"
                   >
                     <X size={14} strokeWidth={1.5} />
                   </button>
@@ -5185,7 +5185,7 @@ function ModificarContent({
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                   <button
                     type="button"
                     onClick={() => setFlyoutFilters(EMPTY_FLYOUT_FILTERS)}
@@ -5197,7 +5197,7 @@ function ModificarContent({
                     <button
                       type="button"
                       onClick={() => setFlyoutOpen(false)}
-                      className={`${BTN_MD} border border-gray-400 bg-white text-gray-700 hover:bg-gray-50 transition-colors`}
+                      className={`${BTN_MD} border border-border-strong bg-surface text-gray-700 hover:bg-fill-muted transition-colors`}
                     >
                       Cerrar
                     </button>
@@ -5217,7 +5217,7 @@ function ModificarContent({
 
           {/* Chips de filtros aplicados (flyout) — franja propia, no texto suelto */}
           {activeFlyoutFields.length > 0 && (
-            <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-sm border border-gray-200 bg-gray-50">
+            <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-md border border-border bg-fill-subtle">
               <span className="text-heading-xs uppercase tracking-[0.06em] text-gray-600 shrink-0">
                 Filtros aplicados:
               </span>
@@ -5272,7 +5272,7 @@ function ModificarContent({
           tratamiento de card que Card B. Split 50/50 con Card B (flex-1
           en las dos). ── */}
       <div
-        className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
+        className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-lg border border-border bg-surface overflow-hidden"
       >
 
         {/* Header — mismo componente/tratamiento que el de Card B (Reposiciones).
@@ -5296,7 +5296,7 @@ function ModificarContent({
             <div className="w-60 shrink-0">
               <TableToolbar search={modSearch} onSearchChange={setModSearch} searchPlaceholder="Buscar referencia…" hideExport bare />
             </div>
-            <div className="w-px h-5 bg-gray-300 shrink-0" />
+            <div className="w-px h-5 bg-border shrink-0" />
             <FilterTrigger variant="date-range" label="Fecha" value={modFiltroFecha} onChange={setModFiltroFecha} />
             <div className="ml-auto shrink-0 flex items-center gap-4">
               {modFiltroFecha && (
@@ -5326,14 +5326,14 @@ function ModificarContent({
             Card B). */}
         <div className={`flex-1 min-h-0 flex flex-col px-4 pb-4 ${modShowData ? "" : "pt-3"}`}>
           {/* Replica el estilo de ReposicionesTable (copia de clases, no usa
-              el componente): header bg-gray-50 de alto REPOSICIONES_HEADER_H,
+              el componente): header bg-fill-subtle de alto REPOSICIONES_HEADER_H,
               celdas px-3 py-2 text-body-sm, separador gray-100, acento de
               selección con sombra inset en la primera celda. Excepciones:
               sin alto fijo de fila (acá las filas son de una línea, el 50px
               de REPOSICIONES_ROW_H responde a la celda Equipo de dos) y la
               paginación va como pie dentro del borde. */}
-          <div className="flex-1 min-h-0 flex flex-col border border-gray-200 rounded-sm overflow-hidden bg-white">
-            <div className="grid grid-cols-2 shrink-0 bg-gray-50 border-b border-gray-200" style={{ height: REPOSICIONES_HEADER_H }}>
+          <div className="flex-1 min-h-0 flex flex-col border border-border rounded-md overflow-hidden bg-surface">
+            <div className="grid grid-cols-2 shrink-0 bg-fill-subtle border-b border-border" style={{ height: REPOSICIONES_HEADER_H }}>
               <SortableHeaderCell
                 label="Referencia"
                 active={modSortIdx === 0}
@@ -5381,7 +5381,7 @@ function ModificarContent({
                   <div
                     key={i}
                     data-row-index={i}
-                    className={`grid grid-cols-2 transition-colors cursor-pointer hover:bg-gray-50 ${esUltima ? "" : "border-b border-gray-100"}`}
+                    className={`grid grid-cols-2 transition-colors cursor-pointer hover:bg-fill-muted ${esUltima ? "" : "border-b border-border-subtle"}`}
                     style={{ backgroundColor: selected ? "var(--color-primary-tint)" : undefined }}
                     onClick={() => setModSelectedRow(selected ? null : i)}
                   >
@@ -5395,10 +5395,10 @@ function ModificarContent({
                 );
               })}
             </div>
-            <div className="shrink-0 border-t border-gray-200 bg-gray-50 px-3 py-1.5 flex items-center justify-between">
-              <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-caption text-gray-500 disabled:opacity-40" disabled>Anterior</button>
+            <div className="shrink-0 border-t border-border bg-fill-subtle px-3 py-1.5 flex items-center justify-between">
+              <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-gray-500 disabled:opacity-40" disabled>Anterior</button>
               <span className="text-caption text-gray-500">Página <span className="font-medium text-gray-700">1</span> de <span className="font-medium text-gray-700">2.213</span></span>
-              <button className="px-2 py-0.5 rounded border border-gray-300 bg-white text-caption text-gray-500 hover:bg-gray-50 transition-colors">Siguiente</button>
+              <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-gray-500 hover:bg-fill-muted transition-colors">Siguiente</button>
             </div>
           </div>
           <div className="mt-3">
@@ -5419,7 +5419,7 @@ function ModificarContent({
             40/60 a favor de esta card, pero el resumen de reclamos pasó a
             vivir en Interrupciones. */}
         <div
-          className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
+          className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-lg border border-border bg-surface overflow-hidden"
         >
           {/* La interrupción seleccionada (registro padre de las
               reposiciones) va como `context` del header — reemplaza a la
@@ -5458,7 +5458,7 @@ function ModificarContent({
                   gris + cuerpo blanco. La reposición activa ("Reposición
                   X de N · hora", misma condición de antes) va como
                   `context` del header. */}
-              <div className="mt-3 border border-gray-200 rounded-sm overflow-hidden bg-white">
+              <div className="mt-3 border border-border rounded-md overflow-hidden bg-surface">
                 <CardHeader
                   title="Tablas relacionadas"
                   size="compact"
@@ -5565,7 +5565,7 @@ function ModificarContent({
       >
         <div className="h-full flex flex-col min-h-0">
           {/* Reposición activa — primer elemento del body, en fondo
-              blanco (el body no tiene bg propio, hereda el bg-white del
+              blanco (el body no tiene bg propio, hereda el bg-surface del
               panel). Sin border-b propio: lo pone la barra de tabs de
               abajo. */}
           {filaFaseSeleccionada && (
@@ -5606,7 +5606,7 @@ function ModificarContent({
               </div>
               {relFiltrables.length > 0 && (
                 <>
-                  <div className="w-px h-5 bg-gray-300 shrink-0" />
+                  <div className="w-px h-5 bg-border shrink-0" />
                   {relFiltrables.map((col) => (
                     <FilterTrigger
                       key={col}
@@ -5644,7 +5644,7 @@ function ModificarContent({
               usa ReposicionesTable). mx-5/mb-5 (antes mx-4/mb-4 dentro de
               la card, ya sin card) para alinear con el padding del resto
               del modal. */}
-          <div className="flex-1 min-h-0 mx-5 mb-5 border border-gray-200 rounded-md overflow-auto">
+          <div className="flex-1 min-h-0 mx-5 mb-5 border border-border rounded-md overflow-auto">
             {activeTabData && (
               activeTabData.key === "tabla3" ? (() => {
                 const existe = valoresRelacionadas?.tabla3 === "SI";
@@ -5761,12 +5761,12 @@ function ModificarContent({
                                   })
                               : undefined
                           }
-                          className={`transition-colors ${abmMapping ? "cursor-pointer hover:bg-primary-tint" : "hover:bg-gray-50"}`}
+                          className={`transition-colors ${abmMapping ? "cursor-pointer hover:bg-primary-tint" : "hover:bg-fill-muted"}`}
                         >
                           {row.map((cell, ci) => (
                             <td
                               key={ci}
-                              className={`px-4 py-3.5 text-body text-gray-700 whitespace-nowrap ${esUltima ? "" : "border-b border-gray-100"}`}
+                              className={`px-4 py-3.5 text-body text-gray-700 whitespace-nowrap ${esUltima ? "" : "border-b border-border-subtle"}`}
                             >
                               {cell}
                             </td>
@@ -6512,7 +6512,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="group flex items-center gap-2 h-9 pl-1.5 pr-2 -ml-1.5 rounded-md min-w-0 transition-colors duration-150 hover:bg-gray-100"
+        className="group flex items-center gap-2 h-9 pl-1.5 pr-2 -ml-1.5 rounded-sm min-w-0 transition-colors duration-150 hover:bg-fill-muted"
       >
         {/* Lápiz fijo — no el ícono por tabla: el masthead del panel de
             trabajo siempre representa "estás en la herramienta de ABM",
@@ -6520,8 +6520,8 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
         <span className="shrink-0 text-gray-500 group-hover:text-secondary transition-colors"><Pencil size={15} strokeWidth={1.5} /></span>
         <span className="text-heading-md text-gray-900 truncate">{current.titulo}</span>
         <span
-          className="px-1.5 py-0.5 text-caption font-mono rounded-[3px] border border-gray-400 text-focus shrink-0"
-          style={{ backgroundColor: "var(--color-gray-100)" }}
+          className="px-1.5 py-0.5 text-caption font-mono rounded-xs border border-border-strong text-focus shrink-0"
+          style={{ backgroundColor: "var(--color-fill-muted)" }}
         >
           {current.code}
         </span>
@@ -6531,10 +6531,10 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
       </button>
       {open && (
         <div
-          className="shadow-md absolute left-0 w-96 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+          className="shadow-md absolute left-0 w-96 bg-surface rounded-md border border-border z-50 overflow-hidden"
           style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
-          <div className="px-3 py-2.5 border-b border-gray-100">
+          <div className="px-3 py-2.5 border-b border-border-subtle">
             <p className="text-heading-xs text-gray-600 uppercase tracking-[0.08em] select-none">Cambiar de tabla</p>
           </div>
           <div className="p-1.5 flex flex-col gap-0.5 max-h-96 overflow-y-auto">
@@ -6548,7 +6548,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
                   className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm border text-left transition-colors ${
                     isSel
                       ? "bg-primary-tint border-primary text-secondary"
-                      : "border-transparent text-gray-700 hover:bg-gray-100"
+                      : "border-transparent text-gray-700 hover:bg-fill-muted"
                   }`}
                 >
                   <span className="flex-1 min-w-0 truncate text-body">{c.titulo}</span>
@@ -6594,7 +6594,7 @@ function estadoDeCampo(campo: CampoBusqueda, mode: AbmMode, consultando: boolean
 }
 
 // `!` (important) es necesario en ambas: MOD_FIELD_CLS/MOD_SELECT_CLS ya traen
-// bg-white/text-gray-900, y en el CSS compilado esas reglas quedan DESPUÉS
+// bg-surface/text-gray-900, y en el CSS compilado esas reglas quedan DESPUÉS
 // de las de gray-50/gray-100 (orden interno de Tailwind, no el orden en que
 // se concatenan los strings acá), así que sin !important terminan ganando
 // igual y el campo se ve "habilitado" pese al atributo disabled.
@@ -6603,8 +6603,8 @@ const ESTADO_CLASES: Record<CampoEstado, string> = {
   enabled: "",
   // Legible: texto con contraste normal, apenas un tinte de fondo para
   // distinguirlo de un campo editable — nunca el gris apagado de disabled.
-  placeholder: " !bg-gray-50 !border-gray-300 !text-gray-900",
-  disabled: " !bg-gray-100 !border-gray-300 !text-gray-500",
+  placeholder: " !bg-fill-subtle !border-border !text-gray-900",
+  disabled: " !bg-fill-muted !border-border !text-gray-500",
 };
 
 // Un campo de camposBusqueda → el input correspondiente, en el estado visual
@@ -6677,7 +6677,7 @@ function AbmCampo({
                 } ${
                   active
                     ? "border-primary bg-primary-tint text-secondary"
-                    : `border-gray-400 bg-white text-gray-700 ${isDisabled ? "" : "hover:border-primary hover:bg-primary-tint hover:text-secondary"}`
+                    : `border-border-strong bg-surface text-gray-700 ${isDisabled ? "" : "hover:border-primary hover:bg-primary-tint hover:text-secondary"}`
                 }`}
               >
                 {opt.label}
@@ -6832,7 +6832,7 @@ function ValuePicker({
   }
 
   const buscador = searchable && (
-    <div className="p-1.5 border-b border-gray-100 shrink-0">
+    <div className="p-1.5 border-b border-border-subtle shrink-0">
       <input
         autoFocus
         value={filtro}
@@ -6858,7 +6858,7 @@ function ValuePicker({
               type="button"
               onClick={() => elegir(opt.value)}
               className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm border text-left transition-colors ${
-                active ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-gray-100"
+                active ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-fill-muted"
               }`}
             >
               <span className="flex-1 min-w-0 truncate text-body">{opt.label}</span>
@@ -6889,7 +6889,7 @@ function ValuePicker({
         </div>
         {!modal && open && !isDisabled && (
           <div
-            className="shadow-md absolute left-0 w-full bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+            className="shadow-md absolute left-0 w-full bg-surface rounded-md border border-border z-50 overflow-hidden"
             style={{ ...dropdownAnchorStyle(direction, 5) }}
           >
             {buscador}
@@ -6901,7 +6901,7 @@ function ValuePicker({
         <>
           <div className="fixed inset-0 z-40 bg-black/25" onClick={cerrar} />
           <div
-            className="shadow-lg fixed z-50 flex flex-col bg-white rounded-lg overflow-hidden"
+            className="shadow-lg fixed z-50 flex flex-col bg-surface rounded-xl overflow-hidden"
             style={{
               top: "50%",
               left: "50%",
@@ -6911,12 +6911,12 @@ function ValuePicker({
               maxHeight: "calc(100vh - 80px)",
             }}
           >
-            <div className="px-4 py-3 border-b border-gray-200 shrink-0 flex items-center justify-between gap-3">
+            <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between gap-3">
               <p className="min-w-0 truncate text-heading-md text-gray-900">{modalTitle ?? label ?? "Seleccionar"}</p>
               <button
                 type="button"
                 onClick={cerrar}
-                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all"
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all"
               >
                 <X size={14} strokeWidth={1.5} />
               </button>
@@ -7318,8 +7318,8 @@ function AbmScreen({
           se llegó acá por un deep-link (ver AbmDeepLink) — nada de Insertar
           ni dropdown genérico. */}
       <header
-        className="flex items-center gap-3 px-6 border-b border-gray-300 shadow-hairline shrink-0"
-        style={{ minHeight: "var(--header-min-height, 60px)", backgroundColor: "var(--color-gray-50)" }}
+        className="flex items-center gap-3 px-6 border-b border-border bg-bg-app shrink-0"
+        style={{ minHeight: "var(--header-min-height, 60px)" }}
       >
         {volverVisible && (
           <button
@@ -7327,7 +7327,7 @@ function AbmScreen({
             onClick={onVolver}
             title="Volver a Consultas de interrupción"
             aria-label="Volver a Consultas de interrupción"
-            className="flex items-center justify-center w-8 h-8 -ml-1.5 rounded-sm text-gray-600 hover:text-secondary hover:bg-gray-100 transition-colors shrink-0"
+            className="flex items-center justify-center w-8 h-8 -ml-1.5 rounded-sm text-gray-600 hover:text-secondary hover:bg-fill-muted transition-colors shrink-0"
           >
             ←
           </button>
@@ -7349,7 +7349,7 @@ function AbmScreen({
           // columnas de campos, ver la sección de abajo). El ancho normal
           // (41%, inline) tiene prioridad de especificidad sobre una clase
           // sin `!important`, de ahí el `!w-[47%]`.
-          className="shadow-sm flex flex-col rounded-sm border border-gray-300 bg-white shrink-0 overflow-hidden [@media(max-height:760px)]:!w-[47%]"
+          className="shadow-sm flex flex-col rounded-lg border border-border bg-surface shrink-0 overflow-hidden [@media(max-height:760px)]:!w-[47%]"
           style={{ width: "41%" }}
         >
           <CardHeader
@@ -7419,18 +7419,18 @@ function AbmScreen({
             })}
           </div>
 
-          <div className="shrink-0 border-t border-gray-200 px-5 py-4 flex gap-3">
+          <div className="shrink-0 border-t border-border px-5 py-4 flex gap-3">
             {mode === "buscar" ? (
               <>
                 <button
                   onClick={handleLimpiar}
                   disabled={!showData}
-                  className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >Limpiar</button>
                 <button
                   onClick={handleBuscar}
                   disabled={showData}
-                  className="flex-1 h-9 rounded-md text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                   style={{ backgroundColor: "var(--color-primary)" }}
                 >Buscar</button>
               </>
@@ -7438,11 +7438,11 @@ function AbmScreen({
               <>
                 <button
                   onClick={handleCancelarAlta}
-                  className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
+                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarAlta}
-                  className="flex-1 h-9 rounded-md text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105"
+                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105"
                   style={{ backgroundColor: "var(--color-primary)" }}
                 >Insertar</button>
               </>
@@ -7450,11 +7450,11 @@ function AbmScreen({
               <>
                 <button
                   onClick={handleCancelarModificar}
-                  className="flex-1 h-9 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
+                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarModificar}
-                  className="flex-1 h-9 rounded-md text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105"
+                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105"
                   style={{ backgroundColor: "var(--color-primary)" }}
                 >Guardar</button>
               </>
@@ -7466,7 +7466,7 @@ function AbmScreen({
             y en modo modificar, para que el foco visual quede en el panel
             Búsqueda ── */}
         <div
-          className={`shadow-sm flex-1 flex flex-col border border-gray-300 rounded-sm bg-white overflow-hidden transition-opacity duration-150 ${
+          className={`shadow-sm flex-1 flex flex-col border border-border rounded-lg bg-surface overflow-hidden transition-opacity duration-150 ${
             mode !== "buscar" ? "opacity-50 pointer-events-none" : ""
           }`}
         >
@@ -7518,7 +7518,7 @@ function AbmScreen({
               no hay toolbar y suma mt-3 para no quedar pegado al header.
               Adentro: la línea de registro seleccionado, la tabla con
               scroll propio y el pie de paginación. */}
-          <div className={`flex-1 min-h-0 mx-4 mb-4 flex flex-col border border-gray-200 rounded-sm overflow-hidden ${showData ? "" : "mt-3"}`}>
+          <div className={`flex-1 min-h-0 mx-4 mb-4 flex flex-col border border-border rounded-md overflow-hidden ${showData ? "" : "mt-3"}`}>
           {hasSelection && (
             <SelectionActionBar recordLabel={config.rows[selectedRow!][columnKeys[0]]} />
           )}
@@ -7560,9 +7560,9 @@ function AbmScreen({
             ) : (
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="border-b border-gray-300 bg-gray-50">
+                  <tr className="border-b border-border">
                     {config.columnasResultado.map((c, ci) => (
-                      <th key={c.key} className="sticky top-0 z-10 bg-gray-50 w-[1%] whitespace-nowrap px-4 py-2 text-left">
+                      <th key={c.key} className="sticky top-0 z-10 bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left">
                         <SortableHeaderCell
                           label={c.label}
                           active={sortIdx === ci}
@@ -7571,8 +7571,8 @@ function AbmScreen({
                         />
                       </th>
                     ))}
-                    <th className="sticky top-0 z-10 bg-gray-50" />
-                    <th className="sticky top-0 z-10 bg-gray-50 w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600">
+                    <th className="sticky top-0 z-10 bg-fill-subtle-solid" />
+                    <th className="sticky top-0 z-10 bg-fill-subtle-solid w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600">
                       Acciones
                     </th>
                   </tr>
@@ -7589,8 +7589,8 @@ function AbmScreen({
                         onClick={() => setSelectedRow(isSelected ? null : i)}
                         onMouseEnter={() => setHoveredRow(i)}
                         onMouseLeave={() => setHoveredRow(null)}
-                        className="border-b border-gray-100 cursor-pointer transition-colors duration-100"
-                        style={{ backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-gray-50)" : undefined }}
+                        className="border-b border-border-subtle cursor-pointer transition-colors duration-100"
+                        style={{ backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined }}
                       >
                         {config.columnasResultado.map((c, ci) => (
                           <td
@@ -7651,7 +7651,7 @@ function AbmScreen({
 
           {/* Footer */}
           {showData && (
-            <div className="px-4 py-2 border-t border-gray-300 bg-gray-50 shrink-0 flex items-center justify-between">
+            <div className="px-4 py-2 border-t border-border bg-fill-subtle shrink-0 flex items-center justify-between">
               <span className="text-body-sm text-gray-700">
                 Registros encontrados:{" "}
                 <span className="font-semibold text-secondary">
@@ -7659,7 +7659,7 @@ function AbmScreen({
                 </span>
               </span>
               <div className="flex items-center gap-2 text-body-sm text-gray-600">
-                <button className="px-2.5 py-1 rounded border border-gray-400 bg-white hover:bg-gray-50 disabled:opacity-40 transition-colors" disabled>
+                <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors" disabled>
                   Anterior
                 </button>
                 <span>
@@ -7667,7 +7667,7 @@ function AbmScreen({
                   <span className="font-medium text-gray-800">{totalPages.toLocaleString("es-AR")}</span>
                 </span>
                 <button
-                  className="px-2.5 py-1 rounded border border-gray-400 bg-white hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                  className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors"
                   disabled={totalPages <= 1}
                 >
                   Siguiente
@@ -7711,7 +7711,7 @@ function GeneracionTxtContent() {
 
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
-      <div className="bg-white rounded-md border border-gray-300" style={{ maxWidth: 640 }}>
+      <div className="bg-surface rounded-lg border border-border" style={{ maxWidth: 640 }}>
         <CardHeader title="Exportación" />
         <div className="p-6 flex items-end gap-3">
           <div className="flex-1 min-w-0" style={{ maxWidth: 320 }}>
@@ -7788,7 +7788,7 @@ function PlanillaConsolidadaContent() {
 
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
-      <div className="bg-white rounded-md border border-gray-300" style={{ maxWidth: 760 }}>
+      <div className="bg-surface rounded-lg border border-border" style={{ maxWidth: 760 }}>
         <CardHeader title="Consolidación" />
         <div className="p-6">
           <div className="grid grid-cols-2 gap-4">
@@ -7817,7 +7817,7 @@ function PlanillaConsolidadaContent() {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border">
             <button type="button" onClick={() => setProgresoAbierto(true)} className={modalNeutralBtnCls}>Ver progreso</button>
             <button type="button" disabled={procesando} onClick={handleProcesar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
               {procesando ? "Procesando…" : "Procesar"}
@@ -7909,7 +7909,7 @@ function GestorNotasContent() {
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
       <div className="flex gap-4 items-start" style={{ maxWidth: 900 }}>
-        <div className="flex-1 bg-white rounded-md border border-gray-300 overflow-hidden">
+        <div className="flex-1 bg-surface rounded-lg border border-border overflow-hidden">
           <CardHeader
             title="Notas"
             right={
@@ -7921,12 +7921,12 @@ function GestorNotasContent() {
           <div className="p-5">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
+                <tr className="bg-fill-subtle border-b border-border">
                   <th className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600">Nota</th>
                   <th className="w-24 px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600">Posición</th>
                   <th className="w-14 px-2 py-2" />
                 </tr>
-                <tr className="border-b border-gray-200">
+                <tr className="border-b border-border">
                   <td className="p-1.5">
                     <input
                       value={filtro}
@@ -7950,7 +7950,7 @@ function GestorNotasContent() {
                   <tr
                     key={n.id}
                     onClick={() => setSeleccionada(n.id)}
-                    className={`border-b border-gray-100 cursor-pointer transition-colors ${seleccionada === n.id ? "bg-primary-tint" : "hover:bg-gray-50"}`}
+                    className={`border-b border-border-subtle cursor-pointer transition-colors ${seleccionada === n.id ? "bg-primary-tint" : "hover:bg-fill-muted"}`}
                   >
                     <td className="px-3 py-2.5 text-body text-gray-800">{n.texto}</td>
                     <td className="px-3 py-2.5 text-body text-gray-600 tabular-nums">{n.posicion}</td>
@@ -7983,9 +7983,9 @@ function GestorNotasContent() {
                 </SelectWrap>
               </div>
               <div className="flex items-center gap-3 text-body-sm text-gray-600">
-                <button disabled={paginaSegura <= 1} onClick={() => setPagina((p) => p - 1)} className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40">Anterior</button>
+                <button disabled={paginaSegura <= 1} onClick={() => setPagina((p) => p - 1)} className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40">Anterior</button>
                 <span>Pág. <span className="font-medium text-gray-800">{paginaSegura}</span> de <span className="font-medium text-gray-800">{totalPaginas}</span></span>
-                <button disabled={paginaSegura >= totalPaginas} onClick={() => setPagina((p) => p + 1)} className="px-2.5 py-1 rounded border border-gray-400 bg-white disabled:opacity-40">Siguiente</button>
+                <button disabled={paginaSegura >= totalPaginas} onClick={() => setPagina((p) => p + 1)} className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40">Siguiente</button>
               </div>
             </div>
           </div>
@@ -8005,7 +8005,7 @@ function GestorNotasContent() {
               title={b.title}
               disabled={!seleccionada}
               onClick={() => seleccionada && mover(seleccionada, b.dir)}
-              className="w-9 h-9 flex items-center justify-center rounded-sm border border-gray-400 bg-white text-gray-600 hover:bg-primary-tint hover:border-primary hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              className="w-9 h-9 flex items-center justify-center rounded-sm border border-border-strong bg-surface text-gray-600 hover:bg-primary-tint hover:border-primary hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
             >
               {b.icon}
             </button>
@@ -8047,7 +8047,7 @@ function InsertaClientesContent() {
 
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
-      <div className="bg-white rounded-md border border-gray-300 p-6" style={{ maxWidth: 640 }}>
+      <div className="bg-surface rounded-lg border border-border p-6" style={{ maxWidth: 640 }}>
         <div className="flex flex-col gap-4">
           <div className="flex items-end gap-3">
             <div className="flex-1 min-w-0">
@@ -8066,7 +8066,7 @@ function InsertaClientesContent() {
               placeholder="Seleccione período"
             />
           </div>
-          <div className="flex justify-end pt-3 border-t border-gray-200">
+          <div className="flex justify-end pt-3 border-t border-border">
             <button type="button" disabled={!validado || !periodo} onClick={handleInsertar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>Insertar</button>
           </div>
         </div>
@@ -8101,7 +8101,7 @@ function AuditoriaContent() {
 
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
-      <div className="bg-white rounded-md border border-gray-300" style={{ maxWidth: 720 }}>
+      <div className="bg-surface rounded-lg border border-border" style={{ maxWidth: 720 }}>
         <CardHeader title="Filtros" />
         <div className="p-6 grid grid-cols-2 gap-6">
           <div>
@@ -8312,7 +8312,7 @@ export default function App() {
   return (
     <div className="font-sans" style={{
       width: "100%", height: "100vh", display: "flex",
-      backgroundColor: "var(--color-gray-100)",
+      backgroundColor: "var(--color-bg-app)",
       overflow: "hidden",
     }}>
 
@@ -8325,13 +8325,13 @@ export default function App() {
         // de encimarse o cortarse sin indicación.
         width: collapsed ? 60 : compactSidebar ? 190 : 256,
         transition: "width 220ms cubic-bezier(0.4,0,0.2,1)",
-        backgroundColor: "var(--color-gray-50)",
+        backgroundColor: "var(--color-bg-app)",
         display: "flex", flexDirection: "column",
         flexShrink: 0, overflow: "hidden",
-        borderRight: "1px solid var(--color-gray-300)",
+        borderRight: "1px solid var(--color-border)",
       }}>
         {/* Logo + collapse */}
-        <div className="flex items-center gap-2 px-3 border-b border-gray-300" style={{ minHeight: "var(--header-min-height, 60px)", paddingTop: 10, paddingBottom: 10 }}>
+        <div className="flex items-center gap-2 px-3 border-b border-border" style={{ minHeight: "var(--header-min-height, 60px)", paddingTop: 10, paddingBottom: 10 }}>
           {!collapsed ? (
             <>
               <button
@@ -8347,7 +8347,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setCollapsed(true)}
-                className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-gray-600 hover:text-gray-800 hover:bg-gray-200 transition-colors"
+                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-sm text-gray-600 hover:text-gray-800 hover:bg-fill-muted transition-colors"
                 title="Colapsar"
               >
                 <ChevronLeft size={16} strokeWidth={1.5} />
@@ -8357,7 +8357,7 @@ export default function App() {
             /* Collapsed: small E monogram matching brand blue */
             <button
               onClick={() => setCollapsed(false)}
-              className="mx-auto w-8 h-8 flex items-center justify-center rounded transition-colors hover:bg-gray-200"
+              className="mx-auto w-8 h-8 flex items-center justify-center rounded-sm transition-colors hover:bg-fill-muted"
               title="Expandir"
             >
               <div
@@ -8387,7 +8387,7 @@ export default function App() {
             />
           </div>
 
-          <div className={`my-2 border-t border-gray-300 ${collapsed ? "mx-auto w-8" : "mx-1"}`} />
+          <div className={`my-2 border-t border-border ${collapsed ? "mx-auto w-8" : "mx-1"}`} />
 
           {/* ABM — ítem padre desplegable (acordeón), ahora con el MISMO lenguaje
               visual (ícono + texto) que Inicio/Consultas en los dos estados del
@@ -8404,7 +8404,7 @@ export default function App() {
               ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
               ${isAbmTableKey(screen)
                 ? "border-transparent bg-secondary/10 text-secondary"
-                : "border-transparent text-gray-700 hover:text-gray-800 hover:bg-gray-100"
+                : "border-transparent text-gray-700 hover:text-gray-800 hover:bg-fill-muted"
               }`}
           >
             <span className="shrink-0"><Pencil size={15} strokeWidth={1.5} fill={isAbmTableKey(screen) ? "currentColor" : "none"} /></span>
@@ -8422,7 +8422,7 @@ export default function App() {
           </button>
 
           {abmExpanded && !collapsed && (
-            <div className="flex flex-col gap-0.5 pl-3 ml-2.5 border-l border-gray-200">
+            <div className="flex flex-col gap-0.5 pl-3 ml-2.5 border-l border-border">
               {ABM_ITEMS.map((item, i) => (
                 <NavItem
                   key={item.key ?? item.code + i}
@@ -8441,7 +8441,7 @@ export default function App() {
               ahí sí hace falta poder colapsarlo para que ambos grupos no
               se corten contra el footer. */}
           {collapsed ? (
-            <div className="my-3 border-t border-gray-300 mx-auto w-8" />
+            <div className="my-3 border-t border-border mx-auto w-8" />
           ) : compactSidebar ? (
             <button
               type="button"
@@ -8474,7 +8474,7 @@ export default function App() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-gray-300 px-2 py-2.5">
+        <div className="border-t border-border px-2 py-2.5">
           <UserMenu collapsed={collapsed} onLogout={() => setScreen("login")} />
         </div>
       </aside>
@@ -8497,8 +8497,8 @@ export default function App() {
                 acá (ver AjustesConsultas/PersistentActionsBar, que anclan su
                 propio dropdown de tier 760px a la card de Búsqueda, no acá). */}
             <header
-              className="flex items-center px-6 border-b border-gray-300 shadow-hairline shrink-0"
-              style={{ minHeight: "var(--header-min-height, 60px)", backgroundColor: "var(--color-gray-50)" }}
+              className="flex items-center px-6 border-b border-border bg-bg-app shrink-0"
+              style={{ minHeight: "var(--header-min-height, 60px)" }}
             >
               <div className="flex items-center gap-2.5 flex-1">
                 {screen === "modificar" && (

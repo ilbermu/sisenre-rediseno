@@ -66,21 +66,92 @@ juntos. Se elige por **rol** (qué es el texto), nunca por tamaño.
   - `text-caption font-mono` — **badges y contadores**: código de tabla
     (CDS4, etc.), contadores del sidebar, letra de fase.
 
+## Superficies: fondos, bordes y sombras
+
+Tokens en `@theme` de `src/index.css`. Se eligen por **rol**; las clases
+`bg-gray-*`, `border-gray-*` y `bg-white` no se usan (los `text-gray-*` sí:
+los colores de texto todavía no se migraron).
+
+| Token | Clase | Uso |
+|---|---|---|
+| `--color-bg-app` | `bg-bg-app` | Fondo de página: shell de la app, selector de herramienta, sidebar, top bar |
+| `--color-surface` | `bg-surface` | Todo lo que se apoya sobre el fondo: cards, modales, popovers, dropdowns, inputs, botones secundarios, paginadores, headers de card y de modal |
+| `--color-border` | `border-border`, `bg-border` | Borde de contenedores (cards, popovers, dropdowns), divisores (bajo un header, bajo el `thead`, pie de tabla) y líneas de 1px (`h-px` / `w-px bg-border`) |
+| `--color-border-strong` | `border-border-strong` | Controles: inputs, selects, botones secundarios, checkbox y radio, badges de código. Tienen que seguir leyéndose como campos |
+| `--color-border-subtle` | `border-border-subtle` | Separador entre filas de una tabla o de una lista |
+| `--color-fill-subtle` | `bg-fill-subtle` | Relleno de `thead`, pie de tabla, barra de filtros activos, filas de "Resumen de cambios", campos bloqueados |
+| `--color-fill-muted` | `bg-fill-muted` | Hover neutro (filas, ítems de menú, botones del sidebar y de ícono), campos de solo lectura o deshabilitados, celdas vacías del mini calendario, fondo del badge de tabla |
+
+Reglas:
+
+- **Los rellenos neutros son siempre translúcidos** (`fill-subtle`,
+  `fill-muted`): negro cálido con alfa, no un gris opaco. Así toman la
+  temperatura de lo que tienen debajo (blanco en una card, crema en el
+  sidebar) y nunca aparece un gris azulado sobre un fondo cálido. No se
+  agregan grises opacos de relleno.
+- **Excepción — elementos `sticky`:** un `th` sticky necesita fondo opaco,
+  porque con el relleno translúcido se ve pasar el contenido que scrollea
+  por debajo. Para eso existe `bg-fill-subtle-solid` (mismo color que
+  `bg-fill-subtle` sobre `surface`, sin transparencia). El fondo va en los
+  `th`, no en el `<tr>`: si van los dos, el alfa se suma.
+- **Los bordes también son translúcidos**, por la misma razón.
+- **Headers de card y de modal** son `bg-surface` con `border-b
+  border-border`: se separan del cuerpo con la línea, no con un relleno.
+- **Los estados de interacción no usan estos tokens:** hover de acción,
+  seleccionado y foco siguen en celeste/tint/navy (`border-primary`,
+  `bg-primary-tint`, `text-secondary`, `focus`). `fill-muted` es solo el
+  hover *neutro*.
+
+### Sombras
+
+Una por nivel de elevación, como clase (`shadow-sm` / `shadow-md` /
+`shadow-lg`). No hay `box-shadow` inline ni sombras arbitrarias.
+
+| Token | Uso |
+|---|---|
+| `--shadow-sm` | Cards |
+| `--shadow-md` | Popovers, dropdowns, menús; cards de acceso en hover |
+| `--shadow-lg` | Modales |
+
+Ningún botón lleva sombra. `--inset-shadow-row-selected`
+(`inset-shadow-row-selected`) no es elevación: es el acento de 3px de la
+fila seleccionada.
+
+## Radios
+
+`--radius-*: initial` borra la escala default de Tailwind: solo existen
+estos seis, y `rounded` sin sufijo no se usa. Se elige por rol del elemento.
+
+| Token | Valor | Uso |
+|---|---|---|
+| `rounded-xs` | 4px | Badges de código, checkbox, celdas del mini calendario, leyenda del cronograma, chips cuadrados |
+| `rounded-sm` | 6px | Inputs, selects, todos los botones (`sm`, `md`, paginación, ícono), segmented, ítems de menú |
+| `rounded-md` | 8px | Dropdowns, popovers (calendario, "Más filtros"), tiles de Tablas relacionadas, contenedores anidados dentro de una card (wrapper de tabla, card de Reclamos) |
+| `rounded-lg` | 12px | Todas las cards (de trabajo y de contenido), cards del selector de herramienta, card del login |
+| `rounded-xl` | 16px | Modales |
+| `rounded-full` | 9999px | Avatares, chips redondos, días del calendario, badges contadores |
+
+- **Regla de anidado:** un elemento dentro de otro con padding usa un radio
+  menor (radio interno ≈ radio externo − padding). Una caja con borde dentro
+  de una card (`lg`) es `md`; un input dentro de esa caja es `sm`.
+- Los `rx` de los SVG (timeline de reclamos) son geometría del gráfico, no
+  tokens de UI.
+
 ## `Modal`: header = mismo tratamiento que `CardHeader`
 
 El bloque de header de `Modal` (título/cerrar + `headerExtra`, si viene) es
-`bg-gray-50` con `border-b border-gray-200` como divisor con el body — EL
+`bg-surface` con `border-b border-border` como divisor con el body — EL
 MISMO tratamiento que `CardHeader` (Búsqueda/Interrupciones/Reposiciones:
-`bg-gray-50 border-b border-gray-200`), para que headers de card y headers de
+`bg-surface border-b border-border`), para que headers de card y headers de
 modal se lean como el mismo elemento en toda la app. No es una prop opt-in:
 aplica a los 13 usos de `Modal` del archivo por igual. El body sigue en
-`bg-white` (default de `Modal`, ver `bodyClassName` si un modal puntual
+`bg-surface` (default de `Modal`, ver `bodyClassName` si un modal puntual
 necesita otra cosa); el footer no cambia.
 
 ## `Modal` extendido: header propio, body sin scroll propio
 
 `Modal` (`src/App.tsx`) es el estándar para toda acción que requiera un
-diálogo. Por default arma su propio header (`bg-gray-50`, título
+diálogo. Por default arma su propio header (`bg-surface`, título
 `text-heading-md` + subtítulo + cerrar) y un body con `p-5` que crece con el contenido y
 scrollea (`overflow-y-auto`) hasta el tope de `maxHeight`. Props opcionales lo
 extienden sin tocar cómo se ven los modales que no las pasan:
@@ -131,7 +202,7 @@ contenido de trabajo — no en el header ni en una card.
   pone la fila de tabs de abajo) — la zona de contenido de trabajo (`flex-1
   min-h-0`) al final.
 - **El scroll vive DENTRO de un contenedor propio** con su propio borde
-  (`border border-gray-200 rounded-md overflow-auto`, `mx-5 mb-5` para
+  (`border border-border rounded-md overflow-auto`, `mx-5 mb-5` para
   alinear con el padding del resto del modal) — nunca en el body. Ese
   contenedor es la única zona con scroll de todo el modal; todo lo demás
   (tabs, fila de descripción/buscador) es `shrink-0`.
@@ -154,7 +225,7 @@ indicador compuesto de 3 mini-cajas fijas R/S/T (`18×18` — tamaño pedido
 explícitamente, sin paso de la escala de spacing que dé ese valor) — SIEMPRE
 en ese orden, resaltando con tint + `border-chip-border` + `text-secondary`
 las letras presentes en el valor real (ej. "RS" resalta R y S) y
-`gray-300`/`border-gray-200` las ausentes. Es de **solo lectura** (la
+`gray-300`/`border-border` las ausentes. Es de **solo lectura** (la
 selección de fase existe en ABM y consultas, no acá): `<span>`, sin hover ni
 cursor, fuera del orden de tabulación. Cada caja es `aria-hidden` y un
 `sr-only` describe el estado con las fases presentes (ej. "Fases: R, S y T").
@@ -165,7 +236,7 @@ contexto: cada letra es un estado.
 
 `CopyButton` (`src/App.tsx`) es el botón de copiar al portapapeles de toda la
 app (ej. la referencia de Interrupción en el header del modal "Tablas
-relacionadas") — `w-8 h-8 rounded-sm text-gray-600 hover:bg-gray-100`, ícono
+relacionadas") — `w-8 h-8 rounded-sm text-gray-600 hover:bg-fill-muted`, ícono
 `Copy` (14px). Usa `navigator.clipboard.writeText` con fallback a
 `document.execCommand("copy")` vía un `<textarea>` oculto para navegadores/
 contextos sin Clipboard API. Solo si la copia realmente ocurrió (`ok === true`)
@@ -201,7 +272,7 @@ subrayados, más estándar para contenido tabular con varias vistas anchas.
   propio `pl-4` y que el TEXTO (no el padding) quede exactamente en el borde
   de contenido.
 - Botones `h-10 min-w-24 px-4 text-body`.
-  - Reposo: `text-gray-600`, hover `bg-gray-50`.
+  - Reposo: `text-gray-600`, hover `bg-fill-muted`.
   - Activo: `text-secondary font-medium` + `border-b-2 border-primary`
     superpuesto a la línea de base vía `-mb-px`.
 - `role="tablist"` en el contenedor, `role="tab"` + `aria-selected` en cada
@@ -273,7 +344,7 @@ exterior, nunca sus secciones.
    a la tabla por proximidad (toolbar `px-4 py-3`, contenedor de tabla
    `mx-4 mb-4`; en el modal "Tablas relacionadas", `px-5 pb-3` y
    `mx-5 mb-5`). Orden: buscador → divisor vertical (`w-px h-5
-   bg-gray-300`, el de `PersistentActionsBar`) → triggers de filtro →
+   bg-border`, el de `PersistentActionsBar`) → triggers de filtro →
    (derecha, `ml-auto`) "Limpiar filtros" (solo con ≥1 filtro activo; quita
    los filtros, no el texto del buscador) + contador "`N` de `M` registros"
    (`TableCounter`, siempre visible, también sin filtros, para que el layout
@@ -287,7 +358,7 @@ exterior, nunca sus secciones.
    un valor (el valor es información, no decoración). Si no es interactivo,
    se renderiza como elemento no interactivo (`<div>`, fuera del orden de
    tabulación, `cursor-default`, sin hover) con borde punteado
-   (`border-dashed border-gray-300`, sin fondo) y texto `gray-500` — ej.
+   (`border-dashed border-border`, sin fondo) y texto `gray-500` — ej.
    los tiles de "Tablas relacionadas" con 0, "No" o sin selección.
 7. **Barra de contexto de registro**: cuando una vista (modal, drawer) opera
    sobre un registro, arriba va un contenedor único (borde de card, fondo

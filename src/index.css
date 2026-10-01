@@ -33,7 +33,11 @@
   --color-bg-app: #FAF9F5; /* fondo de página y sidebar */
   --color-surface: #FFFFFF; /* cards, modales, popovers, dropdowns */
   --color-border: rgba(20, 20, 19, 0.10); /* bordes de contenedores y divisores */
-  --color-border-strong: rgba(20, 20, 19, 0.20); /* bordes de inputs y controles */
+  --color-border-strong: rgba(20, 20, 19, 0.20); /* bordes de inputs, selects, botones secundarios y controles */
+  --color-border-subtle: rgba(20, 20, 19, 0.06); /* separadores entre filas de tabla y de listas */
+  /* Rellenos neutros — siempre translúcidos, así toman la temperatura del fondo */
+  --color-fill-subtle: rgba(20, 20, 19, 0.03); /* thead, pie de tabla, barra de filtros activos, campos bloqueados */
+  --color-fill-muted: rgba(20, 20, 19, 0.06); /* hover neutro, campos de solo lectura o deshabilitados */
 
   /* Semánticos */
   --color-error: #DC2626;
@@ -118,18 +122,21 @@
   --text-code--line-height: 16px;
   --text-code--font-weight: 400;
 
-  /* Radios */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  /* Radios — por rol (ver DESIGN_SYSTEM.md, "Radios") */
+  --radius-*: initial;
+  --radius-xs: 4px; /* badges de código, checkbox, celdas del mini calendario, leyendas */
+  --radius-sm: 6px; /* inputs, selects, botones, segmented, ítems de menú */
+  --radius-md: 8px; /* dropdowns, popovers, tiles, contenedores anidados en una card */
+  --radius-lg: 12px; /* cards */
+  --radius-xl: 16px; /* modales */
+  --radius-full: 9999px; /* avatares, chips redondos, días del calendario, contadores */
 
   /* Sombras — una por nivel de elevación */
   --shadow-sm: 0 1px 2px rgba(20, 20, 19, 0.04), 0 1px 3px rgba(20, 20, 19, 0.03); /* cards */
   --shadow-md: 0 4px 12px rgba(20, 20, 19, 0.08); /* popovers, dropdowns, menús */
   --shadow-lg: 0 12px 32px rgba(20, 20, 19, 0.12); /* modales */
 
-  /* Líneas hechas con sombra — no son niveles de elevación */
-  --shadow-hairline: 0 1px 0 var(--color-gray-300); /* segunda línea bajo el top bar */
+  /* Acento hecho con sombra — no es un nivel de elevación */
   --inset-shadow-row-selected: inset 3px 0 0 var(--color-primary); /* acento de fila seleccionada */
 }
 
@@ -204,7 +211,7 @@
  * ABM) y toggles/chips (BT/MT/AT, Interno/Externo, etc.):
  *   height ~28px (h-7) · padding compacto (px-2.5)
  *   · tipografía text-label (12/16, medium)
- *   · --radius-sm (4px)
+ *   · --radius-sm (6px)
  *
  * md (default) — acciones estándar de panel (Buscar, Limpiar, Cancelar,
  * Guardar, Insertar, Exportar, Auditoría) y botones dropdown-trigger
@@ -240,11 +247,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   top: 50%;
   transform: translateY(-50%);
   background: var(--color-gray-800);
-  color: #fff;
+  color: var(--color-surface);
   font-size: var(--text-body-sm);
   line-height: var(--text-body-sm--line-height);
   padding: 4px 8px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
@@ -254,4 +261,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 .sidebar-item-btn:hover .sidebar-item-tooltip {
   opacity: 1;
+}
+
+/*
+ * Relleno sutil OPACO — mismo color que bg-fill-subtle apoyado sobre una
+ * superficie, pero sin transparencia. Solo para elementos position:sticky
+ * (th de tabla): con el relleno translúcido se vería pasar por debajo el
+ * contenido que scrollea.
+ */
+@utility bg-fill-subtle-solid {
+  background-color: var(--color-surface);
+  background-image: linear-gradient(var(--color-fill-subtle), var(--color-fill-subtle));
 }
