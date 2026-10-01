@@ -128,8 +128,18 @@ son intercambiables:
 | `--color-primary-hover` | `#0663DF` | 5.44:1 | Hover de `primary-strong` |
 
 - **Botón primario:** `bg-primary-strong hover:bg-primary-hover text-white`,
-  sin sombra y sin `hover:brightness-*`. Deshabilitado: `disabled:opacity-40`.
-  El fondo va por clase, no por `style`.
+  sin sombra y sin `hover:brightness-*`. El fondo va por clase, no por
+  `style`.
+- **Deshabilitado y cargando son dos estados distintos** y no se ven igual:
+  - **Deshabilitado** — la acción no está disponible todavía (falta
+    completar algo): `disabled:opacity-40 disabled:cursor-not-allowed
+    disabled:pointer-events-none`. Se lee como inactivo.
+  - **Cargando** — la acción ya se disparó y está en curso: el botón
+    mantiene el color pleno (`bg-primary-strong`, sin opacidad ni
+    `cursor-not-allowed`), muestra un spinner (`Loader2` de lucide con
+    `animate-spin`, 16px) a la izquierda del texto en gerundio
+    ("Ingresando…"), lleva `aria-busy="true"` y bloquea clics con
+    `disabled` + `disabled:pointer-events-none`. Ej.: botón del login.
 - **Botón destructivo relleno** ("Eliminar"): `bg-error
   hover:bg-error-text-strong text-white`.
 - **Seleccionado** (toggles, segmented, filas, chips) es siempre el patrón

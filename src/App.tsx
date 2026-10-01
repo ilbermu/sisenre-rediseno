@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown,
   Zap, FileText, Pencil, Clipboard, UserPlus, Shield, Calendar, Search, X,
   Filter, Inbox, User, Settings, LogOut, Plus, Download, ChevronsUp, ChevronsDown, Home,
-  ChevronUp, Copy, Check, Clock, Users, ClipboardList,
+  ChevronUp, Copy, Check, Clock, Users, ClipboardList, Loader2,
 } from "lucide-react";
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
@@ -2551,11 +2551,13 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-sm text-white bg-primary-strong hover:bg-primary-hover disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all font-sans text-body font-medium"
+                aria-busy={loading}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-sm text-white bg-primary-strong hover:bg-primary-hover disabled:pointer-events-none active:scale-[0.99] transition-all font-sans text-body font-medium"
                 style={{
                   paddingTop: "var(--login-button-py, 12px)", paddingBottom: "var(--login-button-py, 12px)", paddingLeft: 24, paddingRight: 24,
                 }}
               >
+                {loading && <Loader2 size={16} strokeWidth={2} className="animate-spin shrink-0" aria-hidden />}
                 {loading ? "Ingresando…" : "Confirmar"}
               </button>
             </div>
