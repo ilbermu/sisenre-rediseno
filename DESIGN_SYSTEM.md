@@ -74,7 +74,7 @@ Tokens en `@theme` de `src/index.css`. Se eligen por **rol**; las clases
 | Token | Clase | Uso |
 |---|---|---|
 | `--color-bg-app` | `bg-bg-app` | Fondo de página: shell de la app, selector de herramienta, sidebar, top bar |
-| `--color-surface` | `bg-surface` | Todo lo que se apoya sobre el fondo: cards, modales, popovers, dropdowns, inputs, botones secundarios, paginadores, headers de card y de modal |
+| `--color-surface` | `bg-surface` | Todo lo que se apoya sobre el fondo: cards, modales, popovers, dropdowns, inputs, botones secundarios, paginadores |
 | `--color-border` | `border-border`, `bg-border` | Borde de contenedores (cards, popovers, dropdowns), divisores (bajo un header, bajo el `thead`, pie de tabla) y líneas de 1px (`h-px` / `w-px bg-border`) |
 | `--color-border-strong` | `border-border-strong` | Controles: inputs, selects, botones secundarios, checkbox y radio, badges de código. Tienen que seguir leyéndose como campos |
 | `--color-border-subtle` | `border-border-subtle` | Separador entre filas de una tabla o de una lista |
@@ -94,8 +94,18 @@ Reglas:
   `bg-fill-subtle` sobre `surface`, sin transparencia). El fondo va en los
   `th`, no en el `<tr>`: si van los dos, el alfa se suma.
 - **Los bordes también son translúcidos**, por la misma razón.
-- **Headers de card y de modal** son `bg-surface` con `border-b
-  border-border`: se separan del cuerpo con la línea, no con un relleno.
+- **Headers de card y de modal no llevan fondo propio:** son transparentes
+  con `border-b border-border`. Se separan del cuerpo con la línea, y al no
+  pintar nada dejan ver el radio del contenedor.
+- **Todo elemento con fondo que toca una esquina de un contenedor
+  redondeado lleva el radio de ese contenedor** en ese lado: `rounded-t-md`
+  / `rounded-b-md` dentro de un wrapper `md`, `rounded-t-lg` / `rounded-b-lg`
+  en una card, `rounded-t-xl` en un modal. Ej.: headers "de lista" y pies
+  de tabla con `bg-fill-subtle`.
+- **Las cards no usan `overflow-hidden` para recortar esquinas:** recorta
+  también dropdowns, popovers y flyouts. El recorte por `overflow` queda
+  solo para wrappers de tabla (el `<tr>`/`<th>` no admite radio y adentro
+  no hay popovers).
 - **Los estados de interacción no usan estos tokens:** hover de acción,
   seleccionado y foco siguen en celeste/tint/navy (`border-primary`,
   `bg-primary-tint`, `text-secondary`, `focus`). `fill-muted` es solo el
@@ -219,9 +229,9 @@ estos seis, y `rounded` sin sufijo no se usa. Se elige por rol del elemento.
 ## `Modal`: header = mismo tratamiento que `CardHeader`
 
 El bloque de header de `Modal` (título/cerrar + `headerExtra`, si viene) es
-`bg-surface` con `border-b border-border` como divisor con el body — EL
+transparente, con `border-b border-border` como divisor con el body — EL
 MISMO tratamiento que `CardHeader` (Búsqueda/Interrupciones/Reposiciones:
-`bg-surface border-b border-border`), para que headers de card y headers de
+sin fondo propio + `border-b border-border`), para que headers de card y headers de
 modal se lean como el mismo elemento en toda la app. No es una prop opt-in:
 aplica a los 13 usos de `Modal` del archivo por igual. El body sigue en
 `bg-surface` (default de `Modal`, ver `bodyClassName` si un modal puntual
@@ -230,7 +240,7 @@ necesita otra cosa); el footer no cambia.
 ## `Modal` extendido: header propio, body sin scroll propio
 
 `Modal` (`src/App.tsx`) es el estándar para toda acción que requiera un
-diálogo. Por default arma su propio header (`bg-surface`, título
+diálogo. Por default arma su propio header (sin fondo propio, título
 `text-heading-md` + subtítulo + cerrar) y un body con `p-5` que crece con el contenido y
 scrollea (`overflow-y-auto`) hasta el tope de `maxHeight`. Props opcionales lo
 extienden sin tocar cómo se ven los modales que no las pasan:

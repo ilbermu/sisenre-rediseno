@@ -1125,7 +1125,7 @@ function rowActionBtnCls(variant?: ActionItem["variant"]) {
 // (junto a Exportar) — ver AbmScreen.
 function SelectionActionBar({ recordLabel }: { recordLabel: string }) {
   return (
-    <div className="px-4 py-3 border-b border-border bg-surface shrink-0 flex items-center gap-2.5">
+    <div className="px-4 py-3 border-b border-border shrink-0 flex items-center gap-2.5">
       <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
       <span className="text-heading-xs text-secondary uppercase tracking-wide select-none">
         Registro seleccionado
@@ -1310,7 +1310,7 @@ function TableToolbar({
   hideExport?: boolean;
   searchPlaceholder?: string;
   children?: React.ReactNode;
-  // true: sin el contenedor propio (px-4 py-2.5 border-b bg-surface,
+  // true: sin el contenedor propio (px-4 py-2.5 border-b,
   // flex justify-between) — solo el buscador, para vivir dentro de una
   // fila que ya arma su propio layout (ej. los toolbars con filtros de
   // Interrupciones y del modal "Tablas relacionadas"). Ignora onExport/children
@@ -1463,8 +1463,8 @@ function Modal({
           height,
         }}
       >
-        {/* Header — bg-surface (mismo tratamiento que CardHeader: Búsqueda/
-            Interrupciones/Reposiciones), aplica a los 13 usos de Modal por
+        {/* Header — sin fondo propio (mismo tratamiento que CardHeader:
+            transparente, deja ver el radio del contenedor), aplica a los 13 usos de Modal por
             igual, no es una prop opt-in. border-b como divisor con el body
             (bg-surface, sin cambios). título/cerrar siempre; headerExtra (si
             viene) se apila debajo, todavía dentro de este mismo bloque. Con
@@ -1472,7 +1472,7 @@ function Modal({
             padding inferior del bloque entero lo aporta headerExtra (su
             propio pb-3.5, ver call site), con solo mt-0.5 de gap interno
             entre las dos líneas. */}
-        <div className="bg-surface border-b border-border shrink-0">
+        <div className="border-b border-border shrink-0">
           <div className={`px-5 flex items-center justify-between gap-3 ${headerExtra ? "pt-3.5 pb-0" : "py-4"}`}>
             <p className={`min-w-0 truncate text-heading-md text-text`}>
               {title}
@@ -1518,7 +1518,7 @@ function Modal({
 function ListBox({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col border border-border rounded-md overflow-hidden" style={{ height: 160 }}>
-      <div className="px-3 py-2 border-b border-border bg-fill-subtle text-heading-xs uppercase tracking-[0.07em] text-text-muted shrink-0">
+      <div className="px-3 py-2 border-b border-border bg-fill-subtle rounded-t-md text-heading-xs uppercase tracking-[0.07em] text-text-muted shrink-0">
         {title}
       </div>
       <div className="flex-1 overflow-y-auto p-2">{children}</div>
@@ -2116,7 +2116,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
         {/* Izquierda: archivo + porcentajes */}
         <div className="flex flex-col gap-4">
           <div className="border border-border rounded-md overflow-hidden" style={{ height: 160 }}>
-            <div className="grid grid-cols-3 bg-fill-subtle border-b border-border">
+            <div className="grid grid-cols-3 bg-fill-subtle rounded-t-md border-b border-border">
               {["Campo 1", "Campo 2", "Campo 3"].map((c) => (
                 <div key={c} className="px-3 py-2 text-heading-xs uppercase tracking-[0.07em] text-text-muted">
                   {c}
@@ -3556,7 +3556,7 @@ function CardHeader({
 }) {
   const sizeCls = size === "compact" ? "h-14 [@media(max-height:760px)]:h-auto [@media(max-height:760px)]:py-2" : "h-14";
   return (
-    <div className={`${sizeCls} px-5 border-b border-border bg-surface shrink-0 flex items-center gap-2`}>
+    <div className={`${sizeCls} px-5 border-b border-border shrink-0 flex items-center gap-2`}>
       <span className="text-heading-md text-text">{title}</span>
       {tag && <CodeBadge code={tag} />}
       {context && (
@@ -4202,13 +4202,13 @@ function ReclamosResumenCompacto({
     // botón sería HTML inválido). El botón vive en `right` del header y su
     // ::after (absolute inset-0) cubre toda la card, que es `relative`.
     // Hover (con datos): el hover secundario de hoy sobre TODA la card —
-    // borde primary + fondo primary-tint, también en el header (el
-    // [&>:first-child] le gana al bg-surface de CardHeader) + textos del
+    // borde primary + fondo primary-tint, también en el header
+    // (CardHeader es transparente, toma el fondo de la card) + textos del
     // cuerpo a secondary. Foco: el focus-visible del botón se pinta en la
     // card entera (has-[:focus-visible]).
     <div
       data-habilitada={habilitada || undefined}
-      className="group relative rounded-md border border-border overflow-hidden bg-surface transition-all data-[habilitada]:hover:border-primary data-[habilitada]:hover:bg-primary-tint data-[habilitada]:hover:[&>:first-child]:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:outline-offset-2"
+      className="group relative rounded-md border border-border overflow-hidden bg-surface transition-all data-[habilitada]:hover:border-primary data-[habilitada]:hover:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:outline-offset-2"
     >
       <CardHeader
         title="Reclamos durante la interrupción"
@@ -5330,7 +5330,7 @@ function ModificarContent({
               de REPOSICIONES_ROW_H responde a la celda Equipo de dos) y la
               paginación va como pie dentro del borde. */}
           <div className="flex-1 min-h-0 flex flex-col border border-border rounded-md overflow-hidden bg-surface">
-            <div className="grid grid-cols-2 shrink-0 bg-fill-subtle border-b border-border" style={{ height: REPOSICIONES_HEADER_H }}>
+            <div className="grid grid-cols-2 shrink-0 bg-fill-subtle rounded-t-md border-b border-border" style={{ height: REPOSICIONES_HEADER_H }}>
               <SortableHeaderCell
                 label="Referencia"
                 active={modSortIdx === 0}
@@ -5392,7 +5392,7 @@ function ModificarContent({
                 );
               })}
             </div>
-            <div className="shrink-0 border-t border-border bg-fill-subtle px-3 py-1.5 flex items-center justify-between">
+            <div className="shrink-0 border-t border-border bg-fill-subtle rounded-b-md px-3 py-1.5 flex items-center justify-between">
               <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted disabled:opacity-40" disabled>Anterior</button>
               <span className="text-caption text-text-muted">Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">2.213</span></span>
               <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted hover:bg-fill-muted transition-colors">Siguiente</button>
@@ -7645,7 +7645,7 @@ function AbmScreen({
 
           {/* Footer */}
           {showData && (
-            <div className="px-4 py-2 border-t border-border bg-fill-subtle shrink-0 flex items-center justify-between">
+            <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-lg shrink-0 flex items-center justify-between">
               <span className="text-body-sm text-text">
                 Registros encontrados:{" "}
                 <span className="font-semibold text-secondary">
