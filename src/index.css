@@ -39,6 +39,12 @@
   --color-fill-subtle: rgba(20, 20, 19, 0.03); /* thead, pie de tabla, barra de filtros activos, campos bloqueados */
   --color-fill-muted: rgba(20, 20, 19, 0.06); /* hover neutro, campos de solo lectura o deshabilitados */
 
+  /* Texto — neutros cálidos (ver DESIGN_SYSTEM.md, "Colores de texto") */
+  --color-text: #1F1E1D; /* texto principal */
+  --color-text-muted: #63625D; /* labels, descripciones, headers de columna, metadatos, placeholders */
+  --color-text-faint: #8F8E89; /* SOLO controles deshabilitados y elementos decorativos sin información */
+  --color-icon: #7D7C77; /* íconos funcionales */
+
   /* Semánticos */
   --color-error: #DC2626;
   --color-success: #16A34A;

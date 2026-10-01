@@ -69,8 +69,7 @@ juntos. Se elige por **rol** (qué es el texto), nunca por tamaño.
 ## Superficies: fondos, bordes y sombras
 
 Tokens en `@theme` de `src/index.css`. Se eligen por **rol**; las clases
-`bg-gray-*`, `border-gray-*` y `bg-white` no se usan (los `text-gray-*` sí:
-los colores de texto todavía no se migraron).
+`bg-gray-*`, `border-gray-*`, `text-gray-*` y `bg-white` no se usan.
 
 | Token | Clase | Uso |
 |---|---|---|
@@ -116,6 +115,52 @@ Una por nivel de elevación, como clase (`shadow-sm` / `shadow-md` /
 Ningún botón lleva sombra. `--inset-shadow-row-selected`
 (`inset-shadow-row-selected`) no es elevación: es el acento de 3px de la
 fila seleccionada.
+
+## Colores de texto
+
+Neutros cálidos, coherentes con `--color-bg-app` y con la base de los
+bordes. `text-gray-*` y `text-black` no se usan.
+
+| Token | Clase | Hex | Uso |
+|---|---|---|---|
+| `--color-text` | `text-text` | `#1F1E1D` | Texto principal: títulos, valores, celdas de tabla, contenido de inputs, ítems de menú, botones secundarios. Es el único color de texto principal: la jerarquía se arma con tamaño y peso (ver "Tipografía"), no con grises intermedios |
+| `--color-text-muted` | `text-text-muted` | `#63625D` | Labels, descripciones, headers de columna, overlines, pies de tabla, metadatos, placeholders, contenido de campos de solo lectura, ejes y rótulos de gráfico |
+| `--color-icon` | `text-icon` | `#7D7C77` | Íconos funcionales: botones de ícono (cerrar, copiar, colapsar, paginar), íconos de trigger (lupa, calendario, chevron) |
+| `--color-text-faint` | `text-text-faint` | `#8F8E89` | **Solo dos usos**, ambos exentos de contraste por WCAG: (1) controles deshabilitados; (2) elementos decorativos sin información — ícono `Inbox` de estado vacío, separadores "·" y "→". Nunca para texto que haya que leer |
+
+`text-secondary` es otra cosa: es el **navy de marca** (`--color-secondary`),
+no un gris. El gris secundario es `text-text-muted`.
+
+### Reglas
+
+- **Celeste = relleno y borde; navy = texto.** `text-primary` no se usa como
+  color de texto: links, valores destacados y texto en estado
+  hover/seleccionado van en `text-secondary` (navy). Única excepción: el
+  ícono decorativo de las cards de "Accesos frecuentes" del Inicio, que
+  acompaña a un texto.
+- **Links de acción** ("Limpiar"): `text-label text-secondary
+  hover:underline`.
+- **Semánticos:** sobre `surface`, `text-error`. Sobre un fondo teñido
+  (`red-50`, `fill-muted`) o en hover con `bg-red-50`,
+  `text-error-text-strong`. El verde de éxito como texto es siempre
+  `text-success-text-strong` (`--color-success` no llega a 4.5:1).
+- **Sin opacidad en el texto** (`text-secondary/60`, etc.): baja el contraste
+  de forma impredecible según el fondo.
+- **Sin `color` inline con hex.**
+
+### Contraste
+
+Mínimos: `text` 7:1, `text-muted` 4.5:1, `icon` 3:1 (componente no textual),
+`text-faint` 2.5:1 (exento). El peor fondo es `fill-muted` apoyado sobre
+`bg-app`.
+
+| Color | surface | bg-app | fill-subtle | fill-muted | fill-subtle sobre bg-app | fill-muted sobre bg-app | primary-tint |
+|---|---|---|---|---|---|---|---|
+| `text` `#1F1E1D` | 16.64 | 15.80 | 15.67 | 14.72 | 14.88 | 13.99 | 14.99 |
+| `text-muted` `#63625D` | 6.11 | 5.80 | 5.75 | 5.41 | 5.46 | 5.14 | 5.51 |
+| `icon` `#7D7C77` | 4.18 | 3.97 | 3.94 | 3.70 | 3.74 | 3.51 | 3.77 |
+| `text-faint` `#8F8E89` | 3.28 | 3.12 | 3.09 | 2.90 | 2.93 | 2.76 | 2.96 |
+| `secondary` (navy) `#1D558C` | 7.69 | 7.30 | 7.24 | 6.80 | 6.87 | 6.46 | 6.93 |
 
 ## Radios
 
@@ -236,7 +281,7 @@ contexto: cada letra es un estado.
 
 `CopyButton` (`src/App.tsx`) es el botón de copiar al portapapeles de toda la
 app (ej. la referencia de Interrupción en el header del modal "Tablas
-relacionadas") — `w-8 h-8 rounded-sm text-gray-600 hover:bg-fill-muted`, ícono
+relacionadas") — `w-8 h-8 rounded-sm text-text-muted hover:bg-fill-muted`, ícono
 `Copy` (14px). Usa `navigator.clipboard.writeText` con fallback a
 `document.execCommand("copy")` vía un `<textarea>` oculto para navegadores/
 contextos sin Clipboard API. Solo si la copia realmente ocurrió (`ok === true`)
@@ -272,7 +317,7 @@ subrayados, más estándar para contenido tabular con varias vistas anchas.
   propio `pl-4` y que el TEXTO (no el padding) quede exactamente en el borde
   de contenido.
 - Botones `h-10 min-w-24 px-4 text-body`.
-  - Reposo: `text-gray-600`, hover `bg-fill-muted`.
+  - Reposo: `text-text-muted`, hover `bg-fill-muted`.
   - Activo: `text-secondary font-medium` + `border-b-2 border-primary`
     superpuesto a la línea de base vía `-mb-px`.
 - `role="tablist"` en el contenedor, `role="tab"` + `aria-selected` en cada

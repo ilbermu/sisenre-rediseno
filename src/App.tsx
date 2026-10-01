@@ -313,7 +313,7 @@ function SelectWrap({ children, className = "" }: { children: React.ReactNode; c
   return (
     <div className={`relative ${className}`}>
       {children}
-      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-icon">
         <ChevronDown size={16} strokeWidth={1.5} />
       </div>
     </div>
@@ -322,7 +322,7 @@ function SelectWrap({ children, className = "" }: { children: React.ReactNode; c
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="block mb-1 text-label text-gray-700 select-none tracking-wide">
+    <label className="block mb-1 text-label text-text select-none tracking-wide">
       {children}
     </label>
   );
@@ -331,7 +331,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 function SectionDivider({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-2.5 mb-3 mt-1">
-      <span className="text-heading-xs uppercase tracking-[0.09em] text-gray-600 whitespace-nowrap select-none">
+      <span className="text-heading-xs uppercase tracking-[0.09em] text-text-muted whitespace-nowrap select-none">
         {title}
       </span>
       <div className="flex-1 h-px bg-border" />
@@ -361,7 +361,7 @@ function NavItem({
         ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
         ${active
           ? "border-transparent text-secondary"
-          : "border-transparent text-gray-700 hover:text-gray-800 hover:bg-fill-muted"
+          : "border-transparent text-text hover:text-text hover:bg-fill-muted"
         }`}
     >
       {/* Pill de fondo del ítem activo — layoutId compartido entre TODOS los
@@ -391,7 +391,7 @@ function NavItem({
             <span className={`flex-1 min-w-0 truncate text-left ${boldLabel ? "text-heading-sm" : "text-body"}`}>{label}</span>
             {code && (
               <span
-                className={`text-caption font-mono shrink-0 tabular-nums ${active ? "text-secondary/60" : "text-gray-500 group-hover:text-gray-600"}`}
+                className={`text-caption font-mono shrink-0 tabular-nums ${active ? "text-secondary" : "text-text-muted group-hover:text-text-muted"}`}
               >
                 {code}
               </span>
@@ -425,9 +425,9 @@ function PeriodSelector() {
       <button
         onClick={() => setOpen(!open)}
         className={`${BTN_MD} group flex items-center gap-1.5 border transition-all duration-150
-          ${open ? "bg-primary-tint border-primary text-secondary" : "bg-surface border-border-strong text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"}`}
+          ${open ? "bg-primary-tint border-primary text-secondary" : "bg-surface border-border-strong text-text hover:border-primary hover:bg-primary-tint hover:text-secondary"}`}
       >
-        <span className={`transition-colors ${open ? "text-secondary" : "text-gray-500 group-hover:text-secondary"}`}><Calendar size={15} strokeWidth={1.5} /></span>
+        <span className={`transition-colors ${open ? "text-secondary" : "text-icon group-hover:text-secondary"}`}><Calendar size={15} strokeWidth={1.5} /></span>
         <span>{selected}</span>
         <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
           <ChevronDown size={16} strokeWidth={1.5} />
@@ -439,7 +439,7 @@ function PeriodSelector() {
           style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           <div className="px-3 py-2.5 border-b border-border-subtle">
-            <p className="text-heading-xs text-gray-600 uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
+            <p className="text-heading-xs text-text-muted uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
           </div>
           <div className="p-1.5 flex flex-col gap-0.5">
           {PERIODS.map((p) => (
@@ -447,7 +447,7 @@ function PeriodSelector() {
               key={p}
               onClick={() => { setSelected(p); setOpen(false); }}
               className={`w-full px-2.5 py-2 rounded-sm border text-left text-body transition-colors
-                ${p === selected ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-fill-muted"}`}
+                ${p === selected ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-text hover:bg-fill-muted"}`}
             >
               {p}
             </button>
@@ -550,7 +550,7 @@ function FilterTriggerButton({
         className={`h-8 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-all ${FILTER_FOCUS_CLS} ${
           open
             ? "bg-primary-tint border-primary text-secondary"
-            : "border-transparent bg-transparent text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
+            : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
         }`}
       >
         {label}
@@ -643,10 +643,10 @@ function FilterTrigger(props: FilterTriggerProps) {
                     aria-selected={sel}
                     onClick={() => { props.onChange(o.value); setOpen(false); }}
                     className={`w-full px-2.5 py-2 rounded-sm border text-left text-body transition-colors flex items-center justify-between gap-4 whitespace-nowrap
-                      ${sel ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-fill-muted"}`}
+                      ${sel ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-text hover:bg-fill-muted"}`}
                   >
                     <span>{o.value ?? "Todas"}</span>
-                    {o.count !== null && <span className="text-caption text-gray-500 tabular-nums">{o.count}</span>}
+                    {o.count !== null && <span className="text-caption text-text-muted tabular-nums">{o.count}</span>}
                   </button>
                 );
               })}
@@ -709,7 +709,7 @@ function FilterDateRangePanel({
     { label: "Últimos 7 días", rango: () => { const n = new Date(); return [new Date(n.getTime() - 7 * 24 * 3600_000), n]; } },
   ];
 
-  const rotuloCls = "block mb-1 text-heading-xs uppercase tracking-[0.08em] text-gray-500";
+  const rotuloCls = "block mb-1 text-heading-xs uppercase tracking-[0.08em] text-text-muted";
   const extremo = (nombre: "Desde" | "Hasta", fecha: string, setFecha: (v: string) => void, hora: string, setHora: (v: string) => void) => (
     <div>
       <span className={rotuloCls}>{nombre}</span>
@@ -739,7 +739,7 @@ function FilterDateRangePanel({
             key={a.label}
             type="button"
             onClick={() => completar(...a.rango())}
-            className={`${BTN_SM} border transition-all duration-150 shrink-0 bg-surface border-border-strong text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]`}
+            className={`${BTN_SM} border transition-all duration-150 shrink-0 bg-surface border-border-strong text-text hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]`}
           >
             {a.label}
           </button>
@@ -756,7 +756,7 @@ function FilterDateRangePanel({
         <button
           type="button"
           onClick={() => onApply(null)}
-          className="text-label text-primary hover:text-secondary transition-colors"
+          className="text-label text-secondary hover:underline"
         >
           Limpiar
         </button>
@@ -801,16 +801,16 @@ function DateTimeChevron({ orientation }: ChevronProps) {
 const DAY_PICKER_CLASSNAMES = {
   month: "relative flex flex-col",
   month_caption: "flex items-center justify-center h-6 mb-2",
-  button_previous: "absolute left-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all",
-  button_next: "absolute right-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all",
+  button_previous: "absolute left-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all",
+  button_next: "absolute right-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all",
   month_grid: "w-full border-collapse",
   weekdays: "",
-  weekday: "text-heading-xs uppercase text-gray-500 pb-1",
+  weekday: "text-heading-xs uppercase text-text-muted pb-1",
   day: "p-0.5 text-center",
-  day_button: "w-8 h-8 rounded-full bg-transparent flex items-center justify-center text-label text-gray-700 transition-colors hover:bg-primary-tint hover:text-secondary",
+  day_button: "w-8 h-8 rounded-full bg-transparent flex items-center justify-center text-label text-text transition-colors hover:bg-primary-tint hover:text-secondary",
   selected: "rounded-full bg-primary-tint border border-primary text-secondary",
   today: "text-secondary",
-  outside: "text-gray-400",
+  outside: "text-text-faint",
 };
 
 const MESES_ES = [
@@ -840,7 +840,7 @@ function MiniCaptionDropdown({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="h-6 px-1.5 rounded-sm text-heading-sm text-gray-900 hover:bg-primary-tint hover:text-secondary transition-colors"
+        className="h-6 px-1.5 rounded-sm text-heading-sm text-text hover:bg-primary-tint hover:text-secondary transition-colors"
       >
         {label}
       </button>
@@ -855,7 +855,7 @@ function MiniCaptionDropdown({
               type="button"
               onClick={() => { onSelect(o.value); setOpen(false); }}
               className={`w-full text-left px-2.5 py-2 rounded-sm border text-body-sm transition-colors ${
-                o.selected ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-primary-tint hover:text-secondary"
+                o.selected ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-text hover:bg-primary-tint hover:text-secondary"
               }`}
             >
               {o.label}
@@ -956,16 +956,16 @@ function DateTimeField({
         className={
           MOD_SELECT_CLS +
           " w-full flex items-center justify-between gap-2 text-left" +
-          // `!` (important): MOD_SELECT_CLS ya trae bg-surface/text-gray-900, que en
+          // `!` (important): MOD_SELECT_CLS ya trae bg-surface/text-text, que en
           // el CSS compilado ganan igual sin importar el orden en que se
           // concatenan los strings acá (ver mismo fix en AbmCampo/disabledCls).
-          (muted ? " !bg-fill-muted !text-gray-500" : disabled ? " !bg-fill-subtle !text-gray-900" : "") +
+          (muted ? " !bg-fill-muted !text-text-muted" : disabled ? " !bg-fill-subtle !text-text" : "") +
           (className ? ` ${className}` : "")
         }
         style={fullWidth ? undefined : { width: 170, flexShrink: 0 }}
       >
-        {value ? <span className={muted ? "text-gray-500 truncate" : "text-gray-900 truncate"}>{value}</span> : <span className="text-gray-500 truncate">dd/mm/aaaa hh:mm</span>}
-        <span className="shrink-0 text-gray-500"><Calendar size={15} strokeWidth={1.5} /></span>
+        {value ? <span className={muted ? "text-text-muted truncate" : "text-text truncate"}>{value}</span> : <span className="text-text-muted truncate">dd/mm/aaaa hh:mm</span>}
+        <span className="shrink-0 text-icon"><Calendar size={15} strokeWidth={1.5} /></span>
       </button>
       {!disabled && open && (
         <div
@@ -991,7 +991,7 @@ function DateTimeField({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className={`${BTN_MD} border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all`}
+              className={`${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all`}
             >
               Cerrar
             </button>
@@ -1039,10 +1039,10 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
         {!collapsed && (
           <>
             <div className="flex-1 text-left overflow-hidden">
-              <p className="text-body font-medium text-gray-800 truncate">Rdellamagiora</p>
-              <p className="text-caption text-gray-600 mt-0.5 truncate">Operador</p>
+              <p className="text-body font-medium text-text truncate">Rdellamagiora</p>
+              <p className="text-caption text-text-muted mt-0.5 truncate">Operador</p>
             </div>
-            <span className={`text-gray-500 transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
+            <span className={`text-icon transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
               <ChevronDown size={16} strokeWidth={1.5} />
             </span>
           </>
@@ -1053,16 +1053,16 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
           className={`shadow-md absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "left-0 right-0"} bg-surface rounded-md border border-border py-1 z-50 min-w-[160px]`}
           style={collapsed ? undefined : dropdownAnchorStyle(direction, 6)}
         >
-          <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-fill-muted transition-colors">
+          <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-text hover:bg-fill-muted transition-colors">
             <User size={15} strokeWidth={1.5} /> Mi perfil
           </button>
-          <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-fill-muted transition-colors">
+          <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-text hover:bg-fill-muted transition-colors">
             <Settings size={15} strokeWidth={1.5} /> Configuración
           </button>
           <div className="my-1 border-t border-border" />
           <button
             onClick={() => { setOpen(false); onLogout(); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-body text-error hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-body text-error hover:text-error-text-strong hover:bg-red-50 transition-colors"
           >
             <LogOut size={15} strokeWidth={1.5} /> Cerrar sesión
           </button>
@@ -1102,9 +1102,9 @@ type ActionItem = {
 
 function actionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return `${BTN_MD} border border-error-border bg-surface text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.98] whitespace-nowrap`;
+    return `${BTN_MD} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.98] whitespace-nowrap`;
   }
-  return `${BTN_MD} border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.98] whitespace-nowrap`;
+  return `${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.98] whitespace-nowrap`;
 }
 
 // Variante compacta de actionBtnCls — mismo botón outline/secundario ya
@@ -1115,9 +1115,9 @@ function actionBtnCls(variant?: ActionItem["variant"]) {
 // Resultados) donde el tamaño md no entra prolijo.
 function rowActionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return `${BTN_SM} border border-error-border bg-surface text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.97] whitespace-nowrap`;
+    return `${BTN_SM} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.97] whitespace-nowrap`;
   }
-  return `${BTN_SM} border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.97] whitespace-nowrap`;
+  return `${BTN_SM} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.97] whitespace-nowrap`;
 }
 
 // Confirmación visual de qué registro está seleccionado — solo la línea
@@ -1132,7 +1132,7 @@ function SelectionActionBar({ recordLabel }: { recordLabel: string }) {
         Registro seleccionado
       </span>
       <span
-        className="text-code text-gray-800 tabular-nums font-mono"
+        className="text-code text-text tabular-nums font-mono"
       >
         {recordLabel}
       </span>
@@ -1210,7 +1210,7 @@ function exportRowsToCsv(filename: string, headers: string[], rows: string[][]) 
 
 function SortIndicator({ dir }: { dir: SortDir }) {
   return (
-    <span className="text-primary inline-flex">
+    <span className="text-secondary inline-flex">
       {dir === "asc" ? <ChevronUp size={10} strokeWidth={2.5} /> : <ChevronDown size={10} strokeWidth={2.5} />}
     </span>
   );
@@ -1234,8 +1234,8 @@ function SortableHeaderCell({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1 text-heading-xs uppercase tracking-[0.07em] select-none cursor-pointer transition-colors hover:text-gray-700 ${
-        active ? "text-secondary" : "text-gray-600"
+      className={`flex items-center gap-1 text-heading-xs uppercase tracking-[0.07em] select-none cursor-pointer transition-colors hover:text-text ${
+        active ? "text-secondary" : "text-text-muted"
       } ${className}`}
     >
       <span className="truncate">{label}</span>
@@ -1265,8 +1265,8 @@ function SortableTh({
       <button
         type="button"
         onClick={onClick}
-        className={`flex items-center gap-1 cursor-pointer transition-colors hover:text-gray-700 ${
-          active ? "text-secondary" : "text-gray-600"
+        className={`flex items-center gap-1 cursor-pointer transition-colors hover:text-text ${
+          active ? "text-secondary" : "text-text-muted"
         }`}
       >
         {label}
@@ -1280,8 +1280,8 @@ function SortableTh({
 // también sin filtros, para que el layout no salte al aplicar uno.
 function TableCounter({ visibles, total }: { visibles: number; total: number }) {
   return (
-    <span className="text-caption text-gray-600 tabular-nums whitespace-nowrap">
-      <span className="font-semibold text-gray-700">{visibles}</span> de {total} registros
+    <span className="text-caption text-text-muted tabular-nums whitespace-nowrap">
+      <span className="font-semibold text-text">{visibles}</span> de {total} registros
     </span>
   );
 }
@@ -1322,7 +1322,7 @@ function TableToolbar({
 }) {
   const searchBox = (
     <div className="relative flex-1 max-w-[320px]">
-      <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 text-gray-500">
+      <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 text-icon">
         <Search size={15} strokeWidth={1.5} />
       </span>
       <input
@@ -1330,7 +1330,7 @@ function TableToolbar({
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder={searchPlaceholder}
         aria-label={searchPlaceholder.replace(/…$/, "")}
-        className="w-full h-8 pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150"
+        className="w-full h-8 pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150"
       />
     </div>
   );
@@ -1365,7 +1365,7 @@ function TableToolbar({
 const modalPrimaryBtnCls =
   "h-9 px-5 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 const modalNeutralBtnCls =
-  "h-9 px-5 rounded-sm text-body font-medium border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-9 px-5 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 
 function Modal({
   title,
@@ -1473,11 +1473,11 @@ function Modal({
             entre las dos líneas. */}
         <div className="bg-surface border-b border-border shrink-0">
           <div className={`px-5 flex items-center justify-between gap-3 ${headerExtra ? "pt-3.5 pb-0" : "py-4"}`}>
-            <p className={`min-w-0 truncate text-heading-md text-gray-900`}>
+            <p className={`min-w-0 truncate text-heading-md text-text`}>
               {title}
               {subtitle && (
                 <span
-                  className="ml-2 text-code text-gray-600 font-mono"
+                  className="ml-2 text-code text-text-muted font-mono"
                 >
                   {subtitle}
                 </span>
@@ -1486,7 +1486,7 @@ function Modal({
             <button
               type="button"
               onClick={onClose}
-              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all"
+              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all"
             >
               <X size={14} strokeWidth={1.5} />
             </button>
@@ -1517,7 +1517,7 @@ function Modal({
 function ListBox({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col border border-border rounded-md overflow-hidden" style={{ height: 160 }}>
-      <div className="px-3 py-2 border-b border-border bg-fill-subtle text-heading-xs uppercase tracking-[0.07em] text-gray-600 shrink-0">
+      <div className="px-3 py-2 border-b border-border bg-fill-subtle text-heading-xs uppercase tracking-[0.07em] text-text-muted shrink-0">
         {title}
       </div>
       <div className="flex-1 overflow-y-auto p-2">{children}</div>
@@ -1551,7 +1551,7 @@ function ModalCheckbox({
     onChange?.(v);
   };
   return (
-    <label className="inline-flex items-center gap-2 text-body text-gray-700 cursor-pointer select-none">
+    <label className="inline-flex items-center gap-2 text-body text-text cursor-pointer select-none">
       <input
         type="checkbox"
         checked={checked}
@@ -1581,7 +1581,7 @@ function ModalRadio({ label, checked, onSelect }: { label: string; checked: bool
   return (
     <label
       onClick={onSelect}
-      className="inline-flex items-center gap-1.5 text-body text-gray-700 cursor-pointer select-none"
+      className="inline-flex items-center gap-1.5 text-body text-text cursor-pointer select-none"
     >
       <span
         className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-150 ${
@@ -1627,7 +1627,7 @@ function DesarmeModal({
       <div className="grid grid-cols-2 gap-4">
         <ListBox title="Interrupción/Reclamo">
           <div
-            className="px-2 py-1.5 text-code tabular-nums text-gray-800 font-mono"
+            className="px-2 py-1.5 text-code tabular-nums text-text font-mono"
           >
             {referencia}
           </div>
@@ -1645,7 +1645,7 @@ function DesarmeModal({
           <div className="flex items-center gap-2">
             <ModalCheckbox label="Reasigna por proximidad" />
             <input defaultValue="250" className={MOD_FIELD_CLS} style={{ width: 64 }} />
-            <span className="text-body text-gray-700">Mts.</span>
+            <span className="text-body text-text">Mts.</span>
           </div>
           <div className="flex items-center gap-5">
             <ModalCheckbox label="Desarmo" defaultChecked />
@@ -1680,7 +1680,7 @@ function DesarmeModal({
             >
               Elegir archivo
             </label>
-            <span className="text-body-sm text-gray-600 truncate">{fileName}</span>
+            <span className="text-body-sm text-text-muted truncate">{fileName}</span>
           </div>
           <div>
             <button type="button" className={actionBtnCls("neutral")}>
@@ -1725,7 +1725,7 @@ function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
-          <div className="w-full h-8 px-2.5 flex items-center text-body bg-fill-muted border border-border rounded-sm text-gray-400 select-none cursor-not-allowed">
+          <div className="w-full h-8 px-2.5 flex items-center text-body bg-fill-muted border border-border rounded-sm text-text-faint select-none cursor-not-allowed">
             —
           </div>
         </div>
@@ -1773,7 +1773,7 @@ function ReplicarModal({
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
-          <div className="w-full h-8 px-2.5 flex items-center text-body bg-fill-muted border border-border rounded-sm text-gray-400 select-none cursor-not-allowed">
+          <div className="w-full h-8 px-2.5 flex items-center text-body bg-fill-muted border border-border rounded-sm text-text-faint select-none cursor-not-allowed">
             —
           </div>
         </div>
@@ -1829,7 +1829,7 @@ function CambiaFasesModal({
           <thead>
             <tr className="bg-fill-subtle border-b border-border">
               {["Fase", "Fecha", "Id elemento", "Tipo elemento", "Cadena", "Cliente"].map((c) => (
-                <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 select-none whitespace-nowrap">
+                <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted select-none whitespace-nowrap">
                   {c}
                 </th>
               ))}
@@ -1839,23 +1839,23 @@ function CambiaFasesModal({
           <tbody>
             {rows.map((r, i) => (
               <tr key={r.idElemento} className="border-b border-border-subtle hover:bg-fill-muted transition-colors">
-                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.fase}</td>
-                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
-                <td className="px-4 py-3 text-code text-gray-700 whitespace-nowrap font-mono">
+                <td className="px-4 py-3 text-body text-text tabular-nums">{r.fase}</td>
+                <td className="px-4 py-3 text-body text-text whitespace-nowrap">{r.fecha}</td>
+                <td className="px-4 py-3 text-code text-text whitespace-nowrap font-mono">
                   {r.idElemento}
                 </td>
-                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap">{r.tipoElemento}</td>
-                <td className="px-4 py-3 text-code text-gray-700 whitespace-nowrap font-mono">
+                <td className="px-4 py-3 text-body text-text whitespace-nowrap">{r.tipoElemento}</td>
+                <td className="px-4 py-3 text-code text-text whitespace-nowrap font-mono">
                   {r.cadena}
                 </td>
-                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.cliente}</td>
+                <td className="px-4 py-3 text-body text-text tabular-nums">{r.cliente}</td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => move(i, -1)}
                       disabled={i === 0}
-                      className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-primary-tint hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      className="w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-primary-tint hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
                     >
                       <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                         <path d="M5.5 8.5V2.5M5.5 2.5L2.5 5.5M5.5 2.5l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -1865,7 +1865,7 @@ function CambiaFasesModal({
                       type="button"
                       onClick={() => move(i, 1)}
                       disabled={i === rows.length - 1}
-                      className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-primary-tint hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      className="w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-primary-tint hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
                     >
                       <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                         <path d="M5.5 2.5v6M5.5 8.5l-3-3M5.5 8.5l3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -1917,12 +1917,12 @@ function AltaClientesModal({
       }
     >
       <div className="flex items-center justify-end gap-2 mb-3">
-        <span className="text-body-sm text-gray-600">Filtro</span>
+        <span className="text-body-sm text-text-muted">Filtro</span>
         <button
           type="button"
           onClick={() => setFiltroActivo((v) => !v)}
           className={`${BTN_SM} border transition-colors ${
-            filtroActivo ? "bg-primary-tint border-primary text-secondary" : "bg-surface border-border-strong text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"
+            filtroActivo ? "bg-primary-tint border-primary text-secondary" : "bg-surface border-border-strong text-text hover:border-primary hover:bg-primary-tint hover:text-secondary"
           }`}
         >
           {filtroActivo ? "Activo" : "Inactivo"}
@@ -1934,7 +1934,7 @@ function AltaClientesModal({
           <thead>
             <tr className="bg-fill-subtle border-b border-border">
               {["Interrupción", "Repo", "Cadena/Cuenta", "Clientes T4", "Clientes T6", "Clientes T9", "Clientes T10"].map((c) => (
-                <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 select-none whitespace-nowrap">
+                <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted select-none whitespace-nowrap">
                   {c}
                 </th>
               ))}
@@ -1944,17 +1944,17 @@ function AltaClientesModal({
           <tbody>
             {ALTA_CLIENTES_ROWS.map((r) => (
               <tr key={r.interrupcion} className="border-b border-border-subtle hover:bg-fill-muted transition-colors">
-                <td className="px-4 py-3 text-code tabular-nums font-mono" style={{ color: "var(--color-gray-800)" }}>
+                <td className="px-4 py-3 text-code text-text tabular-nums font-mono">
                   {r.interrupcion}
                 </td>
-                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.repo}</td>
-                <td className="px-4 py-3 text-code text-gray-700 whitespace-nowrap font-mono">
+                <td className="px-4 py-3 text-body text-text tabular-nums">{r.repo}</td>
+                <td className="px-4 py-3 text-code text-text whitespace-nowrap font-mono">
                   {r.cadenaCuenta}
                 </td>
-                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.t4}</td>
-                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.t6}</td>
-                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.t9}</td>
-                <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.t10}</td>
+                <td className="px-4 py-3 text-body text-text tabular-nums">{r.t4}</td>
+                <td className="px-4 py-3 text-body text-text tabular-nums">{r.t6}</td>
+                <td className="px-4 py-3 text-body text-text tabular-nums">{r.t9}</td>
+                <td className="px-4 py-3 text-body text-text tabular-nums">{r.t10}</td>
                 <td className="px-3 py-3">
                   <ModalCheckbox label="" />
                 </td>
@@ -1970,7 +1970,7 @@ function AltaClientesModal({
             type="button"
             onClick={() => setPeriodicidad("mensual")}
             className={`h-7 px-2.5 text-label transition-colors ${
-              periodicidad === "mensual" ? "bg-primary text-white" : "bg-surface text-gray-700 hover:bg-fill-muted"
+              periodicidad === "mensual" ? "bg-primary text-white" : "bg-surface text-text hover:bg-fill-muted"
             }`}
           >
             Mensual
@@ -1979,7 +1979,7 @@ function AltaClientesModal({
             type="button"
             onClick={() => setPeriodicidad("semestral")}
             className={`h-7 px-2.5 text-label border-l border-border-strong transition-colors ${
-              periodicidad === "semestral" ? "bg-primary text-white" : "bg-surface text-gray-700 hover:bg-fill-muted"
+              periodicidad === "semestral" ? "bg-primary text-white" : "bg-surface text-text hover:bg-fill-muted"
             }`}
           >
             Semestral
@@ -2117,7 +2117,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="border border-border rounded-md overflow-hidden" style={{ height: 160 }}>
             <div className="grid grid-cols-3 bg-fill-subtle border-b border-border">
               {["Campo 1", "Campo 2", "Campo 3"].map((c) => (
-                <div key={c} className="px-3 py-2 text-heading-xs uppercase tracking-[0.07em] text-gray-600">
+                <div key={c} className="px-3 py-2 text-heading-xs uppercase tracking-[0.07em] text-text-muted">
                   {c}
                 </div>
               ))}
@@ -2138,7 +2138,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
             >
               Elegir archivo
             </label>
-            <span className="text-body-sm text-gray-600 truncate">{fileName}</span>
+            <span className="text-body-sm text-text-muted truncate">{fileName}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -2146,21 +2146,21 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               <FieldLabel>Porcentaje 1</FieldLabel>
               <div className="flex items-center gap-2">
                 <input defaultValue="10" className={MOD_FIELD_CLS} style={{ width: 60 }} />
-                <span className="text-body-sm text-gray-600">Intervalo mayor a 48hs</span>
+                <span className="text-body-sm text-text-muted">Intervalo mayor a 48hs</span>
               </div>
             </div>
             <div>
               <FieldLabel>Distancia del reclamo</FieldLabel>
               <div className="flex items-center gap-2">
                 <input defaultValue="100" className={MOD_FIELD_CLS} style={{ width: 60 }} />
-                <span className="text-body-sm text-gray-600">Mts.</span>
+                <span className="text-body-sm text-text-muted">Mts.</span>
               </div>
             </div>
             <div>
               <FieldLabel>Porcentaje 2</FieldLabel>
               <div className="flex items-center gap-2">
                 <input defaultValue="10" className={MOD_FIELD_CLS} style={{ width: 60 }} />
-                <span className="text-body-sm text-gray-600">Intervalo menor a 48hs</span>
+                <span className="text-body-sm text-text-muted">Intervalo menor a 48hs</span>
               </div>
             </div>
           </div>
@@ -2178,7 +2178,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                   type="button"
                   onClick={() => setActiveTipo(t.key)}
                   className={`px-3 py-2 text-label border-b-2 transition-colors whitespace-nowrap ${
-                    activeTipo === t.key ? "border-primary text-secondary" : "border-transparent text-gray-600 hover:text-gray-700"
+                    activeTipo === t.key ? "border-primary text-secondary" : "border-transparent text-text-muted hover:text-text"
                   }`}
                 >
                   Tipo {t.key}
@@ -2220,7 +2220,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               ))}
             </div>
 
-            <div className="w-full h-8 px-2.5 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-gray-600 select-none">
+            <div className="w-full h-8 px-2.5 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-text-muted select-none">
               {tipoData.desc}
             </div>
           </div>
@@ -2307,14 +2307,14 @@ function IntercambioModal({
           <div className="border border-border rounded-md divide-y divide-border-subtle overflow-hidden">
             <div className="flex items-center justify-between gap-2 px-3 py-2">
               <span
-                className="text-code tabular-nums text-gray-800 truncate font-mono"
+                className="text-code tabular-nums text-text truncate font-mono"
               >
                 {referencia}
               </span>
               <ModalCheckbox label="" defaultChecked />
             </div>
             <div className="flex items-center justify-between gap-2 px-3 py-2">
-              <span className="text-body-sm text-gray-700">Reposición 1</span>
+              <span className="text-body-sm text-text">Reposición 1</span>
               <ModalCheckbox label="" defaultChecked />
             </div>
           </div>
@@ -2346,7 +2346,7 @@ function IntercambioModal({
               <thead>
                 <tr className="bg-fill-subtle border-b border-border">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
-                    <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 whitespace-nowrap">
+                    <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted whitespace-nowrap">
                       {c}
                     </th>
                   ))}
@@ -2372,17 +2372,17 @@ function IntercambioModal({
                   <tr>
                     <td colSpan={4}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                        <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                        <p className="text-heading-sm text-gray-600">No hay registros</p>
+                        <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                        <p className="text-heading-sm text-text-muted">No hay registros</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   leftRows.map((r, i) => (
                     <tr key={r.id} className="border-b border-border-subtle hover:bg-fill-muted transition-colors">
-                      <td className="px-3 py-2 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
-                      <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.clientes}</td>
-                      <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.repo}</td>
+                      <td className="px-3 py-2 text-body text-text whitespace-nowrap">{r.fecha}</td>
+                      <td className="px-3 py-2 text-body text-text tabular-nums">{r.clientes}</td>
+                      <td className="px-3 py-2 text-body text-text tabular-nums">{r.repo}</td>
                       <td className="px-2 py-2">
                         <div className="flex justify-center">
                           <ModalCheckbox label="" checked={leftChecked.has(i)} onChange={(c) => toggleLeftChecked(i, c)} />
@@ -2394,9 +2394,9 @@ function IntercambioModal({
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between text-body-sm text-gray-600">
+          <div className="flex items-center justify-between text-body-sm text-text-muted">
             <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Anterior</button>
-            <span>Página <span className="font-medium text-gray-800">1</span> de <span className="font-medium text-gray-800">1</span></span>
+            <span>Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">1</span></span>
             <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Siguiente</button>
           </div>
           <ModalCheckbox label="Ocultar existentes en ambas interrupciones" checked={ocultarExistentes} onChange={setOcultarExistentes} />
@@ -2428,7 +2428,7 @@ function IntercambioModal({
               <thead>
                 <tr className="bg-fill-subtle border-b border-border">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
-                    <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 whitespace-nowrap">
+                    <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted whitespace-nowrap">
                       {c}
                     </th>
                   ))}
@@ -2444,31 +2444,31 @@ function IntercambioModal({
                   <tr>
                     <td colSpan={3}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                        <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                        <p className="text-heading-sm text-gray-600">No hay registros</p>
+                        <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                        <p className="text-heading-sm text-text-muted">No hay registros</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   rightRows.map((r) => (
                     <tr key={r.id} className="border-b border-border-subtle hover:bg-fill-muted transition-colors">
-                      <td className="px-3 py-2 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
-                      <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.clientes}</td>
-                      <td className="px-3 py-2 text-body text-gray-700 tabular-nums">{r.repo}</td>
+                      <td className="px-3 py-2 text-body text-text whitespace-nowrap">{r.fecha}</td>
+                      <td className="px-3 py-2 text-body text-text tabular-nums">{r.clientes}</td>
+                      <td className="px-3 py-2 text-body text-text tabular-nums">{r.repo}</td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between text-body-sm text-gray-600">
+          <div className="flex items-center justify-between text-body-sm text-text-muted">
             <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Anterior</button>
-            <span>Página <span className="font-medium text-gray-800">1</span> de <span className="font-medium text-gray-800">1</span></span>
+            <span>Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">1</span></span>
             <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Siguiente</button>
           </div>
           <div className="relative">
             <input placeholder="Buscar destino" className={MOD_FIELD_CLS} style={{ paddingRight: 36 }} />
-            <span className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center text-gray-600">
+            <span className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center text-icon">
               <Search size={15} strokeWidth={1.5} />
             </span>
           </div>
@@ -2496,8 +2496,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   }
 
   const inputCls = "w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-border-strong rounded-sm bg-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
-  const inputStyle: React.CSSProperties = { color: "var(--color-gray-900)", letterSpacing: "0.14px" };
-  const labelStyle: React.CSSProperties = { color: "var(--color-gray-700)", letterSpacing: "0.14px" };
+  const inputStyle: React.CSSProperties = { letterSpacing: "0.14px" };
+  const labelStyle: React.CSSProperties = { letterSpacing: "0.14px" };
 
   return (
     <div className="relative w-full h-screen overflow-hidden flex">
@@ -2526,23 +2526,23 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             {/* Header */}
             <div className="flex flex-col gap-[8px] [@media(max-height:760px)]:gap-[var(--login-header-gap,8px)] shrink-0">
               <p className="font-sans text-heading-lg" style={{ color: "var(--color-secondary)" }}>Bienvenido </p>
-              <p className="font-sans text-body-lg" style={{ color: "var(--color-gray-700)", letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
+              <p className="font-sans text-body-lg text-text" style={{ letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
             </div>
 
             {/* Inputs */}
             <div className="flex flex-col shrink-0" style={{ marginTop: "var(--login-inputs-mt, 24px)", gap: "var(--login-inputs-gap, 32px)" }}>
               <div className="flex flex-col gap-[4px]">
-                <label className="font-sans text-body-lg" style={labelStyle}>Usuario</label>
-                <input type="text" autoComplete="username" value={usuario} onChange={e => { setUsuario(e.target.value); setError(""); }} className={inputCls + " font-sans text-body-lg"} style={inputStyle} />
+                <label className="font-sans text-body-lg text-text" style={labelStyle}>Usuario</label>
+                <input type="text" autoComplete="username" value={usuario} onChange={e => { setUsuario(e.target.value); setError(""); }} className={inputCls + " font-sans text-body-lg text-text"} style={inputStyle} />
               </div>
               <div className="flex flex-col gap-[4px]">
-                <label className="font-sans text-body-lg" style={labelStyle}>Contraseña</label>
-                <input type="password" autoComplete="current-password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} className={inputCls + " font-sans text-body-lg"} style={inputStyle} />
+                <label className="font-sans text-body-lg text-text" style={labelStyle}>Contraseña</label>
+                <input type="password" autoComplete="current-password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} className={inputCls + " font-sans text-body-lg text-text"} style={inputStyle} />
               </div>
             </div>
 
             {error && (
-              <p className="mt-3 shrink-0 text-body-sm text-error bg-red-50 border border-red-200 rounded-sm px-3 py-2">{error}</p>
+              <p className="mt-3 shrink-0 text-body-sm text-error-text-strong bg-red-50 border border-red-200 rounded-sm px-3 py-2">{error}</p>
             )}
 
             {/* Button */}
@@ -2565,7 +2565,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
             {/* Footer */}
             <div className="shrink-0 text-center">
-              <p className="font-sans text-body-sm" style={{ letterSpacing: "1px", color: "#000" }}>© Desarrollos propios 2026</p>
+              <p className="font-sans text-body-sm text-text-muted" style={{ letterSpacing: "1px" }}>© Desarrollos propios 2026</p>
             </div>
           </form>
         </div>
@@ -2602,8 +2602,8 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
       <div className="w-full max-w-[520px] px-6">
         {/* Header */}
         <div className="mb-6 pb-5 border-b border-border">
-          <h1 className="text-heading-lg text-gray-900 mb-1">Bienvenido a SISENRE</h1>
-          <p className="text-body-lg text-gray-600">Seleccioná con qué herramienta comenzarás a trabajar</p>
+          <h1 className="text-heading-lg text-text mb-1">Bienvenido a SISENRE</h1>
+          <p className="text-body-lg text-text-muted">Seleccioná con qué herramienta comenzarás a trabajar</p>
         </div>
 
         {/* Options */}
@@ -2625,16 +2625,13 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-heading-md text-gray-900 group-enabled:group-hover:text-secondary transition-colors mb-0.5">{opt.title}</p>
-                    <p className="text-body text-gray-600">{opt.desc}</p>
+                    <p className="text-heading-md text-text group-enabled:group-hover:text-secondary transition-colors mb-0.5">{opt.title}</p>
+                    <p className="text-body text-text-muted">{opt.desc}</p>
                   </div>
                   {!opt.disabled && (
                     <span
-                      className="shrink-0 ml-4 transition-transform duration-150"
-                      style={{
-                        color: isHov ? "var(--color-primary)" : "var(--color-gray-400)",
-                        transform: isHov ? "translateX(3px)" : "none",
-                      }}
+                      className="shrink-0 ml-4 text-icon group-enabled:group-hover:text-secondary transition-all duration-150"
+                      style={{ transform: isHov ? "translateX(3px)" : "none" }}
                     >
                       <ChevronRight size={16} strokeWidth={1.5} />
                     </span>
@@ -2645,7 +2642,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
           })}
         </div>
 
-        <p className="text-center text-caption text-gray-500 mt-8">© Desarrollos propios 2026</p>
+        <p className="text-center text-caption text-text-muted mt-8">© Desarrollos propios 2026</p>
       </div>
     </div>
   );
@@ -2674,10 +2671,10 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="h-8 px-2.5 flex items-center gap-1.5 border border-border-strong rounded-sm bg-surface text-label text-gray-900 hover:border-primary hover:text-secondary transition-colors"
+        className="h-8 px-2.5 flex items-center gap-1.5 border border-border-strong rounded-sm bg-surface text-label text-text hover:border-primary hover:text-secondary transition-colors"
       >
         {value}
-        <span className="text-gray-500"><Calendar size={15} strokeWidth={1.5} /></span>
+        <span className="text-icon"><Calendar size={15} strokeWidth={1.5} /></span>
       </button>
       {open && (
         <div
@@ -2784,7 +2781,7 @@ function CronogramaEnre() {
         <div className="shrink-0" style={{ width: CAL_WIDTH }}>
           <div className="grid gap-[3px] mb-1" style={{ gridTemplateColumns: `repeat(7, ${CAL_CELL}px)` }}>
             {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
-              <span key={i} className="text-caption text-center text-gray-400">{d}</span>
+              <span key={i} className="text-caption text-center text-text-muted">{d}</span>
             ))}
           </div>
           <div className="grid gap-[3px]" style={{ gridTemplateColumns: `repeat(7, ${CAL_CELL}px)`, gridTemplateRows: `repeat(${totalFilas}, 30px)` }}>
@@ -2795,7 +2792,7 @@ function CronogramaEnre() {
               const etapa = esFinDeSemana ? null : etapaReal;
               const esHoy = c.dia === HOY;
 
-              let clase = claseCeldaBase + " border-transparent bg-fill-muted text-gray-500";
+              let clase = claseCeldaBase + " border-transparent bg-fill-muted text-text-muted";
               let estiloExtra: React.CSSProperties = {};
               if (etapa === "entrega") {
                 clase = claseCeldaBase + " bg-primary-tint border-primary text-secondary";
@@ -2829,39 +2826,39 @@ function CronogramaEnre() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <span className="shrink-0 rounded-xs" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.entrega }} />
-              <span className="text-body-sm text-gray-600 flex-1 min-w-0">Entrega de tablas</span>
-              <span className="text-label text-gray-900 shrink-0">{diaEntrega} de {nombreMesEntrega}</span>
+              <span className="text-body-sm text-text-muted flex-1 min-w-0">Entrega de tablas</span>
+              <span className="text-label text-text shrink-0">{diaEntrega} de {nombreMesEntrega}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="shrink-0 rounded-xs" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.correccion }} />
-              <span className="text-body-sm text-gray-600 flex-1 min-w-0">Ventana de corrección</span>
-              <span className="text-label text-gray-900 shrink-0">
+              <span className="text-body-sm text-text-muted flex-1 min-w-0">Ventana de corrección</span>
+              <span className="text-label text-text shrink-0">
                 {hayCorreccion ? `${correccionDesde} – ${correccionHasta} de ${nombreMesEntrega}` : "—"}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="shrink-0 rounded-xs" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.tentativa }} />
-              <span className="text-body-sm text-gray-600 flex-1 min-w-0">Entrega tentativa final</span>
-              <span className="text-label text-gray-900 shrink-0">{diaTentativa} de {nombreMesEntrega}</span>
+              <span className="text-body-sm text-text-muted flex-1 min-w-0">Entrega tentativa final</span>
+              <span className="text-label text-text shrink-0">{diaTentativa} de {nombreMesEntrega}</span>
             </div>
           </div>
 
           <div className="border-t border-border my-3" />
 
-          <p className="text-heading-xs uppercase tracking-[0.07em] text-gray-600 mb-2">Fechas clave</p>
+          <p className="text-heading-xs uppercase tracking-[0.07em] text-text-muted mb-2">Fechas clave</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <FieldLabel>Entrega de tablas</FieldLabel>
               <div className="flex items-center gap-1.5">
                 <DiaDelMesField value={diaEntrega} onChange={setDiaEntrega} anio={ANIO_ENTREGA} mes={MES_ENTREGA} />
-                <span className="text-body-sm text-gray-600 truncate">de {nombreMesEntrega}</span>
+                <span className="text-body-sm text-text-muted truncate">de {nombreMesEntrega}</span>
               </div>
             </div>
             <div>
               <FieldLabel>Entrega tentativa</FieldLabel>
               <div className="flex items-center gap-1.5">
                 <DiaDelMesField value={diaTentativa} onChange={setDiaTentativa} anio={ANIO_ENTREGA} mes={MES_ENTREGA} />
-                <span className="text-body-sm text-gray-600 truncate">de {nombreMesEntrega}</span>
+                <span className="text-body-sm text-text-muted truncate">de {nombreMesEntrega}</span>
               </div>
             </div>
           </div>
@@ -2883,13 +2880,13 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
     <div className="flex-1 overflow-y-auto px-10 py-10">
       {/* Greeting */}
       <div className="mb-8">
-        <p className="text-heading-xs uppercase tracking-widest text-gray-500 mb-1">SISENRE 2.0 · Agosto 2026</p>
-        <h2 className="text-heading-lg text-gray-900">Buenos días, Rdellamagiora</h2>
-        <p className="text-body-lg text-gray-600 mt-1">Seleccioná una sección del menú o usá los accesos rápidos para comenzar.</p>
+        <p className="text-heading-xs uppercase tracking-widest text-text-muted mb-1">SISENRE 2.0 · Agosto 2026</p>
+        <h2 className="text-heading-lg text-text">Buenos días, Rdellamagiora</h2>
+        <p className="text-body-lg text-text-muted mt-1">Seleccioná una sección del menú o usá los accesos rápidos para comenzar.</p>
       </div>
 
       {/* Quick access */}
-      <p className="text-heading-xs uppercase tracking-[0.09em] text-gray-500 mb-3">Accesos frecuentes</p>
+      <p className="text-heading-xs uppercase tracking-[0.09em] text-text-muted mb-3">Accesos frecuentes</p>
       <div className="grid grid-cols-2 gap-4 mb-8" style={{ maxWidth: 760 }}>
         {quickLinks.map((item) => (
           <div
@@ -2901,14 +2898,14 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
               <span className="mt-0.5 text-primary shrink-0">{item.icon}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-heading-md text-gray-900 group-hover:text-secondary transition-colors">{item.label}</p>
+                  <p className="text-heading-md text-text group-hover:text-secondary transition-colors">{item.label}</p>
                   <span
-                    className="text-caption font-mono px-1.5 py-0.5 rounded-xs border border-border-strong text-gray-600"
+                    className="text-caption font-mono px-1.5 py-0.5 rounded-xs border border-border-strong text-text-muted"
                   >
                     {item.code}
                   </span>
                 </div>
-                <p className="text-body-sm text-gray-600">{item.desc}</p>
+                <p className="text-body-sm text-text-muted">{item.desc}</p>
               </div>
             </div>
           </div>
@@ -2916,7 +2913,7 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
       </div>
 
       {/* Cronograma ENRE */}
-      <p className="text-heading-xs uppercase tracking-[0.09em] text-gray-500 mb-3">Cronograma ENRE</p>
+      <p className="text-heading-xs uppercase tracking-[0.09em] text-text-muted mb-3">Cronograma ENRE</p>
       <CronogramaEnre />
     </div>
   );
@@ -2933,8 +2930,8 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-heading-xs uppercase tracking-[0.05em] text-gray-600 mb-1 truncate">{label}</p>
-      <div className="h-7 px-2 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-gray-700 truncate">
+      <p className="text-heading-xs uppercase tracking-[0.05em] text-text-muted mb-1 truncate">{label}</p>
+      <div className="h-7 px-2 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-text truncate">
         {value || " "}
       </div>
     </div>
@@ -3097,12 +3094,12 @@ function ConfirmarBorrarModal({
         </>
       }
     >
-      <p className="text-body text-gray-700">
+      <p className="text-body text-text">
         Se eliminará el registro{" "}
-        <span className="text-code font-medium text-gray-900 tabular-nums font-mono">
+        <span className="text-code font-medium text-text tabular-nums font-mono">
           {registro}
         </span>
-        {" "}de <span className="font-medium text-gray-900">{tabla}</span>. Esta acción no se puede deshacer.
+        {" "}de <span className="font-medium text-text">{tabla}</span>. Esta acción no se puede deshacer.
       </p>
     </Modal>
   );
@@ -3158,17 +3155,17 @@ function ConfirmarModificarModal({
     >
       <div className="flex flex-col gap-5">
         <div>
-          <p className="text-heading-xs uppercase tracking-[0.07em] text-gray-600 mb-3">Resumen de cambios</p>
+          <p className="text-heading-xs uppercase tracking-[0.07em] text-text-muted mb-3">Resumen de cambios</p>
           {cambios.length === 0 ? (
-            <p className="text-body-sm text-gray-500">No se detectaron cambios respecto al registro original.</p>
+            <p className="text-body-sm text-text-muted">No se detectaron cambios respecto al registro original.</p>
           ) : (
             <div className="flex flex-col gap-2">
               {cambios.map((c) => (
                 <div key={c.label} className="flex items-center gap-3 px-3 py-2 rounded-sm bg-fill-subtle border border-border">
-                  <span className="w-[38%] shrink-0 text-label text-gray-700">{c.label}</span>
-                  <span className="flex-1 min-w-0 text-body-sm text-gray-500 line-through truncate">{c.anterior || "(vacío)"}</span>
-                  <span className="shrink-0 text-gray-400">→</span>
-                  <span className="flex-1 min-w-0 text-label text-gray-900 truncate">{c.nuevo || "(vacío)"}</span>
+                  <span className="w-[38%] shrink-0 text-label text-text">{c.label}</span>
+                  <span className="flex-1 min-w-0 text-body-sm text-text-muted line-through truncate">{c.anterior || "(vacío)"}</span>
+                  <span className="shrink-0 text-text-faint">→</span>
+                  <span className="flex-1 min-w-0 text-label text-text truncate">{c.nuevo || "(vacío)"}</span>
                 </div>
               ))}
             </div>
@@ -3177,7 +3174,7 @@ function ConfirmarModificarModal({
 
         <div className="rounded-md border border-primary bg-primary-tint p-4">
           <p className="text-heading-xs uppercase tracking-[0.07em] text-secondary mb-1">Motivo</p>
-          <p className="text-body-sm text-gray-600 mb-3">
+          <p className="text-body-sm text-text-muted mb-3">
             Seleccioná una nota o ingresá una manual para justificar este cambio.
           </p>
           <ButtonSelectGroup
@@ -3191,7 +3188,7 @@ function ConfirmarModificarModal({
               value={notaManual}
               onChange={(e) => setNotaManual(e.target.value)}
               placeholder="Escribí el motivo de la modificación"
-              className="mt-2 w-full h-9 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10"
+              className="mt-2 w-full h-9 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10"
             />
           )}
         </div>
@@ -3208,11 +3205,11 @@ const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
 // Modificar, Alta/Búsqueda ABM y ValuePicker comparten estas dos (antes
 // existían por separado como inputCls/selectCls, ya unificadas acá).
 const MOD_FIELD_CLS =
-  "w-full h-8 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-gray-900 " +
-  "placeholder:text-gray-500 focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150";
+  "w-full h-8 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text " +
+  "placeholder:text-text-muted focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150";
 
 const MOD_SELECT_CLS =
-  "h-8 px-2.5 pr-7 text-body bg-surface border border-border-strong rounded-sm text-gray-900 appearance-none " +
+  "h-8 px-2.5 pr-7 text-body bg-surface border border-border-strong rounded-sm text-text appearance-none " +
   "cursor-pointer focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150 shrink-0";
 
 // Campos del flyout "Más filtros" de la Card A. Cada uno se puede aplicar,
@@ -3514,7 +3511,7 @@ const DRAWER_TAB_TO_ABM: Partial<Record<string, { tableKey: AbmTableKey; campoCo
 function CodeBadge({ code }: { code: string }) {
   return (
     <span
-      className="text-caption px-1.5 py-0.5 rounded-xs border border-border-strong text-gray-600 shrink-0 font-mono"
+      className="text-caption px-1.5 py-0.5 rounded-xs border border-border-strong text-text-muted shrink-0 font-mono"
     >
       {code}
     </span>
@@ -3559,13 +3556,13 @@ function CardHeader({
   const sizeCls = size === "compact" ? "h-14 [@media(max-height:760px)]:h-auto [@media(max-height:760px)]:py-2" : "h-14";
   return (
     <div className={`${sizeCls} px-5 border-b border-border bg-surface shrink-0 flex items-center gap-2`}>
-      <span className="text-heading-md text-gray-900">{title}</span>
+      <span className="text-heading-md text-text">{title}</span>
       {tag && <CodeBadge code={tag} />}
       {context && (
         <>
-          <span className="text-gray-400">·</span>
-          <span className="text-heading-xs uppercase tracking-[0.08em] text-gray-500">{context.label}</span>
-          <span className="text-code text-gray-800 tabular-nums font-mono">{context.value}</span>
+          <span className="text-text-faint">·</span>
+          <span className="text-heading-xs uppercase tracking-[0.08em] text-text-muted">{context.label}</span>
+          <span className="text-code text-text tabular-nums font-mono">{context.value}</span>
         </>
       )}
       {right && <div className="ml-auto shrink-0">{right}</div>}
@@ -3666,7 +3663,7 @@ function ReposicionesTable({
             {cols.map((c, ci) => (
               <th
                 key={c}
-                className={`sticky top-0 z-10 bg-fill-subtle-solid px-3 py-2 border-b border-border text-heading-xs uppercase tracking-[0.06em] text-gray-600 whitespace-nowrap ${
+                className={`sticky top-0 z-10 bg-fill-subtle-solid px-3 py-2 border-b border-border text-heading-xs uppercase tracking-[0.06em] text-text-muted whitespace-nowrap ${
                   ci === cols.length - 1 ? "text-right" : "text-left"
                 }`}
               >
@@ -3680,8 +3677,8 @@ function ReposicionesTable({
             <tr>
               <td colSpan={cols.length}>
                 <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
-                  <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                  <p className="text-body-sm text-gray-500">Sin reposiciones registradas</p>
+                  <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                  <p className="text-body-sm text-text-muted">Sin reposiciones registradas</p>
                 </div>
               </td>
             </tr>
@@ -3690,7 +3687,7 @@ function ReposicionesTable({
               const seleccionada = selectedIndex === ri;
               const esUltima = ri === rows.length - 1;
               const tdCls = `px-3 py-2 ${esUltima ? "" : "border-b border-border-subtle"}`;
-              const textCls = seleccionada ? "text-secondary font-medium" : "text-gray-700";
+              const textCls = seleccionada ? "text-secondary font-medium" : "text-text";
               return (
                 <tr
                   key={ri}
@@ -3709,10 +3706,10 @@ function ReposicionesTable({
                   <td className={`${tdCls} text-body-sm tabular-nums whitespace-nowrap ${textCls}`}>{fila.horaRep}</td>
                   <td className={`${tdCls} text-code font-mono tabular-nums whitespace-nowrap ${textCls}`}>{fila.fase}</td>
                   <td className={`${tdCls} max-w-[220px]`}>
-                    <div className={`text-code font-mono tabular-nums truncate ${seleccionada ? "text-secondary" : "text-gray-800"}`}>
+                    <div className={`text-code font-mono tabular-nums truncate ${seleccionada ? "text-secondary" : "text-text"}`}>
                       {fila.equipoCodigo}
                     </div>
-                    <div className={`text-caption truncate ${seleccionada ? "text-gray-600" : "text-gray-500"}`} title={fila.equipoDesc}>
+                    <div className={`text-caption truncate ${seleccionada ? "text-text-muted" : "text-text-muted"}`} title={fila.equipoDesc}>
                       {fila.equipoDesc}
                     </div>
                   </td>
@@ -3767,13 +3764,13 @@ function RelacionadaChip({
   }
   const baseCls = "inline-flex flex-col items-start px-[14px] py-[6px] rounded-md border text-left";
   const etiqueta = (
-    <span className="text-caption tracking-[0.05em] whitespace-nowrap text-gray-500">{label}</span>
+    <span className="text-caption tracking-[0.05em] whitespace-nowrap text-text-muted">{label}</span>
   );
   if (!conContenido) {
     return (
       <div className={`${baseCls} border-dashed border-border bg-transparent cursor-default`}>
         {etiqueta}
-        <span className="w-0 min-w-full text-body-lg whitespace-nowrap text-gray-500">{valor}</span>
+        <span className="w-0 min-w-full text-body-lg whitespace-nowrap text-text-muted">{valor}</span>
       </div>
     );
   }
@@ -4000,15 +3997,15 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
   const bandaFin = xs.length ? Math.min(x1, (saturado ? px(resumen!.p80) : xs[indiceP80]) + g.hitoW / 2 + 4) : x0;
   const rotuloX = Math.min(bandaX + 6, x1 - 112);
 
-  const kLabel = "block text-caption tracking-[0.05em] text-gray-500 mb-[3px]";
+  const kLabel = "block text-caption tracking-[0.05em] text-text-muted mb-[3px]";
   const kValor = "text-heading-md text-secondary tabular-nums";
-  const kSufijo = "text-caption text-gray-600";
+  const kSufijo = "text-caption text-text-muted";
 
   const contenido = (
     <>
       {/* Header: label + chip DURACIÓN */}
       <div className="flex items-center justify-between gap-[12px] mb-[14px]">
-        <span className="text-caption tracking-[0.06em] text-gray-600">RECLAMOS DURANTE LA INTERRUPCIÓN</span>
+        <span className="text-caption tracking-[0.06em] text-text-muted">RECLAMOS DURANTE LA INTERRUPCIÓN</span>
         {resumen && <ChipDuracion minutos={resumen.duracionMin} />}
       </div>
 
@@ -4063,7 +4060,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
             {hayBanda && (
               <>
                 <rect x={bandaX} y={g.bandaY} width={Math.max(0, bandaFin - bandaX)} height={g.bandaH} rx={4} fill={`url(#${idBase}-banda)`} />
-                <text x={rotuloX} y={g.rotuloY} letterSpacing="0.04em" className="text-caption fill-[color-mix(in_srgb,var(--color-primary)_60%,var(--color-gray-500))]">
+                <text x={rotuloX} y={g.rotuloY} letterSpacing="0.04em" className="text-caption fill-text-muted">
                   80% DE LOS RECLAMOS
                 </text>
               </>
@@ -4101,27 +4098,27 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
               marcasHora(datos!.inicio, resumen.duracionMin, px, x0, x1).map((t) => (
                 <g key={t}>
                   <line x1={px(t)} x2={px(t)} y1={g.pistaY + g.pistaH + 2} y2={g.pistaY + g.pistaH + 6} strokeWidth={1} className="stroke-gray-400" />
-                  <text x={px(t)} y={g.ejeY!} textAnchor="middle" className="text-caption fill-gray-700 tabular-nums">
+                  <text x={px(t)} y={g.ejeY!} textAnchor="middle" className="text-caption fill-text-muted tabular-nums">
                     {fmtHoraCorta(new Date(datos!.inicio.getTime() + t * 60000), conDia)}
                   </text>
                 </g>
               ))}
           </svg>
         ) : (
-          <div className="h-full flex items-center text-body-sm text-gray-600">
+          <div className="h-full flex items-center text-body-sm text-text-muted">
             {!datos ? "Seleccioná una interrupción" : resumen && total === 0 ? "Sin reclamos registrados" : ""}
           </div>
         )}
       </div>
 
       {/* Footer: INICIO / FIN */}
-      <div className="flex justify-between text-caption text-gray-700 mt-[7px] tabular-nums">
+      <div className="flex justify-between text-caption text-text mt-[7px] tabular-nums">
         <span>
-          <span className="block text-caption tracking-[0.05em] text-gray-400 mb-[1px]">INICIO</span>
+          <span className="block text-caption tracking-[0.05em] text-text-muted mb-[1px]">INICIO</span>
           {datos ? fmtFechaHora(datos.inicio) : "—"}
         </span>
         <span className="text-right">
-          <span className="block text-caption tracking-[0.05em] text-gray-400 mb-[1px]">FIN</span>
+          <span className="block text-caption tracking-[0.05em] text-text-muted mb-[1px]">FIN</span>
           {datos ? fmtFechaHora(datos.fin) : "—"}
         </span>
       </div>
@@ -4222,7 +4219,7 @@ function ReclamosResumenCompacto({
             onClick={onClick}
             aria-label="Abrir datos de la interrupción"
             title={habilitada ? "Ver datos de la interrupción" : "Seleccioná una interrupción"}
-            className="flex items-center text-gray-500 cursor-pointer disabled:cursor-not-allowed focus-visible:outline-none after:absolute after:inset-0"
+            className="flex items-center text-icon cursor-pointer disabled:cursor-not-allowed focus-visible:outline-none after:absolute after:inset-0"
           >
             <ChevronRight size={14} strokeWidth={1.5} aria-hidden />
           </button>
@@ -4235,7 +4232,7 @@ function ReclamosResumenCompacto({
       <div className="grid grid-cols-4 px-5 py-4">
         {columnas.map((c, i) => (
           <span key={`l-${c.etiqueta}`} className={`min-w-0 self-end pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-border"}`}>
-            <span className="block text-caption tracking-[0.05em] text-gray-500 group-data-[habilitada]:group-hover:text-secondary">{c.etiqueta}</span>
+            <span className="block text-caption tracking-[0.05em] text-text-muted group-data-[habilitada]:group-hover:text-secondary">{c.etiqueta}</span>
           </span>
         ))}
         {columnas.map((c, i) => (
@@ -4274,7 +4271,7 @@ function FaseIndicador({ fase }: { fase: string }) {
             key={letra}
             aria-hidden="true"
             className={`w-[18px] h-[18px] flex items-center justify-center rounded-xs border text-caption font-mono ${
-              presente ? "bg-primary-tint border-chip-border text-secondary" : "border-border text-gray-300"
+              presente ? "bg-primary-tint border-chip-border text-secondary" : "border-border text-text-faint"
             }`}
           >
             {letra}
@@ -4343,7 +4340,7 @@ function FaseReposicionFicha({
   // TODO: definir contenido y formato del copiado (pendiente de definición)
   function handleCopiarDatosReposicion() {}
 
-  const sep = <span className="text-gray-400">·</span>;
+  const sep = <span className="text-text-faint">·</span>;
   return (
     // Wrapper px-5 py-3 (el de antes: mismo margen horizontal que el resto
     // del modal y misma separación con los tabs) + contenedor único con
@@ -4356,30 +4353,30 @@ function FaseReposicionFicha({
         className={`border border-border rounded-md px-4 py-2.5 flex items-center gap-3 transition-colors duration-300 ${flash ? "bg-primary-tint" : "bg-surface"}`}
       >
       <div className="flex items-center flex-wrap gap-x-2 gap-y-1 min-w-0 text-body-sm">
-        <span className="font-semibold text-gray-900 whitespace-nowrap">Reposición {fila.nro}</span>
+        <span className="font-semibold text-text whitespace-nowrap">Reposición {fila.nro}</span>
         <CodeBadge code="CDS4" />
         {sep}
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-          <span className="text-gray-500"><Clock size={14} strokeWidth={1.5} /></span>
-          <span className="text-gray-700 tabular-nums">{fila.horaRep}</span>
+          <span className="text-icon"><Clock size={14} strokeWidth={1.5} /></span>
+          <span className="text-text tabular-nums">{fila.horaRep}</span>
         </span>
         {sep}
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-          <span className="text-gray-500">Fase</span>
+          <span className="text-text-muted">Fase</span>
           <FaseIndicador fase={fila.fase} />
         </span>
         {sep}
         <span className="inline-flex items-center gap-1.5 min-w-0">
-          <span className="text-code font-mono text-gray-700">{fila.equipoCodigo}</span>
-          <span className="text-gray-500 truncate max-w-[220px]" title={fila.equipoDesc}>
+          <span className="text-code font-mono text-text">{fila.equipoCodigo}</span>
+          <span className="text-text-muted truncate max-w-[220px]" title={fila.equipoDesc}>
             {fila.equipoDesc}
           </span>
         </span>
         {sep}
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-          <span className="text-gray-500"><Users size={14} strokeWidth={1.5} /></span>
-          <span className="text-gray-700 font-medium tabular-nums">{fila.usuariosBT}</span>
-          <span className="text-gray-500">usuarios BT</span>
+          <span className="text-icon"><Users size={14} strokeWidth={1.5} /></span>
+          <span className="text-text font-medium tabular-nums">{fila.usuariosBT}</span>
+          <span className="text-text-muted">usuarios BT</span>
         </span>
         {/* Sin borde en reposo, hover secundario de la app. Hoy no copia
             nada (handler vacío, ver TODO arriba) y por eso tampoco tiene
@@ -4389,22 +4386,22 @@ function FaseReposicionFicha({
           onClick={handleCopiarDatosReposicion}
           aria-label="Copiar datos de la reposición"
           title="Copiar datos de la reposición"
-          className="w-8 h-8 flex items-center justify-center rounded-sm border border-transparent text-gray-600 hover:bg-primary-tint hover:border-primary hover:text-secondary focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 transition-all shrink-0"
+          className="w-8 h-8 flex items-center justify-center rounded-sm border border-transparent text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 transition-all shrink-0"
         >
           <ClipboardList size={14} strokeWidth={1.5} />
         </button>
       </div>
       {totalReposiciones > 1 && (
         <div className="ml-auto self-start shrink-0 flex items-center gap-1">
-          <span className="text-caption text-gray-600 tabular-nums mr-1">
-            <span className="font-semibold text-gray-700">{reposicionIndex + 1}</span> de {totalReposiciones}
+          <span className="text-caption text-text-muted tabular-nums mr-1">
+            <span className="font-semibold text-text">{reposicionIndex + 1}</span> de {totalReposiciones}
           </span>
           <button
             type="button"
             onClick={() => onChangeReposicion(reposicionIndex - 1)}
             disabled={reposicionIndex <= 0}
             aria-label="Reposición anterior"
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             <ChevronLeft size={14} strokeWidth={1.5} />
           </button>
@@ -4413,7 +4410,7 @@ function FaseReposicionFicha({
             onClick={() => onChangeReposicion(reposicionIndex + 1)}
             disabled={reposicionIndex >= totalReposiciones - 1}
             aria-label="Reposición siguiente"
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             <ChevronRight size={14} strokeWidth={1.5} />
           </button>
@@ -4470,7 +4467,7 @@ function UnderlineTabs({
             // alineado al borde de contenido del contenedor (px-5), en la
             // misma vertical que el resto del contenido del modal.
             className={`h-10 min-w-24 px-4 first:-ml-4 text-body border-b-2 -mb-px transition-colors ${
-              active ? "border-primary text-secondary font-medium" : "border-transparent text-gray-600 hover:bg-fill-muted"
+              active ? "border-primary text-secondary font-medium" : "border-transparent text-text-muted hover:bg-fill-muted"
             }`}
           >
             {opt.label}
@@ -4542,9 +4539,9 @@ function CopyButton({ value, label }: { value: string; label: string }) {
         onClick={handleCopy}
         aria-label={`Copiar ${label}`}
         title={copied ? "Copiada" : `Copiar ${label}`}
-        className="w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all shrink-0"
+        className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all shrink-0"
       >
-        {copied ? <Check size={14} strokeWidth={1.5} className="text-success" /> : <Copy size={14} strokeWidth={1.5} />}
+        {copied ? <Check size={14} strokeWidth={1.5} className="text-success-text-strong" /> : <Copy size={14} strokeWidth={1.5} />}
       </button>
       <span className="sr-only" aria-live="polite">{copied ? `${labelCapitalizado} copiada` : ""}</span>
     </>
@@ -4583,11 +4580,11 @@ function ButtonSelectGroup({
             className={`${sizeCls} border transition-all duration-150 shrink-0 ${
               disabled
                 ? isSel
-                  ? "bg-primary-tint/60 border-primary/50 text-secondary/80 cursor-not-allowed"
-                  : "bg-fill-muted border-border text-gray-400 cursor-not-allowed"
+                  ? "bg-primary-tint/60 border-primary/50 text-text-faint cursor-not-allowed"
+                  : "bg-fill-muted border-border text-text-faint cursor-not-allowed"
                 : isSel
                 ? "bg-primary-tint border-primary text-secondary"
-                : "bg-surface border-border-strong text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]"
+                : "bg-surface border-border-strong text-text hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]"
             }`}
           >
             {opt}
@@ -4646,7 +4643,7 @@ function PersistentActionsBar({
         disabled={a.disabled}
         onClick={() => { a.onClick?.(); setOpen(false); }}
         className={`w-full flex items-center px-2.5 py-2 rounded-sm text-left text-body transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none ${
-          a.variant === "destructive" ? "text-error hover:bg-red-50" : "text-gray-700 hover:bg-fill-muted"
+          a.variant === "destructive" ? "text-error hover:text-error-text-strong hover:bg-red-50" : "text-text hover:bg-fill-muted"
         }`}
       >
         {a.label}
@@ -5002,7 +4999,7 @@ function ModificarContent({
       className={`${BTN_MD} border flex items-center gap-1.5 transition-all duration-150 ${
         activeFlyoutFields.length > 0
           ? "bg-primary-tint border-primary text-secondary"
-          : "bg-surface border-border-strong text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
+          : "bg-surface border-border-strong text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
       }`}
     >
       <Filter size={14} strokeWidth={1.5} />
@@ -5029,7 +5026,7 @@ function ModificarContent({
           setFaseSel("");
         }}
         disabled={!modShowData}
-        className={`${BTN_MD} border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
+        className={`${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
       >Limpiar</button>
       <button
         type="button"
@@ -5062,7 +5059,7 @@ function ModificarContent({
             <input
               disabled={hasSelection}
               placeholder={`Ej: ${RECORD.referencia}`}
-              className={MOD_FIELD_CLS + " !text-code font-mono" + (hasSelection ? " !bg-fill-subtle !text-gray-900" : "") + " [@media(max-height:760px)]:!w-[112px]"}
+              className={MOD_FIELD_CLS + " !text-code font-mono" + (hasSelection ? " !bg-fill-subtle !text-text" : "") + " [@media(max-height:760px)]:!w-[112px]"}
               style={{ width: 190, flexShrink: 0 }}
               value={codigoBusqueda}
               onChange={(e) => setCodigoBusqueda(e.target.value)}
@@ -5078,7 +5075,7 @@ function ModificarContent({
 
             <ValuePicker
               isDisabled={hasSelection}
-              triggerExtraClassName={hasSelection ? " !bg-fill-subtle !text-gray-900" : ""}
+              triggerExtraClassName={hasSelection ? " !bg-fill-subtle !text-text" : ""}
               triggerStyle={{ fontWeight: nivelSel ? 600 : 400 }}
               value={nivelSel}
               onChange={setNivelSel}
@@ -5089,7 +5086,7 @@ function ModificarContent({
 
             <ValuePicker
               isDisabled={hasSelection}
-              triggerExtraClassName={hasSelection ? " !bg-fill-subtle !text-gray-900" : ""}
+              triggerExtraClassName={hasSelection ? " !bg-fill-subtle !text-text" : ""}
               value={faseSel}
               onChange={setFaseSel}
               opts={["R", "S", "T", "RS", "RT", "ST", "RST"]}
@@ -5103,7 +5100,7 @@ function ModificarContent({
                 <select> nativo (ver más abajo): ocupan menos ancho por lo
                 que aportan, justo lo que le faltaba a esta fila. */}
             <div className="contents [@media(max-height:760px)]:hidden">
-              <span className="text-heading-xs uppercase tracking-[0.08em] text-gray-500 shrink-0">Origen</span>
+              <span className="text-heading-xs uppercase tracking-[0.08em] text-text-muted shrink-0">Origen</span>
               <ButtonSelectGroup
                 options={["Interno", "Externo"]}
                 selected={origenSel ? [origenSel] : []}
@@ -5112,7 +5109,7 @@ function ModificarContent({
                 sizeCls={BTN_SM.replace("h-7", "h-8")}
               />
 
-              <span className="text-heading-xs uppercase tracking-[0.08em] text-gray-500 shrink-0">Tipo</span>
+              <span className="text-heading-xs uppercase tracking-[0.08em] text-text-muted shrink-0">Tipo</span>
               <ButtonSelectGroup
                 options={["Forzado", "Programado"]}
                 selected={tipoSel ? [tipoSel] : []}
@@ -5163,11 +5160,11 @@ function ModificarContent({
                 style={{ top: "calc(100% + 6px)", width: 520 }}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-heading-sm text-gray-900">Más filtros</span>
+                  <span className="text-heading-sm text-text">Más filtros</span>
                   <button
                     type="button"
                     onClick={() => setFlyoutOpen(false)}
-                    className="w-6 h-6 flex items-center justify-center rounded-sm text-gray-500 hover:bg-fill-muted hover:text-gray-800 transition-all"
+                    className="w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all"
                   >
                     <X size={14} strokeWidth={1.5} />
                   </button>
@@ -5189,7 +5186,7 @@ function ModificarContent({
                   <button
                     type="button"
                     onClick={() => setFlyoutFilters(EMPTY_FLYOUT_FILTERS)}
-                    className="text-label text-primary hover:text-secondary transition-colors"
+                    className="text-label text-secondary hover:underline"
                   >
                     Limpiar filtros
                   </button>
@@ -5197,7 +5194,7 @@ function ModificarContent({
                     <button
                       type="button"
                       onClick={() => setFlyoutOpen(false)}
-                      className={`${BTN_MD} border border-border-strong bg-surface text-gray-700 hover:bg-fill-muted transition-colors`}
+                      className={`${BTN_MD} border border-border-strong bg-surface text-text hover:bg-fill-muted transition-colors`}
                     >
                       Cerrar
                     </button>
@@ -5218,7 +5215,7 @@ function ModificarContent({
           {/* Chips de filtros aplicados (flyout) — franja propia, no texto suelto */}
           {activeFlyoutFields.length > 0 && (
             <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-md border border-border bg-fill-subtle">
-              <span className="text-heading-xs uppercase tracking-[0.06em] text-gray-600 shrink-0">
+              <span className="text-heading-xs uppercase tracking-[0.06em] text-text-muted shrink-0">
                 Filtros aplicados:
               </span>
               {activeFlyoutFields.map((f) => (
@@ -5303,7 +5300,7 @@ function ModificarContent({
                 <button
                   type="button"
                   onClick={() => setModFiltroFecha(null)}
-                  className="text-label text-primary hover:text-secondary transition-colors"
+                  className="text-label text-secondary hover:underline"
                 >
                   Limpiar filtros
                 </button>
@@ -5362,21 +5359,21 @@ function ModificarContent({
             >
               {!modShowData ? (
                 <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
-                  <span className="text-gray-300 scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
-                  <p className="text-label text-gray-500">Sin resultados</p>
-                  <p className="text-caption text-gray-500">Completá los filtros y presioná Buscar</p>
+                  <span className="text-text-faint scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
+                  <p className="text-label text-text-muted">Sin resultados</p>
+                  <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
                 </div>
               ) : modFiltroFecha && modVisibleIndices.length === 0 ? (
                 /* El filtro dejó 0 filas — mismo empty state de arriba. */
                 <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
-                  <span className="text-gray-300 scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
-                  <p className="text-label text-gray-500">Sin resultados para los filtros aplicados</p>
+                  <span className="text-text-faint scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
+                  <p className="text-label text-text-muted">Sin resultados para los filtros aplicados</p>
                 </div>
               ) : modVisibleIndices.map((i, vi) => {
                 const row = SAMPLE_ROWS[i];
                 const selected = modSelectedRow === i;
                 const esUltima = vi === modVisibleIndices.length - 1;
-                const textCls = selected ? "text-secondary font-medium" : "text-gray-700";
+                const textCls = selected ? "text-secondary font-medium" : "text-text";
                 return (
                   <div
                     key={i}
@@ -5396,9 +5393,9 @@ function ModificarContent({
               })}
             </div>
             <div className="shrink-0 border-t border-border bg-fill-subtle px-3 py-1.5 flex items-center justify-between">
-              <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-gray-500 disabled:opacity-40" disabled>Anterior</button>
-              <span className="text-caption text-gray-500">Página <span className="font-medium text-gray-700">1</span> de <span className="font-medium text-gray-700">2.213</span></span>
-              <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-gray-500 hover:bg-fill-muted transition-colors">Siguiente</button>
+              <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted disabled:opacity-40" disabled>Anterior</button>
+              <span className="text-caption text-text-muted">Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">2.213</span></span>
+              <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted hover:bg-fill-muted transition-colors">Siguiente</button>
             </div>
           </div>
           <div className="mt-3">
@@ -5555,8 +5552,8 @@ function ModificarContent({
           // condicional): sin una segunda línea debajo, el header siempre
           // cierra parejo.
           <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2">
-            <span className="text-heading-xs uppercase tracking-[0.06em] text-gray-500">Interrupción</span>
-            <span className="text-code font-mono tabular-nums text-gray-800">
+            <span className="text-heading-xs uppercase tracking-[0.06em] text-text-muted">Interrupción</span>
+            <span className="text-code font-mono tabular-nums text-text">
               {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
             </span>
             <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
@@ -5586,7 +5583,7 @@ function ModificarContent({
           {/* Descripción del tab activo, sola en su fila. Tabla 3 no
               repite descripción, el resultado (Sí/No existe) ya la dice. */}
           <div className="px-5 pt-3 pb-3 shrink-0">
-            <p className="text-body-sm text-gray-600">
+            <p className="text-body-sm text-text-muted">
               {activeTabData && activeTabData.key !== "tabla3" ? activeTabData.subtitle : null}
             </p>
           </div>
@@ -5623,7 +5620,7 @@ function ModificarContent({
                   <button
                     type="button"
                     onClick={() => setRelFiltros({})}
-                    className="text-label text-primary hover:text-secondary transition-colors"
+                    className="text-label text-secondary hover:underline"
                   >
                     Limpiar filtros
                   </button>
@@ -5669,7 +5666,7 @@ function ModificarContent({
                         <p className="text-heading-sm" style={{ color: existe ? "var(--color-success-text-strong)" : "var(--color-error-text-strong)" }}>
                           {existe ? "Sí existe en Tabla 3" : "No existe en Tabla 3"}
                         </p>
-                        <p className="text-body-sm text-gray-500">
+                        <p className="text-body-sm text-text-muted">
                           {existe
                             ? "Esta reposición tiene registro en la tabla"
                             : "Esta reposición no tiene registro en la tabla"}
@@ -5681,9 +5678,9 @@ function ModificarContent({
               })() : relTabRows.length === 0 ? (
                 <div className="h-full min-h-[180px] flex items-center justify-center p-6">
                   <div className="flex flex-col items-center gap-3 text-center">
-                    <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                    <p className="text-heading-sm text-gray-600">Sin registros</p>
-                    <p className="text-body-sm text-gray-500">Sin registros para la reposición {filaFaseSeleccionada?.nro ?? "—"}</p>
+                    <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                    <p className="text-heading-sm text-text-muted">Sin registros</p>
+                    <p className="text-body-sm text-text-muted">Sin registros para la reposición {filaFaseSeleccionada?.nro ?? "—"}</p>
                     {abmMapping && (
                       <button
                         type="button"
@@ -5711,8 +5708,8 @@ function ModificarContent({
                    que "Sin registros". */
                 <div className="h-full min-h-[180px] flex items-center justify-center p-6">
                   <div className="flex flex-col items-center gap-3 text-center">
-                    <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                    <p className="text-heading-sm text-gray-600">Sin resultados para los filtros aplicados</p>
+                    <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                    <p className="text-heading-sm text-text-muted">Sin resultados para los filtros aplicados</p>
                   </div>
                 </div>
               ) : (
@@ -5766,7 +5763,7 @@ function ModificarContent({
                           {row.map((cell, ci) => (
                             <td
                               key={ci}
-                              className={`px-4 py-3.5 text-body text-gray-700 whitespace-nowrap ${esUltima ? "" : "border-b border-border-subtle"}`}
+                              className={`px-4 py-3.5 text-body text-text whitespace-nowrap ${esUltima ? "" : "border-b border-border-subtle"}`}
                             >
                               {cell}
                             </td>
@@ -6517,15 +6514,15 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
         {/* Lápiz fijo — no el ícono por tabla: el masthead del panel de
             trabajo siempre representa "estás en la herramienta de ABM",
             no una tabla en particular (esa distinción vive en el badge). */}
-        <span className="shrink-0 text-gray-500 group-hover:text-secondary transition-colors"><Pencil size={15} strokeWidth={1.5} /></span>
-        <span className="text-heading-md text-gray-900 truncate">{current.titulo}</span>
+        <span className="shrink-0 text-icon group-hover:text-secondary transition-colors"><Pencil size={15} strokeWidth={1.5} /></span>
+        <span className="text-heading-md text-text truncate">{current.titulo}</span>
         <span
           className="px-1.5 py-0.5 text-caption font-mono rounded-xs border border-border-strong text-focus shrink-0"
           style={{ backgroundColor: "var(--color-fill-muted)" }}
         >
           {current.code}
         </span>
-        <span className={`shrink-0 text-gray-500 transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
+        <span className={`shrink-0 text-icon transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
           <ChevronDown size={16} strokeWidth={1.5} />
         </span>
       </button>
@@ -6535,7 +6532,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
           style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           <div className="px-3 py-2.5 border-b border-border-subtle">
-            <p className="text-heading-xs text-gray-600 uppercase tracking-[0.08em] select-none">Cambiar de tabla</p>
+            <p className="text-heading-xs text-text-muted uppercase tracking-[0.08em] select-none">Cambiar de tabla</p>
           </div>
           <div className="p-1.5 flex flex-col gap-0.5 max-h-96 overflow-y-auto">
             {ABM_TABLE_ORDER.map((k) => {
@@ -6548,12 +6545,12 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
                   className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm border text-left transition-colors ${
                     isSel
                       ? "bg-primary-tint border-primary text-secondary"
-                      : "border-transparent text-gray-700 hover:bg-fill-muted"
+                      : "border-transparent text-text hover:bg-fill-muted"
                   }`}
                 >
                   <span className="flex-1 min-w-0 truncate text-body">{c.titulo}</span>
                   <span
-                    className={`text-caption font-mono shrink-0 tabular-nums ${isSel ? "text-secondary/70" : "text-gray-500"}`}
+                    className={`text-caption font-mono shrink-0 tabular-nums ${isSel ? "text-secondary" : "text-text-muted"}`}
                   >
                     {c.code}
                   </span>
@@ -6594,7 +6591,7 @@ function estadoDeCampo(campo: CampoBusqueda, mode: AbmMode, consultando: boolean
 }
 
 // `!` (important) es necesario en ambas: MOD_FIELD_CLS/MOD_SELECT_CLS ya traen
-// bg-surface/text-gray-900, y en el CSS compilado esas reglas quedan DESPUÉS
+// bg-surface/text-text, y en el CSS compilado esas reglas quedan DESPUÉS
 // de las de gray-50/gray-100 (orden interno de Tailwind, no el orden en que
 // se concatenan los strings acá), así que sin !important terminan ganando
 // igual y el campo se ve "habilitado" pese al atributo disabled.
@@ -6603,8 +6600,8 @@ const ESTADO_CLASES: Record<CampoEstado, string> = {
   enabled: "",
   // Legible: texto con contraste normal, apenas un tinte de fondo para
   // distinguirlo de un campo editable — nunca el gris apagado de disabled.
-  placeholder: " !bg-fill-subtle !border-border !text-gray-900",
-  disabled: " !bg-fill-muted !border-border !text-gray-500",
+  placeholder: " !bg-fill-subtle !border-border !text-text",
+  disabled: " !bg-fill-muted !border-border !text-text-faint",
 };
 
 // Un campo de camposBusqueda → el input correspondiente, en el estado visual
@@ -6677,7 +6674,7 @@ function AbmCampo({
                 } ${
                   active
                     ? "border-primary bg-primary-tint text-secondary"
-                    : `border-border-strong bg-surface text-gray-700 ${isDisabled ? "" : "hover:border-primary hover:bg-primary-tint hover:text-secondary"}`
+                    : `border-border-strong bg-surface text-text ${isDisabled ? "" : "hover:border-primary hover:bg-primary-tint hover:text-secondary"}`
                 }`}
               >
                 {opt.label}
@@ -6846,9 +6843,9 @@ function ValuePicker({
   const lista = (
     <div className={modal ? "flex-1 overflow-y-auto p-1.5 flex flex-col gap-0.5" : "p-1.5 flex flex-col gap-0.5 max-h-96 overflow-y-auto"}>
       {normalizados.length === 0 ? (
-        <p className="px-2.5 py-2 text-body-sm text-gray-500">{emptyMessage}</p>
+        <p className="px-2.5 py-2 text-body-sm text-text-muted">{emptyMessage}</p>
       ) : filtrados.length === 0 ? (
-        <p className="px-2.5 py-2 text-body-sm text-gray-500">Sin resultados</p>
+        <p className="px-2.5 py-2 text-body-sm text-text-muted">Sin resultados</p>
       ) : (
         filtrados.map((opt) => {
           const active = opt.value === currentValue;
@@ -6858,7 +6855,7 @@ function ValuePicker({
               type="button"
               onClick={() => elegir(opt.value)}
               className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm border text-left transition-colors ${
-                active ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-gray-700 hover:bg-fill-muted"
+                active ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-text hover:bg-fill-muted"
               }`}
             >
               <span className="flex-1 min-w-0 truncate text-body">{opt.label}</span>
@@ -6878,13 +6875,13 @@ function ValuePicker({
           disabled={isDisabled}
           onClick={() => setOpen((v) => !v)}
           style={triggerStyle}
-          className={MOD_SELECT_CLS + " w-full" + estadoCls + " flex items-center text-left" + (!currentValue ? " !text-gray-500" : "") + triggerExtraClassName}
+          className={MOD_SELECT_CLS + " w-full" + estadoCls + " flex items-center text-left" + (!currentValue ? " !text-text-muted" : "") + triggerExtraClassName}
         >
           {/* || (no ??): value "" es "sin selección", no un valor real a
               mostrar — con ?? quedaría en blanco en vez del placeholder. */}
           <span className="block truncate">{seleccionado?.label || currentValue || placeholder}</span>
         </button>
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-icon">
           <ChevronDown size={16} strokeWidth={1.5} />
         </div>
         {!modal && open && !isDisabled && (
@@ -6912,11 +6909,11 @@ function ValuePicker({
             }}
           >
             <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between gap-3">
-              <p className="min-w-0 truncate text-heading-md text-gray-900">{modalTitle ?? label ?? "Seleccionar"}</p>
+              <p className="min-w-0 truncate text-heading-md text-text">{modalTitle ?? label ?? "Seleccionar"}</p>
               <button
                 type="button"
                 onClick={cerrar}
-                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-gray-600 hover:bg-fill-muted hover:text-gray-800 transition-all"
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all"
               >
                 <X size={14} strokeWidth={1.5} />
               </button>
@@ -7327,7 +7324,7 @@ function AbmScreen({
             onClick={onVolver}
             title="Volver a Consultas de interrupción"
             aria-label="Volver a Consultas de interrupción"
-            className="flex items-center justify-center w-8 h-8 -ml-1.5 rounded-sm text-gray-600 hover:text-secondary hover:bg-fill-muted transition-colors shrink-0"
+            className="flex items-center justify-center w-8 h-8 -ml-1.5 rounded-sm text-icon hover:text-secondary hover:bg-fill-muted transition-colors shrink-0"
           >
             ←
           </button>
@@ -7425,7 +7422,7 @@ function AbmScreen({
                 <button
                   onClick={handleLimpiar}
                   disabled={!showData}
-                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >Limpiar</button>
                 <button
                   onClick={handleBuscar}
@@ -7438,7 +7435,7 @@ function AbmScreen({
               <>
                 <button
                   onClick={handleCancelarAlta}
-                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
+                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarAlta}
@@ -7450,7 +7447,7 @@ function AbmScreen({
               <>
                 <button
                   onClick={handleCancelarModificar}
-                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
+                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarModificar}
@@ -7547,14 +7544,14 @@ function AbmScreen({
             className="flex-1 min-h-0 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
           >
             {!showData ? (
-              <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400">
+              <div className="flex flex-col items-center justify-center h-full gap-3 text-text-faint">
                 <Inbox size={44} strokeWidth={1.2} />
-                <p className="text-body-lg text-gray-600 mt-1">
+                <p className="text-body-lg text-text-muted mt-1">
                   No hay resultados para los filtros aplicados
                 </p>
-                <p className="text-body-sm text-gray-500">
+                <p className="text-body-sm text-text-muted">
                   Completá los filtros y presioná{" "}
-                  <span className="font-semibold text-primary">Buscar</span>
+                  <span className="font-semibold text-secondary">Buscar</span>
                 </p>
               </div>
             ) : (
@@ -7572,7 +7569,7 @@ function AbmScreen({
                       </th>
                     ))}
                     <th className="sticky top-0 z-10 bg-fill-subtle-solid" />
-                    <th className="sticky top-0 z-10 bg-fill-subtle-solid w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600">
+                    <th className="sticky top-0 z-10 bg-fill-subtle-solid w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted">
                       Acciones
                     </th>
                   </tr>
@@ -7596,12 +7593,12 @@ function AbmScreen({
                           <td
                             key={c.key}
                             className={`w-[1%] whitespace-nowrap px-4 py-2.5 ${
-                              c.mono ? "text-code font-mono tabular-nums" : isSelected ? "text-body text-secondary font-medium" : "text-body text-gray-700"
+                              c.mono ? "text-code font-mono tabular-nums" : isSelected ? "text-body text-secondary font-medium" : "text-body text-text"
                             }`}
                             style={{
                               ...(c.mono
                                 ? {
-                                    color: isSelected ? "var(--color-secondary)" : "var(--color-gray-800)",
+                                    color: isSelected ? "var(--color-secondary)" : "var(--color-text)",
                                     fontWeight: isSelected ? 600 : 400,
                                   }
                                 : undefined),
@@ -7652,19 +7649,19 @@ function AbmScreen({
           {/* Footer */}
           {showData && (
             <div className="px-4 py-2 border-t border-border bg-fill-subtle shrink-0 flex items-center justify-between">
-              <span className="text-body-sm text-gray-700">
+              <span className="text-body-sm text-text">
                 Registros encontrados:{" "}
                 <span className="font-semibold text-secondary">
                   {config.totalRegistros.toLocaleString("es-AR")}
                 </span>
               </span>
-              <div className="flex items-center gap-2 text-body-sm text-gray-600">
+              <div className="flex items-center gap-2 text-body-sm text-text-muted">
                 <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors" disabled>
                   Anterior
                 </button>
                 <span>
-                  Pág. <span className="font-medium text-gray-800">1</span> de{" "}
-                  <span className="font-medium text-gray-800">{totalPages.toLocaleString("es-AR")}</span>
+                  Pág. <span className="font-medium text-text">1</span> de{" "}
+                  <span className="font-medium text-text">{totalPages.toLocaleString("es-AR")}</span>
                 </span>
                 <button
                   className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors"
@@ -7802,14 +7799,14 @@ function PlanillaConsolidadaContent() {
 
           <div className="grid grid-cols-2 gap-4 mt-3">
             <div>
-              <p className="text-heading-xs uppercase tracking-[0.07em] text-gray-600 mb-1.5">Máxima duración</p>
+              <p className="text-heading-xs uppercase tracking-[0.07em] text-text-muted mb-1.5">Máxima duración</p>
               <div className="grid grid-cols-2 gap-3">
                 <div><FieldLabel>Interrupción</FieldLabel><input readOnly value={datos.maxDuracionRef} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
                 <div><FieldLabel>Valor</FieldLabel><input readOnly value={String(datos.maxDuracionValor)} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
               </div>
             </div>
             <div>
-              <p className="text-heading-xs uppercase tracking-[0.07em] text-gray-600 mb-1.5">Máximo marginal ajustado</p>
+              <p className="text-heading-xs uppercase tracking-[0.07em] text-text-muted mb-1.5">Máximo marginal ajustado</p>
               <div className="grid grid-cols-2 gap-3">
                 <div><FieldLabel>Interrupción</FieldLabel><input readOnly value={datos.maxMarginalRef} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
                 <div><FieldLabel>Valor</FieldLabel><input readOnly value={datos.maxMarginalValor} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
@@ -7843,7 +7840,7 @@ function PlanillaConsolidadaContent() {
               >
                 {i < 2 ? "✓" : ""}
               </span>
-              <span className="text-body text-gray-700">{paso}</span>
+              <span className="text-body text-text">{paso}</span>
             </div>
           ))}
         </div>
@@ -7922,8 +7919,8 @@ function GestorNotasContent() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-fill-subtle border-b border-border">
-                  <th className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600">Nota</th>
-                  <th className="w-24 px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600">Posición</th>
+                  <th className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted">Nota</th>
+                  <th className="w-24 px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted">Posición</th>
                   <th className="w-14 px-2 py-2" />
                 </tr>
                 <tr className="border-b border-border">
@@ -7942,8 +7939,8 @@ function GestorNotasContent() {
                 {visibles.length === 0 ? (
                   <tr><td colSpan={3}>
                     <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                      <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                      <p className="text-heading-sm text-gray-600">No hay notas</p>
+                      <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                      <p className="text-heading-sm text-text-muted">No hay notas</p>
                     </div>
                   </td></tr>
                 ) : visibles.map((n) => (
@@ -7952,13 +7949,13 @@ function GestorNotasContent() {
                     onClick={() => setSeleccionada(n.id)}
                     className={`border-b border-border-subtle cursor-pointer transition-colors ${seleccionada === n.id ? "bg-primary-tint" : "hover:bg-fill-muted"}`}
                   >
-                    <td className="px-3 py-2.5 text-body text-gray-800">{n.texto}</td>
-                    <td className="px-3 py-2.5 text-body text-gray-600 tabular-nums">{n.posicion}</td>
+                    <td className="px-3 py-2.5 text-body text-text">{n.texto}</td>
+                    <td className="px-3 py-2.5 text-body text-text-muted tabular-nums">{n.posicion}</td>
                     <td className="px-2 py-2.5">
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); abrirEditar(n.id, n.texto); }}
-                        className="w-7 h-7 flex items-center justify-center rounded-sm text-gray-500 hover:bg-primary-tint hover:text-secondary transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-sm text-icon hover:bg-primary-tint hover:text-secondary transition-colors"
                         title="Editar"
                       >
                         <Pencil size={15} strokeWidth={1.5} />
@@ -7970,7 +7967,7 @@ function GestorNotasContent() {
             </table>
 
             <div className="flex items-center justify-between mt-3">
-              <div className="flex items-center gap-2 text-body-sm text-gray-600">
+              <div className="flex items-center gap-2 text-body-sm text-text-muted">
                 <span>Mostrar</span>
                 <SelectWrap>
                   <select
@@ -7982,9 +7979,9 @@ function GestorNotasContent() {
                   </select>
                 </SelectWrap>
               </div>
-              <div className="flex items-center gap-3 text-body-sm text-gray-600">
+              <div className="flex items-center gap-3 text-body-sm text-text-muted">
                 <button disabled={paginaSegura <= 1} onClick={() => setPagina((p) => p - 1)} className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40">Anterior</button>
-                <span>Pág. <span className="font-medium text-gray-800">{paginaSegura}</span> de <span className="font-medium text-gray-800">{totalPaginas}</span></span>
+                <span>Pág. <span className="font-medium text-text">{paginaSegura}</span> de <span className="font-medium text-text">{totalPaginas}</span></span>
                 <button disabled={paginaSegura >= totalPaginas} onClick={() => setPagina((p) => p + 1)} className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40">Siguiente</button>
               </div>
             </div>
@@ -8005,7 +8002,7 @@ function GestorNotasContent() {
               title={b.title}
               disabled={!seleccionada}
               onClick={() => seleccionada && mover(seleccionada, b.dir)}
-              className="w-9 h-9 flex items-center justify-center rounded-sm border border-border-strong bg-surface text-gray-600 hover:bg-primary-tint hover:border-primary hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              className="w-9 h-9 flex items-center justify-center rounded-sm border border-border-strong bg-surface text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
             >
               {b.icon}
             </button>
@@ -8055,7 +8052,7 @@ function InsertaClientesContent() {
               <input value={cliente} onChange={(e) => handleCambioCliente(e.target.value)} placeholder="ID de cliente" className={MOD_FIELD_CLS} />
             </div>
             <button type="button" disabled={!cliente.trim()} onClick={handleValidar} className={modalNeutralBtnCls}>Validar</button>
-            {validado && <span className="text-label shrink-0" style={{ color: "var(--color-success)" }}>✓ Cliente válido</span>}
+            {validado && <span className="text-label text-success-text-strong shrink-0">✓ Cliente válido</span>}
           </div>
           <div style={{ maxWidth: 280 }}>
             <ValuePicker
@@ -8347,7 +8344,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setCollapsed(true)}
-                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-sm text-gray-600 hover:text-gray-800 hover:bg-fill-muted transition-colors"
+                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-sm text-icon hover:text-text hover:bg-fill-muted transition-colors"
                 title="Colapsar"
               >
                 <ChevronLeft size={16} strokeWidth={1.5} />
@@ -8404,7 +8401,7 @@ export default function App() {
               ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
               ${isAbmTableKey(screen)
                 ? "border-transparent bg-secondary/10 text-secondary"
-                : "border-transparent text-gray-700 hover:text-gray-800 hover:bg-fill-muted"
+                : "border-transparent text-text hover:text-text hover:bg-fill-muted"
               }`}
           >
             <span className="shrink-0"><Pencil size={15} strokeWidth={1.5} fill={isAbmTableKey(screen) ? "currentColor" : "none"} /></span>
@@ -8447,7 +8444,7 @@ export default function App() {
               type="button"
               onClick={handleOtrosParentClick}
               aria-expanded={otrosExpanded}
-              className="w-full flex items-center gap-1 px-1 pt-5 pb-1.5 text-heading-xs uppercase tracking-[0.1em] text-gray-500 select-none hover:text-gray-700 transition-colors"
+              className="w-full flex items-center gap-1 px-1 pt-5 pb-1.5 text-heading-xs uppercase tracking-[0.1em] text-text-muted select-none hover:text-text transition-colors"
             >
               <span className="flex-1 text-left">Otros</span>
               <span className={`shrink-0 transition-transform duration-150 ${otrosExpanded ? "" : "-rotate-90"}`}>
@@ -8455,7 +8452,7 @@ export default function App() {
               </span>
             </button>
           ) : (
-            <p className="px-1 pt-5 pb-1.5 text-heading-xs uppercase tracking-[0.1em] text-gray-500 select-none">Otros</p>
+            <p className="px-1 pt-5 pb-1.5 text-heading-xs uppercase tracking-[0.1em] text-text-muted select-none">Otros</p>
           )}
           {(!compactSidebar || otrosExpanded) && !collapsed && (
             <div className="flex flex-col gap-0.5">
@@ -8502,16 +8499,16 @@ export default function App() {
             >
               <div className="flex items-center gap-2.5 flex-1">
                 {screen === "modificar" && (
-                  <h1 className="text-heading-md text-gray-900">Consultas de interrupción</h1>
+                  <h1 className="text-heading-md text-text">Consultas de interrupción</h1>
                 )}
                 {screen === "welcome" && (
-                  <h1 className="text-heading-md text-gray-900">Inicio</h1>
+                  <h1 className="text-heading-md text-text">Inicio</h1>
                 )}
-                {screen === "generaciontxt" && <h1 className="text-heading-md text-gray-900">Generación de txt</h1>}
-                {screen === "planillaconsolidada" && <h1 className="text-heading-md text-gray-900">Planilla consolidada</h1>}
-                {screen === "gestornotas" && <h1 className="text-heading-md text-gray-900">Gestor de notas</h1>}
-                {screen === "insertaclientes" && <h1 className="text-heading-md text-gray-900">Inserta clientes en BDTH</h1>}
-                {screen === "auditoria" && <h1 className="text-heading-md text-gray-900">Reporte de auditoría</h1>}
+                {screen === "generaciontxt" && <h1 className="text-heading-md text-text">Generación de txt</h1>}
+                {screen === "planillaconsolidada" && <h1 className="text-heading-md text-text">Planilla consolidada</h1>}
+                {screen === "gestornotas" && <h1 className="text-heading-md text-text">Gestor de notas</h1>}
+                {screen === "insertaclientes" && <h1 className="text-heading-md text-text">Inserta clientes en BDTH</h1>}
+                {screen === "auditoria" && <h1 className="text-heading-md text-text">Reporte de auditoría</h1>}
               </div>
               <PeriodSelector />
             </header>
