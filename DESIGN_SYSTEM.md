@@ -116,6 +116,30 @@ Ningún botón lleva sombra. `--inset-shadow-row-selected`
 (`inset-shadow-row-selected`) no es elevación: es el acento de 3px de la
 fila seleccionada.
 
+## Celeste de marca: dos tonos, dos usos
+
+El celeste no es un solo color. Son dos tokens del mismo hue (214°) y no
+son intercambiables:
+
+| Token | Hex | Blanco encima | Uso |
+|---|---|---|---|
+| `--color-primary` | `#4D97FA` | 2.95:1 — no alcanza | Bordes (`border-primary`), tints (`bg-primary-tint`), foco, estado seleccionado, hover de acción, acentos decorativos (puntos, ícono de accesos). **Nunca como relleno con contenido blanco encima** |
+| `--color-primary-strong` | `#076AEE` | 4.88:1 | Rellenos con contenido blanco: botón primario, badge contador de "Más filtros", checkbox marcado, punto y borde del radio seleccionado |
+| `--color-primary-hover` | `#0663DF` | 5.44:1 | Hover de `primary-strong` |
+
+- **Botón primario:** `bg-primary-strong hover:bg-primary-hover text-white`,
+  sin sombra y sin `hover:brightness-*`. Deshabilitado: `disabled:opacity-40`.
+  El fondo va por clase, no por `style`.
+- **Botón destructivo relleno** ("Eliminar"): `bg-error
+  hover:bg-error-text-strong text-white`.
+- **Seleccionado** (toggles, segmented, filas, chips) es siempre el patrón
+  tint: `bg-primary-tint` + `border-primary` (o `ring-1 ring-inset
+  ring-primary` en un segmented de bordes compartidos) + `text-secondary`.
+  Un seleccionado nunca es un relleno `primary-strong` con texto blanco: ese
+  lenguaje queda reservado a la acción primaria.
+- Checkbox y radio marcados usan `primary-strong` porque son componentes de
+  estado y necesitan 3:1 contra el fondo.
+
 ## Colores de texto
 
 Neutros cálidos, coherentes con `--color-bg-app` y con la base de los

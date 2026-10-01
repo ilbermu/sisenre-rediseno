@@ -998,8 +998,7 @@ function DateTimeField({
             <button
               type="button"
               onClick={aplicar}
-              className={`${BTN_MD} text-white hover:brightness-105 transition-all`}
-              style={{ backgroundColor: "var(--color-primary)" }}
+              className={`${BTN_MD} text-white bg-primary-strong hover:bg-primary-hover transition-all`}
             >
               Aplicar
             </button>
@@ -1362,8 +1361,10 @@ function TableToolbar({
 // botones alineados a la derecha (mismo lenguaje que Buscar/Limpiar: neutral
 // outline para cancelar, azul solido para la accion primaria). Cierra con X,
 // click en el overlay o Escape.
-const modalPrimaryBtnCls =
-  "h-9 px-5 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+const modalFilledBtnBase =
+  "h-9 px-5 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+const modalPrimaryBtnCls = modalFilledBtnBase + " bg-primary-strong hover:bg-primary-hover";
+const modalDestructiveBtnCls = modalFilledBtnBase + " bg-error hover:bg-error-text-strong";
 const modalNeutralBtnCls =
   "h-9 px-5 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 
@@ -1526,7 +1527,7 @@ function ListBox({ title, children }: { title: string; children?: React.ReactNod
 }
 
 // Checkbox custom (no accent-color nativo) — mismo lenguaje que el resto de
-// la app: borde var(--color-border-strong) en reposo (primary en hover), relleno var(--color-primary) + check blanco al marcar.
+// la app: borde var(--color-border-strong) en reposo (primary en hover), relleno var(--color-primary-strong) + check blanco al marcar.
 // El <input> real queda oculto (sr-only) para mantener accesibilidad/teclado;
 // el estado visual lo maneja React, nunca CSS nativo del navegador.
 // Sin "checked"/"onChange" queda no-controlado (estado propio, como en
@@ -1560,7 +1561,7 @@ function ModalCheckbox({
       />
       <span
         className={`w-4 h-4 rounded-xs border flex items-center justify-center shrink-0 transition-colors duration-150 ${
-          checked ? "bg-primary border-primary" : "bg-surface border-border-strong hover:border-primary"
+          checked ? "bg-primary-strong border-primary-strong" : "bg-surface border-border-strong hover:border-primary"
         }`}
       >
         {checked && (
@@ -1585,10 +1586,10 @@ function ModalRadio({ label, checked, onSelect }: { label: string; checked: bool
     >
       <span
         className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-150 ${
-          checked ? "border-primary" : "border-border-strong hover:border-primary"
+          checked ? "border-primary-strong" : "border-border-strong hover:border-primary"
         }`}
       >
-        <span className={`w-2 h-2 rounded-full bg-primary transition-transform duration-150 ${checked ? "scale-100" : "scale-0"}`} />
+        <span className={`w-2 h-2 rounded-full bg-primary-strong transition-transform duration-150 ${checked ? "scale-100" : "scale-0"}`} />
       </span>
       {label}
     </label>
@@ -1618,7 +1619,7 @@ function DesarmeModal({
           <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls}>
             Procesar
           </button>
         </>
@@ -1708,7 +1709,7 @@ function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void 
           <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls}>
             Generar
           </button>
         </>
@@ -1760,7 +1761,7 @@ function ReplicarModal({
           <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls}>
             Generar
           </button>
         </>
@@ -1910,7 +1911,7 @@ function AltaClientesModal({
           <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls}>
             Procesar
           </button>
         </>
@@ -1970,7 +1971,7 @@ function AltaClientesModal({
             type="button"
             onClick={() => setPeriodicidad("mensual")}
             className={`h-7 px-2.5 text-label transition-colors ${
-              periodicidad === "mensual" ? "bg-primary text-white" : "bg-surface text-text hover:bg-fill-muted"
+              periodicidad === "mensual" ? "bg-primary-tint text-secondary ring-1 ring-inset ring-primary" : "bg-surface text-text hover:bg-fill-muted"
             }`}
           >
             Mensual
@@ -1979,7 +1980,7 @@ function AltaClientesModal({
             type="button"
             onClick={() => setPeriodicidad("semestral")}
             className={`h-7 px-2.5 text-label border-l border-border-strong transition-colors ${
-              periodicidad === "semestral" ? "bg-primary text-white" : "bg-surface text-text hover:bg-fill-muted"
+              periodicidad === "semestral" ? "bg-primary-tint text-secondary ring-1 ring-inset ring-primary" : "bg-surface text-text hover:bg-fill-muted"
             }`}
           >
             Semestral
@@ -2105,7 +2106,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls}>
             Procesar
           </button>
         </>
@@ -2296,7 +2297,7 @@ function IntercambioModal({
       onClose={onClose}
       size="xl"
       footer={
-        <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+        <button type="button" onClick={onClose} className={modalPrimaryBtnCls}>
           Salir
         </button>
       }
@@ -2550,9 +2551,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-sm text-white hover:brightness-110 disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all font-sans text-body font-medium"
+                className="w-full rounded-sm text-white bg-primary-strong hover:bg-primary-hover disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all font-sans text-body font-medium"
                 style={{
-                  backgroundColor: "var(--color-primary)",
                   paddingTop: "var(--login-button-py, 12px)", paddingBottom: "var(--login-button-py, 12px)", paddingLeft: 24, paddingRight: 24,
                 }}
               >
@@ -2771,7 +2771,7 @@ function CronogramaEnre() {
     <div className="bg-surface rounded-lg border border-border px-5 py-4" style={{ maxWidth: 760 }}>
       <div className="mb-4">
         <span className="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-3 rounded-full bg-primary-tint border border-chip-border text-secondary text-label">
-          <span className="shrink-0 rounded-full" style={{ width: 6, height: 6, backgroundColor: "var(--color-primary)" }} />
+          <span className="shrink-0 rounded-full bg-primary" style={{ width: 6, height: 6 }} />
           Período {nombrePeriodo}
         </span>
       </div>
@@ -3030,7 +3030,7 @@ function DatosInterrupcionModal({
           <button type="button" onClick={onClose} className={modalNeutralBtnCls}>
             Salir
           </button>
-          <button type="button" onClick={onClose} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+          <button type="button" onClick={onClose} className={modalPrimaryBtnCls}>
             Procesar
           </button>
         </>
@@ -3090,7 +3090,7 @@ function ConfirmarBorrarModal({
       footer={
         <>
           <button type="button" onClick={onCancelar} className={modalNeutralBtnCls}>Cancelar</button>
-          <button type="button" onClick={onConfirmar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-error)" }}>Eliminar</button>
+          <button type="button" onClick={onConfirmar} className={modalDestructiveBtnCls}>Eliminar</button>
         </>
       }
     >
@@ -3146,7 +3146,6 @@ function ConfirmarModificarModal({
             onClick={() => onConfirmar(notaFinal)}
             disabled={!notaFinal}
             className={modalPrimaryBtnCls}
-            style={{ backgroundColor: "var(--color-primary)" }}
           >
             Guardar
           </button>
@@ -5005,7 +5004,7 @@ function ModificarContent({
       <Filter size={14} strokeWidth={1.5} />
       Más filtros
       {activeFlyoutFields.length > 0 && (
-        <span className="w-4 h-4 rounded-full bg-primary text-white text-caption flex items-center justify-center">
+        <span className="w-4 h-4 rounded-full bg-primary-strong text-white text-caption flex items-center justify-center">
           {activeFlyoutFields.length}
         </span>
       )}
@@ -5032,8 +5031,7 @@ function ModificarContent({
         type="button"
         onClick={() => { setModShowData(true); setModSelectedRow(null); }}
         disabled={modShowData}
-        className={`${BTN_MD} text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
-        style={{ backgroundColor: "var(--color-primary)" }}
+        className={`${BTN_MD} text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
       >Buscar</button>
     </>
   );
@@ -5201,8 +5199,7 @@ function ModificarContent({
                     <button
                       type="button"
                       onClick={() => setFlyoutOpen(false)}
-                      className={`${BTN_MD} text-white hover:brightness-105 transition-all`}
-                      style={{ backgroundColor: "var(--color-primary)" }}
+                      className={`${BTN_MD} text-white bg-primary-strong hover:bg-primary-hover transition-all`}
                     >
                       Aplicar
                     </button>
@@ -7427,8 +7424,7 @@ function AbmScreen({
                 <button
                   onClick={handleBuscar}
                   disabled={showData}
-                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                  style={{ backgroundColor: "var(--color-primary)" }}
+                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >Buscar</button>
               </>
             ) : mode === "alta" ? (
@@ -7439,8 +7435,7 @@ function AbmScreen({
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarAlta}
-                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105"
-                  style={{ backgroundColor: "var(--color-primary)" }}
+                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
                 >Insertar</button>
               </>
             ) : (
@@ -7451,8 +7446,7 @@ function AbmScreen({
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarModificar}
-                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105"
-                  style={{ backgroundColor: "var(--color-primary)" }}
+                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
                 >Guardar</button>
               </>
             )}
@@ -7720,7 +7714,7 @@ function GeneracionTxtContent() {
               placeholder="Seleccione tabla a exportar"
             />
           </div>
-          <button type="button" disabled={!tabla} onClick={handleExportar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+          <button type="button" disabled={!tabla} onClick={handleExportar} className={modalPrimaryBtnCls}>
             Exportar
           </button>
         </div>
@@ -7816,10 +7810,10 @@ function PlanillaConsolidadaContent() {
 
           <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border">
             <button type="button" onClick={() => setProgresoAbierto(true)} className={modalNeutralBtnCls}>Ver progreso</button>
-            <button type="button" disabled={procesando} onClick={handleProcesar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+            <button type="button" disabled={procesando} onClick={handleProcesar} className={modalPrimaryBtnCls}>
               {procesando ? "Procesando…" : "Procesar"}
             </button>
-            <button type="button" onClick={handleGenerarCsv} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>Generar CSV</button>
+            <button type="button" onClick={handleGenerarCsv} className={modalPrimaryBtnCls}>Generar CSV</button>
           </div>
         </div>
       </div>
@@ -7910,7 +7904,7 @@ function GestorNotasContent() {
           <CardHeader
             title="Notas"
             right={
-              <button type="button" onClick={abrirNueva} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>
+              <button type="button" onClick={abrirNueva} className={modalPrimaryBtnCls}>
                 Agregar nota
               </button>
             }
@@ -8018,7 +8012,7 @@ function GestorNotasContent() {
         footer={
           <>
             <button type="button" onClick={() => setModalAbierto(null)} className={modalNeutralBtnCls}>Cancelar</button>
-            <button type="button" disabled={!textoModal.trim()} onClick={guardarModal} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>Guardar</button>
+            <button type="button" disabled={!textoModal.trim()} onClick={guardarModal} className={modalPrimaryBtnCls}>Guardar</button>
           </>
         }
       >
@@ -8064,7 +8058,7 @@ function InsertaClientesContent() {
             />
           </div>
           <div className="flex justify-end pt-3 border-t border-border">
-            <button type="button" disabled={!validado || !periodo} onClick={handleInsertar} className={modalPrimaryBtnCls} style={{ backgroundColor: "var(--color-primary)" }}>Insertar</button>
+            <button type="button" disabled={!validado || !periodo} onClick={handleInsertar} className={modalPrimaryBtnCls}>Insertar</button>
           </div>
         </div>
       </div>
@@ -8130,7 +8124,6 @@ function AuditoriaContent() {
             disabled={!usuario || tablasSel.size === 0}
             onClick={handleExportar}
             className={modalPrimaryBtnCls}
-            style={{ backgroundColor: "var(--color-primary)" }}
           >
             Exportar
           </button>

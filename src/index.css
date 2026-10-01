@@ -11,11 +11,11 @@
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Marca */
-  --color-primary: #4D97FA;
-  --color-primary-hover: #2F82F0;
+  --color-primary: #4D97FA; /* bordes, tints, foco, seleccionado, acentos — NO lleva texto blanco encima (2.95:1) */
+  --color-primary-strong: #076AEE; /* rellenos con contenido blanco: botón primario, badge, checkbox y radio marcados (4.88:1) */
+  --color-primary-hover: #0663DF; /* hover de primary-strong (5.44:1) */
   --color-primary-tint: #EBF4FF;
   --color-secondary: #1D558C;
-  --color-secondary-hover: #163F69;
 
   /* Neutros (grises-azulados) */
   --color-gray-50: #F8FAFD;
