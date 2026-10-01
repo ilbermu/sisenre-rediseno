@@ -15,7 +15,7 @@ juntos. Se elige por **rol** (qué es el texto), nunca por tamaño.
 
 | Token | Tamaño / interlineado | Peso | Cuándo usarlo |
 |---|---|---|---|
-| `text-heading-lg` | 24 / 32 | semibold | Título principal de una pantalla de entrada: saludo del Inicio, "Bienvenido" (login y selector de herramienta), título de modal con `titleSize="heading-lg"` |
+| `text-heading-lg` | 24 / 32 | semibold | Título principal de una pantalla de entrada: saludo del Inicio, "Bienvenido" (login y selector de herramienta) |
 | `text-heading-md` | 16 / 24 | semibold | Título de pantalla (`h1` del top bar), título de modal y de card, valor destacado de un KPI o tile |
 | `text-heading-sm` | 13 / 20 | semibold | Título de sección dentro de un panel o popover ("Más filtros", mes del calendario), título de estado vacío ("No hay registros"), ítem destacado del sidebar |
 | `text-heading-xs` | 11 / 16 | semibold | Encabezado de columna, overline de sección, rótulo de grupo del sidebar, día de la semana del calendario |
@@ -92,14 +92,10 @@ extienden sin tocar cómo se ven los modales que no las pasan:
   de `py-4`) y `headerExtra` aporta su propio `mt-0.5 pb-3.5`: el gap entre
   las dos líneas queda compacto (mt-0.5) y el padding total de arriba+abajo
   del bloque sigue parejo (`pt-3.5` arriba, `pb-3.5` abajo).
-- **`titleSize="heading-lg"`** (default `"heading-md"`, 16/24): sube el
-  título al siguiente escalón de títulos (`text-heading-lg`, 24/32) — para
-  cuando el título tiene que ser el elemento más fuerte del header, por encima de un
-  `headerExtra` con su propio dato destacado (ej. una referencia mono). El
-  dato de `headerExtra` va entonces uno o más pasos MÁS ABAJO que el título
-  en la escala (ej. título `text-heading-lg` + referencia `text-code`),
-  nunca al mismo nivel — si compiten en peso, el header no tiene un elemento
-  más fuerte que el otro y la jerarquía no se lee.
+- El tamaño del título es fijo (`text-heading-md`) en todos los modales:
+  no hay prop para cambiarlo. Si el header lleva un dato propio en
+  `headerExtra` (ej. una referencia mono), ese dato va en un token más
+  liviano que el título (`text-code`, `text-body-sm`), nunca al mismo nivel.
 - **`bodyPadding={false}`**: saca el `p-5` del body — para modales que arman
   su propio layout interno (barras fijas, tabs, tablas de borde a borde) en
   vez de dejar que `Modal` les imponga el padding estándar.
@@ -150,27 +146,6 @@ contenido de trabajo — no en el header ni en una card.
   con ícono+texto+acción) van DENTRO del mismo contenedor con borde,
   centrados vertical y horizontalmente (`h-full flex items-center
   justify-center`) — nunca sueltos en el body.
-
-## `DataTile`: tile de dato en una grilla, con o sin acción
-
-`DataTile` (`src/App.tsx`) es el tile compartido para mostrar un dato DENTRO
-DE UNA GRILLA de tiles (borde propio, fondo propio, radio) — `rounded-sm
-border px-2 py-2`, label `text-caption text-gray-600` arriba, valor
-`text-heading-md` abajo. Hoy lo usan los indicadores de "Tablas
-relacionadas" en la Card B de Modificar interrupción (`onClick`+`disabled` —
-abren el modal en ese tab; `alert` fondo/borde/texto warning) — admite
-también un modo de solo lectura (sin `onClick`, `<div>` en vez de `<button>`)
-para otra grilla de tiles que lo necesite. `mono` para valores de código.
-`description` agrega una tercera línea opcional (`text-body-sm
-text-gray-600`, `line-clamp-2` + `title`) — muestra el texto completo si
-entra en 2 líneas, solo trunca con "…" si lo excede. `className` para
-ajustes del propio grid item (ej. `col-span-2`).
-
-**No es el patrón para datos alineados en una fila** — para eso, texto plano
-separado por "·" (ver "Barra de contexto de registro", regla 7 de "Patrones
-de contenedor y tabla"). `MetaChip` (chips sutiles por dato) se retiró: la
-fila de la reposición activa del modal "Tablas relacionadas" pasó a esa
-barra, sin cajas dentro de la caja.
 
 ## `FaseIndicador`: fases de solo lectura
 
@@ -234,7 +209,7 @@ subrayados, más estándar para contenido tabular con varias vistas anchas.
 - Es para cambiar de **VISTA** — la selección de fila, chip o filtro sigue
   siendo el estado "seleccionado persistente" (tint `--color-primary-tint` +
   borde `--color-chip-border` + texto `--color-secondary`, ver
-  `ButtonSelectGroup` — Origen/Tipo, tiles con cantidad `DataTile`). No
+  `ButtonSelectGroup` — Origen/Tipo, tiles con cantidad `RelacionadaChip`). No
   mezclar los dos lenguajes ni usar `bg-primary` relleno para ninguno
   (reservado a botones de acción primarios).
 

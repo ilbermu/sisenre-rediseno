@@ -1376,7 +1376,6 @@ function Modal({
   footer,
   children,
   headerExtra,
-  titleSize = "heading-md",
   bodyPadding = true,
   bodyOverflow = "auto",
   bodyClassName = "",
@@ -1399,11 +1398,6 @@ function Modal({
   // heredar el padding completo que separaba al título del body. Esto
   // solo afecta a modales que pasan headerExtra.
   headerExtra?: React.ReactNode;
-  // "heading-md" (default, 16/24) o "heading-lg" (24/32, el siguiente
-  // escalón de títulos de la escala) para cuando el título tiene
-  // que ser el elemento más fuerte del header, por encima de un
-  // headerExtra con su propio dato destacado (ej. una referencia mono).
-  titleSize?: "heading-md" | "heading-lg";
   // false: el body pierde su padding p-5 — para modales que arman su
   // propio layout interno (barras, tabs, tablas de borde a borde) en vez
   // de dejar que Modal les imponga el padding estándar. Default true —
@@ -1480,7 +1474,7 @@ function Modal({
             entre las dos líneas. */}
         <div className="bg-gray-50 border-b border-gray-200 shrink-0">
           <div className={`px-5 flex items-center justify-between gap-3 ${headerExtra ? "pt-3.5 pb-0" : "py-4"}`}>
-            <p className={`min-w-0 truncate text-gray-900 ${titleSize === "heading-lg" ? "text-heading-lg" : "text-heading-md"}`}>
+            <p className={`min-w-0 truncate text-heading-md text-gray-900`}>
               {title}
               {subtitle && (
                 <span
@@ -4261,67 +4255,6 @@ function ReclamosResumenCompacto({
   );
 }
 
-// Tile de dato — label (caption gray-600) + valor (heading-md).
-// Hoy sin usos (los indicadores de "Tablas relacionadas" pasaron a
-// RelacionadaChip). Modo interactivo: onClick+disabled; admite
-// un modo de solo lectura (sin onClick, <div> en vez de <button>, sin
-// "disabled"/"alert" — esos estados son del modo interactivo) para
-// reusarla en otras grillas de datos. `description` agrega una tercera
-// línea opcional (body-sm gray-600, hasta 2 líneas — line-clamp-2 +
-// title: nunca trunca de a una si el texto entra en esas 2 líneas, solo
-// si las excede) para datos como el código+descripción de un equipo.
-function DataTile({
-  label,
-  value,
-  mono = false,
-  description,
-  alert = false,
-  disabled = false,
-  onClick,
-  className = "",
-}: {
-  label: string;
-  value: React.ReactNode;
-  mono?: boolean;
-  description?: string;
-  alert?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
-  className?: string;
-}) {
-  const interactive = !!onClick;
-  const stateCls = interactive
-    ? disabled
-      ? "bg-gray-100 border-gray-300 cursor-not-allowed"
-      : `hover:ring-2 hover:ring-primary/30 active:scale-[0.97] ${alert ? "bg-warning-bg border-warning-border" : "bg-gray-50 border-gray-300"}`
-    : alert
-    ? "bg-warning-bg border-warning-border"
-    : "bg-gray-50 border-gray-300";
-  const valorColorCls = disabled ? "text-gray-400" : alert ? "text-warning-text" : "text-gray-900";
-  const cls = `rounded-sm border px-2 py-2 flex flex-col gap-1 text-left transition-all duration-150 ${stateCls} ${className}`;
-
-  const content = (
-    <>
-      <span className="text-caption text-gray-600">{label}</span>
-      <span className={`text-heading-md ${valorColorCls} ${mono ? "font-mono" : ""}`}>{value}</span>
-      {description && (
-        <p className="text-body-sm text-gray-600 line-clamp-2" title={description}>
-          {description}
-        </p>
-      )}
-    </>
-  );
-
-  if (interactive) {
-    return (
-      <button type="button" disabled={disabled} onClick={onClick} className={cls}>
-        {content}
-      </button>
-    );
-  }
-  return <div className={cls}>{content}</div>;
-}
-
 // Indicador de fase eléctrica — 3 mini-cajas fijas R/S/T (18×18, tamaño
 // pedido explícitamente, no hay un paso de la escala de spacing que dé
 // justo ese valor). Siempre las 3 en ese orden, resalta las presentes en
@@ -4672,33 +4605,8 @@ function ButtonSelectGroup({
   );
 }
 
-// Barra de acciones contextual de la tabla "Interrupciones" (navegador
-// compacto) en Modificar interrupción. Reusa actionBtnCls/ActionItem tal
-// cual — mismos botones/variantes/colores que SelectionActionBar — pero en
-// una única línea de altura fija: si los botones no entran en el ancho de
-// la card, scrollean horizontalmente en vez de wrappear a varias líneas y
-// comerse el espacio de la lista de referencias. Sin label/referencia — esa
-// info ya se ve en el header "Interrupción" de la Card B de al lado.
-// SelectionActionBar en sí no se toca y sigue igual en CDS2/CDS3/CDS4.
-function CompactSelectionActionBar({ actions }: { actions: ActionItem[] }) {
-  return (
-    <div className="px-4 py-2 border-b border-gray-200 bg-white shrink-0 flex items-center gap-2 overflow-x-auto">
-      {actions.map((a) => (
-        <button
-          key={a.label}
-          onClick={a.onClick}
-          disabled={a.disabled}
-          className={actionBtnCls(a.variant) + " shrink-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"}
-        >
-          {a.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// Barra de acciones persistente — a diferencia de SelectionActionBar /
-// CompactSelectionActionBar (que solo aparecen con una fila seleccionada),
+// Barra de acciones persistente — a diferencia de SelectionActionBar
+// (que solo aparece con una fila seleccionada),
 // esta vive siempre en pantalla. Cada acción decide su propio estado
 // habilitado/deshabilitado via `disabled` en vez de depender de que la
 // barra entera aparezca/desaparezca — mismo criterio que separa "+Insertar"
@@ -5643,15 +5551,13 @@ function ModificarContent({
           seleccionada — la línea de metadatos de esa reposición
           (FaseReposicionFicha, separados por "·") + el paginador ‹ ›.
           Ninguna de estas props toca el header de los demás modales de la
-          app (ninguno las pasa). titleSize "heading-lg" (24/32): el título
-          sigue siendo el elemento más fuerte del header, por encima de la
-          referencia (text-code) y de la línea de metadatos de abajo. */}
+          app (ninguno las pasa). El título va en heading-md, como en
+          todos los modales. */}
       <Modal
         title="Tablas relacionadas"
         open={relTab !== null}
         onClose={() => setRelTab(null)}
         size="xl"
-        titleSize="heading-lg"
         bodyPadding={false}
         bodyOverflow="hidden"
         height="min(720px, calc(100vh - 40px))"
