@@ -56,14 +56,61 @@
   --color-chip-border: #B9D2FB;
   --color-chip-border-hover: #D9E9FF;
 
-  /* Escala tipográfica semántica */
-  --text-micro: 10px;
-  --text-caption: 11px;
-  --text-body-sm: 12px;
+  /*
+   * Escala tipográfica — tokens semánticos por ROL (ver DESIGN_SYSTEM.md,
+   * "Tipografía"). Cada token es compuesto: tamaño + interlineado + peso.
+   * `--text-*: initial` borra la escala default de tamaños de Tailwind:
+   * las únicas utilidades text-<tamaño> que existen son las de acá abajo.
+   * Un único valor por token en todos los tamaños de pantalla — la densidad
+   * en ventanas bajas se maneja solo con --spacing.
+   */
+  --text-*: initial;
+
+  /* Solo marca del login — no usar en el producto */
+  --text-display: 40px;
+  --text-display--line-height: 48px;
+  --text-display--font-weight: 600;
+
+  --text-heading-lg: 24px;
+  --text-heading-lg--line-height: 32px;
+  --text-heading-lg--font-weight: 600;
+
+  --text-heading-md: 16px;
+  --text-heading-md--line-height: 24px;
+  --text-heading-md--font-weight: 600;
+
+  --text-heading-sm: 13px;
+  --text-heading-sm--line-height: 20px;
+  --text-heading-sm--font-weight: 600;
+
+  --text-heading-xs: 11px;
+  --text-heading-xs--line-height: 16px;
+  --text-heading-xs--font-weight: 600;
+
+  --text-body-lg: 14px;
+  --text-body-lg--line-height: 20px;
+  --text-body-lg--font-weight: 400;
+
   --text-body: 13px;
-  --text-label: 15px;
-  --text-title-sm: 22px;
-  --text-title: 26px;
+  --text-body--line-height: 20px;
+  --text-body--font-weight: 400;
+
+  --text-body-sm: 12px;
+  --text-body-sm--line-height: 16px;
+  --text-body-sm--font-weight: 400;
+
+  --text-label: 12px;
+  --text-label--line-height: 16px;
+  --text-label--font-weight: 500;
+
+  --text-caption: 11px;
+  --text-caption--line-height: 16px;
+  --text-caption--font-weight: 400;
+
+  /* Siempre junto a font-mono: IDs, referencias, fechas */
+  --text-code: 12px;
+  --text-code--line-height: 16px;
+  --text-code--font-weight: 400;
 
   /* Radios */
   --radius-sm: 4px;
@@ -81,11 +128,12 @@
  * ~650-720px de alto una vez descontado chrome del navegador — a ~950-1000px
  * de alto ya aparece scroll hoy). Tailwind v4 resuelve TODAS las utilidades
  * numéricas de espaciado (padding, gap, alto, ancho) vía
- * calc(var(--spacing) * N), y las utilidades de texto semántico
- * (text-title, text-title-sm, text-label, text-body, text-body-sm, etc.)
- * vía font-size: var(--text-...) — redefinir esos tokens acá alcanza para
+ * calc(var(--spacing) * N) — redefinir --spacing acá alcanza para
  * compactar TODA la app (paddings, alturas de botón incluidas vía
- * BTN_SM/BTN_MD) sin tocar className en cada componente. El objetivo es
+ * BTN_SM/BTN_MD) sin tocar className en cada componente. --spacing es la
+ * ÚNICA palanca de densidad: los tokens tipográficos (--text-*) tienen un
+ * único valor en todos los tamaños de pantalla y no se redefinen acá. El
+ * objetivo es
  * "cero scroll" de página/formulario en esos altos — la tabla de resultados
  * sigue scrolleando su propio body, eso es aceptado.
  *
@@ -98,27 +146,18 @@
  * app a ~75% de zoom del navegador, y luego se ajustó más agresivo todavía
  * (~64% de --spacing) en pasadas de fine-tuning. Una vez que la grilla de 2
  * columnas de AbmScreen y el rebalanceo de paneles liberaron espacio real,
- * se volvió a subir un escalón (--spacing ~80% del default, texto más
- * cerca de tier 1) — el recorte más agresivo ya no hacía falta. Caption/
- * micro no bajan más: ya están en el piso de legibilidad.
+ * se volvió a subir un escalón (--spacing ~80% del default) — el recorte
+ * más agresivo ya no hacía falta.
  */
 @media (max-height: 900px) {
   :root {
     --spacing: 0.2125rem;
-    --text-title: 24px;
-    --text-title-sm: 20px;
-    --text-label: 13px;
   }
 }
 
 @media (max-height: 760px) {
   :root {
     --spacing: 0.2rem;
-    --text-title: 23px;
-    --text-title-sm: 19px;
-    --text-label: 13px;
-    --text-body: 12px;
-    --text-body-sm: 11px;
     /* Franja de título de pantalla + selector de período — tanto la de App
        (pantallas normales) como el masthead propio de AbmScreen (selector
        de tabla + período) comparten este mismo alto fijo en `minHeight`
@@ -127,8 +166,8 @@
 
     /* LoginScreen (título "Bienvenido" + Usuario/Contraseña/Confirmar) es
        una pantalla marcada aparte, con paddings/gaps en `style` inline en
-       px en vez de clases Tailwind — no participa de --spacing/--text-*,
-       así que cada valor que aporta alto vertical necesita su propia
+       px en vez de clases Tailwind — no participa de --spacing, así que
+       cada valor que aporta alto vertical necesita su propia
        variable acá. El offset superior es el que más pesa: la card en sí
        es flex-1 (se estira para llenar todo lo que quede debajo de este
        padding-top), así que un offset muy chico infla la card a casi
@@ -136,8 +175,6 @@
     --login-top-offset: calc(16vh + 10px);
     --login-form-pt: 24px;
     --login-form-pb: 16px;
-    --login-title-size: 26px;
-    --login-title-line: 30px;
     --login-header-gap: 4px;
     --login-inputs-mt: 12px;
     --login-inputs-gap: 14px;
@@ -156,7 +193,7 @@
  * sm (compacto) — acciones inline de fila (Modificar/Borrar en las tablas
  * ABM) y toggles/chips (BT/MT/AT, Interno/Externo, etc.):
  *   height ~28px (h-7) · padding compacto (px-2.5)
- *   · tipografía --text-caption (11px)
+ *   · tipografía text-label (12/16, medium)
  *   · --radius-sm (4px)
  *
  * md (default) — acciones estándar de panel (Buscar, Limpiar, Cancelar,
@@ -165,7 +202,8 @@
  * aplica, chevron a la derecha, mismo espaciado consistente entre texto e
  * íconos):
  *   height ~36px (h-9) · padding normal (px-4)
- *   · tipografía --text-body (13px)
+ *   · tipografía text-body (13/20) + font-medium — la única excepción
+ *     de peso del sistema, igual para primario y secundario
  *   · --radius-md (6px)
  *
  * No aplica a los <select> nativos (tema aparte, todavía sin resolver).
@@ -193,7 +231,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   transform: translateY(-50%);
   background: var(--color-gray-800);
   color: #fff;
-  font-size: 12px;
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   white-space: nowrap;

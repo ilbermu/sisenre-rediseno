@@ -322,7 +322,7 @@ function SelectWrap({ children, className = "" }: { children: React.ReactNode; c
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="block mb-1 text-body-sm font-medium text-gray-700 select-none tracking-wide">
+    <label className="block mb-1 text-label text-gray-700 select-none tracking-wide">
       {children}
     </label>
   );
@@ -331,7 +331,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 function SectionDivider({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-2.5 mb-3 mt-1">
-      <span className="text-caption font-semibold uppercase tracking-[0.09em] text-gray-600 whitespace-nowrap select-none">
+      <span className="text-heading-xs uppercase tracking-[0.09em] text-gray-600 whitespace-nowrap select-none">
         {title}
       </span>
       <div className="flex-1 h-px bg-gray-200" />
@@ -388,10 +388,10 @@ function NavItem({
         )}
         {!collapsed && (
           <>
-            <span className={`flex-1 min-w-0 truncate text-body text-left leading-snug ${boldLabel ? "font-semibold" : ""}`}>{label}</span>
+            <span className={`flex-1 min-w-0 truncate text-left ${boldLabel ? "text-heading-sm" : "text-body"}`}>{label}</span>
             {code && (
               <span
-                className={`text-micro font-mono shrink-0 tabular-nums ${active ? "text-secondary/60" : "text-gray-500 group-hover:text-gray-600"}`}
+                className={`text-caption font-mono shrink-0 tabular-nums ${active ? "text-secondary/60" : "text-gray-500 group-hover:text-gray-600"}`}
               >
                 {code}
               </span>
@@ -424,7 +424,7 @@ function PeriodSelector() {
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`${BTN_MD} group flex items-center gap-1.5 border font-medium transition-all duration-150
+        className={`${BTN_MD} group flex items-center gap-1.5 border transition-all duration-150
           ${open ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"}`}
       >
         <span className={`transition-colors ${open ? "text-secondary" : "text-gray-500 group-hover:text-secondary"}`}><Calendar size={15} strokeWidth={1.5} /></span>
@@ -439,7 +439,7 @@ function PeriodSelector() {
           style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
         >
           <div className="px-3 py-2.5 border-b border-gray-100">
-            <p className="text-caption font-semibold text-gray-600 uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
+            <p className="text-heading-xs text-gray-600 uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
           </div>
           <div className="p-1.5 flex flex-col gap-0.5">
           {PERIODS.map((p) => (
@@ -547,7 +547,7 @@ function FilterTriggerButton({
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={onToggle}
-        className={`h-8 px-2.5 rounded-sm text-body-sm font-medium border inline-flex items-center gap-1.5 transition-all ${FILTER_FOCUS_CLS} ${
+        className={`h-8 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-all ${FILTER_FOCUS_CLS} ${
           open
             ? "bg-primary-tint border-primary text-secondary"
             : "border-transparent bg-transparent text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
@@ -559,7 +559,7 @@ function FilterTriggerButton({
     );
   }
   return (
-    <div className="h-8 rounded-sm text-body-sm font-medium border inline-flex items-center bg-primary-tint border-primary text-secondary">
+    <div className="h-8 rounded-sm text-label border inline-flex items-center bg-primary-tint border-primary text-secondary">
       <button
         type="button"
         aria-haspopup="dialog"
@@ -709,7 +709,7 @@ function FilterDateRangePanel({
     { label: "Últimos 7 días", rango: () => { const n = new Date(); return [new Date(n.getTime() - 7 * 24 * 3600_000), n]; } },
   ];
 
-  const rotuloCls = "block mb-1 text-micro font-semibold uppercase tracking-[0.08em] text-gray-500";
+  const rotuloCls = "block mb-1 text-heading-xs uppercase tracking-[0.08em] text-gray-500";
   const extremo = (nombre: "Desde" | "Hasta", fecha: string, setFecha: (v: string) => void, hora: string, setHora: (v: string) => void) => (
     <div>
       <span className={rotuloCls}>{nombre}</span>
@@ -739,7 +739,7 @@ function FilterDateRangePanel({
             key={a.label}
             type="button"
             onClick={() => completar(...a.rango())}
-            className={`${BTN_SM} font-medium border transition-all duration-150 shrink-0 bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]`}
+            className={`${BTN_SM} border transition-all duration-150 shrink-0 bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]`}
           >
             {a.label}
           </button>
@@ -756,7 +756,7 @@ function FilterDateRangePanel({
         <button
           type="button"
           onClick={() => onApply(null)}
-          className="text-body-sm font-medium text-primary hover:text-secondary transition-colors"
+          className="text-label text-primary hover:text-secondary transition-colors"
         >
           Limpiar
         </button>
@@ -805,11 +805,11 @@ const DAY_PICKER_CLASSNAMES = {
   button_next: "absolute right-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all",
   month_grid: "w-full border-collapse",
   weekdays: "",
-  weekday: "text-micro font-semibold uppercase text-gray-500 pb-1",
+  weekday: "text-heading-xs uppercase text-gray-500 pb-1",
   day: "p-0.5 text-center",
-  day_button: "w-8 h-8 rounded-full bg-transparent flex items-center justify-center text-body-sm font-medium text-gray-700 transition-colors hover:bg-primary-tint hover:text-secondary",
+  day_button: "w-8 h-8 rounded-full bg-transparent flex items-center justify-center text-label text-gray-700 transition-colors hover:bg-primary-tint hover:text-secondary",
   selected: "rounded-full bg-primary-tint border border-primary text-secondary",
-  today: "text-secondary font-semibold",
+  today: "text-secondary",
   outside: "text-gray-400",
 };
 
@@ -840,7 +840,7 @@ function MiniCaptionDropdown({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="h-6 px-1.5 rounded-sm text-body font-semibold text-gray-900 hover:bg-primary-tint hover:text-secondary transition-colors"
+        className="h-6 px-1.5 rounded-sm text-heading-sm text-gray-900 hover:bg-primary-tint hover:text-secondary transition-colors"
       >
         {label}
       </button>
@@ -991,14 +991,14 @@ function DateTimeField({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className={`${BTN_MD} font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all`}
+              className={`${BTN_MD} border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all`}
             >
               Cerrar
             </button>
             <button
               type="button"
               onClick={aplicar}
-              className={`${BTN_MD} font-semibold text-white hover:brightness-105 transition-all`}
+              className={`${BTN_MD} text-white hover:brightness-105 transition-all`}
               style={{ backgroundColor: "var(--color-primary)" }}
             >
               Aplicar
@@ -1031,7 +1031,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
         className={`w-full flex items-center gap-2 rounded-sm px-1.5 py-1.5 transition-colors hover:bg-gray-100 ${open ? "bg-gray-100" : ""}`}
       >
         <div
-          className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-body-sm font-semibold text-white"
+          className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-label text-white"
           style={{ background: "linear-gradient(135deg,#1565C0,#1E3A8A)" }}
         >
           R
@@ -1039,7 +1039,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
         {!collapsed && (
           <>
             <div className="flex-1 text-left overflow-hidden">
-              <p className="text-body font-medium text-gray-800 leading-none truncate">Rdellamagiora</p>
+              <p className="text-body font-medium text-gray-800 truncate">Rdellamagiora</p>
               <p className="text-caption text-gray-600 mt-0.5 truncate">Operador</p>
             </div>
             <span className={`text-gray-500 transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
@@ -1075,7 +1075,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
 // ─── Sistema de tamaños de botón ────────────────────────────────────────────
 // Los 2 únicos tamaños de botón de toda la app — ver documentación completa
 // en index.css, junto a los tokens que los anclan (--radius-sm/md,
-// --text-caption/body). No hay un componente <Button/> compartido (la app
+// text-label/text-body + font-medium). No hay un componente <Button/> compartido (la app
 // es un solo archivo grande con botones ad hoc por instancia), así que la
 // forma de reusarlos es esta: BTN_SM/BTN_MD (o los helpers que ya los
 // consumen, actionBtnCls/rowActionBtnCls) definen tamaño/padding/tipografía/
@@ -1088,8 +1088,8 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
 //   md — acciones de panel (Buscar, Limpiar, Cancelar, Guardar, Insertar,
 //        Exportar, Auditoría) y botones dropdown-trigger (selector de
 //        período, "Cambiar de tabla")
-const BTN_SM = "h-7 px-2.5 rounded-sm text-caption";
-const BTN_MD = "h-9 px-4 rounded-md text-body";
+const BTN_SM = "h-7 px-2.5 rounded-sm text-label";
+const BTN_MD = "h-9 px-4 rounded-md text-body font-medium";
 
 // ─── Login screen ─────────────────────────────────────────────────────────────
 
@@ -1102,9 +1102,9 @@ type ActionItem = {
 
 function actionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return `${BTN_MD} font-medium border border-error-border bg-white text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.98] whitespace-nowrap`;
+    return `${BTN_MD} border border-error-border bg-white text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.98] whitespace-nowrap`;
   }
-  return `${BTN_MD} font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.98] whitespace-nowrap`;
+  return `${BTN_MD} border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.98] whitespace-nowrap`;
 }
 
 // Variante compacta de actionBtnCls — mismo botón outline/secundario ya
@@ -1115,9 +1115,9 @@ function actionBtnCls(variant?: ActionItem["variant"]) {
 // Resultados) donde el tamaño md no entra prolijo.
 function rowActionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return `${BTN_SM} font-medium border border-error-border bg-white text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.97] whitespace-nowrap`;
+    return `${BTN_SM} border border-error-border bg-white text-error hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.97] whitespace-nowrap`;
   }
-  return `${BTN_SM} font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.97] whitespace-nowrap`;
+  return `${BTN_SM} border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.97] whitespace-nowrap`;
 }
 
 // Confirmación visual de qué registro está seleccionado — solo la línea
@@ -1128,11 +1128,11 @@ function SelectionActionBar({ recordLabel }: { recordLabel: string }) {
   return (
     <div className="px-4 py-3 border-b border-gray-200 bg-white shrink-0 flex items-center gap-2.5">
       <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-      <span className="text-caption font-semibold text-secondary uppercase tracking-wide select-none">
+      <span className="text-heading-xs text-secondary uppercase tracking-wide select-none">
         Registro seleccionado
       </span>
       <span
-        className="text-body-sm font-medium text-gray-800 tabular-nums font-mono"
+        className="text-code text-gray-800 tabular-nums font-mono"
       >
         {recordLabel}
       </span>
@@ -1210,8 +1210,8 @@ function exportRowsToCsv(filename: string, headers: string[], rows: string[][]) 
 
 function SortIndicator({ dir }: { dir: SortDir }) {
   return (
-    <span className="text-primary" style={{ fontSize: 8, lineHeight: 1 }}>
-      {dir === "asc" ? "▲" : "▼"}
+    <span className="text-primary inline-flex">
+      {dir === "asc" ? <ChevronUp size={10} strokeWidth={2.5} /> : <ChevronDown size={10} strokeWidth={2.5} />}
     </span>
   );
 }
@@ -1234,7 +1234,7 @@ function SortableHeaderCell({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1 font-semibold uppercase tracking-[0.07em] select-none cursor-pointer transition-colors hover:text-gray-700 ${
+      className={`flex items-center gap-1 text-heading-xs uppercase tracking-[0.07em] select-none cursor-pointer transition-colors hover:text-gray-700 ${
         active ? "text-secondary" : "text-gray-600"
       } ${className}`}
     >
@@ -1261,7 +1261,7 @@ function SortableTh({
   onClick: () => void;
 }) {
   return (
-    <th className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-4 py-3 text-left text-caption font-semibold uppercase tracking-[0.07em] select-none whitespace-nowrap">
+    <th className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] select-none whitespace-nowrap">
       <button
         type="button"
         onClick={onClick}
@@ -1363,7 +1363,7 @@ function TableToolbar({
 // outline para cancelar, azul solido para la accion primaria). Cierra con X,
 // click en el overlay o Escape.
 const modalPrimaryBtnCls =
-  "h-9 px-5 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-9 px-5 rounded-md text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 const modalNeutralBtnCls =
   "h-9 px-5 rounded-md text-body font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 
@@ -1376,7 +1376,7 @@ function Modal({
   footer,
   children,
   headerExtra,
-  titleSize = "label",
+  titleSize = "heading-md",
   bodyPadding = true,
   bodyOverflow = "auto",
   bodyClassName = "",
@@ -1399,11 +1399,11 @@ function Modal({
   // heredar el padding completo que separaba al título del body. Esto
   // solo afecta a modales que pasan headerExtra.
   headerExtra?: React.ReactNode;
-  // "label" (default, 15px — ningún modal existente cambia) o "title-sm"
-  // (22px, el siguiente escalón de la escala) para cuando el título tiene
+  // "heading-md" (default, 16/24) o "heading-lg" (24/32, el siguiente
+  // escalón de títulos de la escala) para cuando el título tiene
   // que ser el elemento más fuerte del header, por encima de un
   // headerExtra con su propio dato destacado (ej. una referencia mono).
-  titleSize?: "label" | "title-sm";
+  titleSize?: "heading-md" | "heading-lg";
   // false: el body pierde su padding p-5 — para modales que arman su
   // propio layout interno (barras, tabs, tablas de borde a borde) en vez
   // de dejar que Modal les imponga el padding estándar. Default true —
@@ -1480,11 +1480,11 @@ function Modal({
             entre las dos líneas. */}
         <div className="bg-gray-50 border-b border-gray-200 shrink-0">
           <div className={`px-5 flex items-center justify-between gap-3 ${headerExtra ? "pt-3.5 pb-0" : "py-4"}`}>
-            <p className={`min-w-0 truncate font-semibold text-gray-900 ${titleSize === "title-sm" ? "text-title-sm" : "text-label"}`}>
+            <p className={`min-w-0 truncate text-gray-900 ${titleSize === "heading-lg" ? "text-heading-lg" : "text-heading-md"}`}>
               {title}
               {subtitle && (
                 <span
-                  className="ml-2 font-normal text-body text-gray-600 font-mono"
+                  className="ml-2 text-code text-gray-600 font-mono"
                 >
                   {subtitle}
                 </span>
@@ -1524,7 +1524,7 @@ function Modal({
 function ListBox({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col border border-gray-300 rounded-sm overflow-hidden" style={{ height: 160 }}>
-      <div className="px-3 py-2 border-b border-gray-300 bg-gray-50 text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 shrink-0">
+      <div className="px-3 py-2 border-b border-gray-300 bg-gray-50 text-heading-xs uppercase tracking-[0.07em] text-gray-600 shrink-0">
         {title}
       </div>
       <div className="flex-1 overflow-y-auto p-2">{children}</div>
@@ -1634,7 +1634,7 @@ function DesarmeModal({
       <div className="grid grid-cols-2 gap-4">
         <ListBox title="Interrupción/Reclamo">
           <div
-            className="px-2 py-1.5 text-body tabular-nums text-gray-800 font-mono"
+            className="px-2 py-1.5 text-code tabular-nums text-gray-800 font-mono"
           >
             {referencia}
           </div>
@@ -1836,7 +1836,7 @@ function CambiaFasesModal({
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               {["Fase", "Fecha", "Id elemento", "Tipo elemento", "Cadena", "Cliente"].map((c) => (
-                <th key={c} className="px-4 py-3 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 select-none whitespace-nowrap">
+                <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 select-none whitespace-nowrap">
                   {c}
                 </th>
               ))}
@@ -1848,11 +1848,11 @@ function CambiaFasesModal({
               <tr key={r.idElemento} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                 <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.fase}</td>
                 <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap">{r.fecha}</td>
-                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap font-mono">
+                <td className="px-4 py-3 text-code text-gray-700 whitespace-nowrap font-mono">
                   {r.idElemento}
                 </td>
                 <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap">{r.tipoElemento}</td>
-                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap font-mono" style={{ fontSize: "var(--text-caption)" }}>
+                <td className="px-4 py-3 text-code text-gray-700 whitespace-nowrap font-mono">
                   {r.cadena}
                 </td>
                 <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.cliente}</td>
@@ -1928,7 +1928,7 @@ function AltaClientesModal({
         <button
           type="button"
           onClick={() => setFiltroActivo((v) => !v)}
-          className={`${BTN_SM} font-medium border transition-colors ${
+          className={`${BTN_SM} border transition-colors ${
             filtroActivo ? "bg-primary-tint border-primary text-secondary" : "bg-white border-gray-400 text-gray-700 hover:border-primary hover:bg-primary-tint hover:text-secondary"
           }`}
         >
@@ -1941,7 +1941,7 @@ function AltaClientesModal({
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               {["Interrupción", "Repo", "Cadena/Cuenta", "Clientes T4", "Clientes T6", "Clientes T9", "Clientes T10"].map((c) => (
-                <th key={c} className="px-4 py-3 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 select-none whitespace-nowrap">
+                <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 select-none whitespace-nowrap">
                   {c}
                 </th>
               ))}
@@ -1951,11 +1951,11 @@ function AltaClientesModal({
           <tbody>
             {ALTA_CLIENTES_ROWS.map((r) => (
               <tr key={r.interrupcion} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3 text-body tabular-nums font-mono" style={{ color: "var(--color-gray-800)" }}>
+                <td className="px-4 py-3 text-code tabular-nums font-mono" style={{ color: "var(--color-gray-800)" }}>
                   {r.interrupcion}
                 </td>
                 <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.repo}</td>
-                <td className="px-4 py-3 text-body text-gray-700 whitespace-nowrap font-mono" style={{ fontSize: "var(--text-caption)" }}>
+                <td className="px-4 py-3 text-code text-gray-700 whitespace-nowrap font-mono">
                   {r.cadenaCuenta}
                 </td>
                 <td className="px-4 py-3 text-body text-gray-700 tabular-nums">{r.t4}</td>
@@ -1976,7 +1976,7 @@ function AltaClientesModal({
           <button
             type="button"
             onClick={() => setPeriodicidad("mensual")}
-            className={`h-7 px-2.5 text-caption font-medium transition-colors ${
+            className={`h-7 px-2.5 text-label transition-colors ${
               periodicidad === "mensual" ? "bg-primary text-white" : "bg-white text-gray-700 hover:bg-gray-50"
             }`}
           >
@@ -1985,7 +1985,7 @@ function AltaClientesModal({
           <button
             type="button"
             onClick={() => setPeriodicidad("semestral")}
-            className={`h-7 px-2.5 text-caption font-medium border-l border-gray-400 transition-colors ${
+            className={`h-7 px-2.5 text-label border-l border-gray-400 transition-colors ${
               periodicidad === "semestral" ? "bg-primary text-white" : "bg-white text-gray-700 hover:bg-gray-50"
             }`}
           >
@@ -2124,7 +2124,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="border border-gray-300 rounded-sm overflow-hidden" style={{ height: 160 }}>
             <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-300">
               {["Campo 1", "Campo 2", "Campo 3"].map((c) => (
-                <div key={c} className="px-3 py-2 text-caption font-semibold uppercase tracking-[0.07em] text-gray-600">
+                <div key={c} className="px-3 py-2 text-heading-xs uppercase tracking-[0.07em] text-gray-600">
                   {c}
                 </div>
               ))}
@@ -2184,7 +2184,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                   key={t.key}
                   type="button"
                   onClick={() => setActiveTipo(t.key)}
-                  className={`px-3 py-2 text-body-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  className={`px-3 py-2 text-label border-b-2 transition-colors whitespace-nowrap ${
                     activeTipo === t.key ? "border-primary text-secondary" : "border-transparent text-gray-600 hover:text-gray-700"
                   }`}
                 >
@@ -2314,7 +2314,7 @@ function IntercambioModal({
           <div className="border border-gray-300 rounded-sm divide-y divide-gray-100 overflow-hidden">
             <div className="flex items-center justify-between gap-2 px-3 py-2">
               <span
-                className="text-body-sm tabular-nums text-gray-800 truncate font-mono"
+                className="text-code tabular-nums text-gray-800 truncate font-mono"
               >
                 {referencia}
               </span>
@@ -2353,7 +2353,7 @@ function IntercambioModal({
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
-                    <th key={c} className="px-3 py-2 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 whitespace-nowrap">
+                    <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 whitespace-nowrap">
                       {c}
                     </th>
                   ))}
@@ -2380,7 +2380,7 @@ function IntercambioModal({
                     <td colSpan={4}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
                         <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                        <p className="text-body font-medium text-gray-600">No hay registros</p>
+                        <p className="text-heading-sm text-gray-600">No hay registros</p>
                       </div>
                     </td>
                   </tr>
@@ -2435,7 +2435,7 @@ function IntercambioModal({
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
-                    <th key={c} className="px-3 py-2 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 whitespace-nowrap">
+                    <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600 whitespace-nowrap">
                       {c}
                     </th>
                   ))}
@@ -2452,7 +2452,7 @@ function IntercambioModal({
                     <td colSpan={3}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
                         <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                        <p className="text-body font-medium text-gray-600">No hay registros</p>
+                        <p className="text-heading-sm text-gray-600">No hay registros</p>
                       </div>
                     </td>
                   </tr>
@@ -2503,8 +2503,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   }
 
   const inputCls = "w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-gray-500 rounded-sm bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
-  const inputStyle: React.CSSProperties = { fontWeight: 400, fontSize: 14, color: "var(--color-gray-900)", lineHeight: "20px", letterSpacing: "0.14px" };
-  const labelStyle: React.CSSProperties = { fontWeight: 400, fontSize: 14, color: "var(--color-gray-700)", lineHeight: "20px", letterSpacing: "0.14px" };
+  const inputStyle: React.CSSProperties = { color: "var(--color-gray-900)", letterSpacing: "0.14px" };
+  const labelStyle: React.CSSProperties = { color: "var(--color-gray-700)", letterSpacing: "0.14px" };
 
   return (
     <div className="relative w-full h-screen overflow-hidden flex">
@@ -2517,8 +2517,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           <Logo />
         </div>
         <div style={{ marginTop: 50 }}>
-          <p className="font-sans" style={{ fontWeight: 600, fontSize: "39.06px", color: "white", lineHeight: "46.87px" }}>SISENRE</p>
-          <p className="font-sans" style={{ fontWeight: 600, fontSize: "39.06px", color: "white", lineHeight: "46.87px" }}>Calidad de servicio</p>
+          <p className="font-sans text-display" style={{ color: "white" }}>SISENRE</p>
+          <p className="font-sans text-display" style={{ color: "white" }}>Calidad de servicio</p>
         </div>
       </div>
 
@@ -2532,19 +2532,19 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0" style={{ paddingTop: "var(--login-form-pt, 60px)", paddingLeft: 32, paddingRight: 32, paddingBottom: "var(--login-form-pb, 32px)" }}>
             {/* Header */}
             <div className="flex flex-col gap-[8px] [@media(max-height:760px)]:gap-[var(--login-header-gap,8px)] shrink-0">
-              <p className="font-sans" style={{ fontWeight: 600, fontSize: "var(--login-title-size, 40px)", color: "var(--color-secondary)", lineHeight: "var(--login-title-line, 40px)" }}>Bienvenido </p>
-              <p className="font-sans" style={{ fontWeight: 400, fontSize: 16, color: "var(--color-gray-700)", lineHeight: "20px", letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
+              <p className="font-sans text-heading-lg" style={{ color: "var(--color-secondary)" }}>Bienvenido </p>
+              <p className="font-sans text-body-lg" style={{ color: "var(--color-gray-700)", letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
             </div>
 
             {/* Inputs */}
             <div className="flex flex-col shrink-0" style={{ marginTop: "var(--login-inputs-mt, 24px)", gap: "var(--login-inputs-gap, 32px)" }}>
               <div className="flex flex-col gap-[4px]">
-                <label className="font-sans" style={labelStyle}>Usuario</label>
-                <input type="text" autoComplete="username" value={usuario} onChange={e => { setUsuario(e.target.value); setError(""); }} className={inputCls + " font-sans"} style={inputStyle} />
+                <label className="font-sans text-body-lg" style={labelStyle}>Usuario</label>
+                <input type="text" autoComplete="username" value={usuario} onChange={e => { setUsuario(e.target.value); setError(""); }} className={inputCls + " font-sans text-body-lg"} style={inputStyle} />
               </div>
               <div className="flex flex-col gap-[4px]">
-                <label className="font-sans" style={labelStyle}>Contraseña</label>
-                <input type="password" autoComplete="current-password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} className={inputCls + " font-sans"} style={inputStyle} />
+                <label className="font-sans text-body-lg" style={labelStyle}>Contraseña</label>
+                <input type="password" autoComplete="current-password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} className={inputCls + " font-sans text-body-lg"} style={inputStyle} />
               </div>
             </div>
 
@@ -2557,9 +2557,9 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-sm text-white hover:brightness-110 disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all font-sans"
+                className="w-full rounded-sm text-white hover:brightness-110 disabled:opacity-70 disabled:pointer-events-none active:scale-[0.99] transition-all font-sans text-body font-medium"
                 style={{
-                  backgroundColor: "var(--color-primary)", fontWeight: 500, fontSize: 16, lineHeight: "20px",
+                  backgroundColor: "var(--color-primary)",
                   paddingTop: "var(--login-button-py, 12px)", paddingBottom: "var(--login-button-py, 12px)", paddingLeft: 24, paddingRight: 24,
                   boxShadow: "0px 1px 2px 0px rgba(16,24,40,0.05)",
                 }}
@@ -2573,7 +2573,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
             {/* Footer */}
             <div className="shrink-0 text-center">
-              <p className="font-sans" style={{ fontWeight: 400, fontSize: "var(--text-body-sm)", lineHeight: "16px", letterSpacing: "1px", color: "#000" }}>© Desarrollos propios 2026</p>
+              <p className="font-sans text-body-sm" style={{ letterSpacing: "1px", color: "#000" }}>© Desarrollos propios 2026</p>
             </div>
           </form>
         </div>
@@ -2610,8 +2610,8 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
       <div className="w-full max-w-[520px] px-6">
         {/* Header */}
         <div className="mb-6 pb-5 border-b border-gray-300">
-          <h1 className="text-title-sm font-bold text-gray-900 mb-1">Bienvenido a SISENRE</h1>
-          <p className="text-label text-gray-600">Seleccioná con qué herramienta comenzarás a trabajar</p>
+          <h1 className="text-heading-lg text-gray-900 mb-1">Bienvenido a SISENRE</h1>
+          <p className="text-body-lg text-gray-600">Seleccioná con qué herramienta comenzarás a trabajar</p>
         </div>
 
         {/* Options */}
@@ -2636,7 +2636,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-label font-semibold text-gray-900 mb-0.5">{opt.title}</p>
+                    <p className="text-heading-md text-gray-900 mb-0.5">{opt.title}</p>
                     <p className="text-body text-gray-600">{opt.desc}</p>
                   </div>
                   {!opt.disabled && (
@@ -2685,7 +2685,7 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="h-8 px-2.5 flex items-center gap-1.5 border border-gray-400 rounded-sm bg-white text-body-sm font-semibold text-gray-900 hover:border-primary hover:text-secondary transition-colors"
+        className="h-8 px-2.5 flex items-center gap-1.5 border border-gray-400 rounded-sm bg-white text-label text-gray-900 hover:border-primary hover:text-secondary transition-colors"
       >
         {value}
         <span className="text-gray-500"><Calendar size={15} strokeWidth={1.5} /></span>
@@ -2779,12 +2779,12 @@ function CronogramaEnre() {
   const CAL_CELL = 34;
   const CAL_WIDTH = CAL_CELL * 7 + 3 * 6;
 
-  const claseCeldaBase = "rounded-[3px] flex items-center justify-center text-micro font-semibold border";
+  const claseCeldaBase = "rounded-[3px] flex items-center justify-center text-caption border";
 
   return (
     <div className="bg-white rounded-md border border-gray-300 px-5 py-4" style={{ maxWidth: 760 }}>
       <div className="mb-4">
-        <span className="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-3 rounded-full bg-primary-tint border border-chip-border text-secondary text-body-sm font-semibold">
+        <span className="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-3 rounded-full bg-primary-tint border border-chip-border text-secondary text-label">
           <span className="shrink-0 rounded-full" style={{ width: 6, height: 6, backgroundColor: "var(--color-primary)" }} />
           Período {nombrePeriodo}
         </span>
@@ -2795,7 +2795,7 @@ function CronogramaEnre() {
         <div className="shrink-0" style={{ width: CAL_WIDTH }}>
           <div className="grid gap-[3px] mb-1" style={{ gridTemplateColumns: `repeat(7, ${CAL_CELL}px)` }}>
             {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
-              <span key={i} className="text-micro text-center font-medium text-gray-400">{d}</span>
+              <span key={i} className="text-caption text-center text-gray-400">{d}</span>
             ))}
           </div>
           <div className="grid gap-[3px]" style={{ gridTemplateColumns: `repeat(7, ${CAL_CELL}px)`, gridTemplateRows: `repeat(${totalFilas}, 30px)` }}>
@@ -2811,7 +2811,7 @@ function CronogramaEnre() {
               if (etapa === "entrega") {
                 clase = claseCeldaBase + " bg-primary-tint border-primary text-secondary";
               } else if (etapa === "correccion") {
-                clase = claseCeldaBase + " bg-warning-bg border-warning-border text-warning-text font-medium";
+                clase = claseCeldaBase + " bg-warning-bg border-warning-border text-warning-text";
               } else if (etapa === "tentativa") {
                 clase = claseCeldaBase + " border-error-border text-error";
                 estiloExtra.backgroundColor = "var(--color-error-bg)";
@@ -2842,25 +2842,25 @@ function CronogramaEnre() {
             <div className="flex items-center gap-2">
               <span className="shrink-0 rounded-[2px]" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.entrega }} />
               <span className="text-body-sm text-gray-600 flex-1 min-w-0">Entrega de tablas</span>
-              <span className="text-body-sm font-medium text-gray-900 shrink-0">{diaEntrega} de {nombreMesEntrega}</span>
+              <span className="text-label text-gray-900 shrink-0">{diaEntrega} de {nombreMesEntrega}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="shrink-0 rounded-[2px]" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.correccion }} />
               <span className="text-body-sm text-gray-600 flex-1 min-w-0">Ventana de corrección</span>
-              <span className="text-body-sm font-medium text-gray-900 shrink-0">
+              <span className="text-label text-gray-900 shrink-0">
                 {hayCorreccion ? `${correccionDesde} – ${correccionHasta} de ${nombreMesEntrega}` : "—"}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="shrink-0 rounded-[2px]" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.tentativa }} />
               <span className="text-body-sm text-gray-600 flex-1 min-w-0">Entrega tentativa final</span>
-              <span className="text-body-sm font-medium text-gray-900 shrink-0">{diaTentativa} de {nombreMesEntrega}</span>
+              <span className="text-label text-gray-900 shrink-0">{diaTentativa} de {nombreMesEntrega}</span>
             </div>
           </div>
 
           <div className="border-t border-gray-200 my-3" />
 
-          <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-2">Fechas clave</p>
+          <p className="text-heading-xs uppercase tracking-[0.07em] text-gray-600 mb-2">Fechas clave</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <FieldLabel>Entrega de tablas</FieldLabel>
@@ -2895,13 +2895,13 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
     <div className="flex-1 overflow-y-auto px-10 py-10">
       {/* Greeting */}
       <div className="mb-8">
-        <p className="text-body-sm font-medium uppercase tracking-widest text-gray-500 mb-1">SISENRE 2.0 · Agosto 2026</p>
-        <h2 className="text-title font-bold text-gray-900 leading-tight">Buenos días, Rdellamagiora</h2>
-        <p className="text-[14px] text-gray-600 mt-1">Seleccioná una sección del menú o usá los accesos rápidos para comenzar.</p>
+        <p className="text-heading-xs uppercase tracking-widest text-gray-500 mb-1">SISENRE 2.0 · Agosto 2026</p>
+        <h2 className="text-heading-lg text-gray-900">Buenos días, Rdellamagiora</h2>
+        <p className="text-body-lg text-gray-600 mt-1">Seleccioná una sección del menú o usá los accesos rápidos para comenzar.</p>
       </div>
 
       {/* Quick access */}
-      <p className="text-caption font-semibold uppercase tracking-[0.09em] text-gray-500 mb-3">Accesos frecuentes</p>
+      <p className="text-heading-xs uppercase tracking-[0.09em] text-gray-500 mb-3">Accesos frecuentes</p>
       <div className="grid grid-cols-2 gap-4 mb-8" style={{ maxWidth: 760 }}>
         {quickLinks.map((item) => (
           <div
@@ -2913,14 +2913,14 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
               <span className="mt-0.5 text-primary shrink-0">{item.icon}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-label font-semibold text-gray-900">{item.label}</p>
+                  <p className="text-heading-md text-gray-900">{item.label}</p>
                   <span
-                    className="text-micro font-mono font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600"
+                    className="text-caption font-mono px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600"
                   >
                     {item.code}
                   </span>
                 </div>
-                <p className="text-body-sm text-gray-600 leading-snug">{item.desc}</p>
+                <p className="text-body-sm text-gray-600">{item.desc}</p>
               </div>
             </div>
           </div>
@@ -2928,7 +2928,7 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
       </div>
 
       {/* Cronograma ENRE */}
-      <p className="text-caption font-semibold uppercase tracking-[0.09em] text-gray-500 mb-3">Cronograma ENRE</p>
+      <p className="text-heading-xs uppercase tracking-[0.09em] text-gray-500 mb-3">Cronograma ENRE</p>
       <CronogramaEnre />
     </div>
   );
@@ -2945,7 +2945,7 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-gray-600 mb-1 truncate">{label}</p>
+      <p className="text-heading-xs uppercase tracking-[0.05em] text-gray-600 mb-1 truncate">{label}</p>
       <div className="h-7 px-2 flex items-center text-body-sm bg-gray-100 border border-gray-300 rounded-sm text-gray-700 truncate">
         {value || " "}
       </div>
@@ -3111,7 +3111,7 @@ function ConfirmarBorrarModal({
     >
       <p className="text-body text-gray-700">
         Se eliminará el registro{" "}
-        <span className="font-medium text-gray-900 tabular-nums font-mono">
+        <span className="text-code font-medium text-gray-900 tabular-nums font-mono">
           {registro}
         </span>
         {" "}de <span className="font-medium text-gray-900">{tabla}</span>. Esta acción no se puede deshacer.
@@ -3170,17 +3170,17 @@ function ConfirmarModificarModal({
     >
       <div className="flex flex-col gap-5">
         <div>
-          <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-3">Resumen de cambios</p>
+          <p className="text-heading-xs uppercase tracking-[0.07em] text-gray-600 mb-3">Resumen de cambios</p>
           {cambios.length === 0 ? (
             <p className="text-body-sm text-gray-500">No se detectaron cambios respecto al registro original.</p>
           ) : (
             <div className="flex flex-col gap-2">
               {cambios.map((c) => (
                 <div key={c.label} className="flex items-center gap-3 px-3 py-2 rounded-sm bg-gray-50 border border-gray-200">
-                  <span className="w-[38%] shrink-0 text-body-sm font-medium text-gray-700">{c.label}</span>
+                  <span className="w-[38%] shrink-0 text-label text-gray-700">{c.label}</span>
                   <span className="flex-1 min-w-0 text-body-sm text-gray-500 line-through truncate">{c.anterior || "(vacío)"}</span>
                   <span className="shrink-0 text-gray-400">→</span>
-                  <span className="flex-1 min-w-0 text-body-sm font-semibold text-gray-900 truncate">{c.nuevo || "(vacío)"}</span>
+                  <span className="flex-1 min-w-0 text-label text-gray-900 truncate">{c.nuevo || "(vacío)"}</span>
                 </div>
               ))}
             </div>
@@ -3188,7 +3188,7 @@ function ConfirmarModificarModal({
         </div>
 
         <div className="rounded-sm border border-primary bg-primary-tint p-4">
-          <p className="text-caption font-semibold uppercase tracking-[0.07em] text-secondary mb-1">Motivo</p>
+          <p className="text-heading-xs uppercase tracking-[0.07em] text-secondary mb-1">Motivo</p>
           <p className="text-body-sm text-gray-600 mb-3">
             Seleccioná una nota o ingresá una manual para justificar este cambio.
           </p>
@@ -3526,7 +3526,7 @@ const DRAWER_TAB_TO_ABM: Partial<Record<string, { tableKey: AbmTableKey; campoCo
 function CodeBadge({ code }: { code: string }) {
   return (
     <span
-      className="text-micro font-medium px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600 shrink-0 font-mono"
+      className="text-caption px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600 shrink-0 font-mono"
     >
       {code}
     </span>
@@ -3571,13 +3571,13 @@ function CardHeader({
   const sizeCls = size === "compact" ? "h-14 [@media(max-height:760px)]:h-auto [@media(max-height:760px)]:py-2" : "h-14";
   return (
     <div className={`${sizeCls} px-5 border-b border-gray-200 bg-gray-50 shrink-0 flex items-center gap-2`}>
-      <span className="text-label font-semibold text-gray-900">{title}</span>
+      <span className="text-heading-md text-gray-900">{title}</span>
       {tag && <CodeBadge code={tag} />}
       {context && (
         <>
           <span className="text-gray-400">·</span>
-          <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500">{context.label}</span>
-          <span className="text-body-sm font-medium text-gray-800 tabular-nums font-mono">{context.value}</span>
+          <span className="text-heading-xs uppercase tracking-[0.08em] text-gray-500">{context.label}</span>
+          <span className="text-code text-gray-800 tabular-nums font-mono">{context.value}</span>
         </>
       )}
       {right && <div className="ml-auto shrink-0">{right}</div>}
@@ -3586,16 +3586,16 @@ function CardHeader({
 }
 
 // Alto de header (th sticky) y de fila de ReposicionesTable, en px —
-// medidos en el navegador en el tier normal, que es el más alto: fila =
-// body-sm 18 + micro 15 (celda Equipo, 2 líneas) + py-2 16 + borde 1 = 50;
-// header = micro 15 + py-2 16 + borde 1 = 32. En los tiers compactos
-// (--spacing y --text-* más chicos, ver index.css) el contenido mide menos
-// (47,6/29,6 a ≤900px, 45,3/28,8 a ≤760px), así que el alto se FIJA en el
+// calculados para el tier normal, que es el más alto: fila = code 16 +
+// caption 16 (celda Equipo, 2 líneas) + py-2 16 + borde 1 = 49 (se deja
+// en 50); header = heading-xs 16 + py-2 16 + borde 1 = 33. En los tiers
+// compactos (--spacing más chico, ver index.css; la tipografía no cambia
+// entre tiers) el padding mide menos, así que el alto se FIJA en el
 // <tr> (style height), para que las filas queden parejas entre tiers. Ya
 // no se usan para calcular un alto de 5 filas: la tabla toma el alto
 // disponible (flex-1, igual que la lista de Interrupciones) y puede asomar
 // una fila cortada abajo.
-const REPOSICIONES_HEADER_H = 32;
+const REPOSICIONES_HEADER_H = 33;
 const REPOSICIONES_ROW_H = 50;
 
 // Tabla de Reposiciones (Tabla 4) de la Card B "Reposiciones" (Modificar
@@ -3678,7 +3678,7 @@ function ReposicionesTable({
             {cols.map((c, ci) => (
               <th
                 key={c}
-                className={`sticky top-0 z-10 bg-gray-50 px-3 py-2 border-b border-gray-200 text-micro font-semibold uppercase tracking-[0.06em] text-gray-600 whitespace-nowrap ${
+                className={`sticky top-0 z-10 bg-gray-50 px-3 py-2 border-b border-gray-200 text-heading-xs uppercase tracking-[0.06em] text-gray-600 whitespace-nowrap ${
                   ci === cols.length - 1 ? "text-right" : "text-left"
                 }`}
               >
@@ -3720,12 +3720,12 @@ function ReposicionesTable({
                     {fila.nro}
                   </td>
                   <td className={`${tdCls} text-body-sm tabular-nums whitespace-nowrap ${textCls}`}>{fila.horaRep}</td>
-                  <td className={`${tdCls} text-body-sm font-mono tabular-nums whitespace-nowrap ${textCls}`}>{fila.fase}</td>
+                  <td className={`${tdCls} text-code font-mono tabular-nums whitespace-nowrap ${textCls}`}>{fila.fase}</td>
                   <td className={`${tdCls} max-w-[220px]`}>
-                    <div className={`text-body-sm font-medium font-mono tabular-nums truncate ${seleccionada ? "text-secondary" : "text-gray-800"}`}>
+                    <div className={`text-code font-mono tabular-nums truncate ${seleccionada ? "text-secondary" : "text-gray-800"}`}>
                       {fila.equipoCodigo}
                     </div>
-                    <div className={`text-micro truncate ${seleccionada ? "text-gray-600" : "text-gray-500"}`} title={fila.equipoDesc}>
+                    <div className={`text-caption truncate ${seleccionada ? "text-gray-600" : "text-gray-500"}`} title={fila.equipoDesc}>
                       {fila.equipoDesc}
                     </div>
                   </td>
@@ -3780,13 +3780,13 @@ function RelacionadaChip({
   }
   const baseCls = "inline-flex flex-col items-start px-[14px] py-[6px] rounded-md border text-left";
   const etiqueta = (
-    <span className="text-[10px] leading-tight tracking-[0.05em] whitespace-nowrap text-gray-500">{label}</span>
+    <span className="text-caption tracking-[0.05em] whitespace-nowrap text-gray-500">{label}</span>
   );
   if (!conContenido) {
     return (
       <div className={`${baseCls} border-dashed border-gray-300 bg-transparent cursor-default`}>
         {etiqueta}
-        <span className="w-0 min-w-full text-[14px] leading-snug whitespace-nowrap text-gray-500">{valor}</span>
+        <span className="w-0 min-w-full text-body-lg whitespace-nowrap text-gray-500">{valor}</span>
       </div>
     );
   }
@@ -3800,7 +3800,7 @@ function RelacionadaChip({
       className={`${baseCls} bg-white border-gray-200 hover:bg-primary-tint hover:border-primary active:bg-chip-border-hover transition-[background-color,border-color] duration-[120ms] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2`}
     >
       {etiqueta}
-      <span className="w-0 min-w-full text-[14px] leading-snug whitespace-nowrap font-medium text-secondary">{valor}</span>
+      <span className="w-0 min-w-full text-body-lg whitespace-nowrap font-medium text-secondary">{valor}</span>
     </button>
   );
 }
@@ -4013,15 +4013,15 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
   const bandaFin = xs.length ? Math.min(x1, (saturado ? px(resumen!.p80) : xs[indiceP80]) + g.hitoW / 2 + 4) : x0;
   const rotuloX = Math.min(bandaX + 6, x1 - 112);
 
-  const kLabel = "block text-[9px] tracking-[0.05em] text-gray-500 mb-[3px]";
-  const kValor = "text-[18px] font-medium leading-none text-secondary tabular-nums";
-  const kSufijo = "text-[11px] font-normal text-gray-600";
+  const kLabel = "block text-caption tracking-[0.05em] text-gray-500 mb-[3px]";
+  const kValor = "text-heading-md text-secondary tabular-nums";
+  const kSufijo = "text-caption text-gray-600";
 
   const contenido = (
     <>
       {/* Header: label + chip DURACIÓN */}
       <div className="flex items-center justify-between gap-[12px] mb-[14px]">
-        <span className="text-[10px] tracking-[0.06em] text-gray-600">RECLAMOS DURANTE LA INTERRUPCIÓN</span>
+        <span className="text-caption tracking-[0.06em] text-gray-600">RECLAMOS DURANTE LA INTERRUPCIÓN</span>
         {resumen && <ChipDuracion minutos={resumen.duracionMin} />}
       </div>
 
@@ -4076,7 +4076,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
             {hayBanda && (
               <>
                 <rect x={bandaX} y={g.bandaY} width={Math.max(0, bandaFin - bandaX)} height={g.bandaH} rx={4} fill={`url(#${idBase}-banda)`} />
-                <text x={rotuloX} y={g.rotuloY} fontSize={9} letterSpacing="0.04em" className="fill-[color-mix(in_srgb,var(--color-primary)_60%,var(--color-gray-500))]">
+                <text x={rotuloX} y={g.rotuloY} letterSpacing="0.04em" className="text-caption fill-[color-mix(in_srgb,var(--color-primary)_60%,var(--color-gray-500))]">
                   80% DE LOS RECLAMOS
                 </text>
               </>
@@ -4114,27 +4114,27 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
               marcasHora(datos!.inicio, resumen.duracionMin, px, x0, x1).map((t) => (
                 <g key={t}>
                   <line x1={px(t)} x2={px(t)} y1={g.pistaY + g.pistaH + 2} y2={g.pistaY + g.pistaH + 6} strokeWidth={1} className="stroke-gray-400" />
-                  <text x={px(t)} y={g.ejeY!} textAnchor="middle" fontSize={10} className="fill-gray-700 tabular-nums">
+                  <text x={px(t)} y={g.ejeY!} textAnchor="middle" className="text-caption fill-gray-700 tabular-nums">
                     {fmtHoraCorta(new Date(datos!.inicio.getTime() + t * 60000), conDia)}
                   </text>
                 </g>
               ))}
           </svg>
         ) : (
-          <div className="h-full flex items-center text-[12px] text-gray-600">
+          <div className="h-full flex items-center text-body-sm text-gray-600">
             {!datos ? "Seleccioná una interrupción" : resumen && total === 0 ? "Sin reclamos registrados" : ""}
           </div>
         )}
       </div>
 
       {/* Footer: INICIO / FIN */}
-      <div className="flex justify-between text-[11px] text-gray-700 mt-[7px] tabular-nums">
+      <div className="flex justify-between text-caption text-gray-700 mt-[7px] tabular-nums">
         <span>
-          <span className="block text-[9px] tracking-[0.05em] text-gray-400 mb-[1px]">INICIO</span>
+          <span className="block text-caption tracking-[0.05em] text-gray-400 mb-[1px]">INICIO</span>
           {datos ? fmtFechaHora(datos.inicio) : "—"}
         </span>
         <span className="text-right">
-          <span className="block text-[9px] tracking-[0.05em] text-gray-400 mb-[1px]">FIN</span>
+          <span className="block text-caption tracking-[0.05em] text-gray-400 mb-[1px]">FIN</span>
           {datos ? fmtFechaHora(datos.fin) : "—"}
         </span>
       </div>
@@ -4142,7 +4142,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
   );
 
   return (
-    <section className="block w-full text-left leading-[normal] bg-white border-[0.5px] border-gray-300 rounded-[10px] px-[18px] py-[16px]">
+    <section className="block w-full text-left bg-white border-[0.5px] border-gray-300 rounded-[10px] px-[18px] py-[16px]">
       {contenido}
     </section>
   );
@@ -4153,8 +4153,8 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
 function ChipDuracion({ minutos }: { minutos: number }) {
   return (
     <span className="inline-flex items-center gap-[6px] bg-primary-tint border border-chip-border rounded-full px-[12px] py-[4px] whitespace-nowrap">
-      <span className="text-[9px] tracking-[0.05em] text-[color-mix(in_srgb,var(--color-secondary)_70%,white)]">DURACIÓN</span>
-      <span className="text-[13px] font-medium text-secondary">{fmtDuracion(minutos)}</span>
+      <span className="text-caption tracking-[0.05em]" style={{ color: "color-mix(in srgb, var(--color-secondary) 70%, white)" }}>DURACIÓN</span>
+      <span className="text-body font-medium text-secondary">{fmtDuracion(minutos)}</span>
     </span>
   );
 }
@@ -4248,12 +4248,12 @@ function ReclamosResumenCompacto({
       <div className="grid grid-cols-4 px-5 py-4">
         {columnas.map((c, i) => (
           <span key={`l-${c.etiqueta}`} className={`min-w-0 self-end pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}>
-            <span className="block text-[10px] leading-tight tracking-[0.05em] text-gray-500 group-data-[habilitada]:group-hover:text-secondary">{c.etiqueta}</span>
+            <span className="block text-caption tracking-[0.05em] text-gray-500 group-data-[habilitada]:group-hover:text-secondary">{c.etiqueta}</span>
           </span>
         ))}
         {columnas.map((c, i) => (
           <span key={`v-${c.etiqueta}`} className={`min-w-0 self-end ${i === 0 ? "pr-3" : "px-3 border-l border-gray-200"}`}>
-            <span className="block text-[14px] leading-snug font-medium text-secondary">{c.valor}</span>
+            <span className="block text-body-lg font-medium text-secondary">{c.valor}</span>
           </span>
         ))}
       </div>
@@ -4261,7 +4261,7 @@ function ReclamosResumenCompacto({
   );
 }
 
-// Tile de dato — label (micro gray-600) + valor (label font-semibold).
+// Tile de dato — label (caption gray-600) + valor (heading-md).
 // Hoy sin usos (los indicadores de "Tablas relacionadas" pasaron a
 // RelacionadaChip). Modo interactivo: onClick+disabled; admite
 // un modo de solo lectura (sin onClick, <div> en vez de <button>, sin
@@ -4302,8 +4302,8 @@ function DataTile({
 
   const content = (
     <>
-      <span className="text-micro text-gray-600 leading-tight">{label}</span>
-      <span className={`text-label font-semibold leading-none ${valorColorCls} ${mono ? "font-mono" : ""}`}>{value}</span>
+      <span className="text-caption text-gray-600">{label}</span>
+      <span className={`text-heading-md ${valorColorCls} ${mono ? "font-mono" : ""}`}>{value}</span>
       {description && (
         <p className="text-body-sm text-gray-600 line-clamp-2" title={description}>
           {description}
@@ -4347,7 +4347,7 @@ function FaseIndicador({ fase }: { fase: string }) {
           <span
             key={letra}
             aria-hidden="true"
-            className={`w-[18px] h-[18px] flex items-center justify-center rounded-sm border text-micro font-semibold font-mono ${
+            className={`w-[18px] h-[18px] flex items-center justify-center rounded-sm border text-caption font-mono ${
               presente ? "bg-primary-tint border-chip-border text-secondary" : "border-gray-200 text-gray-300"
             }`}
           >
@@ -4444,7 +4444,7 @@ function FaseReposicionFicha({
         </span>
         {sep}
         <span className="inline-flex items-center gap-1.5 min-w-0">
-          <span className="font-mono text-gray-700">{fila.equipoCodigo}</span>
+          <span className="text-code font-mono text-gray-700">{fila.equipoCodigo}</span>
           <span className="text-gray-500 truncate max-w-[220px]" title={fila.equipoDesc}>
             {fila.equipoDesc}
           </span>
@@ -4654,7 +4654,7 @@ function ButtonSelectGroup({
             disabled={disabled}
             aria-pressed={isSel}
             onClick={() => onToggle(opt)}
-            className={`${sizeCls} font-medium border transition-all duration-150 shrink-0 ${
+            className={`${sizeCls} border transition-all duration-150 shrink-0 ${
               disabled
                 ? isSel
                   ? "bg-primary-tint/60 border-primary/50 text-secondary/80 cursor-not-allowed"
@@ -5100,7 +5100,7 @@ function ModificarContent({
     <button
       type="button"
       onClick={() => setFlyoutOpen((v) => !v)}
-      className={`${BTN_MD} font-medium border flex items-center gap-1.5 transition-all duration-150 ${
+      className={`${BTN_MD} border flex items-center gap-1.5 transition-all duration-150 ${
         activeFlyoutFields.length > 0
           ? "bg-primary-tint border-primary text-secondary"
           : "bg-white border-gray-400 text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary"
@@ -5109,7 +5109,7 @@ function ModificarContent({
       <Filter size={14} strokeWidth={1.5} />
       Más filtros
       {activeFlyoutFields.length > 0 && (
-        <span className="w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center">
+        <span className="w-4 h-4 rounded-full bg-primary text-white text-caption flex items-center justify-center">
           {activeFlyoutFields.length}
         </span>
       )}
@@ -5130,13 +5130,13 @@ function ModificarContent({
           setFaseSel("");
         }}
         disabled={!modShowData}
-        className={`${BTN_MD} font-medium border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
+        className={`${BTN_MD} border border-gray-400 bg-white text-gray-700 hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
       >Limpiar</button>
       <button
         type="button"
         onClick={() => { setModShowData(true); setModSelectedRow(null); }}
         disabled={modShowData}
-        className={`${BTN_MD} font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
+        className={`${BTN_MD} text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
         style={{ backgroundColor: "var(--color-primary)" }}
       >Buscar</button>
     </>
@@ -5164,8 +5164,8 @@ function ModificarContent({
             <input
               disabled={hasSelection}
               placeholder={`Ej: ${RECORD.referencia}`}
-              className={MOD_FIELD_CLS + " font-mono" + (hasSelection ? " !bg-gray-50 !text-gray-900" : "") + " [@media(max-height:760px)]:!w-[112px]"}
-              style={{ width: 190, flexShrink: 0, fontSize: "var(--text-body-sm)" }}
+              className={MOD_FIELD_CLS + " !text-code font-mono" + (hasSelection ? " !bg-gray-50 !text-gray-900" : "") + " [@media(max-height:760px)]:!w-[112px]"}
+              style={{ width: 190, flexShrink: 0 }}
               value={codigoBusqueda}
               onChange={(e) => setCodigoBusqueda(e.target.value)}
             />
@@ -5205,7 +5205,7 @@ function ModificarContent({
                 <select> nativo (ver más abajo): ocupan menos ancho por lo
                 que aportan, justo lo que le faltaba a esta fila. */}
             <div className="contents [@media(max-height:760px)]:hidden">
-              <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500 shrink-0">Origen</span>
+              <span className="text-heading-xs uppercase tracking-[0.08em] text-gray-500 shrink-0">Origen</span>
               <ButtonSelectGroup
                 options={["Interno", "Externo"]}
                 selected={origenSel ? [origenSel] : []}
@@ -5214,7 +5214,7 @@ function ModificarContent({
                 sizeCls={BTN_SM.replace("h-7", "h-8")}
               />
 
-              <span className="text-micro font-semibold uppercase tracking-[0.08em] text-gray-500 shrink-0">Tipo</span>
+              <span className="text-heading-xs uppercase tracking-[0.08em] text-gray-500 shrink-0">Tipo</span>
               <ButtonSelectGroup
                 options={["Forzado", "Programado"]}
                 selected={tipoSel ? [tipoSel] : []}
@@ -5265,7 +5265,7 @@ function ModificarContent({
                 style={{ top: "calc(100% + 6px)", width: 520, boxShadow: "var(--shadow-high)" }}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-body font-semibold text-gray-900">Más filtros</span>
+                  <span className="text-heading-sm text-gray-900">Más filtros</span>
                   <button
                     type="button"
                     onClick={() => setFlyoutOpen(false)}
@@ -5291,7 +5291,7 @@ function ModificarContent({
                   <button
                     type="button"
                     onClick={() => setFlyoutFilters(EMPTY_FLYOUT_FILTERS)}
-                    className="text-body-sm font-medium text-primary hover:text-secondary transition-colors"
+                    className="text-label text-primary hover:text-secondary transition-colors"
                   >
                     Limpiar filtros
                   </button>
@@ -5299,14 +5299,14 @@ function ModificarContent({
                     <button
                       type="button"
                       onClick={() => setFlyoutOpen(false)}
-                      className={`${BTN_MD} font-medium border border-gray-400 bg-white text-gray-700 hover:bg-gray-50 transition-colors`}
+                      className={`${BTN_MD} border border-gray-400 bg-white text-gray-700 hover:bg-gray-50 transition-colors`}
                     >
                       Cerrar
                     </button>
                     <button
                       type="button"
                       onClick={() => setFlyoutOpen(false)}
-                      className={`${BTN_MD} font-semibold text-white hover:brightness-105 transition-all`}
+                      className={`${BTN_MD} text-white hover:brightness-105 transition-all`}
                       style={{ backgroundColor: "var(--color-primary)" }}
                     >
                       Aplicar
@@ -5320,13 +5320,13 @@ function ModificarContent({
           {/* Chips de filtros aplicados (flyout) — franja propia, no texto suelto */}
           {activeFlyoutFields.length > 0 && (
             <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-sm border border-gray-200 bg-gray-50">
-              <span className="text-caption font-semibold uppercase tracking-[0.06em] text-gray-600 shrink-0">
+              <span className="text-heading-xs uppercase tracking-[0.06em] text-gray-600 shrink-0">
                 Filtros aplicados:
               </span>
               {activeFlyoutFields.map((f) => (
                 <span
                   key={f.key}
-                  className="inline-flex items-center gap-1.5 h-7 pl-3 pr-1.5 rounded-full bg-primary-tint border border-chip-border text-secondary text-body-sm font-semibold"
+                  className="inline-flex items-center gap-1.5 h-7 pl-3 pr-1.5 rounded-full bg-primary-tint border border-chip-border text-secondary text-label"
                 >
                   {f.label}: {flyoutFilters[f.key]}
                   <button
@@ -5406,7 +5406,7 @@ function ModificarContent({
                 <button
                   type="button"
                   onClick={() => setModFiltroFecha(null)}
-                  className="text-body-sm font-medium text-primary hover:text-secondary transition-colors"
+                  className="text-label text-primary hover:text-secondary transition-colors"
                 >
                   Limpiar filtros
                 </button>
@@ -5442,14 +5442,14 @@ function ModificarContent({
                 active={modSortIdx === 0}
                 dir={modSortDir}
                 onClick={() => modToggleSort(0)}
-                className="px-3 py-2 text-micro"
+                className="px-3 py-2"
               />
               <SortableHeaderCell
                 label="Fecha"
                 active={modSortIdx === 1}
                 dir={modSortDir}
                 onClick={() => modToggleSort(1)}
-                className="px-3 py-2 text-micro"
+                className="px-3 py-2"
               />
             </div>
             {/* La card tiene altura fija (arriba) — esta lista ocupa todo el
@@ -5466,14 +5466,14 @@ function ModificarContent({
               {!modShowData ? (
                 <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
                   <span className="text-gray-300 scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
-                  <p className="text-body-sm font-medium text-gray-500">Sin resultados</p>
+                  <p className="text-label text-gray-500">Sin resultados</p>
                   <p className="text-caption text-gray-500">Completá los filtros y presioná Buscar</p>
                 </div>
               ) : modFiltroFecha && modVisibleIndices.length === 0 ? (
                 /* El filtro dejó 0 filas — mismo empty state de arriba. */
                 <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
                   <span className="text-gray-300 scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
-                  <p className="text-body-sm font-medium text-gray-500">Sin resultados para los filtros aplicados</p>
+                  <p className="text-label text-gray-500">Sin resultados para los filtros aplicados</p>
                 </div>
               ) : modVisibleIndices.map((i, vi) => {
                 const row = SAMPLE_ROWS[i];
@@ -5489,7 +5489,7 @@ function ModificarContent({
                     onClick={() => setModSelectedRow(selected ? null : i)}
                   >
                     <div
-                      className={`px-3 py-2 text-body-sm tabular-nums whitespace-nowrap font-mono ${textCls}`}
+                      className={`px-3 py-2 text-code tabular-nums whitespace-nowrap font-mono ${textCls}`}
                       style={{ boxShadow: selected ? "inset 3px 0 0 var(--color-primary)" : undefined }}
                     >
                       {row.referencia}
@@ -5643,18 +5643,15 @@ function ModificarContent({
           seleccionada — la línea de metadatos de esa reposición
           (FaseReposicionFicha, separados por "·") + el paginador ‹ ›.
           Ninguna de estas props toca el header de los demás modales de la
-          app (ninguno las pasa). titleSize "title-sm" (22px): no existe
-          un paso de ~20px en la escala (micro/caption/body-sm/body/
-          label=15/title-sm=22/title=26) — es el más cercano a 20px entre
-          label y title-sm, así que es el que se usa acá; el título sigue
-          siendo el elemento más fuerte del header, por encima de la
-          referencia (text-body-sm) y de la línea de metadatos de abajo. */}
+          app (ninguno las pasa). titleSize "heading-lg" (24/32): el título
+          sigue siendo el elemento más fuerte del header, por encima de la
+          referencia (text-code) y de la línea de metadatos de abajo. */}
       <Modal
         title="Tablas relacionadas"
         open={relTab !== null}
         onClose={() => setRelTab(null)}
         size="xl"
-        titleSize="title-sm"
+        titleSize="heading-lg"
         bodyPadding={false}
         bodyOverflow="hidden"
         height="min(720px, calc(100vh - 40px))"
@@ -5665,8 +5662,8 @@ function ModificarContent({
           // condicional): sin una segunda línea debajo, el header siempre
           // cierra parejo.
           <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2">
-            <span className="text-micro font-semibold uppercase tracking-[0.06em] text-gray-500">Interrupción</span>
-            <span className="text-body-sm font-medium font-mono tabular-nums text-gray-800">
+            <span className="text-heading-xs uppercase tracking-[0.06em] text-gray-500">Interrupción</span>
+            <span className="text-code font-mono tabular-nums text-gray-800">
               {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
             </span>
             <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
@@ -5696,7 +5693,7 @@ function ModificarContent({
           {/* Descripción del tab activo, sola en su fila. Tabla 3 no
               repite descripción, el resultado (Sí/No existe) ya la dice. */}
           <div className="px-5 pt-3 pb-3 shrink-0">
-            <p className="text-body-sm text-gray-600 leading-snug">
+            <p className="text-body-sm text-gray-600">
               {activeTabData && activeTabData.key !== "tabla3" ? activeTabData.subtitle : null}
             </p>
           </div>
@@ -5733,7 +5730,7 @@ function ModificarContent({
                   <button
                     type="button"
                     onClick={() => setRelFiltros({})}
-                    className="text-body-sm font-medium text-primary hover:text-secondary transition-colors"
+                    className="text-label text-primary hover:text-secondary transition-colors"
                   >
                     Limpiar filtros
                   </button>
@@ -5776,7 +5773,7 @@ function ModificarContent({
                         )}
                       </div>
                       <div>
-                        <p className="text-body font-semibold" style={{ color: existe ? "var(--color-success-text-strong)" : "var(--color-error-text-strong)" }}>
+                        <p className="text-heading-sm" style={{ color: existe ? "var(--color-success-text-strong)" : "var(--color-error-text-strong)" }}>
                           {existe ? "Sí existe en Tabla 3" : "No existe en Tabla 3"}
                         </p>
                         <p className="text-body-sm text-gray-500">
@@ -5792,7 +5789,7 @@ function ModificarContent({
                 <div className="h-full min-h-[180px] flex items-center justify-center p-6">
                   <div className="flex flex-col items-center gap-3 text-center">
                     <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                    <p className="text-body font-medium text-gray-600">Sin registros</p>
+                    <p className="text-heading-sm text-gray-600">Sin registros</p>
                     <p className="text-body-sm text-gray-500">Sin registros para la reposición {filaFaseSeleccionada?.nro ?? "—"}</p>
                     {abmMapping && (
                       <button
@@ -5809,7 +5806,7 @@ function ModificarContent({
                             reposicionOrigen: filaFaseSeleccionada?.nro,
                           })
                         }
-                        className="mt-1 text-body-sm font-semibold text-secondary hover:underline"
+                        className="mt-1 text-label text-secondary hover:underline"
                       >
                         Ir a {ABM_TABLE_CONFIGS[abmMapping.tableKey].code} a insertar →
                       </button>
@@ -5822,7 +5819,7 @@ function ModificarContent({
                 <div className="h-full min-h-[180px] flex items-center justify-center p-6">
                   <div className="flex flex-col items-center gap-3 text-center">
                     <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                    <p className="text-body font-medium text-gray-600">Sin resultados para los filtros aplicados</p>
+                    <p className="text-heading-sm text-gray-600">Sin resultados para los filtros aplicados</p>
                   </div>
                 </div>
               ) : (
@@ -6628,9 +6625,9 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
             trabajo siempre representa "estás en la herramienta de ABM",
             no una tabla en particular (esa distinción vive en el badge). */}
         <span className="shrink-0 text-gray-500 group-hover:text-secondary transition-colors"><Pencil size={15} strokeWidth={1.5} /></span>
-        <span className="text-label font-semibold text-gray-900 leading-none truncate">{current.titulo}</span>
+        <span className="text-heading-md text-gray-900 truncate">{current.titulo}</span>
         <span
-          className="px-1.5 py-0.5 text-micro font-mono font-medium rounded-[3px] border border-gray-400 text-[#1565C0] shrink-0"
+          className="px-1.5 py-0.5 text-caption font-mono rounded-[3px] border border-gray-400 text-focus shrink-0"
           style={{ backgroundColor: "var(--color-gray-100)" }}
         >
           {current.code}
@@ -6645,7 +6642,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
           style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
         >
           <div className="px-3 py-2.5 border-b border-gray-100">
-            <p className="text-caption font-semibold text-gray-600 uppercase tracking-[0.08em] select-none">Cambiar de tabla</p>
+            <p className="text-heading-xs text-gray-600 uppercase tracking-[0.08em] select-none">Cambiar de tabla</p>
           </div>
           <div className="p-1.5 flex flex-col gap-0.5 max-h-96 overflow-y-auto">
             {ABM_TABLE_ORDER.map((k) => {
@@ -6663,7 +6660,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
                 >
                   <span className="flex-1 min-w-0 truncate text-body">{c.titulo}</span>
                   <span
-                    className={`text-micro font-mono shrink-0 tabular-nums ${isSel ? "text-secondary/70" : "text-gray-500"}`}
+                    className={`text-caption font-mono shrink-0 tabular-nums ${isSel ? "text-secondary/70" : "text-gray-500"}`}
                   >
                     {c.code}
                   </span>
@@ -6782,7 +6779,7 @@ function AbmCampo({
                 // flex-1 incondicional en ese breakpoint (en tamaño normal
                 // sigue siendo shrink-to-fit salvo que expandirBotones lo
                 // pida explícitamente).
-                className={`${BTN_SM.replace("h-7", "h-8")} ${campo.expandirBotones ? "flex-1" : ""} [@media(max-height:760px)]:flex-1 flex items-center justify-center border select-none font-medium transition-all duration-150 ${
+                className={`${BTN_SM.replace("h-7", "h-8")} ${campo.expandirBotones ? "flex-1" : ""} [@media(max-height:760px)]:flex-1 flex items-center justify-center border select-none transition-all duration-150 ${
                   estado === "disabled" ? "cursor-not-allowed opacity-60" : isDisabled ? "cursor-default" : "cursor-pointer"
                 } ${
                   active
@@ -7023,7 +7020,7 @@ function ValuePicker({
             }}
           >
             <div className="px-4 py-3 border-b border-gray-200 shrink-0 flex items-center justify-between gap-3">
-              <p className="min-w-0 truncate text-label font-semibold text-gray-900">{modalTitle ?? label ?? "Seleccionar"}</p>
+              <p className="min-w-0 truncate text-heading-md text-gray-900">{modalTitle ?? label ?? "Seleccionar"}</p>
               <button
                 type="button"
                 onClick={cerrar}
@@ -7541,7 +7538,7 @@ function AbmScreen({
                 <button
                   onClick={handleBuscar}
                   disabled={showData}
-                  className="flex-1 h-9 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                  className="flex-1 h-9 rounded-md text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                   style={{ backgroundColor: "var(--color-primary)" }}
                 >Buscar</button>
               </>
@@ -7553,7 +7550,7 @@ function AbmScreen({
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarAlta}
-                  className="flex-1 h-9 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105"
+                  className="flex-1 h-9 rounded-md text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105"
                   style={{ backgroundColor: "var(--color-primary)" }}
                 >Insertar</button>
               </>
@@ -7565,7 +7562,7 @@ function AbmScreen({
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarModificar}
-                  className="flex-1 h-9 rounded-md text-body font-semibold text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105"
+                  className="flex-1 h-9 rounded-md text-body font-medium text-white transition-all duration-150 active:scale-[0.99] hover:brightness-105"
                   style={{ backgroundColor: "var(--color-primary)" }}
                 >Guardar</button>
               </>
@@ -7661,7 +7658,7 @@ function AbmScreen({
             {!showData ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400">
                 <Inbox size={44} strokeWidth={1.2} />
-                <p className="text-label font-medium text-gray-600 mt-1">
+                <p className="text-body-lg text-gray-600 mt-1">
                   No hay resultados para los filtros aplicados
                 </p>
                 <p className="text-body-sm text-gray-500">
@@ -7674,7 +7671,7 @@ function AbmScreen({
                 <thead>
                   <tr className="border-b border-gray-300 bg-gray-50">
                     {config.columnasResultado.map((c, ci) => (
-                      <th key={c.key} className="sticky top-0 z-10 bg-gray-50 w-[1%] whitespace-nowrap px-4 py-2 text-left text-caption">
+                      <th key={c.key} className="sticky top-0 z-10 bg-gray-50 w-[1%] whitespace-nowrap px-4 py-2 text-left">
                         <SortableHeaderCell
                           label={c.label}
                           active={sortIdx === ci}
@@ -7684,7 +7681,7 @@ function AbmScreen({
                       </th>
                     ))}
                     <th className="sticky top-0 z-10 bg-gray-50" />
-                    <th className="sticky top-0 z-10 bg-gray-50 w-40 whitespace-nowrap px-4 py-2 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600">
+                    <th className="sticky top-0 z-10 bg-gray-50 w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600">
                       Acciones
                     </th>
                   </tr>
@@ -7707,8 +7704,8 @@ function AbmScreen({
                         {config.columnasResultado.map((c, ci) => (
                           <td
                             key={c.key}
-                            className={`w-[1%] whitespace-nowrap px-4 py-2.5 text-body ${
-                              c.mono ? "font-mono tabular-nums" : isSelected ? "text-secondary font-medium" : "text-gray-700"
+                            className={`w-[1%] whitespace-nowrap px-4 py-2.5 ${
+                              c.mono ? "text-code font-mono tabular-nums" : isSelected ? "text-body text-secondary font-medium" : "text-body text-gray-700"
                             }`}
                             style={{
                               ...(c.mono
@@ -7914,14 +7911,14 @@ function PlanillaConsolidadaContent() {
 
           <div className="grid grid-cols-2 gap-4 mt-3">
             <div>
-              <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-1.5">Máxima duración</p>
+              <p className="text-heading-xs uppercase tracking-[0.07em] text-gray-600 mb-1.5">Máxima duración</p>
               <div className="grid grid-cols-2 gap-3">
                 <div><FieldLabel>Interrupción</FieldLabel><input readOnly value={datos.maxDuracionRef} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
                 <div><FieldLabel>Valor</FieldLabel><input readOnly value={String(datos.maxDuracionValor)} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
               </div>
             </div>
             <div>
-              <p className="text-caption font-semibold uppercase tracking-[0.07em] text-gray-600 mb-1.5">Máximo marginal ajustado</p>
+              <p className="text-heading-xs uppercase tracking-[0.07em] text-gray-600 mb-1.5">Máximo marginal ajustado</p>
               <div className="grid grid-cols-2 gap-3">
                 <div><FieldLabel>Interrupción</FieldLabel><input readOnly value={datos.maxMarginalRef} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
                 <div><FieldLabel>Valor</FieldLabel><input readOnly value={datos.maxMarginalValor} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
@@ -7950,7 +7947,7 @@ function PlanillaConsolidadaContent() {
           {["Recepción de tablas", "Cálculo de indicadores", "Consolidación final"].map((paso, i) => (
             <div key={paso} className="flex items-center gap-2.5">
               <span
-                className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white text-micro"
+                className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white text-caption"
                 style={{ backgroundColor: i < 2 ? "var(--color-success)" : "var(--color-gray-300)" }}
               >
                 {i < 2 ? "✓" : ""}
@@ -8034,8 +8031,8 @@ function GestorNotasContent() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-3 py-2 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600">Nota</th>
-                  <th className="w-24 px-3 py-2 text-left text-caption font-semibold uppercase tracking-[0.07em] text-gray-600">Posición</th>
+                  <th className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600">Nota</th>
+                  <th className="w-24 px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-gray-600">Posición</th>
                   <th className="w-14 px-2 py-2" />
                 </tr>
                 <tr className="border-b border-gray-200">
@@ -8055,7 +8052,7 @@ function GestorNotasContent() {
                   <tr><td colSpan={3}>
                     <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
                       <span className="text-gray-400"><Inbox size={44} strokeWidth={1.2} /></span>
-                      <p className="text-body font-medium text-gray-600">No hay notas</p>
+                      <p className="text-heading-sm text-gray-600">No hay notas</p>
                     </div>
                   </td></tr>
                 ) : visibles.map((n) => (
@@ -8167,7 +8164,7 @@ function InsertaClientesContent() {
               <input value={cliente} onChange={(e) => handleCambioCliente(e.target.value)} placeholder="ID de cliente" className={MOD_FIELD_CLS} />
             </div>
             <button type="button" disabled={!cliente.trim()} onClick={handleValidar} className={modalNeutralBtnCls}>Validar</button>
-            {validado && <span className="text-body-sm font-medium shrink-0" style={{ color: "var(--color-success)" }}>✓ Cliente válido</span>}
+            {validado && <span className="text-label shrink-0" style={{ color: "var(--color-success)" }}>✓ Cliente válido</span>}
           </div>
           <div style={{ maxWidth: 280 }}>
             <ValuePicker
@@ -8473,7 +8470,7 @@ export default function App() {
               title="Expandir"
             >
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-body text-white"
+                className="w-7 h-7 rounded-full flex items-center justify-center text-heading-sm text-white"
                 style={{ background: "linear-gradient(135deg,#1565C0,#1E3A8A)" }}
               >E</div>
             </button>
@@ -8522,7 +8519,7 @@ export default function App() {
             <span className="shrink-0"><Pencil size={15} strokeWidth={1.5} fill={isAbmTableKey(screen) ? "currentColor" : "none"} /></span>
             {!collapsed && (
               <>
-                <span className="flex-1 min-w-0 truncate text-body text-left leading-snug">Alta, Baja y Modificación</span>
+                <span className="flex-1 min-w-0 truncate text-body text-left">Alta, Baja y Modificación</span>
                 <span className={`shrink-0 transition-transform duration-150 ${abmExpanded ? "" : "-rotate-90"}`}>
                   <ChevronDown size={16} strokeWidth={1.5} />
                 </span>
@@ -8559,7 +8556,7 @@ export default function App() {
               type="button"
               onClick={handleOtrosParentClick}
               aria-expanded={otrosExpanded}
-              className="w-full flex items-center gap-1 px-1 pt-5 pb-1.5 text-micro font-semibold uppercase tracking-[0.1em] text-gray-500 select-none hover:text-gray-700 transition-colors"
+              className="w-full flex items-center gap-1 px-1 pt-5 pb-1.5 text-heading-xs uppercase tracking-[0.1em] text-gray-500 select-none hover:text-gray-700 transition-colors"
             >
               <span className="flex-1 text-left">Otros</span>
               <span className={`shrink-0 transition-transform duration-150 ${otrosExpanded ? "" : "-rotate-90"}`}>
@@ -8567,7 +8564,7 @@ export default function App() {
               </span>
             </button>
           ) : (
-            <p className="px-1 pt-5 pb-1.5 text-micro font-semibold uppercase tracking-[0.1em] text-gray-500 select-none">Otros</p>
+            <p className="px-1 pt-5 pb-1.5 text-heading-xs uppercase tracking-[0.1em] text-gray-500 select-none">Otros</p>
           )}
           {(!compactSidebar || otrosExpanded) && !collapsed && (
             <div className="flex flex-col gap-0.5">
@@ -8614,16 +8611,16 @@ export default function App() {
             >
               <div className="flex items-center gap-2.5 flex-1">
                 {screen === "modificar" && (
-                  <h1 className="text-label font-semibold text-gray-900 leading-none">Consultas de interrupción</h1>
+                  <h1 className="text-heading-md text-gray-900">Consultas de interrupción</h1>
                 )}
                 {screen === "welcome" && (
-                  <h1 className="text-label font-semibold text-gray-900 leading-none">Inicio</h1>
+                  <h1 className="text-heading-md text-gray-900">Inicio</h1>
                 )}
-                {screen === "generaciontxt" && <h1 className="text-label font-semibold text-gray-900 leading-none">Generación de txt</h1>}
-                {screen === "planillaconsolidada" && <h1 className="text-label font-semibold text-gray-900 leading-none">Planilla consolidada</h1>}
-                {screen === "gestornotas" && <h1 className="text-label font-semibold text-gray-900 leading-none">Gestor de notas</h1>}
-                {screen === "insertaclientes" && <h1 className="text-label font-semibold text-gray-900 leading-none">Inserta clientes en BDTH</h1>}
-                {screen === "auditoria" && <h1 className="text-label font-semibold text-gray-900 leading-none">Reporte de auditoría</h1>}
+                {screen === "generaciontxt" && <h1 className="text-heading-md text-gray-900">Generación de txt</h1>}
+                {screen === "planillaconsolidada" && <h1 className="text-heading-md text-gray-900">Planilla consolidada</h1>}
+                {screen === "gestornotas" && <h1 className="text-heading-md text-gray-900">Gestor de notas</h1>}
+                {screen === "insertaclientes" && <h1 className="text-heading-md text-gray-900">Inserta clientes en BDTH</h1>}
+                {screen === "auditoria" && <h1 className="text-heading-md text-gray-900">Reporte de auditoría</h1>}
               </div>
               <PeriodSelector />
             </header>

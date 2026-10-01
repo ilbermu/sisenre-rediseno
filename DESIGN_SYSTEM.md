@@ -3,7 +3,68 @@
 Fuente de verdad de los tokens: `src/index.css` (bloque `@theme`). Nada de hex
 sueltos ni tamaños fuera de esa escala — si un valor no está ahí, no se usa.
 Este archivo documenta *patrones de composición* (cómo se arman pantallas con
-esos tokens), no repite los tokens en sí.
+esos tokens), no repite los tokens en sí — salvo la escala tipográfica, que
+se documenta acá abajo porque elegir token es una decisión de rol, no de
+tamaño.
+
+## Tipografía
+
+Escala única, definida en `@theme` de `src/index.css`. Cada token es
+**compuesto**: la clase `text-<token>` aplica tamaño + interlineado + peso
+juntos. Se elige por **rol** (qué es el texto), nunca por tamaño.
+
+| Token | Tamaño / interlineado | Peso | Cuándo usarlo |
+|---|---|---|---|
+| `text-heading-lg` | 24 / 32 | semibold | Título principal de una pantalla de entrada: saludo del Inicio, "Bienvenido" (login y selector de herramienta), título de modal con `titleSize="heading-lg"` |
+| `text-heading-md` | 16 / 24 | semibold | Título de pantalla (`h1` del top bar), título de modal y de card, valor destacado de un KPI o tile |
+| `text-heading-sm` | 13 / 20 | semibold | Título de sección dentro de un panel o popover ("Más filtros", mes del calendario), título de estado vacío ("No hay registros"), ítem destacado del sidebar |
+| `text-heading-xs` | 11 / 16 | semibold | Encabezado de columna, overline de sección, rótulo de grupo del sidebar, día de la semana del calendario |
+| `text-body-lg` | 14 / 20 | regular | Texto corrido: párrafos, descripciones, subtítulos, inputs del login, valor de tile |
+| `text-body` | 13 / 20 | regular | Base densa: celdas de tabla, inputs, botones, ítems de menú |
+| `text-body-sm` | 12 / 16 | regular | Celdas de tablas compactas, texto auxiliar, metadatos, tooltip |
+| `text-label` | 12 / 16 | medium | Label de campo, filter trigger, tab, chip, botón `sm` (`BTN_SM`), link de acción, día del calendario, valor en un par dato/valor |
+| `text-caption` | 11 / 16 | regular | Contadores, paginación, error de campo, label de tile y de KPI, ejes y rótulos de gráfico |
+| `text-code` | 12 / 16 | regular | Datos: IDs, referencias, fechas, códigos. Siempre junto a `font-mono` |
+| `text-display` | 40 / 48 | semibold | **Solo marca del login. No usar en el producto.** |
+
+### Reglas
+
+- **Rol, no tamaño.** Si dudás entre dos tokens, preguntate qué es el texto
+  (¿título?, ¿dato?, ¿etiqueta?), no cuánto debería medir.
+- **No hay otros tamaños.** `--text-*: initial` borra la escala default de
+  Tailwind: `text-xs`, `text-sm`, `text-base`, etc. no existen. Tampoco se
+  usan tamaños arbitrarios (`text-[13px]`), ni `font-size` / `line-height` /
+  `font-weight` inline, ni en `classNames` de librerías (DayPicker).
+- **Nada por debajo de 11px.**
+- **Tres pesos:** regular (400), medium (500), semibold (600). `font-bold`
+  no se usa.
+- **El peso viene del token.** No se agrega `font-semibold` / `font-medium`
+  sobre un token. Excepciones:
+  - **Botones** — la única excepción de peso del sistema: todos usan
+    `text-body font-medium`, primario y secundario por igual (`BTN_MD`, los
+    botones de modal y el del login). El botón `sm` usa `text-label`, que ya
+    es medium.
+  - **Estado seleccionado/activo** (fila elegida, tab activo, valor elegido
+    en un picker): `font-medium` condicional, como marca de estado y no de
+    jerarquía.
+  - **Énfasis dentro de una oración** (el número en "3 de 20 registros", el
+    nombre de la tabla en un mensaje de confirmación): un `<span>` con
+    `font-medium` o `font-semibold` sin clase de tamaño.
+- **El interlineado viene del token** (múltiplos de 4px). No se usa
+  `leading-*`.
+- **Un único valor por token en todos los tamaños de pantalla.** Los
+  `@media (max-height: …)` de `index.css` solo redefinen `--spacing`, que es
+  la única palanca de densidad; no redefinen `--text-*`.
+- **La jerarquía se lee con tamaño y peso, no con mayúsculas.** Los
+  `uppercase` + `tracking-*` que ya existen sobre `heading-xs` y `caption` se
+  mantienen, pero no se agregan nuevos para "subir" un texto de nivel.
+- **`font-mono` es una familia, no un tamaño.** Tiene dos combinaciones
+  documentadas y ninguna más:
+  - `text-code font-mono` — el rol para **datos**: IDs, referencias, fechas,
+    códigos de equipo. Va a 12px porque JetBrains Mono a 12 empareja
+    ópticamente con Inter a 13 en la misma fila.
+  - `text-caption font-mono` — **badges y contadores**: código de tabla
+    (CDS4, etc.), contadores del sidebar, letra de fase.
 
 ## `Modal`: header = mismo tratamiento que `CardHeader`
 
@@ -19,8 +80,8 @@ necesita otra cosa); el footer no cambia.
 ## `Modal` extendido: header propio, body sin scroll propio
 
 `Modal` (`src/App.tsx`) es el estándar para toda acción que requiera un
-diálogo. Por default arma su propio header (`bg-gray-50`, título `text-label`
-+ subtítulo + cerrar) y un body con `p-5` que crece con el contenido y
+diálogo. Por default arma su propio header (`bg-gray-50`, título
+`text-heading-md` + subtítulo + cerrar) y un body con `p-5` que crece con el contenido y
 scrollea (`overflow-y-auto`) hasta el tope de `maxHeight`. Props opcionales lo
 extienden sin tocar cómo se ven los modales que no las pasan:
 
@@ -31,17 +92,14 @@ extienden sin tocar cómo se ven los modales que no las pasan:
   de `py-4`) y `headerExtra` aporta su propio `mt-0.5 pb-3.5`: el gap entre
   las dos líneas queda compacto (mt-0.5) y el padding total de arriba+abajo
   del bloque sigue parejo (`pt-3.5` arriba, `pb-3.5` abajo).
-- **`titleSize="title-sm"`** (default `"label"`, 15px): sube el título al
-  siguiente escalón de la escala (`--text-title-sm`, 22px) — para cuando el
-  título tiene que ser el elemento más fuerte del header, por encima de un
+- **`titleSize="heading-lg"`** (default `"heading-md"`, 16/24): sube el
+  título al siguiente escalón de títulos (`text-heading-lg`, 24/32) — para
+  cuando el título tiene que ser el elemento más fuerte del header, por encima de un
   `headerExtra` con su propio dato destacado (ej. una referencia mono). El
   dato de `headerExtra` va entonces uno o más pasos MÁS ABAJO que el título
-  en la escala (ej. título `title-sm`/22px + referencia `text-body-sm`/12px),
+  en la escala (ej. título `text-heading-lg` + referencia `text-code`),
   nunca al mismo nivel — si compiten en peso, el header no tiene un elemento
-  más fuerte que el otro y la jerarquía no se lee. **No hay un escalón de
-  ~20px en la escala** (micro/caption/body-sm/body/label=15/title-sm=22/
-  title=26) — para un título que "debería" rondar los 20px, `title-sm` (22,
-  a 2 de distancia) es la opción más cercana frente a `label` (15, a 5).
+  más fuerte que el otro y la jerarquía no se lee.
 - **`bodyPadding={false}`**: saca el `p-5` del body — para modales que arman
   su propio layout interno (barras fijas, tabs, tablas de borde a borde) en
   vez de dejar que `Modal` les imponga el padding estándar.
@@ -97,8 +155,8 @@ contenido de trabajo — no en el header ni en una card.
 
 `DataTile` (`src/App.tsx`) es el tile compartido para mostrar un dato DENTRO
 DE UNA GRILLA de tiles (borde propio, fondo propio, radio) — `rounded-sm
-border px-2 py-2`, label `text-micro text-gray-600` arriba, valor
-`text-label font-semibold` abajo. Hoy lo usan los indicadores de "Tablas
+border px-2 py-2`, label `text-caption text-gray-600` arriba, valor
+`text-heading-md` abajo. Hoy lo usan los indicadores de "Tablas
 relacionadas" en la Card B de Modificar interrupción (`onClick`+`disabled` —
 abren el modal en ese tab; `alert` fondo/borde/texto warning) — admite
 también un modo de solo lectura (sin `onClick`, `<div>` en vez de `<button>`)
