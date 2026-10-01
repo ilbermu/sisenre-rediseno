@@ -436,7 +436,7 @@ function PeriodSelector() {
       {open && (
         <div
           className="absolute right-0 w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
+          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-md)" }}
         >
           <div className="px-3 py-2.5 border-b border-gray-100">
             <p className="text-heading-xs text-gray-600 uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
@@ -630,7 +630,7 @@ function FilterTrigger(props: FilterTriggerProps) {
             role="listbox"
             aria-label={label}
             className="absolute left-0 min-w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-            style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
+            style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-md)" }}
           >
             <div className="p-1.5 flex flex-col gap-0.5 overflow-y-auto" style={{ maxHeight: 260 }}>
               {[{ value: null as string | null, count: null as number | null }, ...props.options].map((o) => {
@@ -729,7 +729,7 @@ function FilterDateRangePanel({
       role="dialog"
       aria-label={`Filtrar por ${label.toLowerCase()}`}
       className="absolute left-0 bg-white rounded-sm border border-gray-300 z-50 p-3"
-      style={{ ...dropdownAnchorStyle(direction, 5), width: 300, boxShadow: "var(--shadow-mid)" }}
+      style={{ ...dropdownAnchorStyle(direction, 5), width: 300, boxShadow: "var(--shadow-md)" }}
     >
       {/* Atajos — clases de chip de ButtonSelectGroup (reposo). Completan
           los campos, no aplican. */}
@@ -847,7 +847,7 @@ function MiniCaptionDropdown({
       {open && (
         <div
           className="absolute left-1/2 z-40 bg-white border border-gray-300 rounded-lg p-1.5 flex flex-col gap-0.5 overflow-y-auto"
-          style={{ ...dropdownAnchorStyle(direction, 4), transform: "translateX(-50%)", minWidth: 96, maxHeight: 224, boxShadow: "var(--shadow-mid)" }}
+          style={{ ...dropdownAnchorStyle(direction, 4), transform: "translateX(-50%)", minWidth: 96, maxHeight: 224, boxShadow: "var(--shadow-md)" }}
         >
           {options.map((o) => (
             <button
@@ -970,7 +970,7 @@ function DateTimeField({
       {!disabled && open && (
         <div
           className="absolute z-30 bg-white border border-gray-300 rounded-lg p-4"
-          style={{ ...dropdownAnchorStyle(direction, 6), width: "max-content", boxShadow: "var(--shadow-high)" }}
+          style={{ ...dropdownAnchorStyle(direction, 6), width: "max-content", boxShadow: "var(--shadow-md)" }}
         >
           <DayPicker
             mode="single"
@@ -1051,7 +1051,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
       {open && (
         <div
           className={`absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "left-0 right-0"} bg-white rounded-sm border border-gray-300 py-1 z-50 min-w-[160px]`}
-          style={collapsed ? { boxShadow: "var(--shadow-mid)" } : { ...dropdownAnchorStyle(direction, 6), boxShadow: "var(--shadow-mid)" }}
+          style={collapsed ? { boxShadow: "var(--shadow-md)" } : { ...dropdownAnchorStyle(direction, 6), boxShadow: "var(--shadow-md)" }}
         >
           <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-gray-50 transition-colors">
             <User size={15} strokeWidth={1.5} /> Mi perfil
@@ -1466,7 +1466,7 @@ function Modal({
           maxWidth: "calc(100vw - 40px)",
           maxHeight: "calc(100vh - 40px)",
           height,
-          boxShadow: "var(--shadow-high)",
+          boxShadow: "var(--shadow-lg)",
         }}
       >
         {/* Header — bg-gray-50 (mismo tratamiento que CardHeader: Búsqueda/
@@ -2693,7 +2693,7 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
       {open && (
         <div
           className="absolute z-30 bg-white border border-gray-300 rounded-lg p-3"
-          style={{ ...dropdownAnchorStyle(direction, 6), right: 0, width: "max-content", boxShadow: "var(--shadow-high)" }}
+          style={{ ...dropdownAnchorStyle(direction, 6), right: 0, width: "max-content", boxShadow: "var(--shadow-md)" }}
         >
           <DayPicker
             mode="single"
@@ -4786,7 +4786,7 @@ function PersistentActionsBar({
       {open && (
         <div
           className="absolute left-0 w-56 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden p-1.5 flex flex-col gap-0.5"
-          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
+          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-md)" }}
         >
           {siempreHabilitadas.map(ItemMenu)}
           <div className="h-px bg-gray-200 my-0.5" />
@@ -4803,7 +4803,7 @@ function PersistentActionsBar({
           vive en el header (portal de acá abajo), no en este lugar. */}
       <div
         className="rounded-sm border border-gray-300 bg-white shrink-0 flex items-center gap-2 flex-wrap px-3 py-2.5 [@media(max-height:760px)]:hidden"
-        style={{ boxShadow: "var(--shadow-low)" }}
+        style={{ boxShadow: "var(--shadow-sm)" }}
       >
         {siempreHabilitadas.map(Boton)}
         <div className="w-px h-5 bg-gray-300 shrink-0" />
@@ -4910,7 +4910,7 @@ function ModificarContent({
     setFlyoutFilters((prev) => ({ ...prev, [key]: "" }));
   }
 
-  const CARD_SHADOW = { boxShadow: "var(--shadow-low)" };
+  const CARD_SHADOW = { boxShadow: "var(--shadow-sm)" };
 
   // Tabla Referencia / Fecha (columna derecha). El buscador cubre solo
   // Referencia (searchCols [0]); la fecha se filtra con el FilterTrigger
@@ -5262,7 +5262,7 @@ function ModificarContent({
             {flyoutOpen && (
               <div
                 className="absolute right-0 z-30 bg-white border border-gray-300 rounded-lg p-4"
-                style={{ top: "calc(100% + 6px)", width: 520, boxShadow: "var(--shadow-high)" }}
+                style={{ top: "calc(100% + 6px)", width: 520, boxShadow: "var(--shadow-md)" }}
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-heading-sm text-gray-900">Más filtros</span>
@@ -6639,7 +6639,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
       {open && (
         <div
           className="absolute left-0 w-96 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
+          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-md)" }}
         >
           <div className="px-3 py-2.5 border-b border-gray-100">
             <p className="text-heading-xs text-gray-600 uppercase tracking-[0.08em] select-none">Cambiar de tabla</p>
@@ -6997,7 +6997,7 @@ function ValuePicker({
         {!modal && open && !isDisabled && (
           <div
             className="absolute left-0 w-full bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-            style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-mid)" }}
+            style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-md)" }}
           >
             {buscador}
             {lista}
@@ -7016,7 +7016,7 @@ function ValuePicker({
               width: 440,
               maxWidth: "calc(100vw - 40px)",
               maxHeight: "calc(100vh - 80px)",
-              boxShadow: "var(--shadow-high)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             <div className="px-4 py-3 border-b border-gray-200 shrink-0 flex items-center justify-between gap-3">
@@ -7458,7 +7458,7 @@ function AbmScreen({
           // (41%, inline) tiene prioridad de especificidad sobre una clase
           // sin `!important`, de ahí el `!w-[47%]`.
           className="flex flex-col rounded-sm border border-gray-300 bg-white shrink-0 overflow-hidden [@media(max-height:760px)]:!w-[47%]"
-          style={{ width: "41%", boxShadow: "var(--shadow-low)" }}
+          style={{ width: "41%", boxShadow: "var(--shadow-sm)" }}
         >
           <CardHeader
             title={mode === "alta" ? "Insertando en" : mode === "modificar" ? "Modificando" : "Búsqueda"}
@@ -7577,7 +7577,7 @@ function AbmScreen({
           className={`flex-1 flex flex-col border border-gray-300 rounded-sm bg-white overflow-hidden transition-opacity duration-150 ${
             mode !== "buscar" ? "opacity-50 pointer-events-none" : ""
           }`}
-          style={{ boxShadow: "var(--shadow-low)" }}
+          style={{ boxShadow: "var(--shadow-sm)" }}
         >
           <CardHeader
             title="Resultados"
