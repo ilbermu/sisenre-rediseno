@@ -302,7 +302,7 @@ function useDropdownDirection(
 }
 
 // Ancla vertical del panel según la dirección resuelta — spread dentro del
-// `style` del panel junto a lo que cada dropdown ya tenga (width, boxShadow,
+// `style` del panel junto a lo que cada dropdown ya tenga (width, transform,
 // etc.). `gapPx` es la separación entre trigger y panel (cada dropdown ya
 // tenía su propio valor de 4-6px, se mantiene).
 function dropdownAnchorStyle(direction: "down" | "up", gapPx: number): React.CSSProperties {
@@ -435,8 +435,8 @@ function PeriodSelector() {
       </button>
       {open && (
         <div
-          className="absolute right-0 w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-md)" }}
+          className="shadow-md absolute right-0 w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+          style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           <div className="px-3 py-2.5 border-b border-gray-100">
             <p className="text-heading-xs text-gray-600 uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
@@ -629,8 +629,8 @@ function FilterTrigger(props: FilterTriggerProps) {
           <div
             role="listbox"
             aria-label={label}
-            className="absolute left-0 min-w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-            style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-md)" }}
+            className="shadow-md absolute left-0 min-w-48 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+            style={{ ...dropdownAnchorStyle(direction, 5) }}
           >
             <div className="p-1.5 flex flex-col gap-0.5 overflow-y-auto" style={{ maxHeight: 260 }}>
               {[{ value: null as string | null, count: null as number | null }, ...props.options].map((o) => {
@@ -728,8 +728,8 @@ function FilterDateRangePanel({
     <div
       role="dialog"
       aria-label={`Filtrar por ${label.toLowerCase()}`}
-      className="absolute left-0 bg-white rounded-sm border border-gray-300 z-50 p-3"
-      style={{ ...dropdownAnchorStyle(direction, 5), width: 300, boxShadow: "var(--shadow-md)" }}
+      className="shadow-md absolute left-0 bg-white rounded-sm border border-gray-300 z-50 p-3"
+      style={{ ...dropdownAnchorStyle(direction, 5), width: 300 }}
     >
       {/* Atajos — clases de chip de ButtonSelectGroup (reposo). Completan
           los campos, no aplican. */}
@@ -846,8 +846,8 @@ function MiniCaptionDropdown({
       </button>
       {open && (
         <div
-          className="absolute left-1/2 z-40 bg-white border border-gray-300 rounded-lg p-1.5 flex flex-col gap-0.5 overflow-y-auto"
-          style={{ ...dropdownAnchorStyle(direction, 4), transform: "translateX(-50%)", minWidth: 96, maxHeight: 224, boxShadow: "var(--shadow-md)" }}
+          className="shadow-md absolute left-1/2 z-40 bg-white border border-gray-300 rounded-lg p-1.5 flex flex-col gap-0.5 overflow-y-auto"
+          style={{ ...dropdownAnchorStyle(direction, 4), transform: "translateX(-50%)", minWidth: 96, maxHeight: 224 }}
         >
           {options.map((o) => (
             <button
@@ -969,8 +969,8 @@ function DateTimeField({
       </button>
       {!disabled && open && (
         <div
-          className="absolute z-30 bg-white border border-gray-300 rounded-lg p-4"
-          style={{ ...dropdownAnchorStyle(direction, 6), width: "max-content", boxShadow: "var(--shadow-md)" }}
+          className="shadow-md absolute z-30 bg-white border border-gray-300 rounded-lg p-4"
+          style={{ ...dropdownAnchorStyle(direction, 6), width: "max-content" }}
         >
           <DayPicker
             mode="single"
@@ -1050,8 +1050,8 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
       </button>
       {open && (
         <div
-          className={`absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "left-0 right-0"} bg-white rounded-sm border border-gray-300 py-1 z-50 min-w-[160px]`}
-          style={collapsed ? { boxShadow: "var(--shadow-md)" } : { ...dropdownAnchorStyle(direction, 6), boxShadow: "var(--shadow-md)" }}
+          className={`shadow-md absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "left-0 right-0"} bg-white rounded-sm border border-gray-300 py-1 z-50 min-w-[160px]`}
+          style={collapsed ? undefined : dropdownAnchorStyle(direction, 6)}
         >
           <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-gray-700 hover:bg-gray-50 transition-colors">
             <User size={15} strokeWidth={1.5} /> Mi perfil
@@ -1451,7 +1451,7 @@ function Modal({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="fixed z-50 flex flex-col bg-white rounded-lg overflow-hidden outline-none"
+        className="shadow-lg fixed z-50 flex flex-col bg-white rounded-lg overflow-hidden outline-none"
         style={{
           top: "50%",
           left: "50%",
@@ -1460,7 +1460,6 @@ function Modal({
           maxWidth: "calc(100vw - 40px)",
           maxHeight: "calc(100vh - 40px)",
           height,
-          boxShadow: "var(--shadow-lg)",
         }}
       >
         {/* Header — bg-gray-50 (mismo tratamiento que CardHeader: Búsqueda/
@@ -2555,7 +2554,6 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
                 style={{
                   backgroundColor: "var(--color-primary)",
                   paddingTop: "var(--login-button-py, 12px)", paddingBottom: "var(--login-button-py, 12px)", paddingLeft: 24, paddingRight: 24,
-                  boxShadow: "0px 1px 2px 0px rgba(16,24,40,0.05)",
                 }}
               >
                 {loading ? "Ingresando…" : "Confirmar"}
@@ -2619,18 +2617,15 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
                 onClick={() => !opt.disabled && onSelect(opt.id)}
                 onMouseEnter={() => setHovered(opt.id)}
                 onMouseLeave={() => setHovered(null)}
-                className="w-full text-left px-5 py-4 rounded-lg border transition-all duration-150"
+                className="group w-full text-left px-5 py-4 rounded-lg border border-gray-300 bg-white shadow-sm transition-all duration-150 enabled:hover:bg-primary-tint enabled:hover:border-primary enabled:hover:shadow-md"
                 style={{
-                  backgroundColor: isHov ? "var(--color-primary-tint)" : "#fff",
-                  borderColor: isHov ? "var(--color-primary)" : "var(--color-gray-300)",
-                  boxShadow: isHov ? "0 4px 16px rgba(77,151,250,0.12)" : "0 1px 3px rgba(21,40,80,0.05)",
                   cursor: opt.disabled ? "not-allowed" : "pointer",
                   opacity: opt.disabled ? 0.55 : 1,
                 }}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-heading-md text-gray-900 mb-0.5">{opt.title}</p>
+                    <p className="text-heading-md text-gray-900 group-enabled:group-hover:text-secondary transition-colors mb-0.5">{opt.title}</p>
                     <p className="text-body text-gray-600">{opt.desc}</p>
                   </div>
                   {!opt.disabled && (
@@ -2686,8 +2681,8 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
       </button>
       {open && (
         <div
-          className="absolute z-30 bg-white border border-gray-300 rounded-lg p-3"
-          style={{ ...dropdownAnchorStyle(direction, 6), right: 0, width: "max-content", boxShadow: "var(--shadow-md)" }}
+          className="shadow-md absolute z-30 bg-white border border-gray-300 rounded-lg p-3"
+          style={{ ...dropdownAnchorStyle(direction, 6), right: 0, width: "max-content" }}
         >
           <DayPicker
             mode="single"
@@ -2815,11 +2810,10 @@ function CronogramaEnre() {
                 <div
                   key={i}
                   title={`${c.dia} de ${nombreMesEntrega}${etapa ? " — " + LEYENDA.find((l) => l.etapa === etapa)?.label : ""}`}
-                  className={clase}
+                  className={clase + (esHoy ? " ring-2 ring-secondary" : "")}
                   style={{
                     gridColumn: c.col + 1,
                     gridRow: c.row + 1,
-                    boxShadow: esHoy ? "0 0 0 2px var(--color-secondary)" : undefined,
                     ...estiloExtra,
                   }}
                 >
@@ -2901,13 +2895,13 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
           <div
             key={item.code}
             onClick={() => onIrATabla(item.tableKey)}
-            className="group bg-white rounded-md border border-gray-300 px-5 py-4 cursor-pointer transition-all duration-150 hover:border-primary hover:shadow-[0_4px_16px_rgba(77,151,250,0.1)]"
+            className="group bg-white rounded-md border border-gray-300 px-5 py-4 cursor-pointer shadow-sm transition-all duration-150 hover:bg-primary-tint hover:border-primary hover:shadow-md"
           >
             <div className="flex items-start gap-3">
               <span className="mt-0.5 text-primary shrink-0">{item.icon}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-heading-md text-gray-900">{item.label}</p>
+                  <p className="text-heading-md text-gray-900 group-hover:text-secondary transition-colors">{item.label}</p>
                   <span
                     className="text-caption font-mono px-1.5 py-0.5 rounded-[3px] border border-gray-400 text-gray-600"
                   >
@@ -3613,7 +3607,7 @@ const REPOSICIONES_ROW_H = 50;
 // teclado (flechas arriba/abajo) son internos — no hay estado que
 // compartir ahí, solo el índice seleccionado.
 //
-// El acento de fila seleccionada usa boxShadow inset (no borderLeft): con
+// El acento de fila seleccionada usa una sombra inset (inset-shadow-row-selected, no borderLeft): con
 // border-collapse, un borde puesto en <td> se pinta en la capa de bordes
 // de la tabla, no en la celda, y esa capa puede quedar por ENCIMA del
 // <th> sticky al scrollear (el th sticky no lo tapa). El inset box-shadow
@@ -3708,8 +3702,7 @@ function ReposicionesTable({
                   style={{ height: REPOSICIONES_ROW_H, backgroundColor: seleccionada ? "var(--color-primary-tint)" : hovIndex === ri ? "var(--color-gray-50)" : undefined }}
                 >
                   <td
-                    className={`${tdCls} text-body-sm tabular-nums whitespace-nowrap ${textCls}`}
-                    style={{ boxShadow: seleccionada ? "inset 3px 0 0 var(--color-primary)" : undefined }}
+                    className={`${tdCls} text-body-sm tabular-nums whitespace-nowrap ${textCls} ${seleccionada ? "inset-shadow-row-selected" : ""}`}
                   >
                     {fila.nro}
                   </td>
@@ -4693,8 +4686,8 @@ function PersistentActionsBar({
       </button>
       {open && (
         <div
-          className="absolute left-0 w-56 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden p-1.5 flex flex-col gap-0.5"
-          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-md)" }}
+          className="shadow-md absolute left-0 w-56 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden p-1.5 flex flex-col gap-0.5"
+          style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           {siempreHabilitadas.map(ItemMenu)}
           <div className="h-px bg-gray-200 my-0.5" />
@@ -4710,8 +4703,7 @@ function PersistentActionsBar({
           solo se vacía) en tier 760px, porque el dropdown que la reemplaza
           vive en el header (portal de acá abajo), no en este lugar. */}
       <div
-        className="rounded-sm border border-gray-300 bg-white shrink-0 flex items-center gap-2 flex-wrap px-3 py-2.5 [@media(max-height:760px)]:hidden"
-        style={{ boxShadow: "var(--shadow-sm)" }}
+        className="shadow-sm rounded-sm border border-gray-300 bg-white shrink-0 flex items-center gap-2 flex-wrap px-3 py-2.5 [@media(max-height:760px)]:hidden"
       >
         {siempreHabilitadas.map(Boton)}
         <div className="w-px h-5 bg-gray-300 shrink-0" />
@@ -4818,7 +4810,6 @@ function ModificarContent({
     setFlyoutFilters((prev) => ({ ...prev, [key]: "" }));
   }
 
-  const CARD_SHADOW = { boxShadow: "var(--shadow-sm)" };
 
   // Tabla Referencia / Fecha (columna derecha). El buscador cubre solo
   // Referencia (searchCols [0]); la fecha se filtra con el FilterTrigger
@@ -5059,8 +5050,7 @@ function ModificarContent({
             barra de filtros compacta, una sola fila, + flyout "Más filtros" */}
         <div className="relative shrink-0">
           <div
-            className="relative rounded-sm border border-gray-300 bg-white"
-            style={CARD_SHADOW}
+            className="shadow-sm relative rounded-sm border border-gray-300 bg-white"
           >
             <CardHeader title="Búsqueda" tag="CDS2" />
             <div className="relative z-30 flex items-center gap-2 px-3 py-2.5 [@media(max-height:760px)]:flex-wrap">
@@ -5169,8 +5159,8 @@ function ModificarContent({
             {/* Flyout "Más filtros" */}
             {flyoutOpen && (
               <div
-                className="absolute right-0 z-30 bg-white border border-gray-300 rounded-lg p-4"
-                style={{ top: "calc(100% + 6px)", width: 520, boxShadow: "var(--shadow-md)" }}
+                className="shadow-md absolute right-0 z-30 bg-white border border-gray-300 rounded-lg p-4"
+                style={{ top: "calc(100% + 6px)", width: 520 }}
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-heading-sm text-gray-900">Más filtros</span>
@@ -5282,8 +5272,7 @@ function ModificarContent({
           tratamiento de card que Card B. Split 50/50 con Card B (flex-1
           en las dos). ── */}
       <div
-        className="flex-1 min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
-        style={CARD_SHADOW}
+        className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
       >
 
         {/* Header — mismo componente/tratamiento que el de Card B (Reposiciones).
@@ -5339,7 +5328,7 @@ function ModificarContent({
           {/* Replica el estilo de ReposicionesTable (copia de clases, no usa
               el componente): header bg-gray-50 de alto REPOSICIONES_HEADER_H,
               celdas px-3 py-2 text-body-sm, separador gray-100, acento de
-              selección con boxShadow inset en la primera celda. Excepciones:
+              selección con sombra inset en la primera celda. Excepciones:
               sin alto fijo de fila (acá las filas son de una línea, el 50px
               de REPOSICIONES_ROW_H responde a la celda Equipo de dos) y la
               paginación va como pie dentro del borde. */}
@@ -5397,8 +5386,7 @@ function ModificarContent({
                     onClick={() => setModSelectedRow(selected ? null : i)}
                   >
                     <div
-                      className={`px-3 py-2 text-code tabular-nums whitespace-nowrap font-mono ${textCls}`}
-                      style={{ boxShadow: selected ? "inset 3px 0 0 var(--color-primary)" : undefined }}
+                      className={`px-3 py-2 text-code tabular-nums whitespace-nowrap font-mono ${textCls} ${selected ? "inset-shadow-row-selected" : ""}`}
                     >
                       {row.referencia}
                     </div>
@@ -5431,8 +5419,7 @@ function ModificarContent({
             40/60 a favor de esta card, pero el resumen de reclamos pasó a
             vivir en Interrupciones. */}
         <div
-          className="flex-1 min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
-          style={CARD_SHADOW}
+          className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-sm border border-gray-300 bg-white overflow-hidden"
         >
           {/* La interrupción seleccionada (registro padre de las
               reposiciones) va como `context` del header — reemplaza a la
@@ -6544,8 +6531,8 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
       </button>
       {open && (
         <div
-          className="absolute left-0 w-96 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-          style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-md)" }}
+          className="shadow-md absolute left-0 w-96 bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+          style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           <div className="px-3 py-2.5 border-b border-gray-100">
             <p className="text-heading-xs text-gray-600 uppercase tracking-[0.08em] select-none">Cambiar de tabla</p>
@@ -6902,8 +6889,8 @@ function ValuePicker({
         </div>
         {!modal && open && !isDisabled && (
           <div
-            className="absolute left-0 w-full bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
-            style={{ ...dropdownAnchorStyle(direction, 5), boxShadow: "var(--shadow-md)" }}
+            className="shadow-md absolute left-0 w-full bg-white rounded-sm border border-gray-300 z-50 overflow-hidden"
+            style={{ ...dropdownAnchorStyle(direction, 5) }}
           >
             {buscador}
             {lista}
@@ -6914,7 +6901,7 @@ function ValuePicker({
         <>
           <div className="fixed inset-0 z-40 bg-black/25" onClick={cerrar} />
           <div
-            className="fixed z-50 flex flex-col bg-white rounded-lg overflow-hidden"
+            className="shadow-lg fixed z-50 flex flex-col bg-white rounded-lg overflow-hidden"
             style={{
               top: "50%",
               left: "50%",
@@ -6922,7 +6909,6 @@ function ValuePicker({
               width: 440,
               maxWidth: "calc(100vw - 40px)",
               maxHeight: "calc(100vh - 80px)",
-              boxShadow: "var(--shadow-lg)",
             }}
           >
             <div className="px-4 py-3 border-b border-gray-200 shrink-0 flex items-center justify-between gap-3">
@@ -7332,8 +7318,8 @@ function AbmScreen({
           se llegó acá por un deep-link (ver AbmDeepLink) — nada de Insertar
           ni dropdown genérico. */}
       <header
-        className="flex items-center gap-3 px-6 border-b border-gray-300 shrink-0"
-        style={{ minHeight: "var(--header-min-height, 60px)", backgroundColor: "var(--color-gray-50)", boxShadow: "0 1px 0 var(--color-gray-300)" }}
+        className="flex items-center gap-3 px-6 border-b border-gray-300 shadow-hairline shrink-0"
+        style={{ minHeight: "var(--header-min-height, 60px)", backgroundColor: "var(--color-gray-50)" }}
       >
         {volverVisible && (
           <button
@@ -7363,8 +7349,8 @@ function AbmScreen({
           // columnas de campos, ver la sección de abajo). El ancho normal
           // (41%, inline) tiene prioridad de especificidad sobre una clase
           // sin `!important`, de ahí el `!w-[47%]`.
-          className="flex flex-col rounded-sm border border-gray-300 bg-white shrink-0 overflow-hidden [@media(max-height:760px)]:!w-[47%]"
-          style={{ width: "41%", boxShadow: "var(--shadow-sm)" }}
+          className="shadow-sm flex flex-col rounded-sm border border-gray-300 bg-white shrink-0 overflow-hidden [@media(max-height:760px)]:!w-[47%]"
+          style={{ width: "41%" }}
         >
           <CardHeader
             title={mode === "alta" ? "Insertando en" : mode === "modificar" ? "Modificando" : "Búsqueda"}
@@ -7480,10 +7466,9 @@ function AbmScreen({
             y en modo modificar, para que el foco visual quede en el panel
             Búsqueda ── */}
         <div
-          className={`flex-1 flex flex-col border border-gray-300 rounded-sm bg-white overflow-hidden transition-opacity duration-150 ${
+          className={`shadow-sm flex-1 flex flex-col border border-gray-300 rounded-sm bg-white overflow-hidden transition-opacity duration-150 ${
             mode !== "buscar" ? "opacity-50 pointer-events-none" : ""
           }`}
-          style={{ boxShadow: "var(--shadow-sm)" }}
         >
           <CardHeader
             title="Resultados"
@@ -8512,8 +8497,8 @@ export default function App() {
                 acá (ver AjustesConsultas/PersistentActionsBar, que anclan su
                 propio dropdown de tier 760px a la card de Búsqueda, no acá). */}
             <header
-              className="flex items-center px-6 border-b border-gray-300 shrink-0"
-              style={{ minHeight: "var(--header-min-height, 60px)", backgroundColor: "var(--color-gray-50)", boxShadow: "0 1px 0 var(--color-gray-300)" }}
+              className="flex items-center px-6 border-b border-gray-300 shadow-hairline shrink-0"
+              style={{ minHeight: "var(--header-min-height, 60px)", backgroundColor: "var(--color-gray-50)" }}
             >
               <div className="flex items-center gap-2.5 flex-1">
                 {screen === "modificar" && (

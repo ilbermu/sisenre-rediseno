@@ -127,6 +127,10 @@
   --shadow-sm: 0 1px 2px rgba(20, 20, 19, 0.04), 0 1px 3px rgba(20, 20, 19, 0.03); /* cards */
   --shadow-md: 0 4px 12px rgba(20, 20, 19, 0.08); /* popovers, dropdowns, menús */
   --shadow-lg: 0 12px 32px rgba(20, 20, 19, 0.12); /* modales */
+
+  /* Líneas hechas con sombra — no son niveles de elevación */
+  --shadow-hairline: 0 1px 0 var(--color-gray-300); /* segunda línea bajo el top bar */
+  --inset-shadow-row-selected: inset 3px 0 0 var(--color-primary); /* acento de fila seleccionada */
 }
 
 /*
