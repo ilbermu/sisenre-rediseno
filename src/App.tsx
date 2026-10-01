@@ -3651,7 +3651,7 @@ function ReposicionesTable({
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col border border-border rounded-md overflow-hidden bg-surface">
+    <div className="flex-1 min-h-0 flex flex-col border border-border rounded-sm overflow-hidden bg-surface">
     <div
       ref={listRef}
       tabIndex={rows.length > 0 ? 0 : -1}
@@ -3763,7 +3763,7 @@ function RelacionadaChip({
       valor = n.toLocaleString("es-AR");
     }
   }
-  const baseCls = "inline-flex flex-col items-start px-[14px] py-[6px] rounded-md border text-left";
+  const baseCls = "inline-flex flex-col items-start px-[14px] py-[6px] rounded-sm border text-left";
   const etiqueta = (
     <span className="text-caption tracking-[0.05em] whitespace-nowrap text-text-muted">{label}</span>
   );
@@ -4208,7 +4208,7 @@ function ReclamosResumenCompacto({
     // card entera (has-[:focus-visible]).
     <div
       data-habilitada={habilitada || undefined}
-      className="group relative rounded-md border border-border overflow-hidden bg-surface transition-all data-[habilitada]:hover:border-primary data-[habilitada]:hover:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:outline-offset-2"
+      className="group relative rounded-sm border border-border overflow-hidden bg-surface transition-all data-[habilitada]:hover:border-primary data-[habilitada]:hover:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:outline-offset-2"
     >
       <CardHeader
         title="Reclamos durante la interrupción"
@@ -4702,7 +4702,7 @@ function PersistentActionsBar({
           solo se vacía) en tier 760px, porque el dropdown que la reemplaza
           vive en el header (portal de acá abajo), no en este lugar. */}
       <div
-        className="shadow-sm rounded-lg border border-border bg-surface shrink-0 flex items-center gap-2 flex-wrap px-3 py-2.5 [@media(max-height:760px)]:hidden"
+        className="shadow-sm rounded-md border border-border bg-surface shrink-0 flex items-center gap-2 flex-wrap px-3 py-2.5 [@media(max-height:760px)]:hidden"
       >
         {siempreHabilitadas.map(Boton)}
         <div className="w-px h-5 bg-border shrink-0" />
@@ -5048,7 +5048,7 @@ function ModificarContent({
             barra de filtros compacta, una sola fila, + flyout "Más filtros" */}
         <div className="relative shrink-0">
           <div
-            className="shadow-sm relative rounded-lg border border-border bg-surface"
+            className="shadow-sm relative rounded-md border border-border bg-surface"
           >
             <CardHeader title="Búsqueda" tag="CDS2" />
             <div className="relative z-30 flex items-center gap-2 px-3 py-2.5 [@media(max-height:760px)]:flex-wrap">
@@ -5214,7 +5214,7 @@ function ModificarContent({
 
           {/* Chips de filtros aplicados (flyout) — franja propia, no texto suelto */}
           {activeFlyoutFields.length > 0 && (
-            <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-md border border-border bg-fill-subtle">
+            <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-sm border border-border bg-fill-subtle">
               <span className="text-heading-xs uppercase tracking-[0.06em] text-text-muted shrink-0">
                 Filtros aplicados:
               </span>
@@ -5269,7 +5269,7 @@ function ModificarContent({
           tratamiento de card que Card B. Split 50/50 con Card B (flex-1
           en las dos). ── */}
       <div
-        className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-lg border border-border bg-surface overflow-hidden"
+        className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-md border border-border bg-surface overflow-hidden"
       >
 
         {/* Header — mismo componente/tratamiento que el de Card B (Reposiciones).
@@ -5329,8 +5329,8 @@ function ModificarContent({
               sin alto fijo de fila (acá las filas son de una línea, el 50px
               de REPOSICIONES_ROW_H responde a la celda Equipo de dos) y la
               paginación va como pie dentro del borde. */}
-          <div className="flex-1 min-h-0 flex flex-col border border-border rounded-md overflow-hidden bg-surface">
-            <div className="grid grid-cols-2 shrink-0 bg-fill-subtle rounded-t-md border-b border-border" style={{ height: REPOSICIONES_HEADER_H }}>
+          <div className="flex-1 min-h-0 flex flex-col border border-border rounded-sm overflow-hidden bg-surface">
+            <div className="grid grid-cols-2 shrink-0 bg-fill-subtle rounded-t-sm border-b border-border" style={{ height: REPOSICIONES_HEADER_H }}>
               <SortableHeaderCell
                 label="Referencia"
                 active={modSortIdx === 0}
@@ -5392,7 +5392,7 @@ function ModificarContent({
                 );
               })}
             </div>
-            <div className="shrink-0 border-t border-border bg-fill-subtle rounded-b-md px-3 py-1.5 flex items-center justify-between">
+            <div className="shrink-0 border-t border-border bg-fill-subtle rounded-b-sm px-3 py-1.5 flex items-center justify-between">
               <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted disabled:opacity-40" disabled>Anterior</button>
               <span className="text-caption text-text-muted">Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">2.213</span></span>
               <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted hover:bg-fill-muted transition-colors">Siguiente</button>
@@ -5416,7 +5416,7 @@ function ModificarContent({
             40/60 a favor de esta card, pero el resumen de reclamos pasó a
             vivir en Interrupciones. */}
         <div
-          className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-lg border border-border bg-surface overflow-hidden"
+          className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-md border border-border bg-surface overflow-hidden"
         >
           {/* La interrupción seleccionada (registro padre de las
               reposiciones) va como `context` del header — reemplaza a la
@@ -5455,7 +5455,7 @@ function ModificarContent({
                   gris + cuerpo blanco. La reposición activa ("Reposición
                   X de N · hora", misma condición de antes) va como
                   `context` del header. */}
-              <div className="mt-3 border border-border rounded-md overflow-hidden bg-surface">
+              <div className="mt-3 border border-border rounded-sm overflow-hidden bg-surface">
                 <CardHeader
                   title="Tablas relacionadas"
                   size="compact"
@@ -7346,7 +7346,7 @@ function AbmScreen({
           // columnas de campos, ver la sección de abajo). El ancho normal
           // (41%, inline) tiene prioridad de especificidad sobre una clase
           // sin `!important`, de ahí el `!w-[47%]`.
-          className="shadow-sm flex flex-col rounded-lg border border-border bg-surface shrink-0 overflow-hidden [@media(max-height:760px)]:!w-[47%]"
+          className="shadow-sm flex flex-col rounded-md border border-border bg-surface shrink-0 overflow-hidden [@media(max-height:760px)]:!w-[47%]"
           style={{ width: "41%" }}
         >
           <CardHeader
@@ -7460,7 +7460,7 @@ function AbmScreen({
             y en modo modificar, para que el foco visual quede en el panel
             Búsqueda ── */}
         <div
-          className={`shadow-sm flex-1 flex flex-col border border-border rounded-lg bg-surface overflow-hidden transition-opacity duration-150 ${
+          className={`shadow-sm flex-1 flex flex-col border border-border rounded-md bg-surface overflow-hidden transition-opacity duration-150 ${
             mode !== "buscar" ? "opacity-50 pointer-events-none" : ""
           }`}
         >
@@ -7512,7 +7512,7 @@ function AbmScreen({
               no hay toolbar y suma mt-3 para no quedar pegado al header.
               Adentro: la línea de registro seleccionado, la tabla con
               scroll propio y el pie de paginación. */}
-          <div className={`flex-1 min-h-0 mx-4 mb-4 flex flex-col border border-border rounded-md overflow-hidden ${showData ? "" : "mt-3"}`}>
+          <div className={`flex-1 min-h-0 mx-4 mb-4 flex flex-col border border-border rounded-sm overflow-hidden ${showData ? "" : "mt-3"}`}>
           {hasSelection && (
             <SelectionActionBar recordLabel={config.rows[selectedRow!][columnKeys[0]]} />
           )}
@@ -7645,7 +7645,7 @@ function AbmScreen({
 
           {/* Footer */}
           {showData && (
-            <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-lg shrink-0 flex items-center justify-between">
+            <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-md shrink-0 flex items-center justify-between">
               <span className="text-body-sm text-text">
                 Registros encontrados:{" "}
                 <span className="font-semibold text-secondary">

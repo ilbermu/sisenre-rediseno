@@ -214,15 +214,20 @@ estos seis, y `rounded` sin sufijo no se usa. Se elige por rol del elemento.
 | Token | Valor | Uso |
 |---|---|---|
 | `rounded-xs` | 4px | Badges de código, checkbox, celdas del mini calendario, leyenda del cronograma, chips cuadrados |
-| `rounded-sm` | 6px | Inputs, selects, todos los botones (`sm`, `md`, paginación, ícono), segmented, ítems de menú |
-| `rounded-md` | 8px | Dropdowns, popovers (calendario, "Más filtros"), tiles de Tablas relacionadas, contenedores anidados dentro de una card (wrapper de tabla, card de Reclamos) |
-| `rounded-lg` | 12px | Todas las cards (de trabajo y de contenido), cards del selector de herramienta, card del login |
+| `rounded-sm` | 6px | Inputs, selects, todos los botones (`sm`, `md`, paginación, ícono), segmented, ítems de menú. Contenedores anidados dentro de una card de trabajo (tiles de Tablas relacionadas, barra de filtros aplicados) |
+| `rounded-md` | 8px | **Cards de trabajo** (Búsqueda, Interrupciones, Reposiciones y los paneles del ABM): pantallas densas donde las cards se tocan entre sí. Dropdowns y popovers (calendario, "Más filtros"). Contenedores anidados dentro de una card de contenido o de un modal |
+| `rounded-lg` | 12px | **Cards de contenido** (Inicio, cronograma, Generación de txt, Planilla consolidada, Gestor de notas, Auditoría), cards del selector de herramienta, card del login |
 | `rounded-xl` | 16px | Modales |
 | `rounded-full` | 9999px | Avatares, chips redondos, días del calendario, badges contadores |
 
 - **Regla de anidado:** un elemento dentro de otro con padding usa un radio
   menor (radio interno ≈ radio externo − padding). Una caja con borde dentro
-  de una card (`lg`) es `md`; un input dentro de esa caja es `sm`.
+  de una card de contenido (`lg`) es `md`; dentro de una card de trabajo
+  (`md`) es `sm`.
+- **Cards de trabajo = `md`, cards de contenido = `lg`.** La vista de
+  trabajo (Consultas de interrupción y ABM) usa un token menos que el resto:
+  más cards por pantalla, más juntas, y un radio grande les come espacio
+  útil en las esquinas.
 - Los `rx` de los SVG (timeline de reclamos) son geometría del gráfico, no
   tokens de UI.
 
