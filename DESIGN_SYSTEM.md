@@ -391,26 +391,67 @@ tab con más contenido comprimía y recortaba una tabla vecina en vez de
 activar el scroll del contenedor. El que scrollea es siempre el contenedor
 exterior, nunca sus secciones.
 
+## Header de card
+
+Un solo componente, `CardHeader` (`src/App.tsx`), para toda card y toda
+sección de card.
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ Título [CDS4]                                   [acciones]│
+│ subtítulo en gris, con el ID en mono                      │
+└──────────────────────────────────────────────────────────┘
+```
+
+| Slot | Prop | Tokens | Contenido |
+|---|---|---|---|
+| Título | `title` | `text-heading-md text-text` | Nombre de la card. Una línea, trunca |
+| Badge | `tag` | `CodeBadge` (`text-caption font-mono`) | Código de origen (CDS2, CDS4…), **en línea con el título**. Opcional |
+| Subtítulo | `subtitle` | `text-body-sm text-text-muted`; IDs y fechas en `text-code font-mono` | Contexto de los datos, debajo del título. Opcional |
+| Acciones | `actions` | botones `actionBtnCls` / `BTN_MD` | A la derecha, centradas en vertical. Opcional |
+
+- **Sin línea divisoria y sin fondo.** La separación con el contenido la da
+  el espaciado: el header es `pt-3 pb-2` y el alto sale del contenido (no
+  hay alto fijo).
+- **Mismo padding horizontal que el cuerpo de la card.** En la vista de
+  trabajo todo es `px-4` (header, toolbar, primera y última celda de la
+  tabla, secciones). Si el cuerpo de una card usa otro padding, el header lo
+  iguala con `padX` (`px-5` en los paneles del ABM y Notas, `px-6` en
+  Exportación, Consolidación y Filtros).
+- **Cuándo lleva subtítulo:** cuando los datos de la card dependen de algo
+  que no está a la vista en la propia card —
+  - el **registro padre** ("Interrupción `AFZ…`" en Reposiciones y en
+    Reclamos; "Reposición 1 de 5 · `22/07/2026 14:50`" en Tablas
+    relacionadas);
+  - el **alcance** de lo que se muestra ("40 de 40 registros" en
+    Interrupciones).
+
+  No lleva subtítulo si solo repetiría el título o describiría la card.
+- **Cómo se escribe:** en minúsculas (sin `uppercase`), sin "·" inicial; el
+  "·" solo separa fragmentos dentro del subtítulo. Un ID, una referencia o
+  una fecha va en `text-code font-mono`; el resto, en el `body-sm` del
+  subtítulo.
+- **`reserveSubtitle`:** reserva la línea aunque todavía no haya nada que
+  mostrar (sin selección, sin resultados), para que el header no cambie de
+  alto cuando el subtítulo aparece y dos cards lado a lado queden alineadas.
+- **Header de tabla (`thead`):** alto fijo de 32px (`REPOSICIONES_HEADER_H`),
+  borde incluido, con el texto centrado en vertical y sin padding vertical.
+
 ## Patrones de contenedor y tabla
 
-1. **Header de contenedor** (`CardHeader`) = título + tag de código
-   (`CodeBadge`) + contexto opcional (el registro padre de los datos de la
-   card, prop `context`: `· RÓTULO valor`, ej. "· INTERRUPCIÓN `<ref>`" en
-   Reposiciones) + acciones de alcance **TABLA** en `right` (Insertar,
-   Exportar, Auditoría). **Nunca** acciones sobre el registro seleccionado.
-   Toda card lleva `CardHeader`, también las de resumen (ej. Reclamos,
-   Tablas relacionadas). El fondo gris es exclusivo del header; el cuerpo
-   es siempre blanco. El tag es opcional. `size="compact"` achica el header
-   (`py-2` con alto según contenido, en vez del `h-14` fijo) solo en el tier
-   ≤760px — hoy, en las dos cards de detalle.
+1. **Header de contenedor** (`CardHeader`): ver "Header de card" más
+   abajo. Toda card y toda sección de card lleva `CardHeader`, también las
+   de resumen (Reclamos, Tablas relacionadas); ningún header se arma a
+   mano. En `actions` van solo acciones de alcance **TABLA** (Insertar,
+   Exportar, Auditoría), **nunca** acciones sobre el registro seleccionado.
 2. **Registro seleccionado**: se marca como fila resaltada en su tabla
    (`--color-primary-tint` + acento `inset 3px 0 0 var(--color-primary)`).
    En paneles que muestran datos hijos de ese registro, el registro va como
-   `context` en el header. El detalle completo se abre desde la card de
+   subtítulo del header (ej. "Interrupción `<ref>`"). El detalle completo se abre desde la card de
    detalle clickeable (ej. `ReclamosResumenCompacto` → "Datos de la
    Interrupción"), sin un botón duplicado en ningún header. La card de
    detalle clickeable usa el patrón **stretched button**: el botón vive en
-   el header (`right` de `CardHeader`, con `aria-label`) y su `::after`
+   el header (`actions` de `CardHeader`, con `aria-label`) y su `::after`
    (`after:absolute after:inset-0`) cubre la card, que es `relative`; nunca
    se envuelve la card en un `<button>` (un heading dentro de un botón es
    HTML inválido). Hover y foco sobre toda la card (`hover:` en la card,
@@ -440,9 +481,10 @@ exterior, nunca sus secciones.
    el modal "Tablas relacionadas", `px-5 pb-3` y contenedor `mx-5 mb-5`). Orden: buscador → divisor vertical (`w-px h-5
    bg-border`, el de `PersistentActionsBar`) → triggers de filtro →
    (derecha, `ml-auto`) "Limpiar filtros" (solo con ≥1 filtro activo; quita
-   los filtros, no el texto del buscador) + contador "`N` de `M` registros"
-   (`TableCounter`, siempre visible, también sin filtros, para que el layout
-   no salte). El `thead` mantiene su fondo gris.
+   los filtros, no el texto del buscador). El contador "`N` de `M`
+   registros" va como subtítulo del header de la card cuando la tabla es el
+   contenido principal de la card (Interrupciones); en un modal, sigue en el
+   toolbar (`TableCounter`). El `thead` mantiene su relleno `fill-subtle`.
 5. **Búsqueda con alcance explícito**: el buscador declara sus columnas
    (`searchCols` de `useTableToolbar`) y el placeholder las nombra (ej.
    "Buscar referencia…"; el `aria-label` es el mismo texto sin los puntos

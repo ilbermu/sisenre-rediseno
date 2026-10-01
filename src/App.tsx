@@ -3519,69 +3519,71 @@ function CodeBadge({ code }: { code: string }) {
   );
 }
 
-// Header compartido de toda card contenedora (Búsqueda, Resultados,
-// Interrupciones, Reposiciones, etc.) — altura fija (h-14, ni más ni menos)
-// en vez de dejar que py-2.5 defina el alto según el contenido: sin esto,
-// una card sin `right` (ej. Búsqueda) quedaba más baja que una con botones
-// md ahí (ej. Resultados, con Auditoría/Exportar/Insertar a h-9), y las
-// cards no alineaban entre sí. items-center centra título/tag/right dentro
-// de ese alto fijo, tengan o no acciones.
-// `context` (opcional): el registro padre de los datos de la card (ej.
-// "Interrupción <ref>" en Reposiciones), en la misma línea después del
-// tag — "·" de Tablas relacionadas + rótulo y valor con las clases que
-// tenía la franja "INTERRUPCIÓN" de Reposiciones. No suma alto, así que se
-// ve en todos los tiers. Sin `context` el header queda igual que siempre.
-// `right` es solo para acciones de alcance tabla, nunca sobre el registro
-// seleccionado (ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla") —
-// salvo el botón "stretched" de una card de detalle clickeable (ver
-// ReclamosResumenCompacto). `tag` es opcional: sin tag no hay chip.
-// `size="compact"`: header compacto (py-2 con alto según contenido, en vez
-// del h-14 fijo) SOLO en el tier ≤760px — el tier de esta pantalla es CSS
-// ([@media(max-height:760px)]), no una prop que cambie en JS, así que
-// "compact" ya trae el tier adentro; fuera del tier es igual al default.
-// Hoy: las cards de detalle Reclamos y Tablas relacionadas. Sin `size`, el
-// header queda exactamente igual que siempre.
+// Header compartido de toda card y de toda sección de card (Búsqueda,
+// Resultados, Interrupciones, Reposiciones, Reclamos, Tablas relacionadas…).
+// Anatomía (ver DESIGN_SYSTEM.md, "Header de card"):
+//   title    → text-heading-md, con el badge de código (`tag`) en línea.
+//   subtitle → debajo del título, text-body-sm text-text-muted: el contexto
+//              de los datos de la card (registro padre, conteo). En
+//              minúsculas, sin "·" inicial; un ID o una fecha dentro del
+//              subtítulo va en text-code font-mono.
+//   actions  → a la derecha: solo acciones de alcance tabla, nunca sobre el
+//              registro seleccionado — salvo el botón "stretched" de una
+//              sección clickeable (ver ReclamosResumenCompacto).
+// Sin línea divisoria ni fondo: la separación con el contenido la da el
+// espaciado (pt-3 pb-2), y el alto sale del contenido (no hay alto fijo).
+// `reserveSubtitle`: reserva la línea del subtítulo aunque todavía no haya
+// nada que mostrar (ej. sin interrupción seleccionada), para que el header
+// no cambie de alto — y dos cards lado a lado no se desalineen — cuando el
+// subtítulo aparece.
+// `padX`: padding horizontal, SIEMPRE el mismo que el cuerpo de la card
+// (px-4 en la vista de trabajo, que es el default).
 function CardHeader({
   title,
   tag,
-  context,
-  right,
-  size = "default",
+  subtitle,
+  reserveSubtitle = false,
+  actions,
+  padX = "px-4",
 }: {
   title: string;
   tag?: string;
-  context?: { label: string; value: string };
-  right?: React.ReactNode;
-  size?: "default" | "compact";
+  subtitle?: React.ReactNode;
+  reserveSubtitle?: boolean;
+  actions?: React.ReactNode;
+  padX?: string;
 }) {
-  const sizeCls = size === "compact" ? "h-14 [@media(max-height:760px)]:h-auto [@media(max-height:760px)]:py-2" : "h-14";
   return (
-    <div className={`${sizeCls} px-5 border-b border-border shrink-0 flex items-center gap-2`}>
-      <span className="text-heading-md text-text">{title}</span>
-      {tag && <CodeBadge code={tag} />}
-      {context && (
-        <>
-          <span className="text-text-faint">·</span>
-          <span className="text-heading-xs uppercase tracking-[0.08em] text-text-muted">{context.label}</span>
-          <span className="text-code text-text tabular-nums font-mono">{context.value}</span>
-        </>
-      )}
-      {right && <div className="ml-auto shrink-0">{right}</div>}
+    <div className={`${padX} pt-3 pb-2 shrink-0 flex items-center gap-3`}>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="min-w-0 truncate text-heading-md text-text">{title}</span>
+          {tag && <CodeBadge code={tag} />}
+        </div>
+        {(subtitle || reserveSubtitle) && (
+          <p className="truncate text-body-sm text-text-muted" aria-hidden={subtitle ? undefined : true}>
+            {subtitle || "\u00A0"}
+          </p>
+        )}
+      </div>
+      {actions && <div className="shrink-0">{actions}</div>}
     </div>
   );
 }
 
 // Alto de header (th sticky) y de fila de ReposicionesTable, en px —
-// calculados para el tier normal, que es el más alto: fila = code 16 +
-// caption 16 (celda Equipo, 2 líneas) + py-2 16 + borde 1 = 49 (se deja
-// en 50); header = heading-xs 16 + py-2 16 + borde 1 = 33. En los tiers
-// compactos (--spacing más chico, ver index.css; la tipografía no cambia
-// entre tiers) el padding mide menos, así que el alto se FIJA en el
+// fila = code 16 + caption 16 (celda Equipo, 2 líneas) + py-2 16 + borde 1
+// = 49 en el tier normal (se deja en 50). El header es un alto FIJO de 32
+// (múltiplo de 4, borde incluido) con el texto centrado en vertical: no
+// lleva padding vertical, así que no depende de --spacing ni suma el borde
+// por afuera. En los tiers compactos (--spacing más chico, ver index.css;
+// la tipografía no cambia entre tiers) el padding de las filas mide menos,
+// así que el alto se FIJA en el
 // <tr> (style height), para que las filas queden parejas entre tiers. Ya
 // no se usan para calcular un alto de 5 filas: la tabla toma el alto
 // disponible (flex-1, igual que la lista de Interrupciones) y puede asomar
 // una fila cortada abajo.
-const REPOSICIONES_HEADER_H = 33;
+const REPOSICIONES_HEADER_H = 32;
 const REPOSICIONES_ROW_H = 50;
 
 // Tabla de Reposiciones (Tabla 4) de la Card B "Reposiciones" (Modificar
@@ -3664,7 +3666,7 @@ function ReposicionesTable({
             {cols.map((c, ci) => (
               <th
                 key={c}
-                className={`sticky top-0 z-10 bg-fill-subtle-solid px-3 first:pl-4 last:pr-4 py-2 border-b border-border text-heading-xs uppercase tracking-[0.06em] text-text-muted whitespace-nowrap ${
+                className={`sticky top-0 z-10 bg-fill-subtle-solid px-3 first:pl-4 last:pr-4 py-0 border-b border-border text-heading-xs uppercase tracking-[0.06em] text-text-muted whitespace-nowrap ${
                   ci === cols.length - 1 ? "text-right" : "text-left"
                 }`}
               >
@@ -4146,18 +4148,16 @@ function ChipDuracion({ minutos }: { minutos: number }) {
 }
 
 // Resumen de reclamos (card Interrupciones de Modificar interrupción,
-// debajo de la tabla de Interrupciones) — sin gráfico. Card clickeable que
-// abre "Datos de la Interrupción" (ahí está el gráfico completo,
-// ReclamosTimeline): patrón stretched button (ver el JSX), con el hover
-// secundario de la app sobre toda la card (borde primary + fondo
-// primary-tint + texto navy) y foco con --color-focus.
+// debajo de la tabla de Interrupciones) — sin gráfico. Sección clickeable
+// que abre "Datos de la Interrupción" (ahí está el gráfico completo,
+// ReclamosTimeline): patrón stretched button (ver el JSX), con hover
+// primary-tint + texto navy sobre toda la sección y foco con --color-focus.
 // Sin estilos propios: todo copiado de elementos del mismo panel —
-//   contenedor → el de la tabla de Reposiciones (ReposicionesTable): borde
-//                y radio de card, cuerpo blanco (px-5 del panel);
-//   header     → CardHeader, como toda card: título + `context`
-//                "· INTERRUPCIÓN <ref>" (mismo patrón que Reposiciones,
-//                solo con selección) + ChevronRight decorativo en `right`
-//                como señal de que la card se abre; `size="compact"`;
+//   contenedor → sección de la card (border-t), sin borde, radio ni fondo;
+//   header     → CardHeader, como toda card: título + subtítulo
+//                "Interrupción <ref>" (mismo patrón que Reposiciones, solo
+//                con selección) + ChevronRight decorativo en `actions`
+//                como señal de que la sección se abre;
 //   etiquetas  → las etiquetas de RelacionadaChip ("TABLA 3"…);
 //   valores    → los valores de RelacionadaChip en estado con contenido.
 // De los chips se copia la tipografía (tamaño, leading, tracking, peso,
@@ -4176,7 +4176,7 @@ function ReclamosResumenCompacto({
 }: {
   // null = sin interrupción seleccionada (bloque deshabilitado).
   datos: ReclamosInterrupcion | null;
-  // Referencia de la interrupción, para el `context` del header; null = sin selección.
+  // Referencia de la interrupción, para el subtítulo del header; null = sin selección.
   referencia: string | null;
   onClick: () => void;
 }) {
@@ -4214,9 +4214,9 @@ function ReclamosResumenCompacto({
     >
       <CardHeader
         title="Reclamos durante la interrupción"
-        size="compact"
-        context={habilitada && referencia ? { label: "Interrupción", value: referencia } : undefined}
-        right={
+        reserveSubtitle
+        subtitle={habilitada && referencia ? <>Interrupción <span className="text-code font-mono tabular-nums">{referencia}</span></> : undefined}
+        actions={
           <button
             type="button"
             disabled={!habilitada}
@@ -4233,7 +4233,7 @@ function ReclamosResumenCompacto({
           si una etiqueta parte en dos líneas (card angosta), los valores
           siguen alineados. El divisor va en ambas celdas de cada columna,
           así la línea es continua. */}
-      <div className="grid grid-cols-4 px-5 py-4">
+      <div className="grid grid-cols-4 px-4 pt-1 pb-3">
         {columnas.map((c, i) => (
           <span key={`l-${c.etiqueta}`} className={`min-w-0 self-end pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-border"}`}>
             <span className="block text-caption tracking-[0.05em] text-text-muted group-data-[habilitada]:group-hover:text-secondary">{c.etiqueta}</span>
@@ -4705,7 +4705,7 @@ function PersistentActionsBar({
           por border-t. Se esconde entera (no solo se vacía) en tier 760px, porque el dropdown que la reemplaza
           vive en el header (portal de acá abajo), no en este lugar. */}
       <div
-        className="flex items-center gap-2 flex-wrap px-3 py-2.5 border-t border-border-subtle [@media(max-height:760px)]:hidden"
+        className="flex items-center gap-2 flex-wrap px-4 py-2.5 border-t border-border-subtle [@media(max-height:760px)]:hidden"
       >
         {siempreHabilitadas.map(Boton)}
         <div className="w-px h-5 bg-border shrink-0" />
@@ -5054,7 +5054,7 @@ function ModificarContent({
             className="shadow-sm relative rounded-md border border-border bg-surface"
           >
             <CardHeader title="Búsqueda" tag="CDS2" />
-            <div className="relative z-30 flex items-center gap-2 px-3 py-2.5 [@media(max-height:760px)]:flex-wrap">
+            <div className="relative z-30 flex items-center gap-2 px-4 pt-1 pb-3 [@media(max-height:760px)]:flex-wrap">
             {/* Ancho fijo (no crece a ocupar el sobrante) para que se vea
                 proporcionado contra Nivel/Fase — 190px en tamaño normal,
                 bastante más chico en tier 760px vía el `!` important de
@@ -5279,12 +5279,18 @@ function ModificarContent({
             Sin acciones: el header lleva solo acciones de alcance tabla, y
             "Datos de la Interrupción" se abre desde la card de Reclamos
             (ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla"). */}
-        <CardHeader title="Interrupciones" tag="CDS2" />
+        <CardHeader
+          title="Interrupciones"
+          tag="CDS2"
+          reserveSubtitle
+          subtitle={modShowData ? `${modVisibleIndices.length} de ${SAMPLE_ROWS.length} registros` : undefined}
+        />
 
         {/* Toolbar de tabla — FUERA del contenedor de la tabla, sin fondo ni
             línea divisoria con la tabla (ver DESIGN_SYSTEM.md, "Patrones
             de contenedor y tabla"): buscador de Referencia → divisor → filtro de Fecha →
-            (derecha) Limpiar filtros + contador. En tier 760px suma el
+            (derecha) Limpiar filtros. El contador "N de M registros" va como
+            subtítulo del header de la card. En tier 760px suma el
             dropdown "Acciones" al final (slot acciones-tier2) en vez de una
             fila propia. Con resultados vacíos no hay toolbar que mostrar,
             así que el slot vive en una franja mínima aparte — Desarmes/
@@ -5292,7 +5298,7 @@ function ModificarContent({
             modShowData. "Limpiar filtros" quita el filtro, no el texto
             del buscador. */}
         {modShowData ? (
-          <div className="px-4 py-3 shrink-0 flex items-center flex-wrap gap-2">
+          <div className="px-4 pt-1 pb-3 shrink-0 flex items-center flex-wrap gap-2">
             <div className="w-60 shrink-0">
               <TableToolbar search={modSearch} onSearchChange={setModSearch} searchPlaceholder="Buscar referencia…" hideExport bare />
             </div>
@@ -5308,12 +5314,11 @@ function ModificarContent({
                   Limpiar filtros
                 </button>
               )}
-              <TableCounter visibles={modVisibleIndices.length} total={SAMPLE_ROWS.length} />
               <div id="acciones-tier2-slot" className="hidden [@media(max-height:760px)]:flex items-center" />
             </div>
           </div>
         ) : (
-          <div className="hidden [@media(max-height:760px)]:flex items-center justify-end px-4 py-3 shrink-0">
+          <div className="hidden [@media(max-height:760px)]:flex items-center justify-end px-4 pt-1 pb-3 shrink-0">
             <div id="acciones-tier2-slot" className="flex items-center" />
           </div>
         )}
@@ -5333,20 +5338,20 @@ function ModificarContent({
               de REPOSICIONES_ROW_H responde a la celda Equipo de dos) y la
               paginación va como pie dentro del borde. */}
           <div className="flex-1 min-h-0 flex flex-col">
-            <div className="grid grid-cols-2 shrink-0 bg-fill-subtle border-b border-border" style={{ height: REPOSICIONES_HEADER_H }}>
+            <div className="grid grid-cols-2 items-center shrink-0 bg-fill-subtle border-b border-border" style={{ height: REPOSICIONES_HEADER_H }}>
               <SortableHeaderCell
                 label="Referencia"
                 active={modSortIdx === 0}
                 dir={modSortDir}
                 onClick={() => modToggleSort(0)}
-                className="pl-4 pr-3 py-2"
+                className="pl-4 pr-3"
               />
               <SortableHeaderCell
                 label="Fecha"
                 active={modSortIdx === 1}
                 dir={modSortDir}
                 onClick={() => modToggleSort(1)}
-                className="pl-3 pr-4 py-2"
+                className="pl-3 pr-4"
               />
             </div>
             {/* La card tiene altura fija (arriba) — esta lista ocupa todo el
@@ -5420,13 +5425,14 @@ function ModificarContent({
           className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-md border border-border bg-surface overflow-hidden"
         >
           {/* La interrupción seleccionada (registro padre de las
-              reposiciones) va como `context` del header — reemplaza a la
+              reposiciones) va como subtítulo del header — reemplaza a la
               franja "INTERRUPCIÓN" que vivía debajo y se ocultaba en tier
               760px. */}
           <CardHeader
             title="Reposiciones"
             tag="CDS4"
-            context={selectedRecord ? { label: "Interrupción", value: selectedRecord.referencia } : undefined}
+            reserveSubtitle
+            subtitle={selectedRecord ? <>Interrupción <span className="text-code font-mono tabular-nums">{selectedRecord.referencia}</span></> : undefined}
           />
 
           <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
@@ -5452,21 +5458,20 @@ function ModificarContent({
                   y el modal) y en el tab del chip clickeado. Wrapper mt-3
                   → el de Reclamos en Interrupciones; contenedor → el de
                   ReclamosResumenCompacto sin lo interactivo (sin hover,
-                  cursor ni foco — lo clickeable son los chips): CardHeader
-                  gris + cuerpo blanco. La reposición activa ("Reposición
-                  X de N · hora", misma condición de antes) va como
-                  `context` del header. */}
+                  cursor ni foco — lo clickeable son los chips). La
+                  reposición activa ("Reposición X de N · hora", misma
+                  condición de antes) va como subtítulo del header. */}
               <div className="shrink-0 border-t border-border">
                 <CardHeader
                   title="Tablas relacionadas"
-                  size="compact"
-                  context={
+                  reserveSubtitle
+                  subtitle={
                     tabla4Rows.length > 1 && filaFaseSeleccionada
-                      ? { label: "Reposición", value: `${modSelectedFase !== null ? modSelectedFase + 1 : "—"} de ${tabla4Rows.length} · ${filaFaseSeleccionada.horaRep}` }
+                      ? <>Reposición {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length} · <span className="text-code font-mono tabular-nums">{filaFaseSeleccionada.horaRep}</span></>
                       : undefined
                   }
                 />
-                <div className="flex flex-wrap gap-[6px] px-5 py-4">
+                <div className="flex flex-wrap gap-[6px] px-4 pt-1 pb-3">
                   {STATUS_ITEMS.map((item) => (
                     <RelacionadaChip
                       key={item.tabKey}
@@ -7353,6 +7358,7 @@ function AbmScreen({
           <CardHeader
             title={mode === "alta" ? "Insertando en" : mode === "modificar" ? "Modificando" : "Búsqueda"}
             tag={config.code}
+            padX="px-5"
           />
           <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
             {config.secciones.map((sec) => {
@@ -7468,7 +7474,7 @@ function AbmScreen({
           <CardHeader
             title="Resultados"
             tag={config.code}
-            right={
+            actions={
               <div className="flex items-center gap-2">
                 {/* Auditoría es una acción de panel, no de registro: genera
                     una auditoría de todos los campos modificados en el
@@ -7707,7 +7713,7 @@ function GeneracionTxtContent() {
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
       <div className="bg-surface rounded-lg border border-border" style={{ maxWidth: 640 }}>
-        <CardHeader title="Exportación" />
+        <CardHeader title="Exportación" padX="px-6" />
         <div className="p-6 flex items-end gap-3">
           <div className="flex-1 min-w-0" style={{ maxWidth: 320 }}>
             <ValuePicker
@@ -7784,7 +7790,7 @@ function PlanillaConsolidadaContent() {
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
       <div className="bg-surface rounded-lg border border-border" style={{ maxWidth: 760 }}>
-        <CardHeader title="Consolidación" />
+        <CardHeader title="Consolidación" padX="px-6" />
         <div className="p-6">
           <div className="grid grid-cols-2 gap-4">
             <div><FieldLabel>Fecha último proceso</FieldLabel><input readOnly value={fechaProceso} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
@@ -7907,7 +7913,8 @@ function GestorNotasContent() {
         <div className="flex-1 bg-surface rounded-lg border border-border overflow-hidden">
           <CardHeader
             title="Notas"
-            right={
+            padX="px-5"
+            actions={
               <button type="button" onClick={abrirNueva} className={modalPrimaryBtnCls}>
                 Agregar nota
               </button>
@@ -8097,7 +8104,7 @@ function AuditoriaContent() {
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
       <div className="bg-surface rounded-lg border border-border" style={{ maxWidth: 720 }}>
-        <CardHeader title="Filtros" />
+        <CardHeader title="Filtros" padX="px-6" />
         <div className="p-6 grid grid-cols-2 gap-6">
           <div>
             <ValuePicker
