@@ -3651,7 +3651,7 @@ function ReposicionesTable({
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col border border-border rounded-sm overflow-hidden bg-surface">
+    <div className="flex-1 min-h-0 flex flex-col">
     <div
       ref={listRef}
       tabIndex={rows.length > 0 ? 0 : -1}
@@ -3664,7 +3664,7 @@ function ReposicionesTable({
             {cols.map((c, ci) => (
               <th
                 key={c}
-                className={`sticky top-0 z-10 bg-fill-subtle-solid px-3 py-2 border-b border-border text-heading-xs uppercase tracking-[0.06em] text-text-muted whitespace-nowrap ${
+                className={`sticky top-0 z-10 bg-fill-subtle-solid px-3 first:pl-4 last:pr-4 py-2 border-b border-border text-heading-xs uppercase tracking-[0.06em] text-text-muted whitespace-nowrap ${
                   ci === cols.length - 1 ? "text-right" : "text-left"
                 }`}
               >
@@ -3687,7 +3687,7 @@ function ReposicionesTable({
             rows.map((fila, ri) => {
               const seleccionada = selectedIndex === ri;
               const esUltima = ri === rows.length - 1;
-              const tdCls = `px-3 py-2 ${esUltima ? "" : "border-b border-border-subtle"}`;
+              const tdCls = `px-3 first:pl-4 last:pr-4 py-2 ${esUltima ? "" : "border-b border-border-subtle"}`;
               const textCls = seleccionada ? "text-secondary font-medium" : "text-text";
               return (
                 <tr
@@ -4198,17 +4198,19 @@ function ReclamosResumenCompacto({
 
   const habilitada = datos !== null;
   return (
-    // Stretched button: la card NO es un <button> (CardHeader adentro de un
-    // botón sería HTML inválido). El botón vive en `right` del header y su
-    // ::after (absolute inset-0) cubre toda la card, que es `relative`.
-    // Hover (con datos): el hover secundario de hoy sobre TODA la card —
-    // borde primary + fondo primary-tint, también en el header
-    // (CardHeader es transparente, toma el fondo de la card) + textos del
-    // cuerpo a secondary. Foco: el focus-visible del botón se pinta en la
-    // card entera (has-[:focus-visible]).
+    // Sección de la card Interrupciones (no una card anidada): sin borde,
+    // radio ni fondo propios, separada de la tabla por border-t.
+    // Stretched button: la sección NO es un <button> (CardHeader adentro de
+    // un botón sería HTML inválido). El botón vive en `right` del header y
+    // su ::after (absolute inset-0) cubre toda la sección, que es `relative`.
+    // Hover (con datos): fondo primary-tint sobre TODA la sección, también
+    // en el header (CardHeader es transparente) + textos del cuerpo a
+    // secondary. Foco: el focus-visible del botón se pinta en la sección
+    // entera (has-[:focus-visible], outline hacia adentro para que no lo
+    // recorte la card).
     <div
       data-habilitada={habilitada || undefined}
-      className="group relative rounded-sm border border-border overflow-hidden bg-surface transition-all data-[habilitada]:hover:border-primary data-[habilitada]:hover:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:outline-offset-2"
+      className="group relative shrink-0 border-t border-border transition-colors data-[habilitada]:hover:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:-outline-offset-2"
     >
       <CardHeader
         title="Reclamos durante la interrupción"
@@ -4698,11 +4700,12 @@ function PersistentActionsBar({
 
   return (
     <>
-      {/* Fila expandida — tamaño normal de ventana. Se esconde entera (no
-          solo se vacía) en tier 760px, porque el dropdown que la reemplaza
+      {/* Fila expandida — tamaño normal de ventana. Es la segunda fila de
+          la card de Búsqueda (sin card propia), separada de los filtros
+          por border-t. Se esconde entera (no solo se vacía) en tier 760px, porque el dropdown que la reemplaza
           vive en el header (portal de acá abajo), no en este lugar. */}
       <div
-        className="shadow-sm rounded-md border border-border bg-surface shrink-0 flex items-center gap-2 flex-wrap px-3 py-2.5 [@media(max-height:760px)]:hidden"
+        className="flex items-center gap-2 flex-wrap px-3 py-2.5 border-t border-border-subtle [@media(max-height:760px)]:hidden"
       >
         {siempreHabilitadas.map(Boton)}
         <div className="w-px h-5 bg-border shrink-0" />
@@ -5041,7 +5044,7 @@ function ModificarContent({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col p-5 relative overflow-hidden">
-    <div className="flex-1 min-h-0 flex flex-col gap-5 [@media(max-height:760px)]:gap-2">
+    <div className="flex-1 min-h-0 flex flex-col gap-4">
 
         {/* Card A — título propio ("Búsqueda" + badge CDS2, mismo patrón que
             los paneles Búsqueda/Resultados del motor ABM) arriba de la
@@ -5146,6 +5149,24 @@ function ModificarContent({
             </div>
             </div>
 
+      {/* ── Barra de acciones persistente — siempre visible, independiente de
+          si hay búsqueda o selección activa. Desarmes/Lotes funcionan sin
+          ninguna interrupción cargada; el resto se habilita recién con una
+          interrupción seleccionada. ── */}
+      <PersistentActionsBar
+        siempreHabilitadas={[
+          { label: "Desarmes", onClick: () => setDesarmeOpen(true) },
+          { label: "Lotes", onClick: () => setLotesOpen(true) },
+        ]}
+        condicionales={[
+          { label: "Nivel/Tipo", disabled: !hasSelection, onClick: () => setNivelTipoOpen(true) },
+          { label: "Replicar", disabled: !hasSelection, onClick: () => setReplicarOpen(true) },
+          { label: "Cambia fases", disabled: !hasSelection, onClick: () => setCambiaFasesOpen(true) },
+          { label: "Alta clientes", disabled: !hasSelection, onClick: () => setAltaClientesOpen(true) },
+          { label: "Intercambio", disabled: !hasSelection, onClick: () => setIntercambioOpen(true) },
+        ]}
+      />
+
             {/* Backdrop — no bloqueante, sólo cierra el flyout al click afuera.
                 Vive junto al flyout (no en el wrapper externo que también
                 contiene los chips) para que su posición no se vea afectada
@@ -5214,7 +5235,7 @@ function ModificarContent({
 
           {/* Chips de filtros aplicados (flyout) — franja propia, no texto suelto */}
           {activeFlyoutFields.length > 0 && (
-            <div className="flex items-center flex-wrap gap-2 mt-2 px-3 py-2 rounded-sm border border-border bg-fill-subtle">
+            <div className="flex items-center flex-wrap gap-2 mt-4 px-3 py-2 rounded-sm border border-border bg-fill-subtle">
               <span className="text-heading-xs uppercase tracking-[0.06em] text-text-muted shrink-0">
                 Filtros aplicados:
               </span>
@@ -5239,31 +5260,13 @@ function ModificarContent({
           )}
         </div>
 
-      {/* ── Barra de acciones persistente — siempre visible, independiente de
-          si hay búsqueda o selección activa. Desarmes/Lotes funcionan sin
-          ninguna interrupción cargada; el resto se habilita recién con una
-          interrupción seleccionada. ── */}
-      <PersistentActionsBar
-        siempreHabilitadas={[
-          { label: "Desarmes", onClick: () => setDesarmeOpen(true) },
-          { label: "Lotes", onClick: () => setLotesOpen(true) },
-        ]}
-        condicionales={[
-          { label: "Nivel/Tipo", disabled: !hasSelection, onClick: () => setNivelTipoOpen(true) },
-          { label: "Replicar", disabled: !hasSelection, onClick: () => setReplicarOpen(true) },
-          { label: "Cambia fases", disabled: !hasSelection, onClick: () => setCambiaFasesOpen(true) },
-          { label: "Alta clientes", disabled: !hasSelection, onClick: () => setAltaClientesOpen(true) },
-          { label: "Intercambio", disabled: !hasSelection, onClick: () => setIntercambioOpen(true) },
-        ]}
-      />
-
       {/* ── FILA INFERIOR — tabla de datos y Reposiciones (CDS4), una al lado de
           la otra. flex-1 min-h-0 hace que la fila ocupe el resto del alto
           disponible (nunca más) y que ambas cards, al estirarse (stretch,
           default de un flex row) al alto de la fila, queden parejas — cada
           una scrollea su body internamente (flex-1 min-h-0 overflow-y-auto)
           en vez de crecer con el contenido y empujar scroll de página. ── */}
-      <div className={`flex-1 min-h-0 flex gap-5 transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
+      <div className={`flex-1 min-h-0 flex gap-4 transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
 
       {/* ── Tabla de datos — navegador de referencias, mismo alto y mismo
           tratamiento de card que Card B. Split 50/50 con Card B (flex-1
@@ -5321,7 +5324,7 @@ function ModificarContent({
             Referencia / Fecha dentro del mismo contenedor con borde que
             ReposicionesTable, y debajo el resumen de reclamos (antes en
             Card B). */}
-        <div className={`flex-1 min-h-0 flex flex-col px-4 pb-4 ${modShowData ? "" : "pt-3"}`}>
+        <div className="flex-1 min-h-0 flex flex-col">
           {/* Replica el estilo de ReposicionesTable (copia de clases, no usa
               el componente): header bg-fill-subtle de alto REPOSICIONES_HEADER_H,
               celdas px-3 py-2 text-body-sm, separador border-subtle, acento de
@@ -5329,21 +5332,21 @@ function ModificarContent({
               sin alto fijo de fila (acá las filas son de una línea, el 50px
               de REPOSICIONES_ROW_H responde a la celda Equipo de dos) y la
               paginación va como pie dentro del borde. */}
-          <div className="flex-1 min-h-0 flex flex-col border border-border rounded-sm overflow-hidden bg-surface">
-            <div className="grid grid-cols-2 shrink-0 bg-fill-subtle rounded-t-sm border-b border-border" style={{ height: REPOSICIONES_HEADER_H }}>
+          <div className="flex-1 min-h-0 flex flex-col">
+            <div className="grid grid-cols-2 shrink-0 bg-fill-subtle border-b border-border" style={{ height: REPOSICIONES_HEADER_H }}>
               <SortableHeaderCell
                 label="Referencia"
                 active={modSortIdx === 0}
                 dir={modSortDir}
                 onClick={() => modToggleSort(0)}
-                className="px-3 py-2"
+                className="pl-4 pr-3 py-2"
               />
               <SortableHeaderCell
                 label="Fecha"
                 active={modSortIdx === 1}
                 dir={modSortDir}
                 onClick={() => modToggleSort(1)}
-                className="px-3 py-2"
+                className="pl-3 pr-4 py-2"
               />
             </div>
             {/* La card tiene altura fija (arriba) — esta lista ocupa todo el
@@ -5383,28 +5386,26 @@ function ModificarContent({
                     onClick={() => setModSelectedRow(selected ? null : i)}
                   >
                     <div
-                      className={`px-3 py-2 text-code tabular-nums whitespace-nowrap font-mono ${textCls} ${selected ? "inset-shadow-row-selected" : ""}`}
+                      className={`pl-4 pr-3 py-2 text-code tabular-nums whitespace-nowrap font-mono ${textCls} ${selected ? "inset-shadow-row-selected" : ""}`}
                     >
                       {row.referencia}
                     </div>
-                    <div className={`px-3 py-2 text-body-sm tabular-nums whitespace-nowrap ${textCls}`}>{row.fecha}</div>
+                    <div className={`pl-3 pr-4 py-2 text-body-sm tabular-nums whitespace-nowrap ${textCls}`}>{row.fecha}</div>
                   </div>
                 );
               })}
             </div>
-            <div className="shrink-0 border-t border-border bg-fill-subtle rounded-b-sm px-3 py-1.5 flex items-center justify-between">
+            <div className="shrink-0 border-t border-border px-4 py-1.5 flex items-center justify-between">
               <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted disabled:opacity-40" disabled>Anterior</button>
               <span className="text-caption text-text-muted">Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">2.213</span></span>
               <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted hover:bg-fill-muted transition-colors">Siguiente</button>
             </div>
           </div>
-          <div className="mt-3">
-            <ReclamosResumenCompacto
-              datos={reclamosInterrupcion}
-              referencia={selectedRecord?.referencia ?? null}
-              onClick={() => setDatosInterrupcionOpen(true)}
-            />
-          </div>
+          <ReclamosResumenCompacto
+            datos={reclamosInterrupcion}
+            referencia={selectedRecord?.referencia ?? null}
+            onClick={() => setDatosInterrupcionOpen(true)}
+          />
         </div>
       </div>
 
@@ -5437,7 +5438,7 @@ function ModificarContent({
                 Tablas relacionadas queda al fondo, alineada con Reclamos.
                 min-h-0 en este wrapper: sin él la tabla no puede achicarse
                 y terminaría scrolleando la card entera. */}
-            <div className="flex-1 min-h-0 flex flex-col px-5 py-3">
+            <div className="flex-1 min-h-0 flex flex-col">
               <ReposicionesTable
                 cols={tabla4Data.cols}
                 rows={tabla4Rows}
@@ -5455,7 +5456,7 @@ function ModificarContent({
                   gris + cuerpo blanco. La reposición activa ("Reposición
                   X de N · hora", misma condición de antes) va como
                   `context` del header. */}
-              <div className="mt-3 border border-border rounded-sm overflow-hidden bg-surface">
+              <div className="shrink-0 border-t border-border">
                 <CardHeader
                   title="Tablas relacionadas"
                   size="compact"

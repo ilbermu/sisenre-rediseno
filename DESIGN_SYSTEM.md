@@ -435,9 +435,9 @@ exterior, nunca sus secciones.
      `dd/mm hh:mm – dd/mm hh:mm`, `desde …` o `hasta …`.
 4. **Toolbar de tabla**: va **FUERA** del contenedor de la tabla, sin fondo
    propio y **sin línea divisoria** entre el toolbar y la tabla; se vincula
-   a la tabla por proximidad (toolbar `px-4 py-3`, contenedor de tabla
-   `mx-4 mb-4`; en el modal "Tablas relacionadas", `px-5 pb-3` y
-   `mx-5 mb-5`). Orden: buscador → divisor vertical (`w-px h-5
+   a la tabla por proximidad (toolbar `px-4 py-3`; en la vista de trabajo
+   la tabla va apoyada en la card, sin contenedor propio — ver regla 8; en
+   el modal "Tablas relacionadas", `px-5 pb-3` y contenedor `mx-5 mb-5`). Orden: buscador → divisor vertical (`w-px h-5
    bg-border`, el de `PersistentActionsBar`) → triggers de filtro →
    (derecha, `ml-auto`) "Limpiar filtros" (solo con ≥1 filtro activo; quita
    los filtros, no el texto del buscador) + contador "`N` de `M` registros"
@@ -465,3 +465,20 @@ exterior, nunca sus secciones.
    derecha; nunca scroll horizontal). Todo el contenido debajo pertenece a
    ese registro. Ej.: `FaseReposicionFicha` en "Tablas relacionadas"
    ("Reposición 1 `CDS4` · hora · Fase R S T · equipo · usuarios BT").
+8. **Una card, una superficie** (vista de trabajo): dentro de una card no
+   hay cajas con borde, radio o fondo propios.
+   - **Tablas:** van apoyadas directamente en la card, de borde a borde; el
+     `thead` (`fill-subtle`) es su único relleno. Si el scroll interno
+     necesita un wrapper, no lleva borde ni fondo. La primera y la última
+     celda de cada fila usan el padding horizontal de la card (`pl-4` /
+     `pr-4`) para alinear con el header y el toolbar; el pie con paginador
+     va con `border-t`, sin relleno.
+   - **Bloques secundarios** (Reclamos durante la interrupción, Tablas
+     relacionadas): son **secciones** de su card, separadas por `border-t
+     border-border`. No son cards anidadas.
+   - **Acciones del registro** (Desarmes, Lotes, Nivel/Tipo, Replicar,
+     Cambia fases, Alta clientes, Intercambio): segunda fila de la card de
+     Búsqueda, separada de los filtros por `border-t border-border-subtle`.
+     No tienen card propia.
+   - **Gap entre cards:** un único valor en toda la pantalla (`gap-4`),
+     vertical y horizontal, en todos los tiers.
