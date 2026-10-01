@@ -361,7 +361,7 @@ function NavItem({
         ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
         ${active
           ? "border-transparent text-secondary"
-          : "border-transparent text-text hover:text-text hover:bg-fill-muted"
+          : "border-transparent text-text hover:bg-fill-muted"
         }`}
     >
       {/* Pill de fondo del ítem activo — layoutId compartido entre TODOS los
@@ -391,7 +391,7 @@ function NavItem({
             <span className={`flex-1 min-w-0 truncate text-left ${boldLabel ? "text-heading-sm" : "text-body"}`}>{label}</span>
             {code && (
               <span
-                className={`text-caption font-mono shrink-0 tabular-nums ${active ? "text-secondary" : "text-text-muted group-hover:text-text-muted"}`}
+                className={`text-caption font-mono shrink-0 tabular-nums ${active ? "text-secondary" : "text-text-muted"}`}
               >
                 {code}
               </span>
@@ -2200,7 +2200,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                   />
                   {/* Sin más opciones que el placeholder — siempre muestra
                       "Seleccione código" (mismo criterio que AbmCampo: sin
-                      value real, el trigger queda fijo en gray-500). */}
+                      value real, el trigger queda fijo en text-muted). */}
                   {op.extra === "codigoFalla" && (
                     <ValuePicker opts={[]} placeholder="Seleccione código" wrapClassName="w-44" />
                   )}
@@ -3734,7 +3734,7 @@ function ReposicionesTable({
 // valor navy, abre el modal en ese tab; el azul aparece solo en hover
 // (tint + borde primary) y foco. Sin contenido (0, "No" o sin selección):
 // <div> NO interactivo (fuera del orden de tabulación), borde punteado
-// gray-300, sin fondo ni hover, label y valor gray-500 — nunca opacidad
+// border, sin fondo ni hover, label y valor text-muted — nunca opacidad
 // reducida: el valor es información (ver DESIGN_SYSTEM.md, regla 6).
 // El ancho lo fija la etiqueta: el valor tiene w-0 + min-w-full, así no
 // aporta al ancho intrínseco y los chips quedan parejos entre sí.
@@ -3800,11 +3800,12 @@ function RelacionadaChip({
 // estructura (header + chip DURACIÓN → KPIs → pista → INICIO/FIN),
 // tipografía, espaciados y coordenadas Y del SVG replicados de ahí. Hex de
 // la referencia → tokens:
-//   #5A6B7A → gray-700 · #8A99A8 → gray-600 · #9AA8B5 → gray-500
-//   #BCC7D2 → gray-400 · #D9E2EC → gray-300 (borde) · #DCE5EE → gray-300 (pista)
+//   #5A6B7A / #8A99A8 / #9AA8B5 / #BCC7D2 (textos) → text-muted
+//   #D9E2EC → border (borde de la card) · #DCE5EE → gray-300 (pista del SVG)
 //   #1D558C → secondary (primer reclamo, valores) · #4D97FA → primary (banda)
 //   #EAF1FC / #C6DCFA → primary-tint / chip-border (chip de duración)
 //   #8FA6BE → gray-500 (hito dentro del 80%) · #AEC0D3 → gray-500 al 70% (fuera)
+//   (pista, marcas e hitos son geometría del gráfico: siguen en la paleta gray)
 //   #5F84A8 (rótulo del chip) y #7FA8DB (rótulo de la banda) no tienen token:
 //   se arman con color-mix sobre secondary / primary.
 // La X no sale de un viewBox fijo: el viewBox usa el ancho real medido, la
@@ -4249,7 +4250,7 @@ function ReclamosResumenCompacto({
 // justo ese valor). Siempre las 3 en ese orden, resalta las presentes en
 // `fase` (ej. "RS" resalta R y S) con el mismo tint+borde celeste que el
 // resto de los indicadores "accent" del sistema; las ausentes quedan en
-// gray-300/border-border. Es un indicador compuesto de SOLO LECTURA (la
+// text-faint/border-border. Es un indicador compuesto de SOLO LECTURA (la
 // selección de fase existe en ABM y consultas, no acá): <span>, sin hover
 // ni cursor, fuera del orden de tabulación. Cada caja es aria-hidden y un
 // sr-only describe el estado con las fases presentes (ej. "Fases: R, S y T").
@@ -4288,7 +4289,7 @@ function FaseIndicador({ fase }: { fase: string }) {
 // abajo. Contenedor único, estilo "latest commit": "Reposición {n}" en
 // semibold + CodeBadge CDS4 (el tag de CardHeader) + metadatos como texto
 // plano separados por "·" (el separador del `context` de CardHeader),
-// valores gray-700 y labels/unidades gray-500; sin chips adentro salvo
+// valores text y labels/unidades text-muted; sin chips adentro salvo
 // FaseIndicador (estado de solo lectura). Botón "Copiar datos de la
 // reposición" al final del grupo izquierdo, paginador ‹ › a la derecha.
 //
@@ -4425,7 +4426,7 @@ function FaseReposicionFicha({
 // el modal "Tablas relacionadas" de Modificar interrupción). El
 // contenedor respeta el padding horizontal del resto de ese contenedor
 // (px-5, el mismo que el header y el resto del contenido del modal) — el
-// borde inferior gray-200 sigue yendo de lado a lado igual: el padding
+// borde inferior (border) sigue yendo de lado a lado igual: el padding
 // mueve el contenido, no el borde. El borde activo (2px primary) se
 // superpone a esa línea de base vía -mb-px. role="tablist"/"tab" +
 // flechas izquierda/derecha para moverse entre opciones.
@@ -4478,8 +4479,8 @@ function UnderlineTabs({
 }
 
 // Botón ícono para copiar un valor al portapapeles — mismo tratamiento visual
-// que el botón cerrar de Modal (gray-600, hover bg-fill-muted + texto
-// gray-800), mismo tamaño/strokeWidth de ícono. navigator.clipboard es la vía
+// que el botón cerrar de Modal (text-icon, hover bg-fill-muted + texto
+// text), mismo tamaño/strokeWidth de ícono. navigator.clipboard es la vía
 // principal; si la Clipboard API no existe o falla (contexto no seguro,
 // permiso denegado, etc.) cae a un <textarea> temporal fuera de pantalla +
 // document.execCommand("copy"). Sin toasts: el feedback es el ícono
@@ -5321,7 +5322,7 @@ function ModificarContent({
         <div className={`flex-1 min-h-0 flex flex-col px-4 pb-4 ${modShowData ? "" : "pt-3"}`}>
           {/* Replica el estilo de ReposicionesTable (copia de clases, no usa
               el componente): header bg-fill-subtle de alto REPOSICIONES_HEADER_H,
-              celdas px-3 py-2 text-body-sm, separador gray-100, acento de
+              celdas px-3 py-2 text-body-sm, separador border-subtle, acento de
               selección con sombra inset en la primera celda. Excepciones:
               sin alto fijo de fila (acá las filas son de una línea, el 50px
               de REPOSICIONES_ROW_H responde a la celda Equipo de dos) y la
@@ -6589,7 +6590,7 @@ function estadoDeCampo(campo: CampoBusqueda, mode: AbmMode, consultando: boolean
 
 // `!` (important) es necesario en ambas: MOD_FIELD_CLS/MOD_SELECT_CLS ya traen
 // bg-surface/text-text, y en el CSS compilado esas reglas quedan DESPUÉS
-// de las de gray-50/gray-100 (orden interno de Tailwind, no el orden en que
+// de las de fill-subtle/fill-muted (orden interno de Tailwind, no el orden en que
 // se concatenan los strings acá), así que sin !important terminan ganando
 // igual y el campo se ve "habilitado" pese al atributo disabled.
 const ESTADO_CLASES: Record<CampoEstado, string> = {
@@ -8394,7 +8395,7 @@ export default function App() {
               ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
               ${isAbmTableKey(screen)
                 ? "border-transparent bg-secondary/10 text-secondary"
-                : "border-transparent text-text hover:text-text hover:bg-fill-muted"
+                : "border-transparent text-text hover:bg-fill-muted"
               }`}
           >
             <span className="shrink-0"><Pencil size={15} strokeWidth={1.5} fill={isAbmTableKey(screen) ? "currentColor" : "none"} /></span>
