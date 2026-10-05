@@ -3538,6 +3538,13 @@ function CodeBadge({ code }: { code: string }) {
 // subtítulo aparece.
 // `padX`: padding horizontal, SIEMPRE el mismo que el cuerpo de la card
 // (px-4 en la vista de trabajo, que es el default).
+//
+// Card con secciones (Consultas de interrupción — ver DESIGN_SYSTEM.md,
+// "Card con secciones"): el header de la card lleva `divider` (línea
+// inferior a todo el ancho, py-3 simétrico) y el badge a la derecha
+// (`tagAlign="end"`); el header de cada sección lleva `level="section"`
+// (título en heading-sm, sin divisor). El resto de los usos (paneles ABM,
+// Notas, Exportación…) sigue con el header sin divisor y el badge en línea.
 function CardHeader({
   title,
   tag,
@@ -3545,6 +3552,9 @@ function CardHeader({
   reserveSubtitle = false,
   actions,
   padX = "px-4",
+  divider = false,
+  tagAlign = "inline",
+  level = "card",
 }: {
   title: string;
   tag?: string;
@@ -3552,13 +3562,16 @@ function CardHeader({
   reserveSubtitle?: boolean;
   actions?: React.ReactNode;
   padX?: string;
+  divider?: boolean;
+  tagAlign?: "inline" | "end";
+  level?: "card" | "section";
 }) {
   return (
-    <div className={`${padX} pt-3 pb-2 shrink-0 flex items-center gap-3`}>
+    <div className={`${padX} ${divider ? "py-3 border-b border-border" : "pt-3 pb-2"} shrink-0 flex items-center gap-3`}>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="min-w-0 truncate text-heading-md text-text">{title}</span>
-          {tag && <CodeBadge code={tag} />}
+          <span className={`min-w-0 truncate text-text ${level === "section" ? "text-heading-sm" : "text-heading-md"}`}>{title}</span>
+          {tag && tagAlign === "inline" && <CodeBadge code={tag} />}
         </div>
         {(subtitle || reserveSubtitle) && (
           <p className="truncate text-body-sm text-text-muted" aria-hidden={subtitle ? undefined : true}>
@@ -3566,8 +3579,22 @@ function CardHeader({
           </p>
         )}
       </div>
+      {tag && tagAlign === "end" && <CodeBadge code={tag} />}
       {actions && <div className="shrink-0">{actions}</div>}
     </div>
+  );
+}
+
+// Subtítulo "etiqueta + valor" de las cards con secciones: etiqueta en
+// heading-xs mayúscula y el valor en text-code font-mono (ej. "INTERRUPCIÓN
+// SELECCIONADA BFZ…", "REPOSICIÓN 1 de 5 · 22/07/2026 14:50"). Hereda el
+// text-muted del subtítulo de CardHeader.
+function SubtituloEtiquetado({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
+  return (
+    <>
+      <span className="text-heading-xs uppercase tracking-[0.06em] mr-1.5">{etiqueta}</span>
+      <span className="text-code font-mono tabular-nums">{children}</span>
+    </>
   );
 }
 
@@ -3653,12 +3680,12 @@ function ReposicionesTable({
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div className="min-h-0 flex flex-col">
     <div
       ref={listRef}
       tabIndex={rows.length > 0 ? 0 : -1}
       onKeyDown={handleKeyDown}
-      className="flex-1 min-h-0 overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+      className="min-h-0 overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
     >
       <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
         <thead>
@@ -4210,10 +4237,11 @@ function ReclamosResumenCompacto({
     // recorte la card).
     <div
       data-habilitada={habilitada || undefined}
-      className="group relative shrink-0 border-t border-border transition-colors data-[habilitada]:hover:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:-outline-offset-2"
+      className="group relative shrink-0 rounded-b-md border-t border-border transition-colors data-[habilitada]:hover:bg-primary-tint has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:focus-visible]:-outline-offset-2"
     >
       <CardHeader
         title="Reclamos durante la interrupción"
+        level="section"
         reserveSubtitle
         subtitle={habilitada && referencia ? <>Interrupción <span className="text-code font-mono tabular-nums">{referencia}</span></> : undefined}
         actions={
@@ -5239,41 +5267,35 @@ function ModificarContent({
           )}
         </div>
 
-      {/* ── FILA INFERIOR — tabla de datos y Reposiciones (CDS4), una al lado de
-          la otra. flex-1 min-h-0 hace que la fila ocupe el resto del alto
-          disponible (nunca más) y que ambas cards, al estirarse (stretch,
-          default de un flex row) al alto de la fila, queden parejas — cada
-          una scrollea su body internamente (flex-1 min-h-0 overflow-y-auto)
-          en vez de crecer con el contenido y empujar scroll de página. ── */}
-      <div className={`flex-1 min-h-0 flex gap-4 transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
+      {/* ── FILA INFERIOR — Interrupciones y Reposiciones (CDS4), una al lado
+          de la otra. Cada card se ajusta a su contenido (items-start, no se
+          fuerza el mismo alto) con tope en el alto disponible (max-h-full):
+          si el contenido no entra, la tabla se achica y scrollea adentro,
+          nunca la página. Las cards NO llevan overflow-hidden: recortaría
+          el panel del filtro de Fecha y cualquier otro popover. ── */}
+      <div className={`flex-1 min-h-0 flex items-start gap-4 transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
 
-      {/* ── Tabla de datos — navegador de referencias, mismo alto y mismo
-          tratamiento de card que Card B. Split 50/50 con Card B (flex-1
-          en las dos). ── */}
+      {/* ── Card Interrupciones — card con secciones (ver DESIGN_SYSTEM.md,
+          "Card con secciones"): header con divisor → toolbar → tabla al ras
+          con paginación al pie → sección Reclamos. Split 50/50 con
+          Reposiciones (flex-1 en las dos). ── */}
       <div
-        className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-md border border-border bg-surface overflow-hidden"
+        className="shadow-sm flex-1 min-w-0 max-h-full flex flex-col rounded-md border border-border bg-surface"
       >
 
-        {/* Header — mismo componente/tratamiento que el de Card B (Reposiciones).
-            Sin acciones: el header lleva solo acciones de alcance tabla, y
-            "Datos de la Interrupción" se abre desde la card de Reclamos
-            (ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla"). */}
-        <CardHeader
-          title="Interrupciones"
-          tag="CDS2"
-          reserveSubtitle
-          subtitle={modShowData ? `${modVisibleIndices.length} de ${SAMPLE_ROWS.length} registros` : undefined}
-        />
+        {/* Header — sin subtítulo (el contador va en el toolbar). Sin
+            acciones: "Datos de la Interrupción" se abre desde la sección
+            Reclamos. */}
+        <CardHeader title="Interrupciones" tag="CDS2" tagAlign="end" divider />
 
         {/* Toolbar de tabla — FUERA del contenedor de la tabla, sin fondo ni
             línea divisoria con la tabla (ver DESIGN_SYSTEM.md, "Patrones
             de contenedor y tabla"): buscador de Referencia → divisor → filtro de Fecha →
-            (derecha) Limpiar filtros. El contador "N de M registros" va como
-            subtítulo del header de la card. Con resultados vacíos no hay
-            toolbar. "Limpiar filtros" quita el filtro, no el texto del
-            buscador. */}
+            (derecha) Limpiar filtros + contador "N de M registros". Con
+            resultados vacíos no hay toolbar. "Limpiar filtros" quita el
+            filtro, no el texto del buscador. */}
         {modShowData ? (
-          <div className="px-4 pt-1 pb-3 shrink-0 flex items-center flex-wrap gap-2">
+          <div className="px-4 py-3 shrink-0 flex items-center flex-wrap gap-2">
             <div className="w-60 shrink-0">
               <TableToolbar search={modSearch} onSearchChange={setModSearch} searchPlaceholder="Buscar referencia…" hideExport bare />
             </div>
@@ -5289,6 +5311,7 @@ function ModificarContent({
                   Limpiar filtros
                 </button>
               )}
+              <TableCounter visibles={modVisibleIndices.length} total={SAMPLE_ROWS.length} />
             </div>
           </div>
         ) : null}
@@ -5299,16 +5322,18 @@ function ModificarContent({
             Referencia / Fecha dentro del mismo contenedor con borde que
             ReposicionesTable, y debajo el resumen de reclamos (antes en
             Card B). */}
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="min-h-0 flex flex-col">
           {/* Replica el estilo de ReposicionesTable (copia de clases, no usa
               el componente): header bg-fill-subtle de alto REPOSICIONES_HEADER_H,
               celdas px-3 py-2 text-body-sm, separador border-subtle, acento de
               selección con sombra inset en la primera celda. Excepciones:
               sin alto fijo de fila (acá las filas son de una línea, el 50px
               de REPOSICIONES_ROW_H responde a la celda Equipo de dos) y la
-              paginación va como pie dentro del borde. */}
-          <div className="flex-1 min-h-0 flex flex-col">
-            <div className="grid grid-cols-2 items-center shrink-0 bg-fill-subtle border-b border-border" style={{ height: REPOSICIONES_HEADER_H }}>
+              paginación va como pie (fill-subtle). Con toolbar arriba, la
+              tabla lleva su propia línea superior; sin toolbar, esa línea
+              es el divisor del header de la card. */}
+          <div className="min-h-0 flex flex-col">
+            <div className={`grid grid-cols-2 items-center shrink-0 bg-fill-subtle border-b border-border ${modShowData ? "border-t" : ""}`} style={{ height: REPOSICIONES_HEADER_H }}>
               <SortableHeaderCell
                 label="Referencia"
                 active={modSortIdx === 0}
@@ -5333,17 +5358,17 @@ function ModificarContent({
               ref={modListRef}
               tabIndex={modShowData ? 0 : -1}
               onKeyDown={handleModListKeyDown}
-              className="flex-1 min-h-0 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+              className="min-h-0 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
             >
               {!modShowData ? (
-                <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
+                <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-8">
                   <span className="text-text-faint scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
                   <p className="text-label text-text-muted">Sin resultados</p>
                   <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
                 </div>
               ) : modFiltroFecha && modVisibleIndices.length === 0 ? (
                 /* El filtro dejó 0 filas — mismo empty state de arriba. */
-                <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-8">
+                <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-8">
                   <span className="text-text-faint scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
                   <p className="text-label text-text-muted">Sin resultados para los filtros aplicados</p>
                 </div>
@@ -5370,7 +5395,7 @@ function ModificarContent({
                 );
               })}
             </div>
-            <div className="shrink-0 border-t border-border px-4 py-1.5 flex items-center justify-between">
+            <div className="shrink-0 border-t border-border bg-fill-subtle px-4 py-1.5 flex items-center justify-between">
               <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted disabled:opacity-40" disabled>Anterior</button>
               <span className="text-caption text-text-muted">Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">2.213</span></span>
               <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted hover:bg-fill-muted transition-colors">Siguiente</button>
@@ -5392,52 +5417,53 @@ function ModificarContent({
             40/60 a favor de esta card, pero el resumen de reclamos pasó a
             vivir en Interrupciones. */}
         <div
-          className="shadow-sm flex-1 min-w-0 min-h-0 flex flex-col rounded-md border border-border bg-surface overflow-hidden"
+          className="shadow-sm flex-1 min-w-0 max-h-full flex flex-col rounded-md border border-border bg-surface"
         >
           {/* La interrupción seleccionada (registro padre de las
-              reposiciones) va como subtítulo del header — reemplaza a la
-              franja "INTERRUPCIÓN" que vivía debajo y se ocultaba en tier
-              760px. */}
+              reposiciones) va como subtítulo del header: "INTERRUPCIÓN
+              SELECCIONADA" + ID. El divisor del header hace de línea
+              superior de la tabla. */}
           <CardHeader
             title="Reposiciones"
             tag="CDS4"
+            tagAlign="end"
+            divider
             reserveSubtitle
-            subtitle={selectedRecord ? <>Interrupción <span className="text-code font-mono tabular-nums">{selectedRecord.referencia}</span></> : undefined}
+            subtitle={selectedRecord ? <SubtituloEtiquetado etiqueta="Interrupción seleccionada">{selectedRecord.referencia}</SubtituloEtiquetado> : undefined}
           />
 
-          <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
+          <div className="min-h-0 flex flex-col">
 
             {/* Tabla 4 — siempre visible, nunca detrás de un modal/drawer.
-                Vacía hasta que se selecciona una interrupción. Llena el alto
-                disponible (flex-1, igual que la lista de Interrupciones) +
-                scroll propio + header sticky, ver ReposicionesTable; así
-                Tablas relacionadas queda al fondo, alineada con Reclamos.
-                min-h-0 en este wrapper: sin él la tabla no puede achicarse
-                y terminaría scrolleando la card entera. */}
-            <div className="flex-1 min-h-0 flex flex-col">
+                Vacía hasta que se selecciona una interrupción. Toma el alto
+                de su contenido (la card no se estira); si no entra en el
+                alto disponible se achica con scroll propio + header sticky,
+                ver ReposicionesTable. min-h-0 en este wrapper: sin él la
+                tabla no puede achicarse y Tablas relacionadas quedaría
+                cortada. */}
+            <div className="min-h-0 flex flex-col">
               <ReposicionesTable
                 cols={tabla4Data.cols}
                 rows={tabla4Rows}
                 selectedIndex={modSelectedFase}
                 onSelect={setModSelectedFase}
               />
-              {/* Indicadores de las tablas relacionadas, card propia debajo
-                  de la tabla — abren el modal "Tablas relacionadas",
-                  preseleccionado en la reposición actual (modSelectedFase
-                  es la única fuente de verdad, compartida entre esta card
-                  y el modal) y en el tab del chip clickeado. Wrapper mt-3
-                  → el de Reclamos en Interrupciones; contenedor → el de
-                  ReclamosResumenCompacto sin lo interactivo (sin hover,
-                  cursor ni foco — lo clickeable son los chips). La
-                  reposición activa ("Reposición X de N · hora", misma
-                  condición de antes) va como subtítulo del header. */}
+              {/* Sección "Tablas relacionadas" de la card (no una card
+                  anidada): separada por border-t a todo el ancho, sin
+                  borde, fondo ni radio propios. Los chips abren el modal
+                  "Tablas relacionadas", preseleccionado en la reposición
+                  actual (modSelectedFase es la única fuente de verdad,
+                  compartida entre esta card y el modal) y en el tab del
+                  chip clickeado. La reposición activa va como subtítulo:
+                  "REPOSICIÓN" + "X de N · hora". */}
               <div className="shrink-0 border-t border-border">
                 <CardHeader
                   title="Tablas relacionadas"
+                  level="section"
                   reserveSubtitle
                   subtitle={
-                    tabla4Rows.length > 1 && filaFaseSeleccionada
-                      ? <>Reposición {modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length} · <span className="text-code font-mono tabular-nums">{filaFaseSeleccionada.horaRep}</span></>
+                    filaFaseSeleccionada
+                      ? <SubtituloEtiquetado etiqueta="Reposición">{modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length} · {filaFaseSeleccionada.horaRep}</SubtituloEtiquetado>
                       : undefined
                   }
                 />

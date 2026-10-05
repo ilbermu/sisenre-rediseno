@@ -410,9 +410,11 @@ sección de card.
 | Subtítulo | `subtitle` | `text-body-sm text-text-muted`; IDs y fechas en `text-code font-mono` | Contexto de los datos, debajo del título. Opcional |
 | Acciones | `actions` | botones `actionBtnCls` / `BTN_MD` | A la derecha, centradas en vertical. Opcional |
 
-- **Sin línea divisoria y sin fondo.** La separación con el contenido la da
-  el espaciado: el header es `pt-3 pb-2` y el alto sale del contenido (no
-  hay alto fijo).
+- **Sin fondo.** Por defecto tampoco lleva línea divisoria: la separación
+  con el contenido la da el espaciado (`pt-3 pb-2`) y el alto sale del
+  contenido (no hay alto fijo). Excepción: el header de una **card con
+  secciones** (ver la sección siguiente) lleva divisor (`divider`, `py-3`)
+  y el badge a la derecha (`tagAlign="end"`).
 - **Mismo padding horizontal que el cuerpo de la card.** En la vista de
   trabajo todo es `px-4` (header, toolbar, primera y última celda de la
   tabla, secciones). Si el cuerpo de una card usa otro padding, el header lo
@@ -420,11 +422,12 @@ sección de card.
   Exportación, Consolidación y Filtros).
 - **Cuándo lleva subtítulo:** cuando los datos de la card dependen de algo
   que no está a la vista en la propia card —
-  - el **registro padre** ("Interrupción `AFZ…`" en Reposiciones y en
-    Reclamos; "Reposición 1 de 5 · `22/07/2026 14:50`" en Tablas
-    relacionadas);
-  - el **alcance** de lo que se muestra ("40 de 40 registros" en
-    Interrupciones).
+  - el **registro padre** ("INTERRUPCIÓN SELECCIONADA `AFZ…`" en
+    Reposiciones, "Interrupción `AFZ…`" en Reclamos; "REPOSICIÓN `1 de 5 ·
+    22/07/2026 14:50`" en Tablas relacionadas);
+  - el **alcance** de lo que se muestra, cuando no hay un toolbar donde
+    ponerlo (en Interrupciones el contador "40 de 40 registros" va en el
+    toolbar, no en el header).
 
   No lleva subtítulo si solo repetiría el título o describiría la card.
 - **Cómo se escribe:** en minúsculas (sin `uppercase`), sin "·" inicial; el
@@ -434,8 +437,59 @@ sección de card.
 - **`reserveSubtitle`:** reserva la línea aunque todavía no haya nada que
   mostrar (sin selección, sin resultados), para que el header no cambie de
   alto cuando el subtítulo aparece y dos cards lado a lado queden alineadas.
+- **Subtítulo etiquetado** (`SubtituloEtiquetado`): en las cards con
+  secciones, el registro padre va como etiqueta + valor: etiqueta en
+  `text-heading-xs uppercase` y valor en `text-code font-mono`, los dos en
+  el `text-muted` del subtítulo.
 - **Header de tabla (`thead`):** alto fijo de 32px (`REPOSICIONES_HEADER_H`),
   borde incluido, con el texto centrado en vertical y sin padding vertical.
+
+## Card con secciones
+
+Anatomía de las cards de la vista de trabajo (Interrupciones y
+Reposiciones en Consultas de interrupción): **un único contenedor**
+dividido en franjas por líneas `border-border` a todo el ancho.
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ Título (heading-md)                               [CDS4] │  header
+│ ETIQUETA (heading-xs) valor-en-mono                      │
+├──────────────────────────────────────────────────────────┤  divisor del header
+│ [Buscar referencia…] | Fecha ▾              40 de 40 reg. │  toolbar (opcional)
+├──────────────────────────────────────────────────────────┤  línea superior de la tabla
+│ COLUMNA           COLUMNA                    (fill-subtle)│  thead
+│ fila…                                                     │
+├──────────────────────────────────────────────────────────┤
+│ Anterior       Página 1 de N           Siguiente (fill-s.)│  paginación (opcional)
+├──────────────────────────────────────────────────────────┤  línea de sección
+│ Título de sección (heading-sm)                            │  sección
+│ contenido de la sección                                   │
+└──────────────────────────────────────────────────────────┘
+```
+
+- **Header de card:** `CardHeader` con `divider` y `tagAlign="end"` —
+  título `heading-md` a la izquierda, badge CDS a la derecha, línea
+  inferior `border-b border-border` a todo el ancho.
+- **Tablas al ras:** sin margen lateral, sin borde ni radio propios. Llevan
+  una línea superior `border-border` (si la tabla va justo debajo del
+  header, esa línea es el divisor del header — nunca dos líneas juntas) y
+  el `thead` en `fill-subtle`. La paginación va al pie de la tabla, con
+  `border-t` y fondo `fill-subtle`.
+- **Secciones** (Reclamos durante la interrupción, Tablas relacionadas):
+  separadas por `border-t border-border` a todo el ancho, sin borde, fondo
+  ni radio propios. Título en `heading-sm` (`CardHeader` con
+  `level="section"`, sin divisor). Si la sección pinta un fondo (hover) y
+  es la última de la card, lleva el radio inferior de la card
+  (`rounded-b-md`).
+- **No se anidan contenedores con borde dentro de una card:** nada de
+  cards dentro de cards, ni tablas con borde/radio propios, ni bloques con
+  fondo y borde. Todo lo que necesite separarse es una sección.
+- **Alto:** cada card se ajusta a su contenido; dos cards lado a lado no
+  se fuerzan al mismo alto (`items-start` en la fila). El tope es el alto
+  disponible (`max-h-full`): si el contenido no entra, la tabla se achica y
+  scrollea adentro (`min-h-0 overflow-y-auto`), nunca la página.
+- **Sin `overflow-hidden` en la card:** recortaría el panel del filtro de
+  Fecha y cualquier otro popover (ver "Superficies").
 
 ## Patrones de contenedor y tabla
 
@@ -479,12 +533,11 @@ sección de card.
    a la tabla por proximidad (toolbar `px-4 py-3`; en la vista de trabajo
    la tabla va apoyada en la card, sin contenedor propio — ver regla 8; en
    el modal "Tablas relacionadas", `px-5 pb-3` y contenedor `mx-5 mb-5`). Orden: buscador → divisor vertical (`w-px h-5
-   bg-border`, el de `PersistentActionsBar`) → triggers de filtro →
-   (derecha, `ml-auto`) "Limpiar filtros" (solo con ≥1 filtro activo; quita
-   los filtros, no el texto del buscador). El contador "`N` de `M`
-   registros" va como subtítulo del header de la card cuando la tabla es el
-   contenido principal de la card (Interrupciones); en un modal, sigue en el
-   toolbar (`TableCounter`). El `thead` mantiene su relleno `fill-subtle`.
+   bg-border`) → triggers de filtro → (derecha, `ml-auto`) "Limpiar
+   filtros" (solo con ≥1 filtro activo; quita los filtros, no el texto del
+   buscador) + contador "`N` de `M` registros" (`TableCounter`), tanto en
+   las cards (Interrupciones) como en los modales. El `thead` mantiene su
+   relleno `fill-subtle`.
 5. **Búsqueda con alcance explícito**: el buscador declara sus columnas
    (`searchCols` de `useTableToolbar`) y el placeholder las nombra (ej.
    "Buscar referencia…"; el `aria-label` es el mismo texto sin los puntos
@@ -514,7 +567,7 @@ sección de card.
      necesita un wrapper, no lleva borde ni fondo. La primera y la última
      celda de cada fila usan el padding horizontal de la card (`pl-4` /
      `pr-4`) para alinear con el header y el toolbar; el pie con paginador
-     va con `border-t`, sin relleno.
+     va con `border-t` y fondo `fill-subtle`. Ver "Card con secciones".
    - **Bloques secundarios** (Reclamos durante la interrupción, Tablas
      relacionadas): son **secciones** de su card, separadas por `border-t
      border-border`. No son cards anidadas.
