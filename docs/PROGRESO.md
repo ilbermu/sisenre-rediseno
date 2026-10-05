@@ -193,10 +193,12 @@ Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
 - **Ancho a 1366px**: la fila de filtros de Búsqueda (Modificar
   interrupción) no entra; el botón "Buscar" queda cortado contra el borde
   derecho y la card de Reposiciones se pasa unos píxeles. Preexistente.
+  (Sigue abierto, ver entrada del 2026-10-05.)
 - **Cards con `overflow-hidden`** (`src/App.tsx:5275`, `5425`, `7355`,
   `7470`, `7913`): la regla del DS dice que las cards no lo usan (recorta
   popovers). No se sacó porque hay que verificar el scroll interno en el
-  navegador.
+  navegador. (Las dos de Modificar interrupción se resolvieron el
+  2026-10-05; quedan las de ABM y Notas, ver esa entrada.)
 - **Tabla de Resultados del ABM** (`src/App.tsx:7522`): conserva su
   contenedor con borde; la regla 8 ("una card, una superficie") solo se
   aplicó a Modificar interrupción.
@@ -219,3 +221,74 @@ Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
 
 Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
 `src/App.tsx:2482` (`LoginScreen`).
+
+## 2026-10-05
+
+### Qué se hizo
+
+- **Fondo y encabezado de página** (`737edeb`): `--color-bg-app` pasa de
+  `#FAF9F5` (crema) a `#FAFAFA`; la tabla de contraste del DS se recalculó
+  (text-muted 5.18:1 e icon 3.55:1 en el peor caso, `fill-muted` sobre el
+  fondo). Consultas de interrupción tiene encabezado propio, apoyado en el
+  fondo y sin borde: breadcrumb Inicio > Consultas de interrupción, título
+  "Búsqueda de interrupciones" (`heading-lg`) y selector de período a la
+  derecha. El top bar del resto de las pantallas no cambió.
+- **Búsqueda sin contenedor** (`737edeb`): la fila de filtros ya no es una
+  card (sin header "Búsqueda" + CDS2). Se sacó de la pantalla la fila de
+  acciones (Desarmes…Intercambio) y su dropdown de tier 760px; los modales
+  y su estado quedaron intactos.
+- **Cards con secciones** (`7eed177`): `CardHeader` suma props opt-in
+  `divider`, `tagAlign="end"` y `level="section"`, más el componente
+  `SubtituloEtiquetado`. Interrupciones: header con divisor y badge a la
+  derecha, sin subtítulo; toolbar con buscador, Fecha y contador; paginación
+  con fondo `fill-subtle`. Reposiciones: subtítulo "INTERRUPCIÓN
+  SELECCIONADA" + ID. Reclamos y Tablas relacionadas, secciones con título
+  `heading-sm` ("REPOSICIÓN X de N · hora"). Las cards se ajustan a su
+  contenido (`items-start`, `max-h-full`) y ya no usan `overflow-hidden` (el
+  panel de Fecha ya no se recorta). Nueva sección "Card con secciones" en el
+  DS.
+- **Grupo "Herramientas" en el menú lateral** (`ca0aa3d`): desplegable
+  (ícono `Wrench`) entre ABM y Otros, con un solo grupo abierto a la vez
+  (ABM/Herramientas; en el acordeón compacto también Otros). Lotes abre su
+  modal desde cualquier pantalla (el modal pasó a `App`). `NavItem` suma
+  `disabled`.
+- A 1366×768 las cards arrancan 100px más arriba (y=255 → y=155); sin
+  búsqueda terminan en y=549 / 489 en vez de estirarse hasta y=751.
+
+### Pendientes abiertos
+
+- **Herramientas sin conectar** (`HERRAMIENTAS_ITEMS`, `src/App.tsx:50`):
+  Desarmes, Nivel/Tipo, Replicar, Cambia fases, Alta clientes e Intercambio
+  dependen de la interrupción seleccionada en Consultas de interrupción
+  (referencia del modal o habilitación por selección). Quedan
+  deshabilitados en el menú y, al no estar más la fila de botones, hoy no se
+  pueden abrir desde ningún lado. Falta definir cómo se resuelven desde el
+  menú.
+- **`PersistentActionsBar`** (`src/App.tsx:4666`) quedó sin usar; borrarlo
+  cuando se resuelva el punto anterior.
+- **Headers desalineados**: Interrupciones no lleva subtítulo y su header
+  mide 16px menos que el de Reposiciones (`reserveSubtitle`), así que los
+  divisores de las dos cards no quedan a la misma altura
+  (`src/App.tsx:5313`).
+- **Ancho a 1366px**: "Buscar" sigue cortado contra el borde derecho y los
+  toggles Origen/Tipo se apilan en dos renglones. Preexistente.
+- **"Orden por Fecha"**: en Interrupciones es un filtro por rango
+  (`FilterTrigger` `date-range`), no un orden. Confirmar si se quiere un
+  orden.
+- **Cards con `overflow-hidden`** fuera de Modificar interrupción: ABM
+  (`src/App.tsx:7374`, `7489`) y Notas (`7932`).
+- **Sin probar en el navegador**: tier ≤760px del encabezado nuevo, del
+  grupo Herramientas y de las cards con alto según contenido; sidebar
+  colapsado (el ícono de Herramientas expande el sidebar y abre el grupo).
+- **Botón "Copiar datos de la reposición"** (`src/App.tsx:4398`,
+  `handleCopiarDatosReposicion`): sigue sin copiar nada.
+- **Placeholders de Tablas relacionadas**, **tiles en 0 que no abren el
+  modal** (`RelacionadaChip`, `src/App.tsx:3797`), **choque de nombre
+  "Fase"**, **tabla de Resultados del ABM con contenedor propio** y
+  **"Procesar" de Planilla consolidada con `opacity-40`**: siguen abiertos.
+- `src/App.tsx:7293` (`handleConfirmarModificar`): sin persistencia real.
+
+### Cómo levantar el proyecto
+
+Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
+`src/App.tsx:2507` (`LoginScreen`).
