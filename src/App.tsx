@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown,
   Zap, FileText, Pencil, Clipboard, UserPlus, Shield, Calendar, Search, X,
   Filter, Inbox, User, Settings, LogOut, Plus, Download, ChevronsUp, ChevronsDown, Home,
-  ChevronUp, Copy, Check, Clock, Users, ClipboardList, Loader2,
+  ChevronUp, Copy, Check, Clock, Users, ClipboardList, Loader2, Wrench,
 } from "lucide-react";
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
@@ -37,6 +37,24 @@ const OTROS_ITEMS: { label: string; icon: React.ReactNode; screen: Screen }[] = 
   { label: "Gestor de notas",      icon: <Pencil size={15} strokeWidth={1.5} />,      screen: "gestornotas" },
   { label: "Inserta clientes",     icon: <UserPlus size={15} strokeWidth={1.5} />,  screen: "insertaclientes" },
   { label: "Auditoría",            icon: <Shield size={15} strokeWidth={1.5} />,    screen: "auditoria" },
+];
+
+// Grupo "Herramientas" del sidebar — las acciones que antes vivían en la
+// fila de botones de Consultas de interrupción, en el mismo orden. `key`
+// identifica qué abre cada ítem en App. Solo Lotes está conectado: el resto
+// depende de la interrupción seleccionada en Consultas de interrupción (el
+// modal recibe su referencia y/o el botón se habilitaba recién con una
+// selección), así que queda deshabilitado hasta definir cómo resolverlo
+// desde el menú.
+type HerramientaKey = "desarmes" | "lotes" | "niveltipo" | "replicar" | "cambiafases" | "altaclientes" | "intercambio";
+const HERRAMIENTAS_ITEMS: { key: HerramientaKey; label: string; pendiente?: boolean }[] = [
+  { key: "desarmes",     label: "Desarmes",      pendiente: true },
+  { key: "lotes",        label: "Lotes" },
+  { key: "niveltipo",    label: "Nivel/Tipo",    pendiente: true },
+  { key: "replicar",     label: "Replicar",      pendiente: true },
+  { key: "cambiafases",  label: "Cambia fases",  pendiente: true },
+  { key: "altaclientes", label: "Alta clientes", pendiente: true },
+  { key: "intercambio",  label: "Intercambio",   pendiente: true },
 ];
 
 const PERIODS = ["Agosto 2026","Julio 2026","Junio 2026","Mayo 2026","Abril 2026"];
@@ -342,7 +360,7 @@ function SectionDivider({ title }: { title: string }) {
 // ─── Sidebar nav item ─────────────────────────────────────────────────────────
 
 function NavItem({
-  label, code, icon, active, collapsed, onClick, boldLabel = false,
+  label, code, icon, active, collapsed, onClick, boldLabel = false, disabled = false, disabledTitle,
 }: {
   // `icon` es opcional: filas hijas sin ícono propio (ej. Tabla 2..Tabla 9
   // NM) simplemente no reservan ese espacio, solo texto indentado.
@@ -351,15 +369,22 @@ function NavItem({
   // no solo cuando está activo. Uso puntual (ej. "Consultas de interrupción"),
   // el resto del tratamiento (ícono, tamaño de fila) queda igual.
   boldLabel?: boolean;
+  // Ítem todavía no disponible (ej. herramientas pendientes de conectar):
+  // text-faint, sin hover, fuera de uso. `disabledTitle` explica por qué.
+  disabled?: boolean;
+  disabledTitle?: string;
 }) {
   return (
     <button
       onClick={onClick}
-      title={!collapsed ? label + (code ? ` · ${code}` : "") : undefined}
+      disabled={disabled}
+      title={disabled && disabledTitle ? disabledTitle : !collapsed ? label + (code ? ` · ${code}` : "") : undefined}
       style={{ position: "relative" }}
       className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-all duration-150 group
         ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
-        ${active
+        ${disabled
+          ? "border-transparent text-text-faint cursor-not-allowed"
+          : active
           ? "border-transparent text-secondary"
           : "border-transparent text-text hover:bg-fill-muted"
         }`}
@@ -4786,7 +4811,6 @@ function ModificarContent({
   const [replicarOpen, setReplicarOpen] = useState(false);
   const [cambiaFasesOpen, setCambiaFasesOpen] = useState(false);
   const [altaClientesOpen, setAltaClientesOpen] = useState(false);
-  const [lotesOpen, setLotesOpen] = useState(false);
   const [intercambioOpen, setIntercambioOpen] = useState(false);
   const [datosInterrupcionOpen, setDatosInterrupcionOpen] = useState(false);
   const hasSelection = modSelectedRow !== null;
@@ -5510,7 +5534,6 @@ function ModificarContent({
         onClose={() => setAltaClientesOpen(false)}
         referencia={selectedRecord?.referencia ?? ""}
       />
-      <LotesModal open={lotesOpen} onClose={() => setLotesOpen(false)} />
       <IntercambioModal
         open={intercambioOpen}
         onClose={() => setIntercambioOpen(false)}
@@ -8162,6 +8185,12 @@ export default function App() {
   const [collapsed, setCollapsed] = useState(false);
   const [lastAbmTable, setLastAbmTable] = useState<AbmTableKey>("cds2");
   const [abmExpanded, setAbmExpanded] = useState(true);
+  // Grupo "Herramientas": arranca plegado (ABM arranca desplegado) — los
+  // dos grupos se excluyen: abrir uno pliega el otro, en cualquier tamaño.
+  const [herramientasExpanded, setHerramientasExpanded] = useState(false);
+  // Herramienta abierta desde el menú (modal) — independiente de la
+  // pantalla activa.
+  const [herramientaAbierta, setHerramientaAbierta] = useState<HerramientaKey | null>(null);
   // "Otros" no es desplegable en el tamaño normal (label fijo, ver más
   // abajo) — este estado solo importa en el acordeón compacto de tier
   // 760px, donde ABM/Otros pasan a excluirse mutuamente.
@@ -8197,6 +8226,7 @@ export default function App() {
   // hoisting de `function`.
   function syncAccordionCompacto(target: Screen) {
     if (!compactSidebar) return;
+    setHerramientasExpanded(false);
     if (isAbmTableKey(target)) {
       setAbmExpanded(true);
       setOtrosExpanded(false);
@@ -8223,7 +8253,7 @@ export default function App() {
   // more hooks than during the previous render").
   useEffect(() => {
     if (compactSidebar) syncAccordionCompacto(screen);
-    else { setAbmExpanded(true); setOtrosExpanded(true); }
+    else { setAbmExpanded(true); setOtrosExpanded(true); setHerramientasExpanded(false); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [compactSidebar]);
 
@@ -8239,6 +8269,7 @@ export default function App() {
     setScreen(k);
     setLastAbmTable(k);
     setAbmExpanded(true);
+    setHerramientasExpanded(false);
     if (compactSidebar) setOtrosExpanded(false);
     setVolverA(null);
   }
@@ -8250,8 +8281,24 @@ export default function App() {
     const next = !abmExpanded;
     setScreen(lastAbmTable);
     setAbmExpanded(next);
+    if (next) setHerramientasExpanded(false);
     if (compactSidebar && next) setOtrosExpanded(false);
     setVolverA(null);
+  }
+
+  // Click en el padre "Herramientas": despliega/pliega los ítems, sin
+  // navegar (no es una pantalla). Abrirlo pliega ABM (uno abierto a la
+  // vez) y, en el acordeón compacto, también "Otros". Con el sidebar
+  // colapsado no hay dónde mostrar los ítems: expande el sidebar y abre
+  // el grupo.
+  function handleHerramientasParentClick() {
+    const next = collapsed ? true : !herramientasExpanded;
+    if (collapsed) setCollapsed(false);
+    setHerramientasExpanded(next);
+    if (next) {
+      setAbmExpanded(false);
+      if (compactSidebar) setOtrosExpanded(false);
+    }
   }
 
   // Click en el header "Otros" — solo clickeable en el acordeón compacto
@@ -8260,7 +8307,7 @@ export default function App() {
   function handleOtrosParentClick() {
     const next = !otrosExpanded;
     setOtrosExpanded(next);
-    if (compactSidebar && next) setAbmExpanded(false);
+    if (compactSidebar && next) { setAbmExpanded(false); setHerramientasExpanded(false); }
   }
 
   // Navegación a Inicio (sidebar) — sin estado previo que restaurar, igual
@@ -8432,6 +8479,49 @@ export default function App() {
             </div>
           )}
 
+          {/* Herramientas — grupo desplegable con el mismo lenguaje que ABM
+              (ícono + texto + chevron, hijos con guía vertical). Abre las
+              herramientas que antes eran la fila de botones de Consultas
+              de interrupción; ver HERRAMIENTAS_ITEMS. */}
+          <button
+            type="button"
+            onClick={handleHerramientasParentClick}
+            aria-expanded={herramientasExpanded}
+            title={!collapsed ? "Herramientas" : undefined}
+            style={{ position: "relative" }}
+            className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-all duration-150 group mt-0.5
+              ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
+              border-transparent text-text hover:bg-fill-muted`}
+          >
+            <span className="shrink-0"><Wrench size={15} strokeWidth={1.5} /></span>
+            {!collapsed && (
+              <>
+                <span className="flex-1 min-w-0 truncate text-body text-left">Herramientas</span>
+                <span className={`shrink-0 transition-transform duration-150 ${herramientasExpanded ? "" : "-rotate-90"}`}>
+                  <ChevronDown size={16} strokeWidth={1.5} />
+                </span>
+              </>
+            )}
+            {collapsed && (
+              <span className="sidebar-item-tooltip">Herramientas</span>
+            )}
+          </button>
+
+          {herramientasExpanded && !collapsed && (
+            <div className="flex flex-col gap-0.5 pl-3 ml-2.5 border-l border-border">
+              {HERRAMIENTAS_ITEMS.map((item) => (
+                <NavItem
+                  key={item.key}
+                  label={item.label}
+                  collapsed={collapsed}
+                  disabled={item.pendiente}
+                  disabledTitle="Pendiente: depende de la interrupción seleccionada en Consultas de interrupción"
+                  onClick={item.pendiente ? undefined : () => setHerramientaAbierta(item.key)}
+                />
+              ))}
+            </div>
+          )}
+
           {/* Otros group — label fijo, no clickeable, en tamaño normal
               (decisión de diseño ya tomada). Solo en el acordeón compacto
               (tier 760px) se vuelve un disclosure como el de ABM, porque
@@ -8555,6 +8645,10 @@ export default function App() {
           </>
         )}
       </div>
+
+      {/* Herramientas abiertas desde el menú lateral — viven acá (no en una
+          pantalla) para abrirse desde cualquier pantalla. */}
+      <LotesModal open={herramientaAbierta === "lotes"} onClose={() => setHerramientaAbierta(null)} />
     </div>
   );
 }

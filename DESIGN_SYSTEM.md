@@ -577,6 +577,9 @@ dividido en franjas por líneas `border-border` a todo el ancho.
      selector de período a la derecha, sin borde inferior).
    - **Acciones del registro** (Desarmes, Lotes, Nivel/Tipo, Replicar,
      Cambia fases, Alta clientes, Intercambio): ya no viven en la pantalla;
-     se reubican en el menú lateral.
+     son los ítems del grupo desplegable "Herramientas" del menú lateral
+     (mismo patrón que "Alta, Baja y Modificación"; un solo grupo
+     desplegado a la vez). Los que dependen de la interrupción seleccionada
+     quedan deshabilitados (`text-faint`) hasta definir cómo se resuelven.
    - **Gap entre cards:** un único valor en toda la pantalla (`gap-4`),
      vertical y horizontal, en todos los tiers.
