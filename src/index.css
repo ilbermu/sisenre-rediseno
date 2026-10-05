@@ -30,7 +30,7 @@
   --color-gray-900: #1A202C;
 
   /* Superficies */
-  --color-bg-app: #FAF9F5; /* fondo de página y sidebar */
+  --color-bg-app: #FAFAFA; /* fondo de página y sidebar */
   --color-surface: #FFFFFF; /* cards, modales, popovers, dropdowns */
   --color-border: rgba(20, 20, 19, 0.10); /* bordes de contenedores y divisores */
   --color-border-strong: rgba(20, 20, 19, 0.20); /* bordes de inputs, selects, botones secundarios y controles */

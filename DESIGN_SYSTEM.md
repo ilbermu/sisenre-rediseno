@@ -73,7 +73,7 @@ Tokens en `@theme` de `src/index.css`. Se eligen por **rol**; las clases
 
 | Token | Clase | Uso |
 |---|---|---|
-| `--color-bg-app` | `bg-bg-app` | Fondo de página: shell de la app, selector de herramienta, sidebar, top bar |
+| `--color-bg-app` | `bg-bg-app` | `#FAFAFA` (gris neutro; antes `#FAF9F5`, crema). Fondo de página: shell de la app, selector de herramienta, sidebar, top bar y encabezado de página |
 | `--color-surface` | `bg-surface` | Todo lo que se apoya sobre el fondo: cards, modales, popovers, dropdowns, inputs, botones secundarios, paginadores |
 | `--color-border` | `border-border`, `bg-border` | Borde de contenedores (cards, popovers, dropdowns), divisores (bajo un header, bajo el `thead`, pie de tabla) y líneas de 1px (`h-px` / `w-px bg-border`) |
 | `--color-border-strong` | `border-border-strong` | Controles: inputs, selects, botones secundarios, checkbox y radio, badges de código. Tienen que seguir leyéndose como campos |
@@ -85,8 +85,8 @@ Reglas:
 
 - **Los rellenos neutros son siempre translúcidos** (`fill-subtle`,
   `fill-muted`): negro cálido con alfa, no un gris opaco. Así toman la
-  temperatura de lo que tienen debajo (blanco en una card, crema en el
-  sidebar) y nunca aparece un gris azulado sobre un fondo cálido. No se
+  temperatura de lo que tienen debajo (blanco en una card, el gris
+  `#FAFAFA` del fondo en el sidebar) y nunca aparece un gris azulado sobre un fondo cálido. No se
   agregan grises opacos de relleno.
 - **Excepción — elementos `sticky`:** un `th` sticky necesita fondo opaco,
   porque con el relleno translúcido se ve pasar el contenido que scrollea
@@ -196,15 +196,15 @@ no un gris. El gris secundario es `text-text-muted`.
 
 Mínimos: `text` 7:1, `text-muted` 4.5:1, `icon` 3:1 (componente no textual),
 `text-faint` 2.5:1 (exento). El peor fondo es `fill-muted` apoyado sobre
-`bg-app`.
+`bg-app`. Valores con `bg-app` = `#FAFAFA`.
 
 | Color | surface | bg-app | fill-subtle | fill-muted | fill-subtle sobre bg-app | fill-muted sobre bg-app | primary-tint |
 |---|---|---|---|---|---|---|---|
-| `text` `#1F1E1D` | 16.64 | 15.80 | 15.67 | 14.72 | 14.88 | 13.99 | 14.99 |
-| `text-muted` `#63625D` | 6.11 | 5.80 | 5.75 | 5.41 | 5.46 | 5.14 | 5.51 |
-| `icon` `#7D7C77` | 4.18 | 3.97 | 3.94 | 3.70 | 3.74 | 3.51 | 3.77 |
-| `text-faint` `#8F8E89` | 3.28 | 3.12 | 3.09 | 2.90 | 2.93 | 2.76 | 2.96 |
-| `secondary` (navy) `#1D558C` | 7.69 | 7.30 | 7.24 | 6.80 | 6.87 | 6.46 | 6.93 |
+| `text` `#1F1E1D` | 16.64 | 15.95 | 15.67 | 14.72 | 15.01 | 14.11 | 14.99 |
+| `text-muted` `#63625D` | 6.11 | 5.86 | 5.75 | 5.41 | 5.51 | 5.18 | 5.51 |
+| `icon` `#7D7C77` | 4.18 | 4.01 | 3.94 | 3.70 | 3.77 | 3.55 | 3.77 |
+| `text-faint` `#8F8E89` | 3.28 | 3.14 | 3.09 | 2.90 | 2.96 | 2.78 | 2.96 |
+| `secondary` (navy) `#1D558C` | 7.69 | 7.37 | 7.24 | 6.80 | 6.94 | 6.52 | 6.93 |
 
 ## Radios
 
@@ -518,9 +518,12 @@ sección de card.
    - **Bloques secundarios** (Reclamos durante la interrupción, Tablas
      relacionadas): son **secciones** de su card, separadas por `border-t
      border-border`. No son cards anidadas.
+   - **Búsqueda sin contenedor:** en Consultas de interrupción la fila de
+     filtros no es una card: se apoya directo en el fondo de la página,
+     debajo del encabezado de página (breadcrumb + título `heading-lg` +
+     selector de período a la derecha, sin borde inferior).
    - **Acciones del registro** (Desarmes, Lotes, Nivel/Tipo, Replicar,
-     Cambia fases, Alta clientes, Intercambio): segunda fila de la card de
-     Búsqueda, separada de los filtros por `border-t border-border-subtle`.
-     No tienen card propia.
+     Cambia fases, Alta clientes, Intercambio): ya no viven en la pantalla;
+     se reubican en el menú lateral.
    - **Gap entre cards:** un único valor en toda la pantalla (`gap-4`),
      vertical y horizontal, en todos los tiers.

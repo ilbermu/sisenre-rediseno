@@ -5046,15 +5046,12 @@ function ModificarContent({
     <div className="flex-1 min-h-0 flex flex-col p-5 relative overflow-hidden">
     <div className="flex-1 min-h-0 flex flex-col gap-4">
 
-        {/* Card A — título propio ("Búsqueda" + badge CDS2, mismo patrón que
-            los paneles Búsqueda/Resultados del motor ABM) arriba de la
-            barra de filtros compacta, una sola fila, + flyout "Más filtros" */}
+        {/* Búsqueda — sin contenedor: la fila de filtros se apoya directo
+            en el fondo de la página, debajo del título del encabezado. Una
+            sola fila + flyout "Más filtros" anclado a la derecha. */}
         <div className="relative shrink-0">
-          <div
-            className="shadow-sm relative rounded-md border border-border bg-surface"
-          >
-            <CardHeader title="Búsqueda" tag="CDS2" />
-            <div className="relative z-30 flex items-center gap-2 px-4 pt-1 pb-3 [@media(max-height:760px)]:flex-wrap">
+          <div className="relative">
+            <div className="relative z-30 flex items-center gap-2 [@media(max-height:760px)]:flex-wrap">
             {/* Ancho fijo (no crece a ocupar el sobrante) para que se vea
                 proporcionado contra Nivel/Fase — 190px en tamaño normal,
                 bastante más chico en tier 760px vía el `!` important de
@@ -5148,24 +5145,6 @@ function ModificarContent({
               {limpiarBuscarBtns}
             </div>
             </div>
-
-      {/* ── Barra de acciones persistente — siempre visible, independiente de
-          si hay búsqueda o selección activa. Desarmes/Lotes funcionan sin
-          ninguna interrupción cargada; el resto se habilita recién con una
-          interrupción seleccionada. ── */}
-      <PersistentActionsBar
-        siempreHabilitadas={[
-          { label: "Desarmes", onClick: () => setDesarmeOpen(true) },
-          { label: "Lotes", onClick: () => setLotesOpen(true) },
-        ]}
-        condicionales={[
-          { label: "Nivel/Tipo", disabled: !hasSelection, onClick: () => setNivelTipoOpen(true) },
-          { label: "Replicar", disabled: !hasSelection, onClick: () => setReplicarOpen(true) },
-          { label: "Cambia fases", disabled: !hasSelection, onClick: () => setCambiaFasesOpen(true) },
-          { label: "Alta clientes", disabled: !hasSelection, onClick: () => setAltaClientesOpen(true) },
-          { label: "Intercambio", disabled: !hasSelection, onClick: () => setIntercambioOpen(true) },
-        ]}
-      />
 
             {/* Backdrop — no bloqueante, sólo cierra el flyout al click afuera.
                 Vive junto al flyout (no en el wrapper externo que también
@@ -5290,13 +5269,9 @@ function ModificarContent({
             línea divisoria con la tabla (ver DESIGN_SYSTEM.md, "Patrones
             de contenedor y tabla"): buscador de Referencia → divisor → filtro de Fecha →
             (derecha) Limpiar filtros. El contador "N de M registros" va como
-            subtítulo del header de la card. En tier 760px suma el
-            dropdown "Acciones" al final (slot acciones-tier2) en vez de una
-            fila propia. Con resultados vacíos no hay toolbar que mostrar,
-            así que el slot vive en una franja mínima aparte — Desarmes/
-            Lotes siguen disponibles sin selección, no pueden depender de
-            modShowData. "Limpiar filtros" quita el filtro, no el texto
-            del buscador. */}
+            subtítulo del header de la card. Con resultados vacíos no hay
+            toolbar. "Limpiar filtros" quita el filtro, no el texto del
+            buscador. */}
         {modShowData ? (
           <div className="px-4 pt-1 pb-3 shrink-0 flex items-center flex-wrap gap-2">
             <div className="w-60 shrink-0">
@@ -5314,14 +5289,9 @@ function ModificarContent({
                   Limpiar filtros
                 </button>
               )}
-              <div id="acciones-tier2-slot" className="hidden [@media(max-height:760px)]:flex items-center" />
             </div>
           </div>
-        ) : (
-          <div className="hidden [@media(max-height:760px)]:flex items-center justify-end px-4 pt-1 pb-3 shrink-0">
-            <div id="acciones-tier2-slot" className="flex items-center" />
-          </div>
-        )}
+        ) : null}
 
         {/* Body — px-4 pb-4, alineado con el toolbar (con toolbar, el aire
             de arriba lo da su py-3; sin datos no hay toolbar y el body suma
@@ -8493,18 +8463,41 @@ export default function App() {
           />
         ) : (
           <>
-            {/* Top bar — reservado para título de pantalla + selector de
-                período, transversal a toda la app: no le agregues nada más
-                acá (ver AjustesConsultas/PersistentActionsBar, que anclan su
-                propio dropdown de tier 760px a la card de Búsqueda, no acá). */}
+            {/* Encabezado de página de Consultas de interrupción — apoyado en
+                el fondo, sin borde inferior: breadcrumb (Inicio > pantalla)
+                y debajo el título de la vista, con el selector de período a
+                la derecha, a la altura del título. Solo esta pantalla; el
+                resto sigue con el top bar de abajo. */}
+            {screen === "modificar" ? (
+              <header className="px-5 pt-4 shrink-0">
+                <nav aria-label="Ruta" className="flex items-center gap-1.5 text-body-sm text-text-muted">
+                  <button
+                    type="button"
+                    onClick={irAInicio}
+                    aria-label="Inicio"
+                    title="Inicio"
+                    className="flex items-center rounded-xs text-text-muted hover:text-text transition-colors focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
+                  >
+                    <Home size={14} strokeWidth={1.5} aria-hidden />
+                  </button>
+                  <ChevronRight size={12} strokeWidth={1.5} aria-hidden className="text-text-faint" />
+                  <span aria-current="page">Consultas de interrupción</span>
+                </nav>
+                <div className="mt-1 flex items-center gap-4">
+                  <h1 className="flex-1 min-w-0 truncate text-heading-lg text-text">Búsqueda de interrupciones</h1>
+                  <PeriodSelector />
+                </div>
+              </header>
+            ) : (
+            /* Top bar — reservado para título de pantalla + selector de
+                período, transversal al resto de la app: no le agregues nada
+                más acá. Consultas de interrupción usa su propio encabezado
+                de página (arriba). */
             <header
               className="flex items-center px-6 border-b border-border bg-bg-app shrink-0"
               style={{ minHeight: "var(--header-min-height, 60px)" }}
             >
               <div className="flex items-center gap-2.5 flex-1">
-                {screen === "modificar" && (
-                  <h1 className="text-heading-md text-text">Consultas de interrupción</h1>
-                )}
                 {screen === "welcome" && (
                   <h1 className="text-heading-md text-text">Inicio</h1>
                 )}
@@ -8516,6 +8509,7 @@ export default function App() {
               </div>
               <PeriodSelector />
             </header>
+            )}
 
             {/* Content */}
             {screen === "welcome" && <WelcomeContent onIrATabla={goToAbmTable} />}
