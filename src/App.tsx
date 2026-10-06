@@ -587,7 +587,7 @@ function FilterTriggerButton({
         aria-expanded={open}
         disabled={disabled}
         onClick={onToggle}
-        className={`h-8 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-all disabled:text-text-faint disabled:cursor-not-allowed disabled:pointer-events-none ${FOCUS_RING} ${
+        className={`h-(--control-sm) px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-all disabled:text-text-faint disabled:cursor-not-allowed disabled:pointer-events-none ${FOCUS_RING} ${
           open
             ? "bg-primary-tint border-primary text-secondary"
             : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
@@ -599,7 +599,7 @@ function FilterTriggerButton({
     );
   }
   return (
-    <div className="h-8 rounded-sm text-label border inline-flex items-center bg-primary-tint border-primary text-secondary">
+    <div className="h-(--control-sm) rounded-sm text-label border inline-flex items-center bg-primary-tint border-primary text-secondary">
       <button
         type="button"
         aria-haspopup="dialog"
@@ -1130,8 +1130,13 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
 //   md — acciones de panel (Buscar, Limpiar, Cancelar, Guardar, Insertar,
 //        Exportar, Auditoría) y botones dropdown-trigger (selector de
 //        período, "Cambiar de tabla")
-const BTN_SM = "h-7 px-2.5 rounded-sm text-label";
-const BTN_MD = "h-9 px-4 rounded-sm text-body font-medium";
+// Alto: --control-sm / --control-md (index.css), en px fijos por tier — no
+// dependen de --spacing, así nunca bajan de 24px (WCAG 2.5.8). Los campos
+// que comparten fila con un botón md usan el mismo token.
+const BTN_SM = "h-(--control-sm) px-2.5 rounded-sm text-label";
+const BTN_MD = "h-(--control-md) px-4 rounded-sm text-body font-medium";
+// Segmented (ButtonSelectGroup) en filas con campos y botones md: alto de campo.
+const BTN_SEG_MD = "h-(--control-md) px-2.5 rounded-sm text-label";
 
 // ─── Login screen ─────────────────────────────────────────────────────────────
 
@@ -1377,7 +1382,7 @@ function TableToolbar({
         placeholder={searchPlaceholder}
         aria-label={searchPlaceholder.replace(/…$/, "")}
         disabled={disabled}
-        className={`w-full h-8 pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted ${FIELD_FOCUS} transition-all duration-150 disabled:bg-fill-muted disabled:text-text-faint disabled:placeholder:text-text-faint disabled:cursor-not-allowed`}
+        className={`w-full h-(--control-sm) pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted ${FIELD_FOCUS} transition-all duration-150 disabled:bg-fill-muted disabled:text-text-faint disabled:placeholder:text-text-faint disabled:cursor-not-allowed`}
       />
     </div>
   );
@@ -1410,11 +1415,11 @@ function TableToolbar({
 // outline para cancelar, azul solido para la accion primaria). Cierra con X,
 // click en el overlay o Escape.
 const modalFilledBtnBase =
-  "h-9 px-5 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-(--control-md) px-5 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 const modalPrimaryBtnCls = modalFilledBtnBase + " bg-primary-strong hover:bg-primary-hover";
 const modalDestructiveBtnCls = modalFilledBtnBase + " bg-error hover:bg-error-text-strong";
 const modalNeutralBtnCls =
-  "h-9 px-5 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-(--control-md) px-5 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 
 function Modal({
   title,
@@ -1774,7 +1779,7 @@ function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
-          <div className="w-full h-8 px-2.5 flex items-center text-body bg-fill-muted border border-border rounded-sm text-text-faint select-none cursor-not-allowed">
+          <div className="w-full h-(--control-md) px-2.5 flex items-center text-body bg-fill-muted border border-border rounded-sm text-text-faint select-none cursor-not-allowed">
             —
           </div>
         </div>
@@ -1822,7 +1827,7 @@ function ReplicarModal({
         </div>
         <div>
           <FieldLabel>Nueva interrupción</FieldLabel>
-          <div className="w-full h-8 px-2.5 flex items-center text-body bg-fill-muted border border-border rounded-sm text-text-faint select-none cursor-not-allowed">
+          <div className="w-full h-(--control-md) px-2.5 flex items-center text-body bg-fill-muted border border-border rounded-sm text-text-faint select-none cursor-not-allowed">
             —
           </div>
         </div>
@@ -2018,7 +2023,7 @@ function AltaClientesModal({
           <button
             type="button"
             onClick={() => setPeriodicidad("mensual")}
-            className={`h-7 px-2.5 text-label transition-colors ${
+            className={`h-(--control-sm) px-2.5 text-label transition-colors ${
               periodicidad === "mensual" ? "bg-primary-tint text-secondary ring-1 ring-inset ring-primary" : "bg-surface text-text hover:bg-fill-muted"
             }`}
           >
@@ -2027,7 +2032,7 @@ function AltaClientesModal({
           <button
             type="button"
             onClick={() => setPeriodicidad("semestral")}
-            className={`h-7 px-2.5 text-label border-l border-border-strong transition-colors ${
+            className={`h-(--control-sm) px-2.5 text-label border-l border-border-strong transition-colors ${
               periodicidad === "semestral" ? "bg-primary-tint text-secondary ring-1 ring-inset ring-primary" : "bg-surface text-text hover:bg-fill-muted"
             }`}
           >
@@ -2269,7 +2274,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               ))}
             </div>
 
-            <div className="w-full h-8 px-2.5 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-text-muted select-none">
+            <div className="w-full h-(--control-md) px-2.5 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-text-muted select-none">
               {tipoData.desc}
             </div>
           </div>
@@ -2721,7 +2726,7 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="h-8 px-2.5 flex items-center gap-1.5 border border-border-strong rounded-sm bg-surface text-label text-text hover:border-primary hover:text-secondary transition-colors"
+        className="h-(--control-md) px-2.5 flex items-center gap-1.5 border border-border-strong rounded-sm bg-surface text-label text-text hover:border-primary hover:text-secondary transition-colors"
       >
         {value}
         <span className="text-icon"><Calendar size={15} strokeWidth={1.5} /></span>
@@ -2820,7 +2825,7 @@ function CronogramaEnre() {
   return (
     <div className="bg-surface rounded-lg border border-border px-5 py-4" style={{ maxWidth: 760 }}>
       <div className="mb-4">
-        <span className="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-3 rounded-full bg-primary-tint border border-chip-border text-secondary text-label">
+        <span className="inline-flex items-center gap-1.5 h-(--control-sm) pl-2.5 pr-3 rounded-full bg-primary-tint border border-chip-border text-secondary text-label">
           <span className="shrink-0 rounded-full bg-primary" style={{ width: 6, height: 6 }} />
           Período {nombrePeriodo}
         </span>
@@ -2981,7 +2986,7 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <p className="text-heading-xs uppercase tracking-[0.05em] text-text-muted mb-1 truncate">{label}</p>
-      <div className="h-7 px-2 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-text truncate">
+      <div className="h-(--control-sm) px-2 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-text truncate">
         {value || " "}
       </div>
     </div>
@@ -3237,7 +3242,7 @@ function ConfirmarModificarModal({
               value={notaManual}
               onChange={(e) => setNotaManual(e.target.value)}
               placeholder="Escribí el motivo de la modificación"
-              className={`mt-2 w-full h-9 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted ${FIELD_FOCUS}`}
+              className={`mt-2 w-full h-(--control-md) px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted ${FIELD_FOCUS}`}
             />
           )}
         </div>
@@ -3254,11 +3259,11 @@ const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
 // Modificar, Alta/Búsqueda ABM y ValuePicker comparten estas dos (antes
 // existían por separado como inputCls/selectCls, ya unificadas acá).
 const MOD_FIELD_CLS =
-  "w-full h-8 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text " +
+  "w-full h-(--control-md) px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text " +
   "placeholder:text-text-muted " + FIELD_FOCUS + " transition-all duration-150";
 
 const MOD_SELECT_CLS =
-  "h-8 px-2.5 pr-7 text-body bg-surface border border-border-strong rounded-sm text-text appearance-none " +
+  "h-(--control-md) px-2.5 pr-7 text-body bg-surface border border-border-strong rounded-sm text-text appearance-none " +
   "cursor-pointer " + FIELD_FOCUS + " transition-all duration-150 shrink-0";
 
 // Campos del flyout "Más filtros" de la Card A. Cada uno se puede aplicar,
@@ -5140,7 +5145,7 @@ function ModificarContent({
                 selected={origenSel ? [origenSel] : []}
                 onToggle={(opt) => setOrigenSel(origenSel === opt ? null : opt)}
                 disabled={modShowData || hasSelection}
-                sizeCls={BTN_SM.replace("h-7", "h-8")}
+                sizeCls={BTN_SEG_MD}
               />
 
               <span className="text-heading-xs uppercase tracking-[0.08em] text-text-muted shrink-0">Tipo</span>
@@ -5149,7 +5154,7 @@ function ModificarContent({
                 selected={tipoSel ? [tipoSel] : []}
                 onToggle={(opt) => setTipoSel(tipoSel === opt ? null : opt)}
                 disabled={modShowData || hasSelection}
-                sizeCls={BTN_SM.replace("h-7", "h-8")}
+                sizeCls={BTN_SEG_MD}
               />
             </div>
 
@@ -5254,7 +5259,7 @@ function ModificarContent({
               {activeFlyoutFields.map((f) => (
                 <span
                   key={f.key}
-                  className="inline-flex items-center gap-1.5 h-7 pl-3 pr-1.5 rounded-full bg-primary-tint border border-chip-border text-secondary text-label"
+                  className="inline-flex items-center gap-1.5 h-(--control-sm) pl-3 pr-1.5 rounded-full bg-primary-tint border border-chip-border text-secondary text-label"
                 >
                   {f.label}: {flyoutFilters[f.key]}
                   <button
@@ -6512,7 +6517,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="group flex items-center gap-2 h-9 pl-1.5 pr-2 -ml-1.5 rounded-sm min-w-0 transition-colors duration-150 hover:bg-fill-muted"
+        className="group flex items-center gap-2 h-(--control-md) pl-1.5 pr-2 -ml-1.5 rounded-sm min-w-0 transition-colors duration-150 hover:bg-fill-muted"
       >
         {/* Lápiz fijo — no el ícono por tabla: el masthead del panel de
             trabajo siempre representa "estás en la herramienta de ABM",
@@ -6672,7 +6677,7 @@ function AbmCampo({
                 // flex-1 incondicional en ese breakpoint (en tamaño normal
                 // sigue siendo shrink-to-fit salvo que expandirBotones lo
                 // pida explícitamente).
-                className={`${BTN_SM.replace("h-7", "h-8")} ${campo.expandirBotones ? "flex-1" : ""} [@media(max-height:760px)]:flex-1 flex items-center justify-center border select-none transition-all duration-150 ${
+                className={`${BTN_SEG_MD} ${campo.expandirBotones ? "flex-1" : ""} [@media(max-height:760px)]:flex-1 flex items-center justify-center border select-none transition-all duration-150 ${
                   estado === "disabled" ? "cursor-not-allowed opacity-60" : isDisabled ? "cursor-default" : "cursor-pointer"
                 } ${
                   active
@@ -6838,7 +6843,7 @@ function ValuePicker({
         value={filtro}
         onChange={(e) => setFiltro(e.target.value)}
         placeholder={searchPlaceholder}
-        className={MOD_FIELD_CLS + " h-7 text-body-sm"}
+        className={MOD_FIELD_CLS + " h-(--control-sm)! text-body-sm"}
       />
     </div>
   );
@@ -7426,34 +7431,34 @@ function AbmScreen({
                 <button
                   onClick={handleLimpiar}
                   disabled={!showData}
-                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >Limpiar</button>
                 <button
                   onClick={handleBuscar}
                   disabled={showData}
-                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >Buscar</button>
               </>
             ) : mode === "alta" ? (
               <>
                 <button
                   onClick={handleCancelarAlta}
-                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarAlta}
-                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
                 >Insertar</button>
               </>
             ) : (
               <>
                 <button
                   onClick={handleCancelarModificar}
-                  className="flex-1 h-9 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarModificar}
-                  className="flex-1 h-9 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
                 >Guardar</button>
               </>
             )}

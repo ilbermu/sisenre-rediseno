@@ -194,6 +194,10 @@
   --page-pt: 24px;
   --page-gap: 24px;
   --cards-gap: 24px;
+
+  /* Alto de controles — fuera de --spacing para no bajar de 24px (WCAG 2.5.8) */
+  --control-sm: 28px; /* BTN_SM, filtros de toolbar, segmented compacto */
+  --control-md: 36px; /* BTN_MD, campos (input, select, DateTimeField), segmented en filas de campos */
 }
 
 @media (max-height: 900px) {
@@ -206,6 +210,8 @@
     --page-pt: calc(var(--spacing) * 5);
     --page-gap: calc(var(--spacing) * 4);
     --cards-gap: calc(var(--spacing) * 4);
+    --control-sm: 26px;
+    --control-md: 32px;
   }
 }
 
@@ -219,6 +225,8 @@
     --page-pt: calc(var(--spacing) * 5);
     --page-gap: calc(var(--spacing) * 4);
     --cards-gap: calc(var(--spacing) * 4);
+    --control-sm: 24px;
+    --control-md: 30px;
     /* Franja de título de pantalla + selector de período — tanto la de App
        (pantallas normales) como el masthead propio de AbmScreen (selector
        de tabla + período) comparten este mismo alto fijo en `minHeight`
