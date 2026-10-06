@@ -135,6 +135,12 @@ Decimotercera pasada (también 06/10/2026):
   a ghost, con separador antes de ✕.
 - **Mayúsculas:** `SelectionActionBar` y `FieldLabel` sin `tracking-wide`.
 
+Decimocuarta pasada (también 06/10/2026):
+
+- **ABM, variante barra — un solo buscador:** la barra de herramientas de
+  la tabla pierde su buscador; sin selección muestra solo el contador. La
+  búsqueda y los filtros viven únicamente en la barra general.
+
 ## Índice
 
 **1. Fundamentos**
@@ -1481,7 +1487,7 @@ período) es el mismo en los dos.
 │ [               ]       [      ]  [BT|MT|AT]        [     ▾]        [Interno|Externo]   [Forzado|Programado]  [Más filtros] [Limpiar] [Buscar] │  barra, sin contenedor
 │ FILTROS APLICADOS: (chip ×) (chip ×)                                     │  solo si hay filtros del flyout
 │                                                                (gap --page-gap)
-│ [buscador]                                        40 de 40 registros   │  barra de herramientas, sobre el fondo (sin selección)
+│ 40 de 40 registros                                                     │  barra de herramientas, sobre el fondo (sin selección)
 │ • REGISTRO SELECCIONADO BFZ…        [Modificar] [Borrar] [✕]            │  … o con un registro seleccionado
 │                                                                (gap-2)
 │ ┌───────────────────────────────────────────────────────────────────┐   │  caja de la tabla (borde, md, surface, shadow-sm)
@@ -1520,8 +1526,8 @@ período) es el mismo en los dos.
   (`--page-px`):
   - **Barra de herramientas de la tabla**, afuera de la caja, apoyada sobre
     el fondo, sin fondo ni borde propios, de alto fijo (`--control-md`) con
-    dos modos que no cambian su alto: sin selección, el buscador de la tabla
-    + `TableCounter`; con un registro seleccionado, `SelectionActionBar`
+    dos modos que no cambian su alto: sin selección, solo `TableCounter`
+    ("N de M registros", a la izquierda); con un registro seleccionado, `SelectionActionBar`
     (`bare`) con Modificar y Borrar (`ghostBtnCls` neutral y destructivo,
     `sm`), un separador vertical y un botón de ícono ✕ (`ICON_BTN_SM`,
     "Deseleccionar"). Son acciones de registro: no compiten con Más filtros
@@ -1540,6 +1546,11 @@ período) es el mismo en los dos.
   - Columnas propias (`columnasResultadoBarra`); una columna con `campo`
     muestra la etiqueta de la opción (Interno/Externo, Forzado/Programado),
     también para buscar y ordenar. Se atenúa con el flyout abierto.
+- **Un solo buscador:** cuando la pantalla tiene barra de búsqueda
+  general, la tabla no lleva buscador ni filtros propios (ni `TableToolbar`
+  ni `FilterTrigger`): las filas visibles salen solo de Buscar. Su barra de
+  herramientas muestra el contador o, con selección, las acciones del
+  registro. El orden por columna se mantiene (es ordenar, no buscar).
 - **Acciones de registro solo con selección:** no hay columna de acciones
   por fila (ni en reposo ni en hover). Modificar y Borrar aparecen en la
   barra de herramientas solo con un registro seleccionado; ✕ o Escape lo

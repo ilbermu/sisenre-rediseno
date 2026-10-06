@@ -589,7 +589,8 @@ export default function AbmScreen({
   // búsqueda (gap --page-gap) van, en la misma vertical (--page-px):
   //   1. la barra de herramientas de la tabla — sobre el fondo, sin fondo ni
   //      borde propios, de alto fijo (--control-md) con dos modos que no
-  //      cambian su alto: sin selección, buscador de la tabla + contador;
+  //      cambian su alto: sin selección, solo el contador (sin buscador: el
+  //      único buscador es la barra de búsqueda general);
   //      con selección, SelectionActionBar + Modificar / Borrar + ✕;
   //   2. a gap-2, la tabla en su propia caja — el mismo aspecto que dentro
   //      del panel Resultados del layout "split" (borde, radio md, surface,
@@ -640,16 +641,17 @@ export default function AbmScreen({
             }
           />
         ) : (
-          <>
-            <div className="w-60 shrink-0">
-              <TableToolbar search={search} onSearchChange={setSearch} hideExport bare disabled={!showData} />
-            </div>
-            <div className="ml-auto shrink-0">
-              {showData
-                ? <TableCounter visibles={visibleIndices.length} total={registrosVisibles} />
-                : <TableCounter visibles={0} />}
-            </div>
-          </>
+          // Un solo buscador: la pantalla ya tiene la barra de búsqueda
+          // general, así que la tabla no lleva buscador ni filtros propios —
+          // solo el contador. Sin el input, el `search` de useTableToolbar
+          // queda vacío (se resetea al cambiar de tabla), así que no filtra
+          // filas: las visibles salen solo de Buscar. El orden por columna
+          // se mantiene.
+          <div className="shrink-0">
+            {showData
+              ? <TableCounter visibles={visibleIndices.length} total={registrosVisibles} />
+              : <TableCounter visibles={0} />}
+          </div>
         )}
       </div>
 
