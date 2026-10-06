@@ -50,7 +50,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     barraBusqueda: {
       seccionesBarra: ["Identificación", "Clasificación"],
       seccionesMasFiltros: ["Datos de red"],
-      anchos: { codigoInterrupcion: 200, fecha: 170, faseElectrica: 104 },
+      anchos: { codigoInterrupcion: 200, fecha: 170 },
       tituloModificar: "Modificar interrupción",
     },
     secciones: [
@@ -75,7 +75,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         filas: [
           [
             { nombre: "nivelTension", label: "Nivel de tensión", tipo: "toggle", opciones: ["BT", "MT", "AT"] },
-            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "select", opciones: ["R", "S", "T", "RST"] },
+            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "fase" },
             { nombre: "origen", label: "Origen", tipo: "toggle", opciones: [{ value: "I", label: "Interno" }, { value: "E", label: "Externo" }] },
             { nombre: "tipo", label: "Tipo", tipo: "toggle", opciones: [{ value: "F", label: "Forzado" }, { value: "P", label: "Programado" }] },
           ],

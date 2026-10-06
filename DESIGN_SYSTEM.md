@@ -243,6 +243,14 @@ Vigesimoquinta pasada (también 06/10/2026):
   (`inline-grid grid-flow-col auto-cols-fr`). El Motivo de
   `RevisarCambiosContent` conserva la fila con wrap (`igualAncho={false}`).
 
+Vigesimosexta pasada (también 06/10/2026):
+
+- **Fase (R/S/T):** nuevo tipo de campo `"fase"` en la config del ABM —
+  tres botones de selección múltiple, valor ordenado R-S-T, mínimo una
+  letra en edición, ninguna = sin filtro en búsqueda. Reemplaza el select
+  R/S/T/RST de `faseElectrica` en CDS2. Regla: un campo de pocas opciones
+  cortas se resuelve con botones, no con un dropdown.
+
 ## Índice
 
 **1. Fundamentos**
@@ -268,6 +276,7 @@ Vigesimoquinta pasada (también 06/10/2026):
 [DateTimeField](#datetimefield) ·
 [Dropdowns flotantes](#dropdowns-flotantes-dropdownts) ·
 [FaseIndicador](#faseindicador) ·
+[Fase (R/S/T)](#fase-rst) ·
 [FieldLabel](#fieldlabel) ·
 [FloatingPanel](#floatingpanel) ·
 [FormRow](#formrow) ·
@@ -1029,6 +1038,41 @@ Presentes: `bg-primary-tint border-chip-border text-secondary`; ausentes:
 formulario del ABM); darle hover o cursor.
 
 **Archivo:** `src/components/ui/FaseIndicador.tsx`.
+
+## Fase (R/S/T)
+
+**Para qué:** elegir las fases eléctricas de un registro. Campo tipo
+`"fase"` en la config del ABM (lo renderiza `AbmCampo`); hoy,
+`faseElectrica` de CDS2.
+
+**Anatomía:** tres botones R, S y T con el mismo componente y estilo del
+toggle (`BTN_SEG_MD`, patrón tint para la letra prendida, todos del mismo
+ancho), pero de **selección múltiple**: cada letra se prende y se apaga
+sola.
+
+**Valor:** las letras prendidas concatenadas **siempre en orden R-S-T**
+(prender T y después R da `"RT"`; las tres, `"RST"`). Al cargar un valor
+existente se prenden las letras que contiene.
+
+**Estados y reglas:**
+- **Edición** (modal de Modificar): mínimo una letra — si se intenta apagar
+  la última, no se apaga (sin mensaje). Guardar / "Revisar cambios"
+  detectan el cambio como en cualquier campo.
+- **Búsqueda** (barra de Tabla 2, panel del ABM split): ninguna letra
+  prendida = sin filtro de fase.
+- **Read-only:** el mismo estado read-only de los toggles.
+- Deshabilitado / consultando: igual que el toggle.
+
+**Accesibilidad:** grupo `role="group"` con `aria-label` "Fase eléctrica"
+(o `aria-labelledby` del label de la `FormRow`); cada botón con
+`aria-pressed` y `aria-label` "Fase R" / "Fase S" / "Fase T"; navegable con
+Tab y activable con Espacio/Enter.
+
+**Qué no hacer:** resolver la fase con un dropdown de combinaciones
+(R/S/T/RST…). Distinto de [`FaseIndicador`](#faseindicador), que solo
+muestra las fases de un registro (sin interacción).
+
+**Archivo:** `src/features/abm/AbmCampo.tsx` (tipo `"fase"`).
 
 ## FieldLabel
 
@@ -1814,6 +1858,8 @@ registro](#modal-de-edición-de-registro):
   última sin borde), filas de `min-h 56px`. Campos en el orden de la config
   de la tabla.
 - Read-only con candado junto al label y el control en su estado read-only.
+- **Un campo de pocas opciones cortas se resuelve con botones** (toggle o
+  [fase](#fase-rst)), no con un dropdown.
 
 ## Modal de edición de registro
 ## Modal de edición de registro

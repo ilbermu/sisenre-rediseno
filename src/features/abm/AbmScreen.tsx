@@ -1036,7 +1036,7 @@ export default function AbmScreen({
                       labelId={labelId}
                       htmlFor={controlId}
                       readOnly={esNoEditable(c)}
-                      anchoControl={c.tipo === "toggle" ? "intrinseco" : "fijo"}
+                      anchoControl={c.tipo === "toggle" || c.tipo === "fase" ? "intrinseco" : "fijo"}
                     >
                       <AbmCampo
                         campo={c}

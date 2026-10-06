@@ -57,7 +57,8 @@ export type AbmDeepLink = {
 };
 
 export type CampoOpcion = string | { value: string; label: string };
-export type CampoTipo = "texto" | "select" | "fecha" | "readonly" | "toggle" | "combobox";
+// "fase": botones R / S / T de selección múltiple (valor ordenado R-S-T).
+export type CampoTipo = "texto" | "select" | "fecha" | "readonly" | "toggle" | "combobox" | "fase";
 
 export type CampoBusqueda = {
   nombre: string;
