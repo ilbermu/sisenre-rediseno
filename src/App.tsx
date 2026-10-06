@@ -1184,7 +1184,7 @@ function actionBtnCls(variant?: ActionItem["variant"]) {
 // Variante compacta de actionBtnCls — mismo botón outline/secundario ya
 // establecido en el resto de la app (borde visible en reposo, hover a
 // border-primary + bg-primary-tint + text-secondary; border-error-border +
-// hover bg-red-50 en la destructiva), solo en tamaño sm en vez de md, para
+// hover bg-error-bg-subtle en la destructiva), solo en tamaño sm en vez de md, para
 // acciones por fila dentro de una tabla (ej. Modificar/Borrar en
 // Resultados) donde el tamaño md no entra prolijo.
 function rowActionBtnCls(variant?: ActionItem["variant"]) {
@@ -3831,7 +3831,7 @@ function RelacionadaChip({
   }
   const baseCls = "inline-flex flex-col items-start px-[14px] py-[6px] rounded-sm border text-left";
   const etiqueta = (
-    <span className="text-caption tracking-[0.05em] whitespace-nowrap text-text-muted">{label}</span>
+    <span className="text-caption caps whitespace-nowrap text-text-muted">{label}</span>
   );
   if (!conContenido) {
     return (
@@ -4062,7 +4062,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
   const bandaFin = xs.length ? Math.min(x1, (saturado ? px(resumen!.p80) : xs[indiceP80]) + g.hitoW / 2 + 4) : x0;
   const rotuloX = Math.min(bandaX + 6, x1 - 112);
 
-  const kLabel = "block text-caption tracking-[0.05em] text-text-muted mb-[3px]";
+  const kLabel = "block text-caption caps text-text-muted mb-[3px]";
   const kValor = "text-heading-md text-secondary tabular-nums";
   const kSufijo = "text-caption text-text-muted";
 
@@ -4070,7 +4070,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
     <>
       {/* Header: label + chip DURACIÓN */}
       <div className="flex items-center justify-between gap-[12px] mb-[14px]">
-        <span className="text-caption tracking-[0.06em] text-text-muted">RECLAMOS DURANTE LA INTERRUPCIÓN</span>
+        <span className="text-caption caps text-text-muted">RECLAMOS DURANTE LA INTERRUPCIÓN</span>
         {resumen && <ChipDuracion minutos={resumen.duracionMin} />}
       </div>
 
@@ -4179,11 +4179,11 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
       {/* Footer: INICIO / FIN */}
       <div className="flex justify-between text-caption text-text mt-[7px] tabular-nums">
         <span>
-          <span className="block text-caption tracking-[0.05em] text-text-muted mb-[1px]">INICIO</span>
+          <span className="block text-caption caps text-text-muted mb-[1px]">INICIO</span>
           {datos ? formatFechaHora(datos.inicio) : VALOR_VACIO}
         </span>
         <span className="text-right">
-          <span className="block text-caption tracking-[0.05em] text-text-muted mb-[1px]">FIN</span>
+          <span className="block text-caption caps text-text-muted mb-[1px]">FIN</span>
           {datos ? formatFechaHora(datos.fin) : VALOR_VACIO}
         </span>
       </div>
@@ -4202,7 +4202,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
 function ChipDuracion({ minutos }: { minutos: number }) {
   return (
     <span className="inline-flex items-center gap-[6px] bg-primary-tint border border-chip-border rounded-full px-[12px] py-[4px] whitespace-nowrap">
-      <span className="text-caption tracking-[0.05em]" style={{ color: "color-mix(in srgb, var(--color-secondary) 70%, white)" }}>DURACIÓN</span>
+      <span className="text-caption caps" style={{ color: "color-mix(in srgb, var(--color-secondary) 70%, white)" }}>DURACIÓN</span>
       <span className="text-body font-medium text-secondary">{fmtDuracion(minutos)}</span>
     </span>
   );
@@ -4297,7 +4297,7 @@ function ReclamosResumenCompacto({
       <div className="grid grid-cols-4 px-(--card-px) pt-1 pb-(--card-section-py)">
         {columnas.map((c, i) => (
           <span key={`l-${c.etiqueta}`} className={`min-w-0 self-end pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-border"}`}>
-            <span className="block text-caption tracking-[0.05em] text-text-muted group-data-[habilitada]:group-hover:text-secondary">{c.etiqueta}</span>
+            <span className="block text-caption caps text-text-muted group-data-[habilitada]:group-hover:text-secondary">{c.etiqueta}</span>
           </span>
         ))}
         {columnas.map((c, i) => (

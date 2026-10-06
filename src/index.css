@@ -358,6 +358,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
  * (th de tabla): con el relleno translúcido se vería pasar por debajo el
  * contenido que scrollea.
  */
+/* Texto en mayúsculas sobre tokens que no son heading-xs (que ya lleva su
+   tracking en el token): mayúsculas + 0.06em. Nunca tracking arbitrario. */
+@utility caps {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 @utility bg-fill-subtle-solid {
   background-color: var(--color-surface);
   background-image: linear-gradient(var(--color-fill-subtle), var(--color-fill-subtle));

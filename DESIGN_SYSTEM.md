@@ -83,8 +83,11 @@ juntos. Se elige por **rol** (qué es el texto), nunca por tamaño.
   `uppercase` sobre `heading-xs` se mantiene, pero no se agregan nuevos para
   "subir" un texto de nivel. El tracking de `heading-xs` (0.06em) viene del
   token (`--text-heading-xs--letter-spacing`): no se escribe `tracking-[…]`
-  junto a `text-heading-xs`. Los `tracking-[…]` que quedan sobre `caption`
-  son heredados y no se agregan nuevos.
+  junto a `text-heading-xs`.
+- **Mayúsculas:** todo texto en mayúsculas usa `uppercase` sobre
+  `text-heading-xs` (el tracking ya viene del token) o la utilidad `caps`
+  (`uppercase` + `letter-spacing: 0.06em`) sobre cualquier otro token, como
+  `caption`. Nunca `tracking-[…]` arbitrario.
 - **`font-mono` es una familia, no un tamaño.** Tiene dos combinaciones
   documentadas y ninguna más:
   - `text-code font-mono` — el rol para **datos**: IDs, referencias, fechas,
