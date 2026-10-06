@@ -238,6 +238,7 @@
   --cards-gap: 24px;
 
   /* Alto de controles — fuera de --spacing para no bajar de 24px (WCAG 2.5.8) */
+  --control-xs: 24px; /* mínimo WCAG 2.5.8 — fijo en todos los tiers, sin redefinir */
   --control-sm: 28px; /* BTN_SM, filtros de toolbar, segmented compacto */
   --control-md: 36px; /* BTN_MD, campos (input, select, DateTimeField), segmented en filas de campos */
 }

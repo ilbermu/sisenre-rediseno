@@ -584,6 +584,14 @@ const FOCUS_RING = "focus-visible:outline-2 focus-visible:outline-focus focus-vi
 const FOCUS_RING_INSET = "focus-visible:outline-2 focus-visible:outline-focus focus-visible:-outline-offset-2";
 const FIELD_FOCUS = "focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10";
 
+// Botones de ícono cuadrados — alto/ancho de control, nunca de la escala
+// --spacing. Mismo token que los controles con los que comparten fila; sueltos,
+// sm. xs (24px fijo en todos los tiers, mínimo WCAG 2.5.8) para controles
+// dentro de componentes densos (calendario, flechas de orden, cerrar flyout).
+const ICON_BTN_XS = "size-(--control-xs)";
+const ICON_BTN_SM = "size-(--control-sm)";
+const ICON_BTN_MD = "size-(--control-md)";
+
 // Trigger compartido por las dos variantes. Reposo: sin borde ni fondo,
 // hover = hover secundario de la app (el de actionBtnCls). Abierto:
 // seleccionado persistente. Con filtro (`aplicado`): siempre pintado,
@@ -867,8 +875,8 @@ function DateTimeChevron({ orientation }: ChevronProps) {
 const DAY_PICKER_CLASSNAMES = {
   month: "relative flex flex-col",
   month_caption: "flex items-center justify-center h-6 mb-2",
-  button_previous: "absolute left-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors",
-  button_next: "absolute right-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors",
+  button_previous: `absolute left-0 top-0 ${ICON_BTN_XS} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors`,
+  button_next: `absolute right-0 top-0 ${ICON_BTN_XS} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors`,
   month_grid: "w-full border-collapse",
   weekdays: "",
   weekday: "text-heading-xs uppercase text-text-muted pb-1",
@@ -906,7 +914,7 @@ function MiniCaptionDropdown({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="h-6 px-1.5 rounded-sm text-heading-sm text-text hover:bg-primary-tint hover:text-secondary transition-colors"
+        className="h-(--control-xs) px-1.5 rounded-sm text-heading-sm text-text hover:bg-primary-tint hover:text-secondary transition-colors"
       >
         {label}
       </button>
@@ -1159,10 +1167,6 @@ const BTN_SM = "h-(--control-sm) px-2.5 rounded-sm text-label";
 const BTN_MD = "h-(--control-md) px-4 rounded-sm text-body font-medium";
 // Segmented (ButtonSelectGroup) en filas con campos y botones md: alto de campo.
 const BTN_SEG_MD = "h-(--control-md) px-2.5 rounded-sm text-label";
-// Botones de ícono cuadrados: mismo alto que el control con el que comparten
-// fila (md si van con botones/campos md); sueltos, sm.
-const ICON_BTN_SM = "size-(--control-sm)";
-const ICON_BTN_MD = "size-(--control-md)";
 
 // ─── Login screen ─────────────────────────────────────────────────────────────
 
@@ -1935,7 +1939,7 @@ function CambiaFasesModal({
                       type="button"
                       onClick={() => move(i, -1)}
                       disabled={i === 0}
-                      className="w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-primary-tint hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      className={`${ICON_BTN_XS} flex items-center justify-center rounded-sm text-icon hover:bg-primary-tint hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors`}
                     >
                       <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                         <path d="M5.5 8.5V2.5M5.5 2.5L2.5 5.5M5.5 2.5l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -1945,7 +1949,7 @@ function CambiaFasesModal({
                       type="button"
                       onClick={() => move(i, 1)}
                       disabled={i === rows.length - 1}
-                      className="w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-primary-tint hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                      className={`${ICON_BTN_XS} flex items-center justify-center rounded-sm text-icon hover:bg-primary-tint hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors`}
                     >
                       <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                         <path d="M5.5 2.5v6M5.5 8.5l-3-3M5.5 8.5l3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -5219,7 +5223,7 @@ function ModificarContent({
                   <button
                     type="button"
                     onClick={() => setFlyoutOpen(false)}
-                    className="w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors"
+                    className={`${ICON_BTN_XS} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors`}
                   >
                     <X size={ICON.sm} strokeWidth={1.5} />
                   </button>

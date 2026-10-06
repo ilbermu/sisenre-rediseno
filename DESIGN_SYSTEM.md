@@ -33,7 +33,7 @@ independiente):
 
 Segunda pasada (también 06/10/2026):
 
-- **Capas:** `--z-raised` (20) para el filter bar y el backdrop del flyout.
+- **Capas:** `--z-raised` (20) para el filter bar; el backdrop del flyout pasó a `--z-dismiss` (15).
 - **Botones de ícono:** `ICON_BTN_SM` / `ICON_BTN_MD` (`size-(--control-*)`).
 - **Movimiento reducido:** la app va dentro de `<MotionConfig
   reducedMotion="user">`.
@@ -42,6 +42,12 @@ Segunda pasada (también 06/10/2026):
 - **Mayúsculas:** utilidad `caps`; sin `tracking-[…]` arbitrario.
 - **Gradiente de marca:** `--color-brand-gradient-from/to` y `bg-brand-gradient`.
 - **Limpieza:** comentario de `ReclamosTimeline` sin hex de referencia.
+
+Tercera pasada (también 06/10/2026):
+
+- **Capas:** `--z-dismiss` (15) para backdrops que cierran un panel sin tapar su barra.
+- **Controles de 24px:** `--control-xs` e `ICON_BTN_XS`; regla de que ningún interactivo usa `--spacing` para su tamaño.
+- **Colores sueltos:** `--color-scrim` / `bg-scrim` para los scrims de modal; `fill-surface` en el círculo del timeline.
 
 ## Tipografía
 
@@ -491,6 +497,7 @@ compactos nunca bajan de 24px (WCAG 2.5.8, tamaño mínimo del objetivo).
 
 | Token | > 900px de alto | ≤ 900px | ≤ 760px |
 |---|---|---|---|
+| `--control-xs` | 24px | 24px | 24px |
 | `--control-sm` | 28px | 26px | 24px |
 | `--control-md` | 36px | 32px | 30px |
 
@@ -506,8 +513,17 @@ control — **elementos que comparten fila usan el mismo token**:
 | Campos: `MOD_FIELD_CLS` / `MOD_SELECT_CLS` (input, select, `ValuePicker`, `DateTimeField`), campos de solo lectura estilo campo, nota manual | `md` |
 | Segmented en filas de campos con botones md (`BTN_SEG_MD`: filter bar, grillas ABM) | `md` |
 
-Íconos-botón cuadrados (`w-7 h-7`, `w-8 h-8`) y tabs (`h-10`) siguen con alto
-fijo propio.
+Botones de ícono cuadrados: `ICON_BTN_XS` / `ICON_BTN_SM` / `ICON_BTN_MD`
+(`size-(--control-*)`). Si comparten fila con botones o campos, usan el mismo
+token que ellos; sueltos, `sm`. `xs` (24px fijo, **sin redefinir en ningún
+tier**: es el mínimo de WCAG 2.5.8) es para controles dentro de componentes
+densos: navegación del calendario, flechas de orden de columnas, cerrar del
+flyout, botón de mes/año del calendario.
+
+**Regla: ningún elemento interactivo usa tamaños de la escala `--spacing` para
+su alto o ancho** (`w-6`, `h-8`…): siempre `--control-xs/sm/md`. El área
+clickeable de un avatar la define el botón que lo contiene, no el avatar.
+Tabs (`h-10`) siguen con alto propio.
 
 ## Íconos
 
