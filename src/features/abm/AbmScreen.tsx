@@ -583,13 +583,19 @@ export default function AbmScreen({
           </div>
         </div>
   );
-  // ── Layout "barra": Resultados sin contenedor ─────────────────────────
-  // La tabla se apoya directo en el fondo de la página, debajo de la barra
-  // de búsqueda (gap --page-gap) y con el mismo --page-px, así arrancan en
-  // la misma vertical. Encima, la barra de herramientas de la tabla, de alto
-  // fijo, con dos modos que no cambian su alto:
-  //   sin selección → buscador de la tabla + contador "N de M registros";
-  //   con selección → SelectionActionBar + Modificar / Borrar + ✕.
+  // ── Layout "barra": Resultados sin card ───────────────────────────────
+  // Sin la card de Resultados (ni su CardHeader): debajo de la barra de
+  // búsqueda (gap --page-gap) van, en la misma vertical (--page-px):
+  //   1. la barra de herramientas de la tabla — sobre el fondo, sin fondo ni
+  //      borde propios, de alto fijo (--control-md) con dos modos que no
+  //      cambian su alto: sin selección, buscador de la tabla + contador;
+  //      con selección, SelectionActionBar + Modificar / Borrar + ✕;
+  //   2. a gap-2, la tabla en su propia caja — el mismo aspecto que dentro
+  //      del panel Resultados del layout "split" (borde, radio md, surface,
+  //      shadow-sm; thead fill-subtle-solid sticky; paginación al pie con
+  //      fill-subtle). Sin overflow-hidden en la caja: el radio lo resuelven
+  //      el wrapper con scroll (rounded-t-md, que recorta su contenido) y el
+  //      pie (rounded-b-md).
   // Las acciones de registro existen SOLO con una fila seleccionada: no hay
   // columna de acciones por fila. Auditoría y Exportar: DEPRECADO en layout
   // barra — pendiente de reubicar (su código y handlers siguen en
@@ -599,147 +605,153 @@ export default function AbmScreen({
   const registrosVisibles = config.rows.length - filasBorradas.size;
   const resultadosBarra = (
     <div
-      className={`flex-1 min-h-0 flex flex-col transition-opacity duration-(--duration-base) ${
+      className={`flex-1 min-h-0 flex flex-col gap-2 transition-opacity duration-(--duration-base) ${
         flyoutOpen ? "opacity-50 pointer-events-none" : ""
       }`}
     >
-      {/* Barra de herramientas — alto fijo (--control-md + py-2). */}
-      <div className="shrink-0 py-2">
-        <div className="h-(--control-md) flex items-center gap-3">
-          {hasSelection ? (
-            <SelectionActionBar
-              bare
-              recordLabel={config.rows[selectedRow!][columnKeys[0]]}
-              actions={
-                <>
-                  <button type="button" onClick={() => handleAbrirModificar(selectedRow!)} className={actionBtnCls("neutral")}>
-                    Modificar
-                  </button>
-                  <button type="button" onClick={() => handleAbrirBorrar(selectedRow!)} className={actionBtnCls("destructive")}>
-                    Borrar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRow(null)}
-                    aria-label="Deseleccionar"
-                    title="Deseleccionar"
-                    className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors`}
-                  >
-                    <X size={ICON.sm} strokeWidth={1.5} />
-                  </button>
-                </>
-              }
-            />
-          ) : (
-            <>
-              <div className="w-60 shrink-0">
-                <TableToolbar search={search} onSearchChange={setSearch} hideExport bare disabled={!showData} />
-              </div>
-              <div className="ml-auto shrink-0">
-                {showData
-                  ? <TableCounter visibles={visibleIndices.length} total={registrosVisibles} />
-                  : <TableCounter visibles={0} />}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Tabla — el scroll es del body de la tabla, nunca de la página. */}
-      <div
-        ref={resultadosListRef}
-        tabIndex={showData ? 0 : -1}
-        onKeyDown={handleResultadosKeyDown}
-        className={`flex-1 min-h-0 overflow-y-auto ${FOCUS_RING_INSET}`}
-      >
-        {!showData ? (
-          // Mismo estado vacío que la tabla de Interrupciones en Consultas
-          // de interrupción, centrado en el área de la tabla, sin contenedor.
-          <div className="h-full flex flex-col items-center justify-center gap-2 text-center px-8">
-            <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
-            <p className="text-label text-text-muted">Sin resultados</p>
-            <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
-          </div>
+      {/* Barra de herramientas — afuera de la caja, alto fijo. */}
+      <div className="shrink-0 h-(--control-md) flex items-center gap-3">
+        {hasSelection ? (
+          <SelectionActionBar
+            bare
+            recordLabel={config.rows[selectedRow!][columnKeys[0]]}
+            actions={
+              <>
+                <button type="button" onClick={() => handleAbrirModificar(selectedRow!)} className={actionBtnCls("neutral")}>
+                  Modificar
+                </button>
+                <button type="button" onClick={() => handleAbrirBorrar(selectedRow!)} className={actionBtnCls("destructive")}>
+                  Borrar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRow(null)}
+                  aria-label="Deseleccionar"
+                  title="Deseleccionar"
+                  className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors`}
+                >
+                  <X size={ICON.sm} strokeWidth={1.5} />
+                </button>
+              </>
+            }
+          />
         ) : (
-          // border-separate + separadores en <td>: con border-collapse un
-          // borde de fila puede pintarse por encima del <th> sticky.
-          <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
-            <thead>
-              <tr>
-                {columnas.map((c, ci) => (
-                  // Sticky con fondo opaco del color de la página (bg-bg-app),
-                  // sin relleno propio: solo la línea inferior.
-                  <th key={c.key} className="sticky top-0 z-(--z-sticky) bg-bg-app border-b border-border w-[1%] whitespace-nowrap px-3 py-2 text-left">
-                    <SortableHeaderCell
-                      label={c.label}
-                      active={sortIdx === ci}
-                      dir={sortDir}
-                      onClick={() => toggleSort(ci)}
-                    />
-                  </th>
-                ))}
-                {/* Spacer — absorbe el sobrante de la fila. */}
-                <th className="sticky top-0 z-(--z-sticky) bg-bg-app border-b border-border" />
-              </tr>
-            </thead>
-            <tbody>
-              {visibleIndices.map((i) => {
-                const row = config.rows[i];
-                const isSelected = selectedRow === i;
-                return (
-                  <tr
-                    key={i}
-                    data-row-index={i}
-                    onClick={() => setSelectedRow(isSelected ? null : i)}
-                    className={`cursor-pointer transition-colors duration-(--duration-fast) ${isSelected ? "bg-primary-tint" : "hover:bg-fill-muted"}`}
-                  >
-                    {columnas.map((c, ci) => (
-                      <td
-                        key={c.key}
-                        className={`w-[1%] whitespace-nowrap px-3 py-2.5 border-b border-border-subtle ${
-                          c.mono ? "text-code font-mono tabular-nums" : "text-body"
-                        } ${isSelected ? "text-secondary font-medium" : "text-text"} ${
-                          ci === 0 && isSelected ? "inset-shadow-row-selected" : ""
-                        }`}
-                      >
-                        {celda(row, c)}
-                      </td>
-                    ))}
-                    <td className="border-b border-border-subtle" />
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <>
+            <div className="w-60 shrink-0">
+              <TableToolbar search={search} onSearchChange={setSearch} hideExport bare disabled={!showData} />
+            </div>
+            <div className="ml-auto shrink-0">
+              {showData
+                ? <TableCounter visibles={visibleIndices.length} total={registrosVisibles} />
+                : <TableCounter visibles={0} />}
+            </div>
+          </>
         )}
       </div>
 
-      {/* Paginación — al pie de la tabla, sin relleno, con línea superior. */}
-      {showData && (
-        <div className="shrink-0 border-t border-border py-2 flex items-center justify-between">
-          <span className="text-body-sm text-text">
-            Registros encontrados:{" "}
-            <span className="font-semibold text-secondary">
-              {formatNumero(config.totalRegistros)}
-            </span>
-          </span>
-          <div className="flex items-center gap-2 text-body-sm text-text-muted">
-            <button className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`} disabled>
-              Anterior
-            </button>
-            <span>
-              Pág. <span className="font-medium text-text">1</span> de{" "}
-              <span className="font-medium text-text">{formatNumero(totalPages)}</span>
-            </span>
-            <button
-              className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`}
-              disabled={totalPages <= 1}
-            >
-              Siguiente
-            </button>
-          </div>
+      {/* Caja de la tabla — mismo aspecto que en el panel Resultados del split. */}
+      <div className="shadow-sm flex-1 min-h-0 flex flex-col border border-border rounded-md bg-surface">
+        <div
+          ref={resultadosListRef}
+          tabIndex={showData ? 0 : -1}
+          onKeyDown={handleResultadosKeyDown}
+          className={`flex-1 min-h-0 overflow-y-auto rounded-t-md ${showData ? "" : "rounded-b-md"} ${FOCUS_RING_INSET}`}
+        >
+          {!showData ? (
+            // Mismo estado vacío que la tabla de Interrupciones en Consultas
+            // de interrupción, centrado dentro de la caja.
+            <div className="h-full flex flex-col items-center justify-center gap-2 text-center px-8">
+              <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
+              <p className="text-label text-text-muted">Sin resultados</p>
+              <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
+            </div>
+          ) : (
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-border">
+                  {columnas.map((c, ci) => (
+                    <th key={c.key} className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left">
+                      <SortableHeaderCell
+                        label={c.label}
+                        active={sortIdx === ci}
+                        dir={sortDir}
+                        onClick={() => toggleSort(ci)}
+                      />
+                    </th>
+                  ))}
+                  {/* Spacer — absorbe el sobrante de la fila. */}
+                  <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid" />
+                </tr>
+              </thead>
+              <tbody>
+                {visibleIndices.map((i) => {
+                  const row = config.rows[i];
+                  const isSelected = selectedRow === i;
+                  const isHovered = hoveredRow === i;
+                  return (
+                    <tr
+                      key={i}
+                      data-row-index={i}
+                      onClick={() => setSelectedRow(isSelected ? null : i)}
+                      onMouseEnter={() => setHoveredRow(i)}
+                      onMouseLeave={() => setHoveredRow(null)}
+                      className="border-b border-border-subtle cursor-pointer transition-colors duration-(--duration-fast)"
+                      style={{ backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined }}
+                    >
+                      {columnas.map((c, ci) => (
+                        <td
+                          key={c.key}
+                          className={`w-[1%] whitespace-nowrap px-4 py-2.5 ${
+                            c.mono ? "text-code font-mono tabular-nums" : isSelected ? "text-body text-secondary font-medium" : "text-body text-text"
+                          } ${ci === 0 && isSelected ? "inset-shadow-row-selected" : ""}`}
+                          style={
+                            c.mono
+                              ? {
+                                  color: isSelected ? "var(--color-secondary)" : "var(--color-text)",
+                                  fontWeight: isSelected ? 600 : 400,
+                                }
+                              : undefined
+                          }
+                        >
+                          {celda(row, c)}
+                        </td>
+                      ))}
+                      <td />
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
-      )}
+
+        {/* Paginación — al pie, dentro de la caja. */}
+        {showData && (
+          <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-md shrink-0 flex items-center justify-between">
+            <span className="text-body-sm text-text">
+              Registros encontrados:{" "}
+              <span className="font-semibold text-secondary">
+                {formatNumero(config.totalRegistros)}
+              </span>
+            </span>
+            <div className="flex items-center gap-2 text-body-sm text-text-muted">
+              <button className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`} disabled>
+                Anterior
+              </button>
+              <span>
+                Pág. <span className="font-medium text-text">1</span> de{" "}
+                <span className="font-medium text-text">{formatNumero(totalPages)}</span>
+              </span>
+              <button
+                className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`}
+                disabled={totalPages <= 1}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 

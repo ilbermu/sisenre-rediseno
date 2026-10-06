@@ -116,6 +116,14 @@ Undécima pasada (también 06/10/2026):
   (sin columna de acciones; ✕ o Escape deseleccionan); Auditoría y Exportar
   deprecados en esta variante, pendientes de reubicar.
 
+Duodécima pasada (también 06/10/2026):
+
+- **ABM, variante barra:** la tabla recupera su contenedor (la caja del
+  panel Resultados del split: borde, radio, surface, `shadow-sm`, `thead`
+  `fill-subtle-solid`, paginación al pie con `fill-subtle`); la barra de
+  herramientas queda afuera, sobre el fondo, a `gap-2` de la caja. Sigue
+  sin card de Resultados y sin Auditoría/Exportar.
+
 ## Índice
 
 **1. Fundamentos**
@@ -1411,12 +1419,14 @@ período) es el mismo en los dos.
 │ [               ]       [      ]  [BT|MT|AT]        [     ▾]        [Interno|Externo]   [Forzado|Programado]  [Más filtros] [Limpiar] [Buscar] │  barra, sin contenedor
 │ FILTROS APLICADOS: (chip ×) (chip ×)                                     │  solo si hay filtros del flyout
 │                                                                (gap --page-gap)
-│ [buscador]                                        40 de 40 registros   │  barra de herramientas (sin selección)
+│ [buscador]                                        40 de 40 registros   │  barra de herramientas, sobre el fondo (sin selección)
 │ • REGISTRO SELECCIONADO BFZ…        [Modificar] [Borrar] [✕]            │  … o con un registro seleccionado
-│ REFERENCIA  FECHA  NIVEL  FASE  ORIGEN  TIPO  CÓD. EQUIPO  ALIM. MT     │  thead sobre el fondo, border-b
-│ fila…                                                                   │  border-b border-border-subtle
-│─────────────────────────────────────────────────────────────────────────│
-│ Registros encontrados: N              Anterior  Pág. 1 de N  Siguiente  │  paginación, border-t
+│                                                                (gap-2)
+│ ┌───────────────────────────────────────────────────────────────────┐   │  caja de la tabla (borde, md, surface, shadow-sm)
+│ │ REFERENCIA  FECHA  NIVEL  FASE  ORIGEN  TIPO  CÓD. EQUIPO  ALIM. MT │   │  thead fill-subtle-solid, sticky
+│ │ fila…                                                              │   │
+│ │ Registros encontrados: N           Anterior  Pág. 1 de N  Siguiente │   │  paginación fill-subtle, border-t
+│ └───────────────────────────────────────────────────────────────────┘   │
 ```
 
 - **Formato compartido con Consultas, campos de la tabla.** De Consultas se
@@ -1443,24 +1453,26 @@ período) es el mismo en los dos.
     sus valores y Limpiar los vacía.
 - **Diferencia con Consultas y con el split:** seleccionar una fila **no**
   deshabilita la barra ni le vuelca datos (no hay estado "consultando").
-- **Resultados sin contenedor:** sin card, sin `CardHeader` "Resultados".
-  Debajo de la barra (`gap-(--page-gap)`), a ancho completo y con el mismo
-  `--page-px`, así barra y tabla arrancan en la misma vertical:
-  - **Barra de herramientas de la tabla**, de alto fijo (`--control-md` +
-    `py-2`), con dos modos que no cambian su alto: sin selección, el
-    buscador de la tabla + `TableCounter`; con un registro seleccionado,
-    `SelectionActionBar` (`bare`) con Modificar y Borrar (`actionBtnCls`
-    neutral y destructivo, `md`) y un botón de ícono ✕ (`ICON_BTN_SM`,
-    "Deseleccionar").
-  - **Tabla sobre el fondo:** `thead` sin relleno (solo `border-b
-    border-border`, `heading-xs` en `text-muted`), sticky con fondo
-    `bg-bg-app`; filas con `border-b border-border-subtle`, hover
-    `fill-muted`, seleccionada `primary-tint` + `inset-shadow-row-selected`.
-    El scroll es del body de la tabla, nunca de la página.
-  - **Paginación** al pie, sin relleno, con `border-t border-border`.
+- **Sin card de Resultados:** no hay card ni `CardHeader` "Resultados".
+  Debajo de la barra de búsqueda (`gap-(--page-gap)`), en la misma vertical
+  (`--page-px`):
+  - **Barra de herramientas de la tabla**, afuera de la caja, apoyada sobre
+    el fondo, sin fondo ni borde propios, de alto fijo (`--control-md`) con
+    dos modos que no cambian su alto: sin selección, el buscador de la tabla
+    + `TableCounter`; con un registro seleccionado, `SelectionActionBar`
+    (`bare`) con Modificar y Borrar (`actionBtnCls` neutral y destructivo,
+    `md`) y un botón de ícono ✕ (`ICON_BTN_SM`, "Deseleccionar").
+  - **La tabla conserva su contenedor**, a `gap-2` de la barra de
+    herramientas: la misma caja que dentro del panel Resultados del split
+    (`border border-border rounded-md bg-surface shadow-sm`), `thead`
+    sticky en `bg-fill-subtle-solid`, filas con hover `fill-muted` y
+    seleccionada `primary-tint` + `inset-shadow-row-selected`, paginación al
+    pie dentro de la caja (`border-t`, `bg-fill-subtle`, `rounded-b-md`).
+    Sin `overflow-hidden` en la caja: el radio lo resuelven el wrapper con
+    scroll (`rounded-t-md`) y el pie. El scroll es del body de la tabla,
+    nunca de la página.
   - **Estado vacío** antes de buscar: el de Interrupciones en Consultas
-    ("Completá los filtros y presioná Buscar"), centrado en el área de la
-    tabla, sin contenedor.
+    ("Completá los filtros y presioná Buscar"), centrado dentro de la caja.
   - Columnas propias (`columnasResultadoBarra`); una columna con `campo`
     muestra la etiqueta de la opción (Interno/Externo, Forzado/Programado),
     también para buscar y ordenar. Se atenúa con el flyout abierto.
