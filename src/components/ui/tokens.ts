@@ -31,7 +31,7 @@ const ICON_BTN_MD = "size-(--control-md)";
 // text-label/text-body + font-medium). No hay un componente <Button/> compartido (la app
 // es un solo archivo grande con botones ad hoc por instancia), así que la
 // forma de reusarlos es esta: BTN_SM/BTN_MD (o los helpers que ya los
-// consumen, actionBtnCls/rowActionBtnCls) definen tamaño/padding/tipografía/
+// consumen, actionBtnCls/ghostBtnCls) definen tamaño/padding/tipografía/
 // radius; cada botón solo suma por afuera su propio color/variante/hover.
 // Nunca estilar un botón nuevo escribiendo su propio alto/radius/tamaño de
 // texto a mano — eso es exactamente lo que generó las inconsistencias
@@ -61,19 +61,6 @@ export function actionBtnCls(variant?: ActionItem["variant"]) {
     return `${BTN_MD} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-error-bg-subtle hover:border-error-border-hover transition-[color,background-color,border-color,transform] active:scale-[0.98] whitespace-nowrap`;
   }
   return `${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] active:scale-[0.98] whitespace-nowrap`;
-}
-
-// Variante compacta de actionBtnCls — mismo botón outline/secundario ya
-// establecido en el resto de la app (borde visible en reposo, hover a
-// border-primary + bg-primary-tint + text-secondary; border-error-border +
-// hover bg-error-bg-subtle en la destructiva), solo en tamaño sm en vez de md, para
-// acciones por fila dentro de una tabla (ej. Modificar/Borrar en
-// Resultados) donde el tamaño md no entra prolijo.
-export function rowActionBtnCls(variant?: ActionItem["variant"]) {
-  if (variant === "destructive") {
-    return `${BTN_SM} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-error-bg-subtle hover:border-error-border-hover transition-[color,background-color,border-color,transform] active:scale-[0.97] whitespace-nowrap`;
-  }
-  return `${BTN_SM} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] active:scale-[0.97] whitespace-nowrap`;
 }
 
 // Variante ghost — acciones de tabla o de registro (barras de selección,

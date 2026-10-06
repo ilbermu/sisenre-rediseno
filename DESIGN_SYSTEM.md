@@ -157,6 +157,14 @@ Decimosexta pasada (también 06/10/2026):
   su alto fijo; después de Buscar muestra "N de M registros" o "0
   registros".
 
+Decimoséptima pasada (también 06/10/2026):
+
+- **Letter-spacing:** el login pierde todos sus `letterSpacing` inline
+  (inputs, labels, "Ingresá…" y el pie); el rótulo "80% DE LOS RECLAMOS"
+  del timeline pasa a `0.06em`. Regla: no hay letter-spacing fuera de
+  `heading-xs` y `caps`, tampoco inline.
+- **`rowActionBtnCls` eliminado** (las acciones de fila son ghost).
+
 ## Índice
 
 **1. Fundamentos**
@@ -405,6 +413,10 @@ juntos. Se elige por **rol** (qué es el texto), nunca por tamaño.
   `--text-heading-xs--letter-spacing`) o la utilidad `caps` (`uppercase` +
   `letter-spacing: 0.06em`) sobre cualquier otro token, como `caption`.
   Nunca `tracking-[…]` arbitrario ni `tracking-*` junto a `text-heading-xs`.
+- **No hay letter-spacing fuera de `heading-xs` y `caps`**, tampoco inline
+  (`style={{ letterSpacing }}`). Única excepción: un `<text>` de SVG en
+  mayúsculas, donde la utilidad no aplica, lleva el mismo valor como
+  atributo (`letterSpacing="0.06em"`).
 - **`font-mono` es una familia, no un tamaño.** Tiene dos combinaciones
   documentadas y ninguna más:
   - `text-code font-mono` — el rol para **datos**: IDs, referencias, fechas,
@@ -648,7 +660,7 @@ color/variante/hover.
 |---|---|
 | `BTN_SM`, `BTN_MD` | Los dos únicos tamaños de botón: alto `--control-sm`/`md`, padding, tipografía (`text-label` / `text-body font-medium`), `rounded-sm` |
 | `BTN_SEG_MD` | Segmented con alto de campo, para filas con campos y botones md |
-| `actionBtnCls(variant)`, `rowActionBtnCls(variant)` | Botón outline de panel (`md`) y de fila (`sm`), variante neutral o `destructive` |
+| `actionBtnCls(variant)` | Botón outline de panel (`md`), variante neutral o `destructive` |
 | `ghostBtnCls(tone)` | Botón ghost (`sm`, sin borde ni fondo en reposo), tono `neutral` o `destructive` — ver [Botones](#botones) |
 | `modalPrimaryBtnCls`, `modalNeutralBtnCls`, `modalDestructiveBtnCls` | Botones del pie de modal |
 | `ICON`, `ICON_BTN_XS/SM/MD` | Tamaños de ícono y de botón de ícono |
@@ -673,7 +685,6 @@ color/variante.
 | Primario | `bg-primary-strong text-white` sobre `BTN_MD` (o `modalPrimaryBtnCls`) | `md` | La acción principal de una zona (Buscar, Guardar). Máximo uno por zona |
 | Secundario outline | `actionBtnCls("neutral")`, `modalNeutralBtnCls` | `md` | Acciones de página: Limpiar, Más filtros, Cancelar |
 | Destructivo outline | `actionBtnCls("destructive")` | `md` | Acción destructiva de página |
-| Outline de fila | `rowActionBtnCls(variant)` | `sm` | Sin uso (las acciones de fila son ghost); se conserva |
 | **Ghost** | `ghostBtnCls("neutral" \| "destructive")` | **solo `sm`** | Acciones de tabla o de registro: barras de selección, toolbars de tabla, filas |
 | Ícono | `ICON_BTN_XS/SM/MD` | por control | Cerrar, copiar, deseleccionar, paginar |
 

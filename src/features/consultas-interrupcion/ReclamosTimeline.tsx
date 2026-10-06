@@ -247,7 +247,7 @@ export default function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcio
             {hayBanda && (
               <>
                 <rect x={bandaX} y={g.bandaY} width={Math.max(0, bandaFin - bandaX)} height={g.bandaH} rx={4} fill={`url(#${idBase}-banda)`} />
-                <text x={rotuloX} y={g.rotuloY} letterSpacing="0.04em" className="text-caption fill-text-muted">
+                <text x={rotuloX} y={g.rotuloY} letterSpacing="0.06em" className="text-caption fill-text-muted">
                   80% DE LOS RECLAMOS
                 </text>
               </>

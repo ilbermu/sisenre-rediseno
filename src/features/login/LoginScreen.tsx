@@ -24,8 +24,6 @@ export default function LoginScreen({ onLogin }: { onLogin: () => void }) {
   }
 
   const inputCls = `w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-border-strong rounded-sm bg-surface ${FIELD_FOCUS} transition-[border-color,box-shadow,background-color]`;
-  const inputStyle: React.CSSProperties = { letterSpacing: "0.14px" };
-  const labelStyle: React.CSSProperties = { letterSpacing: "0.14px" };
 
   return (
     <div className="relative w-full h-screen overflow-hidden flex">
@@ -54,18 +52,18 @@ export default function LoginScreen({ onLogin }: { onLogin: () => void }) {
             {/* Header */}
             <div className="flex flex-col gap-[8px] [@media(max-height:760px)]:gap-[var(--login-header-gap,8px)] shrink-0">
               <p className="font-sans text-heading-lg" style={{ color: "var(--color-secondary)" }}>Bienvenido </p>
-              <p className="font-sans text-body-lg text-text" style={{ letterSpacing: "0.16px" }}>Ingresá tu usuario y contraseña</p>
+              <p className="font-sans text-body-lg text-text">Ingresá tu usuario y contraseña</p>
             </div>
 
             {/* Inputs */}
             <div className="flex flex-col shrink-0" style={{ marginTop: "var(--login-inputs-mt, 24px)", gap: "var(--login-inputs-gap, 32px)" }}>
               <div className="flex flex-col gap-[4px]">
-                <label className="font-sans text-body-lg text-text" style={labelStyle}>Usuario</label>
-                <input type="text" autoComplete="username" value={usuario} onChange={e => { setUsuario(e.target.value); setError(""); }} className={inputCls + " font-sans text-body-lg text-text"} style={inputStyle} />
+                <label className="font-sans text-body-lg text-text">Usuario</label>
+                <input type="text" autoComplete="username" value={usuario} onChange={e => { setUsuario(e.target.value); setError(""); }} className={inputCls + " font-sans text-body-lg text-text"} />
               </div>
               <div className="flex flex-col gap-[4px]">
-                <label className="font-sans text-body-lg text-text" style={labelStyle}>Contraseña</label>
-                <input type="password" autoComplete="current-password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} className={inputCls + " font-sans text-body-lg text-text"} style={inputStyle} />
+                <label className="font-sans text-body-lg text-text">Contraseña</label>
+                <input type="password" autoComplete="current-password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} className={inputCls + " font-sans text-body-lg text-text"} />
               </div>
             </div>
 
@@ -94,7 +92,7 @@ export default function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
             {/* Footer */}
             <div className="shrink-0 text-center">
-              <p className="font-sans text-body-sm text-text-muted" style={{ letterSpacing: "1px" }}>© Desarrollos propios 2026</p>
+              <p className="font-sans text-body-sm text-text-muted">© Desarrollos propios 2026</p>
             </div>
           </form>
         </div>
