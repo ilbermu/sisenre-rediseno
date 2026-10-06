@@ -36,6 +36,7 @@ export default function AbmCampo({
   controlado = false,
   readOnly = false,
   intrinseco = false,
+  labelExterno,
 }: {
   campo: CampoBusqueda;
   mode: AbmMode;
@@ -70,9 +71,19 @@ export default function AbmCampo({
   // tier 760px que necesita la grilla plana del panel de Búsqueda) — para
   // la grilla del modal de edición de registro.
   intrinseco?: boolean;
+  // El label vive afuera (FormRow: label al costado, no arriba): AbmCampo
+  // renderiza solo el control, sin FieldLabel ni candado, con `controlId`
+  // como id del control (para el <label htmlFor>) y `labelId` para
+  // aria-labelledby en los grupos de toggles. El popover de fecha se
+  // alinea al borde derecho (el control está pegado a la derecha).
+  labelExterno?: { controlId: string; labelId: string };
 }) {
   if (readOnly && campo.tipo !== "toggle") {
-    return <ReadOnlyField variant="plain" label={campo.label} value={labelDeValor(campo, value ?? "", valoresFormulario ?? {})} />;
+    const legible = labelDeValor(campo, value ?? "", valoresFormulario ?? {});
+    if (labelExterno) {
+      return <span id={labelExterno.controlId} className="block truncate text-body text-text">{legible || " "}</span>;
+    }
+    return <ReadOnlyField variant="plain" label={campo.label} value={legible} />;
   }
   const estado = estadoDeCampo(campo, mode, !!consultando, !!lockedEnModificar);
   const isDisabled = estado === "placeholder" || estado === "disabled";
@@ -96,20 +107,23 @@ export default function AbmCampo({
       const seleccionada = toggleOpts.find((o) => o.value === v);
       return (
         <div>
-          <FieldLabel>
-            <span className="inline-flex items-center gap-1">
-              {campo.label}
-              <span title="No editable" aria-label="No editable" role="img" className="text-icon inline-flex">
-                <Lock size={ICON.xs} strokeWidth={1.5} aria-hidden />
+          {!labelExterno && (
+            <FieldLabel>
+              <span className="inline-flex items-center gap-1">
+                {campo.label}
+                <span title="No editable" aria-label="No editable" role="img" className="text-icon inline-flex">
+                  <Lock size={ICON.xs} strokeWidth={1.5} aria-hidden />
+                </span>
               </span>
-            </span>
-          </FieldLabel>
+            </FieldLabel>
+          )}
           <div
+            id={labelExterno?.controlId}
             role="radiogroup"
             aria-readonly="true"
             aria-label={`${campo.label}: ${seleccionada?.label ?? "sin valor"}`}
             tabIndex={0}
-            className={`flex gap-2 mt-0.5 w-fit rounded-sm ${FOCUS_RING}`}
+            className={`flex gap-2 ${labelExterno ? "" : "mt-0.5"} w-fit rounded-sm ${FOCUS_RING}`}
           >
             {toggleOpts.map((opt) => {
               const active = v === opt.value;
@@ -132,8 +146,13 @@ export default function AbmCampo({
     }
     return (
       <div>
-        <FieldLabel>{campo.label}</FieldLabel>
-        <div className={`flex gap-2 mt-0.5 ${intrinseco ? "" : "[@media(max-height:760px)]:w-full"}`}>
+        {!labelExterno && <FieldLabel>{campo.label}</FieldLabel>}
+        <div
+          id={labelExterno?.controlId}
+          role={labelExterno ? "group" : undefined}
+          aria-labelledby={labelExterno?.labelId}
+          className={`flex gap-2 ${labelExterno ? "" : "mt-0.5"} ${intrinseco ? "" : "[@media(max-height:760px)]:w-full"}`}
+        >
           {toggleOpts.map((opt) => {
             const active = v === opt.value;
             return (
@@ -167,8 +186,16 @@ export default function AbmCampo({
   if (widget === "fecha") {
     return (
       <div>
-        <FieldLabel>{campo.label}</FieldLabel>
-        <DateTimeField value={value ?? ""} onChange={(v) => onChange?.(v)} disabled={isDisabled} muted={estado === "disabled"} fullWidth />
+        {!labelExterno && <FieldLabel>{campo.label}</FieldLabel>}
+        <DateTimeField
+          value={value ?? ""}
+          onChange={(v) => onChange?.(v)}
+          disabled={isDisabled}
+          muted={estado === "disabled"}
+          fullWidth
+          id={labelExterno?.controlId}
+          alinearPanel={labelExterno ? "right" : "left"}
+        />
       </div>
     );
   }
@@ -179,7 +206,9 @@ export default function AbmCampo({
   if (widget === "select" || widget === "combobox") {
     return (
       <ValuePicker
-        label={campo.label}
+        label={labelExterno ? undefined : campo.label}
+        modalTitle={campo.label}
+        triggerId={labelExterno?.controlId}
         opts={opts}
         value={value ?? ""}
         onChange={onChange}
@@ -195,11 +224,12 @@ export default function AbmCampo({
   // texto (incluye los campos "readonly" de config)
   return (
     <div>
-      <FieldLabel>{campo.label}</FieldLabel>
+      {!labelExterno && <FieldLabel>{campo.label}</FieldLabel>}
       {/* key: ver comentario en el <select> de más arriba — mismo fix para
           el cruce uncontrolled→controlled. */}
       <input
         key={controlled ? "c" : "u"}
+        id={labelExterno?.controlId}
         disabled={isDisabled}
         className={MOD_FIELD_CLS + estadoCls}
         placeholder={campo.placeholder}

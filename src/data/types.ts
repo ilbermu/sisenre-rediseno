@@ -122,17 +122,6 @@ type ColumnaResultado = {
 //                       Modificar se abre en un modal.
 export type AbmLayout = "split" | "barra";
 
-// Layout explícito de un formulario de edición (ver DESIGN_SYSTEM.md,
-// "Formulario de edición"): secciones → filas → campos con ancho. Cada fila
-// agrupa SOLO campos que van juntos lógicamente (máximo 3). Ancho por token
-// según el largo del contenido: "sm" / "md" / "lg" (--field-w-*), "full"
-// (el resto de la fila) o "auto" (ancho intrínseco, toggles).
-export type AnchoCampo = "auto" | "sm" | "md" | "lg" | "full";
-export type AbmFormLayout = {
-  titulo: string;
-  filas: { campo: string; ancho: AnchoCampo }[][];
-}[];
-
 // Barra de búsqueda del layout "barra": qué secciones de `secciones` van en
 // la fila y cuáles en el flyout "Más filtros". Los campos, controles,
 // opciones y labels salen siempre de esas secciones (se renderizan con
@@ -158,9 +147,6 @@ export type AbmTableConfig = {
   layout?: AbmLayout;
   // Solo layout "barra".
   barraBusqueda?: AbmBarraBusqueda;
-  // Layout del formulario del modal de edición de registro (layout
-  // "barra"). Declarado por tabla, no calculado.
-  formLayout?: AbmFormLayout;
   secciones: SeccionBusqueda[];
   columnasResultado: ColumnaResultado[];
   // Columnas de Resultados en layout "barra" (card a ancho completo, entran

@@ -130,6 +130,8 @@ export default function DateTimeField({
   muted = disabled,
   fullWidth = false,
   className = "",
+  id,
+  alinearPanel = "left",
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -150,6 +152,12 @@ export default function DateTimeField({
   // (important) para un breakpoint puntual, ya que el ancho fijo de acá
   // arriba se aplica vía `style` inline y le gana a una clase normal.
   className?: string;
+  // id del <button> trigger (label htmlFor externo, ej. FormRow).
+  id?: string;
+  // Borde del trigger con el que se alinea el popover: "right" cuando el
+  // campo está pegado al borde derecho (ej. la columna de controles de un
+  // FormRow), así el calendario no se sale del modal.
+  alinearPanel?: "left" | "right";
 }) {
   const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -189,6 +197,7 @@ export default function DateTimeField({
     <div ref={ref} style={{ position: "relative" }}>
       <button
         type="button"
+        id={id}
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
         className={
@@ -211,6 +220,7 @@ export default function DateTimeField({
         open={!disabled && open}
         direction={direction}
         gap={6}
+        align={alinearPanel}
         className="shadow-md bg-surface border border-border rounded-md p-4"
         style={{ width: "max-content" }}
       >

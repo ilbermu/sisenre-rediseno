@@ -9,6 +9,7 @@ export { default as FaseIndicador } from "./FaseIndicador";
 export { default as FieldLabel } from "./FieldLabel";
 export { default as FloatingPanel } from "./FloatingPanel";
 export * from "./FloatingPanel";
+export { default as FormRow } from "./FormRow";
 export { default as FilterTrigger } from "./FilterTrigger";
 export * from "./FilterTrigger";
 export { default as ListBox } from "./ListBox";

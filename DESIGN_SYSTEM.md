@@ -220,6 +220,16 @@ Vigesimosegunda pasada (también 06/10/2026):
   (`formLayout`). Reemplaza la grilla de 2 columnas y la regla "izquierda
   campos / derecha botones" del modal de edición de registro (CDS2).
 
+Vigesimotercera pasada (también 06/10/2026):
+
+- **Formulario de edición horizontal en filas** (reemplaza la grilla de 2
+  columnas y el `formLayout` con anchos half/full): `FormRow` nuevo en
+  `components/ui` — label a la izquierda, control a la derecha en una
+  columna fija (`--form-control-w`, 280px; toggles a su ancho), separador
+  suave entre filas, secciones con overline. Se elimina `formLayout` de la
+  config. `ValuePicker` suma `triggerId`, `DateTimeField` suma `id` y
+  `alinearPanel`, `AbmCampo` suma `labelExterno`.
+
 ## Índice
 
 **1. Fundamentos**
@@ -247,6 +257,7 @@ Vigesimosegunda pasada (también 06/10/2026):
 [FaseIndicador](#faseindicador) ·
 [FieldLabel](#fieldlabel) ·
 [FloatingPanel](#floatingpanel) ·
+[FormRow](#formrow) ·
 [FilterTrigger](#filtertrigger) ·
 [ListBox](#listbox) ·
 [Modal](#modal) ·
@@ -1040,6 +1051,49 @@ va en un portal dentro de un `Modal`, y su Escape cierra solo la lista.
 
 **Archivo:** `src/components/ui/FloatingPanel.tsx`.
 
+## FormRow
+
+**Para qué:** una fila de un formulario horizontal (patrón de pantallas de
+configuración): un campo por fila, label a la izquierda y control a la
+derecha. Ver [Formulario de edición](#formulario-de-edición).
+
+**Anatomía:**
+
+```
+│ Fecha                                   [dd/mm/aaaa hh:mm      📅] │  min-h 56px, py-3
+│─────────────────────────────────────────────────────────────────────│  border-b border-border-subtle
+│ Nivel de tensión                                     [BT][MT][AT] │  toggle a su ancho, alineado a la derecha
+│─────────────────────────────────────────────────────────────────────│
+│ Origen 🔒                                   [Interno][Externo]    │  read-only (última fila: sin borde)
+```
+
+- **Fila:** `flex items-center justify-between gap-4`, `min-h-[56px] py-3`,
+  `border-b border-border-subtle`; la última del contenedor sin borde
+  (`last:border-b-0`).
+- **Label (izquierda):** `text-body text-text` — no `FieldLabel`: va al
+  costado, no arriba. Trunca, con `title` del texto completo.
+- **Control (derecha):** alineado al borde derecho. Inputs, fecha, select y
+  combobox con ancho fijo **`--form-control-w` (280px)**, todos iguales;
+  toggles a su ancho intrínseco (su borde derecho coincide con el de los
+  inputs). Los popovers (fecha) se alinean al borde derecho del control.
+
+**Props:** `label`, `labelId`, `htmlFor?`, `readOnly?`, `anchoControl?`
+(`"fijo"` | `"intrinseco"`), `children` (el control).
+
+**Estados:** read-only → candado (`ICON.xs`, `text-icon`, "No editable") a
+la derecha del label; el control en su estado read-only (ver [Estados:
+disabled vs read-only](#estados-disabled-vs-read-only)).
+
+**Accesibilidad:** el label es un `<label htmlFor>` apuntando al id del
+control; un grupo de toggles usa `aria-labelledby={labelId}`. En el ABM,
+`AbmCampo` con `labelExterno` renderiza solo el control con esos ids.
+
+**Qué no hacer:** label arriba (`FieldLabel`) dentro de una `FormRow`;
+controles de anchos distintos en la columna derecha; más de un campo por
+fila.
+
+**Archivo:** `src/components/ui/FormRow.tsx`.
+
 ## FilterTrigger
 
 **Para qué:** filtro por columna en el toolbar de una tabla
@@ -1725,34 +1779,23 @@ período) es el mismo en los dos.
 
 ## Formulario de edición
 
-Cómo se arma un formulario de edición (hoy, el paso 1 del [modal de
-edición de registro](#modal-de-edición-de-registro)). Fuentes: Carbon
-(Forms pattern) y Atlassian (Forms).
+Formulario **horizontal en filas** (patrón de pantallas de configuración),
+hoy en el paso 1 del [modal de edición de
+registro](#modal-de-edición-de-registro):
 
-- **Una sola columna de lectura**, labels arriba (`FieldLabel`, con su
-  margen de siempre). Nada alineado a una "columna derecha" ni estirado
-  para llenar.
-- **Filas de 1 a 3 campos, solo si van juntos lógicamente** (ej. Nivel de
-  tensión + Fase eléctrica; Origen + Tipo). Cada fila: `flex items-start
-  gap-x-4`, sin wrap en el ancho del modal.
-- **Ancho de campo según el largo de su contenido**, por token:
+- **Un campo por fila** ([`FormRow`](#formrow)): label a la izquierda
+  (`text-body`), control a la derecha.
+- **Los controles forman una columna fija a la derecha:** inputs, fecha,
+  select y combobox de ancho `--form-control-w` (280px), todos iguales;
+  toggles a su ancho intrínseco, alineados a la derecha.
+- **Separador suave entre filas** (`border-b border-border-subtle`, la
+  última de cada sección sin borde), filas de `min-h 56px`.
+- **Secciones con overline** (`text-heading-xs uppercase text-text-muted`,
+  sin línea): 24px respecto de la sección anterior, 4px antes de la primera
+  fila. Campos en el orden y las secciones de la config de la tabla.
+- Read-only con candado junto al label y el control en su estado read-only.
 
-  | Ancho | Valor | Uso típico |
-  |---|---|---|
-  | `sm` | `--field-w-sm` 160px | códigos cortos, fase, alimentador |
-  | `md` | `--field-w-md` 240px | fechas, cadenas, códigos largos |
-  | `lg` | `--field-w-lg` 360px | textos medianos |
-  | `full` | el resto de la fila (`flex-1 min-w-0`) | descripciones, listas largas |
-  | `auto` | intrínseco | toggles (siempre, sin token) |
-
-  Los tokens no se redefinen por tier.
-- **Espaciado (formularios contenidos):** 16px entre filas (`gap-y-4`),
-  24px entre secciones (`gap-6`); título de sección con `SectionDivider`.
-- **Layout declarado por tabla, no calculado:** `formLayout` en la config
-  (`src/data/abmTables.ts`): secciones → filas → `{ campo, ancho }`. Los
-  campos se renderizan con `AbmCampo`. Una tabla sin `formLayout` pone cada
-  campo en su fila (toggles `auto`, el resto `full`).
-
+## Modal de edición de registro
 ## Modal de edición de registro
 
 Para editar un registro desde una tabla cuando el formulario no está a la
@@ -1768,12 +1811,10 @@ pasos: **Editar → Revisar**.
   (`text-body-sm text-text-muted`, prop `paso`); ✕ a la derecha, centrado en
   el bloque. Los headers de modal con label son la excepción documentada a
   la regla de header de una línea. El identificador no aparece en el body.
-- **Paso 1 — Editar:** el formulario de la tabla según su `formLayout`
-  (ver [Formulario de edición](#formulario-de-edición)). En CDS2:
-  Identificación → [Fecha `md`]; Clasificación → [Nivel de tensión, Fase
-  eléctrica `sm`] · [Origen, Tipo (read-only)]; Datos de red → [Código de
-  equipo `sm`, Descripción `full`] · [División red normal] · [Alimentador
-  MT `sm`, Cadena eléctrica `md`] · [CT MT/BT `md`].
+- **Paso 1 — Editar:** el [formulario de edición](#formulario-de-edición)
+  horizontal en filas, con los campos de la config de la tabla agrupados
+  por sección (en CDS2: Identificación, Clasificación, Datos de red; sin el
+  código de interrupción, que va en el header).
   - **No editables en read-only** (ver [Estados: disabled vs
     read-only](#estados-disabled-vs-read-only)): el toggle con su valor
     marcado a contraste completo y un candado junto al label — **nunca como

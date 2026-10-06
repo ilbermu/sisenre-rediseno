@@ -34,6 +34,7 @@ export default function ValuePicker({
   wrapClassName = "w-full",
   triggerExtraClassName = "",
   triggerStyle,
+  triggerId,
 }: {
   label?: string;
   opts: CampoOpcion[];
@@ -56,6 +57,9 @@ export default function ValuePicker({
   wrapClassName?: string;
   triggerExtraClassName?: string;
   triggerStyle?: React.CSSProperties;
+  // id del <button> trigger — para asociarle un <label htmlFor> externo
+  // (ej. FormRow, label al costado en vez de arriba).
+  triggerId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [filtro, setFiltro] = useState("");
@@ -168,6 +172,7 @@ export default function ValuePicker({
       <div ref={ref} className={`relative ${wrapClassName}`}>
         <button
           type="button"
+          id={triggerId}
           disabled={isDisabled}
           onClick={() => setOpen((v) => !v)}
           style={triggerStyle}

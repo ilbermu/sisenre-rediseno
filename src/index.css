@@ -250,6 +250,9 @@
   --field-w-sm: 160px; /* códigos cortos, fase, alimentador */
   --field-w-md: 240px; /* fechas, cadenas, códigos largos */
   --field-w-lg: 360px; /* textos medianos */
+  /* Ancho de la columna de controles de un formulario horizontal (FormRow):
+     inputs, fecha, select y combobox, todos iguales. */
+  --form-control-w: 280px;
 }
 
 @media (max-height: 900px) {
