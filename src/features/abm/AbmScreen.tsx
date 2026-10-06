@@ -857,11 +857,10 @@ export default function AbmScreen({
   // sección en estado read-only (AbmCampo `readOnly`), nunca disabled.
   const campoReferencia = config.mapeoFilaACampos[columnKeys[0]];
   const esNoEditable = (c: (typeof camposTabla)[number]) => c.tipo === "readonly" || camposLocked.includes(c.nombre);
-  // Formulario horizontal en filas (FormRow): los campos de cada sección de
-  // la config, en su orden, sin el de la referencia.
-  const seccionesModificar = config.secciones
-    .map((sec) => ({ titulo: sec.titulo, campos: sec.filas.flat().filter((c) => c.nombre !== campoReferencia) }))
-    .filter((sec) => sec.campos.length > 0);
+  // Formulario horizontal en filas (FormRow): una lista continua con los
+  // campos de la config en su orden (sin títulos de sección), sin el de la
+  // referencia.
+  const camposModificar = camposTabla.filter((c) => c.nombre !== campoReferencia);
   const referenciaModificar = selectedRow !== null ? config.rows[selectedRow][columnKeys[0]] : "";
 
   return (
@@ -988,8 +987,8 @@ export default function AbmScreen({
             - paso 1 "Editar": formulario horizontal en filas (ver
               DESIGN_SYSTEM.md, "Formulario de edición"): un campo por
               FormRow — label a la izquierda, control a la derecha en una
-              columna fija (--form-control-w; toggles a su ancho) —,
-              agrupados por sección con un overline. Los no editables
+              columna fija (--form-control-w; toggles a su ancho) —, en una
+              lista continua sin títulos de sección. Los no editables
               (Origen, Tipo) en read-only. "Revisar cambios" se habilita
               solo con cambios respecto del registro original;
             - paso 2 "Revisar": RevisarCambiosContent (el mismo contenido
@@ -1026,42 +1025,32 @@ export default function AbmScreen({
         >
           <div ref={bodyModificarRef}>
             {pasoModificar === 1 ? (
-              <div className="flex flex-col gap-6">
-                {seccionesModificar.map((sec) => (
-                  <div key={sec.titulo}>
-                    {/* Título de sección: overline, sin línea; 24px respecto
-                        de la sección anterior (gap-6), 4px antes de la
-                        primera fila. */}
-                    <p className="text-heading-xs uppercase text-text-muted mb-1">{sec.titulo}</p>
-                    <div>
-                      {sec.campos.map((c) => {
-                        const controlId = `modificar-${c.nombre}`;
-                        const labelId = `${controlId}-label`;
-                        return (
-                          <FormRow
-                            key={c.nombre}
-                            label={c.label}
-                            labelId={labelId}
-                            htmlFor={controlId}
-                            readOnly={esNoEditable(c)}
-                            anchoControl={c.tipo === "toggle" ? "intrinseco" : "fijo"}
-                          >
-                            <AbmCampo
-                              campo={c}
-                              mode={mode}
-                              value={valores[c.nombre]}
-                              onChange={(v) => setValor(c.nombre, v)}
-                              valoresFormulario={valores}
-                              readOnly={esNoEditable(c)}
-                              intrinseco
-                              labelExterno={{ controlId, labelId }}
-                            />
-                          </FormRow>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+              <div>
+                {camposModificar.map((c) => {
+                  const controlId = `modificar-${c.nombre}`;
+                  const labelId = `${controlId}-label`;
+                  return (
+                    <FormRow
+                      key={c.nombre}
+                      label={c.label}
+                      labelId={labelId}
+                      htmlFor={controlId}
+                      readOnly={esNoEditable(c)}
+                      anchoControl={c.tipo === "toggle" ? "intrinseco" : "fijo"}
+                    >
+                      <AbmCampo
+                        campo={c}
+                        mode={mode}
+                        value={valores[c.nombre]}
+                        onChange={(v) => setValor(c.nombre, v)}
+                        valoresFormulario={valores}
+                        readOnly={esNoEditable(c)}
+                        intrinseco
+                        labelExterno={{ controlId, labelId }}
+                      />
+                    </FormRow>
+                  );
+                })}
               </div>
             ) : (
               <RevisarCambiosContent cambios={camposModificados} motivo={motivoModificar} />

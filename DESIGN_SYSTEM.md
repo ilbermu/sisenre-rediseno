@@ -230,6 +230,12 @@ Vigesimotercera pasada (también 06/10/2026):
   config. `ValuePicker` suma `triggerId`, `DateTimeField` suma `id` y
   `alinearPanel`, `AbmCampo` suma `labelExterno`.
 
+Vigesimocuarta pasada (también 06/10/2026):
+
+- **Formulario de edición sin títulos de sección:** el paso 1 del modal de
+  Modificar (CDS2) es una lista continua de `FormRow`, con el mismo ritmo y
+  separador entre todas las filas.
+
 ## Índice
 
 **1. Fundamentos**
@@ -1788,11 +1794,10 @@ registro](#modal-de-edición-de-registro):
 - **Los controles forman una columna fija a la derecha:** inputs, fecha,
   select y combobox de ancho `--form-control-w` (280px), todos iguales;
   toggles a su ancho intrínseco, alineados a la derecha.
-- **Separador suave entre filas** (`border-b border-border-subtle`, la
-  última de cada sección sin borde), filas de `min-h 56px`.
-- **Secciones con overline** (`text-heading-xs uppercase text-text-muted`,
-  sin línea): 24px respecto de la sección anterior, 4px antes de la primera
-  fila. Campos en el orden y las secciones de la config de la tabla.
+- **Lista continua de filas, sin títulos de sección:** todas con el mismo
+  ritmo y el mismo separador suave (`border-b border-border-subtle`, la
+  última sin borde), filas de `min-h 56px`. Campos en el orden de la config
+  de la tabla.
 - Read-only con candado junto al label y el control en su estado read-only.
 
 ## Modal de edición de registro
@@ -1812,9 +1817,9 @@ pasos: **Editar → Revisar**.
   el bloque. Los headers de modal con label son la excepción documentada a
   la regla de header de una línea. El identificador no aparece en el body.
 - **Paso 1 — Editar:** el [formulario de edición](#formulario-de-edición)
-  horizontal en filas, con los campos de la config de la tabla agrupados
-  por sección (en CDS2: Identificación, Clasificación, Datos de red; sin el
-  código de interrupción, que va en el header).
+  horizontal en filas: los campos de la config de la tabla en su orden, en
+  una lista continua sin títulos de sección (en CDS2, sin el código de
+  interrupción, que va en el header).
   - **No editables en read-only** (ver [Estados: disabled vs
     read-only](#estados-disabled-vs-read-only)): el toggle con su valor
     marcado a contraste completo y un candado junto al label — **nunca como
