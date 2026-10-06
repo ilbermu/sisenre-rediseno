@@ -17,17 +17,23 @@
   --color-primary-tint: #EBF4FF;
   --color-secondary: #1D558C;
 
-  /* Neutros (grises-azulados) */
-  --color-gray-50: #F8FAFD;
-  --color-gray-100: #F0F4FB;
-  --color-gray-200: #E8EEF7;
-  --color-gray-300: #DDE5F0;
-  --color-gray-400: #C9D4E6;
-  --color-gray-500: #9AAABF;
-  --color-gray-600: #7A8FAD;
-  --color-gray-700: #3D4F6B;
-  --color-gray-800: #1A2B4A;
-  --color-gray-900: #1A202C;
+  /* Escala neutra cálida — única escala de grises de la app */
+  --color-neutral-50: #FAFAF9;
+  --color-neutral-100: #F5F5F4;
+  --color-neutral-200: #E7E5E4;
+  --color-neutral-300: #D6D3D1;
+  --color-neutral-400: #A8A29E;
+  --color-neutral-500: #78716C;
+  --color-neutral-600: #57534E;
+  --color-neutral-700: #44403C;
+  --color-neutral-800: #292524;
+  --color-neutral-900: #1C1917;
+
+  /* Visualización de datos (ReclamosTimeline) — tokens por rol, no por tono */
+  --color-viz-track: var(--color-neutral-200); /* pista del gráfico y extremo "vacío" del degradé de densidad */
+  --color-viz-milestone: var(--color-neutral-400); /* hito de reclamo dentro del 80% */
+  --color-viz-milestone-muted: color-mix(in srgb, var(--color-viz-milestone) 70%, white); /* hito fuera del 80% */
+  --color-viz-tick: var(--color-neutral-300); /* marcas del eje de horas */
 
   /* Superficies */
   --color-bg-app: #FAFAFA; /* fondo de página y sidebar */
@@ -284,7 +290,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   left: calc(100% + 8px);
   top: 50%;
   transform: translateY(-50%);
-  background: var(--color-gray-800);
+  background: var(--color-text);
   color: var(--color-surface);
   font-size: var(--text-body-sm);
   line-height: var(--text-body-sm--line-height);

@@ -3828,11 +3828,12 @@ function RelacionadaChip({
 // tipografía, espaciados y coordenadas Y del SVG replicados de ahí. Hex de
 // la referencia → tokens:
 //   #5A6B7A / #8A99A8 / #9AA8B5 / #BCC7D2 (textos) → text-muted
-//   #D9E2EC → border (borde de la card) · #DCE5EE → gray-300 (pista del SVG)
+//   #D9E2EC → border (borde de la card) · #DCE5EE → viz-track (pista del SVG)
 //   #1D558C → secondary (primer reclamo, valores) · #4D97FA → primary (banda)
 //   #EAF1FC / #C6DCFA → primary-tint / chip-border (chip de duración)
-//   #8FA6BE → gray-500 (hito dentro del 80%) · #AEC0D3 → gray-500 al 70% (fuera)
-//   (pista, marcas e hitos son geometría del gráfico: siguen en la paleta gray)
+//   #8FA6BE → viz-milestone (hito dentro del 80%) · #AEC0D3 → viz-milestone-muted (fuera)
+//   (pista, marcas e hitos son geometría del gráfico: usan los tokens
+//   --color-viz-* de index.css, sobre la escala neutral)
 //   #5F84A8 (rótulo del chip) y #7FA8DB (rótulo de la banda) no tienen token:
 //   se arman con color-mix sobre secondary / primary.
 // La X no sale de un viewBox fijo: el viewBox usa el ancho real medido, la
@@ -3980,7 +3981,7 @@ function stopsDensidad(ordenados: number[], duracionMin: number, anchoPista: num
     cuentas = cuentas.map((c, i) => (cuentas[Math.max(0, i - 1)] + 2 * c + cuentas[Math.min(tramos - 1, i + 1)]) / 4);
   }
   const max = Math.max(...cuentas, 1);
-  const color = (c: number) => `color-mix(in srgb, var(--color-secondary) ${Math.round((c / max) * 100)}%, var(--color-gray-300))`;
+  const color = (c: number) => `color-mix(in srgb, var(--color-secondary) ${Math.round((c / max) * 100)}%, var(--color-viz-track))`;
   // Extremos en 0% y 100% con el valor del primer/último tramo.
   return [
     { offset: "0%", color: color(cuentas[0]) },
@@ -4098,7 +4099,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
               <rect x={x0} y={g.satY} width={x1 - x0} height={g.satH} rx={g.satH / 2} fill={`url(#${idBase}-densidad)`} />
             ) : (
               <>
-                <rect x={x0} y={g.pistaY} width={x1 - x0} height={g.pistaH} rx={g.pistaH / 2} className="fill-gray-300" />
+                <rect x={x0} y={g.pistaY} width={x1 - x0} height={g.pistaH} rx={g.pistaH / 2} className="fill-viz-track" />
                 {xs.slice(1).map((x, j) => {
                   const dentro = j + 1 <= indiceP80;
                   return (
@@ -4109,7 +4110,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
                       width={g.hitoW}
                       height={dentro ? g.dentroH : g.fueraH}
                       rx={g.hitoW / 2}
-                      className={dentro ? "fill-gray-500" : "fill-[color-mix(in_srgb,var(--color-gray-500)_70%,white)]"}
+                      className={dentro ? "fill-viz-milestone" : "fill-viz-milestone-muted"}
                     />
                   );
                 })}
@@ -4124,7 +4125,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
             {g.ejeY !== null &&
               marcasHora(datos!.inicio, resumen.duracionMin, px, x0, x1).map((t) => (
                 <g key={t}>
-                  <line x1={px(t)} x2={px(t)} y1={g.pistaY + g.pistaH + 2} y2={g.pistaY + g.pistaH + 6} strokeWidth={1} className="stroke-gray-400" />
+                  <line x1={px(t)} x2={px(t)} y1={g.pistaY + g.pistaH + 2} y2={g.pistaY + g.pistaH + 6} strokeWidth={1} className="stroke-viz-tick" />
                   <text x={px(t)} y={g.ejeY!} textAnchor="middle" className="text-caption fill-text-muted tabular-nums">
                     {fmtHoraCorta(new Date(datos!.inicio.getTime() + t * 60000), conDia)}
                   </text>
@@ -7827,7 +7828,7 @@ function PlanillaConsolidadaContent() {
             <div key={paso} className="flex items-center gap-2.5">
               <span
                 className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white text-caption"
-                style={{ backgroundColor: i < 2 ? "var(--color-success)" : "var(--color-gray-300)" }}
+                style={{ backgroundColor: i < 2 ? "var(--color-success)" : "var(--color-neutral-200)" }}
               >
                 {i < 2 ? "✓" : ""}
               </span>
