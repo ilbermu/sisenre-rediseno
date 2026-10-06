@@ -135,6 +135,14 @@
   --text-code--line-height: 16px;
   --text-code--font-weight: 400;
 
+  /* Capas (z-index) — por rol; usar z-(--z-…) */
+  --z-sticky: 10; /* headers de tabla sticky, contenido que debe quedar sobre un pill */
+  --z-dropdown: 30; /* dropdowns, popovers, flyouts */
+  --z-overlay: 40; /* scrim de modales */
+  --z-modal: 50; /* paneles de modal */
+  --z-toast: 60; /* notificaciones (todavía sin uso) */
+  --z-tooltip: 70; /* tooltips */
+
   /* Radios — por rol (ver DESIGN_SYSTEM.md, "Radios") */
   --radius-*: initial;
   --radius-xs: 4px; /* badges de código, checkbox, celdas del mini calendario, leyendas */
@@ -309,7 +317,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
-  z-index: 100;
+  z-index: var(--z-tooltip);
   border: 1px solid rgba(255,255,255,0.12);
 }
 .sidebar-item-btn:hover .sidebar-item-tooltip {

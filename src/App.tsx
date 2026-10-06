@@ -409,7 +409,7 @@ function NavItem({
           contenido no-posicionado sin importar el orden en el DOM), así que
           todo el contenido real necesita su propio contexto posicionado con
           z-index mayor para quedar arriba, no tapado por el pill. */}
-      <span className={`relative z-10 flex items-center gap-2 w-full ${collapsed ? "justify-center" : ""}`}>
+      <span className={`relative z-(--z-sticky) flex items-center gap-2 w-full ${collapsed ? "justify-center" : ""}`}>
         {icon && (
           <span className="shrink-0">
             {cloneElement(icon as React.ReactElement<any>, { fill: active ? "currentColor" : "none" })}
@@ -464,7 +464,7 @@ function PeriodSelector() {
       </button>
       {open && (
         <div
-          className="shadow-md absolute right-0 w-48 bg-surface rounded-md border border-border z-50 overflow-hidden"
+          className="shadow-md absolute right-0 w-48 bg-surface rounded-md border border-border z-(--z-dropdown) overflow-hidden"
           style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           <div className="px-3 py-2.5 border-b border-border-subtle">
@@ -676,7 +676,7 @@ function FilterTrigger(props: FilterTriggerProps) {
           <div
             role="listbox"
             aria-label={label}
-            className="shadow-md absolute left-0 min-w-48 bg-surface rounded-md border border-border z-50 overflow-hidden"
+            className="shadow-md absolute left-0 min-w-48 bg-surface rounded-md border border-border z-(--z-dropdown) overflow-hidden"
             style={{ ...dropdownAnchorStyle(direction, 5) }}
           >
             <div className="p-1.5 flex flex-col gap-0.5 overflow-y-auto" style={{ maxHeight: 260 }}>
@@ -775,7 +775,7 @@ function FilterDateRangePanel({
     <div
       role="dialog"
       aria-label={`Filtrar por ${label.toLowerCase()}`}
-      className="shadow-md absolute left-0 bg-surface rounded-md border border-border z-50 p-3"
+      className="shadow-md absolute left-0 bg-surface rounded-md border border-border z-(--z-dropdown) p-3"
       style={{ ...dropdownAnchorStyle(direction, 5), width: 300 }}
     >
       {/* Atajos — clases de chip de ButtonSelectGroup (reposo). Completan
@@ -893,7 +893,7 @@ function MiniCaptionDropdown({
       </button>
       {open && (
         <div
-          className="shadow-md absolute left-1/2 z-40 bg-surface border border-border rounded-md p-1.5 flex flex-col gap-0.5 overflow-y-auto"
+          className="shadow-md absolute left-1/2 z-(--z-dropdown) bg-surface border border-border rounded-md p-1.5 flex flex-col gap-0.5 overflow-y-auto"
           style={{ ...dropdownAnchorStyle(direction, 4), transform: "translateX(-50%)", minWidth: 96, maxHeight: 224 }}
         >
           {options.map((o) => (
@@ -1016,7 +1016,7 @@ function DateTimeField({
       </button>
       {!disabled && open && (
         <div
-          className="shadow-md absolute z-30 bg-surface border border-border rounded-md p-4"
+          className="shadow-md absolute z-(--z-dropdown) bg-surface border border-border rounded-md p-4"
           style={{ ...dropdownAnchorStyle(direction, 6), width: "max-content" }}
         >
           <DayPicker
@@ -1096,7 +1096,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
       </button>
       {open && (
         <div
-          className={`shadow-md absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "left-0 right-0"} bg-surface rounded-md border border-border py-1 z-50 min-w-[160px]`}
+          className={`shadow-md absolute ${collapsed ? "left-[calc(100%+8px)] bottom-0" : "left-0 right-0"} bg-surface rounded-md border border-border py-1 z-(--z-dropdown) min-w-[160px]`}
           style={collapsed ? undefined : dropdownAnchorStyle(direction, 6)}
         >
           <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-text hover:bg-fill-muted transition-colors">
@@ -1312,7 +1312,7 @@ function SortableTh({
   onClick: () => void;
 }) {
   return (
-    <th className="sticky top-0 z-10 bg-fill-subtle-solid border-b border-border px-4 py-3 text-left text-heading-xs uppercase select-none whitespace-nowrap">
+    <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid border-b border-border px-4 py-3 text-left text-heading-xs uppercase select-none whitespace-nowrap">
       <button
         type="button"
         onClick={onClick}
@@ -1502,14 +1502,14 @@ function Modal({
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/25" onClick={onClose} />
+      <div className="fixed inset-0 z-(--z-overlay) bg-black/25" onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="shadow-lg fixed z-50 flex flex-col bg-surface rounded-xl overflow-hidden outline-none"
+        className="shadow-lg fixed z-(--z-modal) flex flex-col bg-surface rounded-xl overflow-hidden outline-none"
         style={{
           top: "50%",
           left: "50%",
@@ -2737,7 +2737,7 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
       </button>
       {open && (
         <div
-          className="shadow-md absolute z-30 bg-surface border border-border rounded-md p-3"
+          className="shadow-md absolute z-(--z-dropdown) bg-surface border border-border rounded-md p-3"
           style={{ ...dropdownAnchorStyle(direction, 6), right: 0, width: "max-content" }}
         >
           <DayPicker
@@ -4731,7 +4731,7 @@ function PersistentActionsBar({
       </button>
       {open && (
         <div
-          className="shadow-md absolute left-0 w-56 bg-surface rounded-md border border-border z-50 overflow-hidden p-1.5 flex flex-col gap-0.5"
+          className="shadow-md absolute left-0 w-56 bg-surface rounded-md border border-border z-(--z-dropdown) overflow-hidden p-1.5 flex flex-col gap-0.5"
           style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           {siempreHabilitadas.map(ItemMenu)}
@@ -5093,7 +5093,7 @@ function ModificarContent({
             sola fila + flyout "Más filtros" anclado a la derecha. */}
         <div className="relative shrink-0">
           <div className="relative">
-            <div className="relative z-30 flex items-center gap-2 [@media(max-height:760px)]:flex-wrap">
+            <div className="relative z-(--z-dropdown) flex items-center gap-2 [@media(max-height:760px)]:flex-wrap">
             {/* Ancho fijo (no crece a ocupar el sobrante) para que se vea
                 proporcionado contra Nivel/Fase — 190px en tamaño normal,
                 bastante más chico en tier 760px vía el `!` important de
@@ -5199,7 +5199,7 @@ function ModificarContent({
             {/* Flyout "Más filtros" */}
             {flyoutOpen && (
               <div
-                className="shadow-md absolute right-0 z-30 bg-surface border border-border rounded-md p-4"
+                className="shadow-md absolute right-0 z-(--z-dropdown) bg-surface border border-border rounded-md p-4"
                 style={{ top: "calc(100% + 6px)", width: 520 }}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -6540,7 +6540,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
       </button>
       {open && (
         <div
-          className="shadow-md absolute left-0 w-96 bg-surface rounded-md border border-border z-50 overflow-hidden"
+          className="shadow-md absolute left-0 w-96 bg-surface rounded-md border border-border z-(--z-dropdown) overflow-hidden"
           style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           <div className="px-3 py-2.5 border-b border-border-subtle">
@@ -6898,7 +6898,7 @@ function ValuePicker({
         </div>
         {!modal && open && !isDisabled && (
           <div
-            className="shadow-md absolute left-0 w-full bg-surface rounded-md border border-border z-50 overflow-hidden"
+            className="shadow-md absolute left-0 w-full bg-surface rounded-md border border-border z-(--z-dropdown) overflow-hidden"
             style={{ ...dropdownAnchorStyle(direction, 5) }}
           >
             {buscador}
@@ -6908,9 +6908,9 @@ function ValuePicker({
       </div>
       {modal && open && !isDisabled && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/25" onClick={cerrar} />
+          <div className="fixed inset-0 z-(--z-overlay) bg-black/25" onClick={cerrar} />
           <div
-            className="shadow-lg fixed z-50 flex flex-col bg-surface rounded-xl overflow-hidden"
+            className="shadow-lg fixed z-(--z-modal) flex flex-col bg-surface rounded-xl overflow-hidden"
             style={{
               top: "50%",
               left: "50%",
@@ -7569,7 +7569,7 @@ function AbmScreen({
                 <thead>
                   <tr className="border-b border-border">
                     {config.columnasResultado.map((c, ci) => (
-                      <th key={c.key} className="sticky top-0 z-10 bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left">
+                      <th key={c.key} className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left">
                         <SortableHeaderCell
                           label={c.label}
                           active={sortIdx === ci}
@@ -7578,8 +7578,8 @@ function AbmScreen({
                         />
                       </th>
                     ))}
-                    <th className="sticky top-0 z-10 bg-fill-subtle-solid" />
-                    <th className="sticky top-0 z-10 bg-fill-subtle-solid w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase text-text-muted">
+                    <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid" />
+                    <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase text-text-muted">
                       Acciones
                     </th>
                   </tr>
