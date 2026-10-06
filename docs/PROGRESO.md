@@ -1,6 +1,6 @@
 # PROGRESO.md
 
-Bitácora de sesiones de trabajo sobre `src/App.tsx` (SISENRE_REDISEÑO). Cada
+Bitácora de sesiones de trabajo sobre el código de `src/` (SISENRE_REDISEÑO). Cada
 entrada es un cierre de jornada: qué se hizo, qué queda pendiente y cómo
 retomar. Fuente de verdad de patrones de UI: `DESIGN_SYSTEM.md`.
 
@@ -10,7 +10,8 @@ retomar. Fuente de verdad de patrones de UI: `DESIGN_SYSTEM.md`.
 
 - **Card "Reposiciones" (CDS4, Modificar interrupción)**: la tabla (Tabla 4)
   suma columnas `Fase`, `Equipo` y `Usuarios BT` a las ya existentes
-  (`ReposicionesTable`, `src/App.tsx`). La franja con la interrupción
+  (`ReposicionesTable`, hoy `ReposicionesLista` en
+  `src/features/consultas-interrupcion/ReposicionesLista.tsx`). La franja con la interrupción
   seleccionada (+ reposición activa, si hay más de una) pasó a ser fija
   (`shrink-0`, fuera del body con scroll — antes vivía adentro y se perdía al
   scrollear la tabla). El header de la card suma el botón "Ver datos de
@@ -46,23 +47,23 @@ retomar. Fuente de verdad de patrones de UI: `DESIGN_SYSTEM.md`.
 
 ### Pendientes abiertos
 
-- **Botón "Copiar datos de la reposición"** (`src/App.tsx:3505`,
+- **Botón "Copiar datos de la reposición"** (`src/features/consultas-interrupcion/FaseReposicionFicha.tsx`,
   `handleCopiarDatosReposicion`): handler intencionalmente vacío, con
   `// TODO: definir contenido y formato del copiado (pendiente de
-  definición)` en `src/App.tsx:3504`. No simula feedback de "copiado" a
+  definición)` en el mismo archivo. No simula feedback de "copiado" a
   propósito (ver `DESIGN_SYSTEM.md`, sección `CopyButton`) hasta que se
   defina qué copia y en qué formato.
 - **Choque de nombre "Fase"**: la columna `"Fase"` de las Tablas 5/6/9
-  (`src/App.tsx:3111`, `3119`, `3133`, junto al comentario de aviso en
-  `3092`-`3093`) hoy guarda el número de reposición, y choca semánticamente
+  (`DRAWER_TABS` en `src/data/dominio.ts`, junto al comentario de aviso)
+  hoy guarda el número de reposición, y choca semánticamente
   con "Fase" = fase eléctrica (R/S/T/RS/RT/ST/RST), que es el sentido que
-  tiene la columna homónima de la Tabla 4 (`3097`) y el chip `MetaChip
+  tiene la columna homónima de la Tabla 4 (mismo archivo) y el chip `MetaChip
   label="Fase"` del modal. Falta decidir un nombre sin ambigüedad para la
   columna de Tablas 5/6/9 (ej. "Reposición" en vez de "Fase") y aplicarlo.
 - **Otros `TODO` encontrados en el código** (búsqueda de `// TODO` en
-  `src/App.tsx`):
-  - `src/App.tsx:3504` — el del botón de copiar, ya detallado arriba.
-  - `src/App.tsx:6343` (`handleConfirmarModificar`) — `config.rows` es mock
+  `src/`):
+  - `src/features/consultas-interrupcion/FaseReposicionFicha.tsx` — el del botón de copiar, ya detallado arriba.
+  - `src/features/abm/AbmScreen.tsx` (`handleConfirmarModificar`) — `config.rows` es mock
     derivado de la configuración, todavía no hay persistencia real del
     cambio ni de la nota de modificación (mismo caso pendiente que
     "Borrar"); por ahora el flujo solo cierra el modal.
@@ -74,7 +75,7 @@ pnpm install
 pnpm dev        # sirve en el puerto 8443 (PORT env var lo puede sobreescribir)
 ```
 
-Login del prototipo (`src/App.tsx`, ~línea 2147): usuario `rdellamagiora`,
+Login del prototipo (`src/features/login/LoginScreen.tsx`): usuario `rdellamagiora`,
 contraseña `1234`.
 
 ## 2026-09-30
@@ -119,32 +120,32 @@ contraseña `1234`.
 
 ### Pendientes abiertos
 
-- **Botón "Copiar datos de la reposición"** (`src/App.tsx:4418`,
-  `handleCopiarDatosReposicion`, `TODO` en `4417`): sigue sin copiar nada,
+- **Botón "Copiar datos de la reposición"** (`src/features/consultas-interrupcion/FaseReposicionFicha.tsx`,
+  `handleCopiarDatosReposicion`, con su `TODO`): sigue sin copiar nada,
   pero su aria-label promete hacerlo. Definir qué copia o sacarlo.
-- **Placeholders de Tablas relacionadas** (`src/App.tsx:3476`, `3486`,
-  `3495`, `3504`): ninguno nombra todas sus columnas buscables, porque la
+- **Placeholders de Tablas relacionadas** (`relSearchPlaceholder` en
+  `src/features/consultas-interrupcion/ModificarContent.tsx`): ninguno nombra todas sus columnas buscables, porque la
   regla "todo lo no filtrable es buscable" mete Consumo, Potencia y (en
   Tabla 8) Fecha en el buscador. Evaluar `searchCols` explícito por tab.
 - **Tiles de Tablas relacionadas en 0** (`RelacionadaChip`,
-  `src/App.tsx:3785`): al ser `<div>` ya no abren el modal en ese tab (donde
+  `src/features/consultas-interrupcion/RelacionadaChip.tsx`): al ser `<div>` ya no abren el modal en ese tab (donde
   está "Ir a CDS… a insertar"); si todos están en 0, no hay forma de abrir
   el modal.
 - **Choque de nombre "Fase"**: sigue abierto. La columna "Fase" de las
-  Tablas 5/6/9 (`src/App.tsx:3470`, `3484`, `3502`) guarda el número de
-  reposición; en la Tabla 4 (`3454`) y en la barra de contexto del modal,
+  Tablas 5/6/9 (`DRAWER_TABS`, `src/data/dominio.ts`) guarda el número de
+  reposición; en la Tabla 4 (mismo archivo) y en la barra de contexto del modal,
   "Fase" es la fase eléctrica.
 - **Sin probar en el navegador**: tier ≤760px (incluido el header
   compacto), navegación con Tab/Shift+Tab por toolbar y filtros, que cada
   tile abra su tab, Enter sobre la card de Reclamos y la barra de contexto
   del modal.
-- `src/App.tsx:7383` (`handleConfirmarModificar`): sin persistencia real,
+- `src/features/abm/AbmScreen.tsx` (`handleConfirmarModificar`): sin persistencia real,
   igual que en la entrada anterior.
 
 ### Cómo levantar el proyecto
 
 Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
-`src/App.tsx:2488` (`LoginScreen`).
+`src/features/login/LoginScreen.tsx` (`LoginScreen`).
 
 ## 2026-10-01
 
@@ -194,12 +195,14 @@ Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
   interrupción) no entra; el botón "Buscar" queda cortado contra el borde
   derecho y la card de Reposiciones se pasa unos píxeles. Preexistente.
   (Sigue abierto, ver entrada del 2026-10-05.)
-- **Cards con `overflow-hidden`** (`src/App.tsx:5275`, `5425`, `7355`,
-  `7470`, `7913`): la regla del DS dice que las cards no lo usan (recorta
+- **Cards con `overflow-hidden`** (las de Consultas de interrupción, hoy en
+  `src/features/consultas-interrupcion/ModificarContent.tsx`; las del ABM en
+  `src/features/abm/AbmScreen.tsx`; la de Notas en
+  `src/features/otros/GestorNotasContent.tsx`): la regla del DS dice que las cards no lo usan (recorta
   popovers). No se sacó porque hay que verificar el scroll interno en el
   navegador. (Las dos de Modificar interrupción se resolvieron el
   2026-10-05; quedan las de ABM y Notas, ver esa entrada.)
-- **Tabla de Resultados del ABM** (`src/App.tsx:7522`): conserva su
+- **Tabla de Resultados del ABM** (`src/features/abm/AbmScreen.tsx`): conserva su
   contenedor con borde; la regla 8 ("una card, una superficie") solo se
   aplicó a Modificar interrupción.
 - **"Procesar" de Planilla consolidada**: se deshabilita mientras procesa
@@ -210,17 +213,17 @@ Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
   tokens nuevos, textos de 9–10px que pasaron a 11px en cajas de alto fijo
   (badge de "Más filtros", casilla de fase de 18×18, rótulos del SVG de la
   timeline), login, modales, navegación con teclado.
-- **Botón "Copiar datos de la reposición"** (`src/App.tsx:4390`,
-  `handleCopiarDatosReposicion` en `4345`): sigue sin copiar nada.
+- **Botón "Copiar datos de la reposición"** (`src/features/consultas-interrupcion/FaseReposicionFicha.tsx`,
+  `handleCopiarDatosReposicion`): sigue sin copiar nada.
 - **Placeholders de Tablas relacionadas**, **tiles en 0 que no abren el
-  modal** (`RelacionadaChip`, `src/App.tsx:3745`) y **choque de nombre
+  modal** (`RelacionadaChip`, `src/features/consultas-interrupcion/RelacionadaChip.tsx`) y **choque de nombre
   "Fase"**: siguen abiertos, igual que en la entrada del 2026-09-30.
-- `src/App.tsx:7274` (`handleConfirmarModificar`): sin persistencia real.
+- `src/features/abm/AbmScreen.tsx` (`handleConfirmarModificar`): sin persistencia real.
 
 ### Cómo levantar el proyecto
 
 Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
-`src/App.tsx:2482` (`LoginScreen`).
+`src/features/login/LoginScreen.tsx` (`LoginScreen`).
 
 ## 2026-10-05
 
@@ -257,38 +260,88 @@ Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
 
 ### Pendientes abiertos
 
-- **Herramientas sin conectar** (`HERRAMIENTAS_ITEMS`, `src/App.tsx:50`):
+- **Herramientas sin conectar** (`HERRAMIENTAS_ITEMS`, `src/App.tsx`):
   Desarmes, Nivel/Tipo, Replicar, Cambia fases, Alta clientes e Intercambio
   dependen de la interrupción seleccionada en Consultas de interrupción
   (referencia del modal o habilitación por selección). Quedan
   deshabilitados en el menú y, al no estar más la fila de botones, hoy no se
   pueden abrir desde ningún lado. Falta definir cómo se resuelven desde el
   menú.
-- **`PersistentActionsBar`** (`src/App.tsx:4666`) quedó sin usar; borrarlo
+- **`PersistentActionsBar`** (`src/features/abm/PersistentActionsBar.tsx`) quedó sin usar; borrarlo
   cuando se resuelva el punto anterior.
 - **Headers desalineados**: Interrupciones no lleva subtítulo y su header
   mide 16px menos que el de Reposiciones (`reserveSubtitle`), así que los
   divisores de las dos cards no quedan a la misma altura
-  (`src/App.tsx:5313`).
+  (`src/features/consultas-interrupcion/ModificarContent.tsx`).
 - **Ancho a 1366px**: "Buscar" sigue cortado contra el borde derecho y los
   toggles Origen/Tipo se apilan en dos renglones. Preexistente.
 - **"Orden por Fecha"**: en Interrupciones es un filtro por rango
   (`FilterTrigger` `date-range`), no un orden. Confirmar si se quiere un
   orden.
 - **Cards con `overflow-hidden`** fuera de Modificar interrupción: ABM
-  (`src/App.tsx:7374`, `7489`) y Notas (`7932`).
+  (`src/features/abm/AbmScreen.tsx`) y Notas
+  (`src/features/otros/GestorNotasContent.tsx`).
 - **Sin probar en el navegador**: tier ≤760px del encabezado nuevo, del
   grupo Herramientas y de las cards con alto según contenido; sidebar
   colapsado (el ícono de Herramientas expande el sidebar y abre el grupo).
-- **Botón "Copiar datos de la reposición"** (`src/App.tsx:4398`,
+- **Botón "Copiar datos de la reposición"** (`src/features/consultas-interrupcion/FaseReposicionFicha.tsx`,
   `handleCopiarDatosReposicion`): sigue sin copiar nada.
 - **Placeholders de Tablas relacionadas**, **tiles en 0 que no abren el
-  modal** (`RelacionadaChip`, `src/App.tsx:3797`), **choque de nombre
+  modal** (`RelacionadaChip`, `src/features/consultas-interrupcion/RelacionadaChip.tsx`), **choque de nombre
   "Fase"**, **tabla de Resultados del ABM con contenedor propio** y
   **"Procesar" de Planilla consolidada con `opacity-40`**: siguen abiertos.
-- `src/App.tsx:7293` (`handleConfirmarModificar`): sin persistencia real.
+- `src/features/abm/AbmScreen.tsx` (`handleConfirmarModificar`): sin persistencia real.
 
 ### Cómo levantar el proyecto
 
 Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
-`src/App.tsx:2507` (`LoginScreen`).
+`src/features/login/LoginScreen.tsx` (`LoginScreen`).
+
+## Historia de decisiones del DS
+
+Narrativa que antes vivía en `DESIGN_SYSTEM.md`. Ahí queda solo la regla
+vigente; acá, de dónde salió.
+
+- **Fondo de página:** `--color-bg-app` era `#FAF9F5` (crema) y pasó a
+  `#FAFAFA` (gris neutro) el 2026-10-05; la tabla de contraste se
+  recalculó con el valor nuevo.
+- **Rellenos translúcidos:** se eligieron para que nunca apareciera un gris
+  azulado sobre un fondo cálido, cuando todavía existía la escala
+  `--color-gray-*` (grises azulados). Esa escala se eliminó el 2026-10-06 y
+  la reemplazó `--color-neutral-*` (cálida).
+- **Tabs de contenido:** `UnderlineTabs` reemplazó al `SegmentedSwitch`
+  (riel + pastilla), que se usó brevemente para elegir la tabla del modal
+  "Tablas relacionadas". Se volvió a tabs subrayados por ser más estándar
+  para contenido tabular con varias vistas anchas.
+- **`shrink-0` en contenedores flex con scroll:** la regla salió de un bug
+  real: sin `shrink-0`, elegir un tab con más contenido comprimía y
+  recortaba una tabla vecina en vez de activar el scroll del contenedor.
+- **`th` sticky con `border-separate`:** el fix (separadores de fila en
+  `<td>` en vez de `<tr>`, para que un borde no se pinte sobre el `th`
+  sticky) nació en la tabla de Reposiciones (`ReposicionesTable`), que hoy
+  es una lista de filas (`ReposicionesLista`) y ya no lo necesita; el modal
+  "Tablas relacionadas" lo conserva.
+- **Acciones del registro:** Desarmes, Lotes, Nivel/Tipo, Replicar, Cambia
+  fases, Alta clientes e Intercambio vivían como fila de botones (y
+  dropdown en tier 760px) en la pantalla de Consultas de interrupción;
+  pasaron al grupo "Herramientas" del menú lateral el 2026-10-05.
+- **Gap entre cards:** era `gap-4` fijo en todos los tiers; desde el
+  2026-10-06 es `--cards-gap` (24px en pantallas altas, el mismo `gap-4` en
+  los tiers compactos).
+- **Variables de chrome:** en los tiers de 900px y 760px se definieron para
+  dar exactamente los valores que ya tenía la app (las notebooks de 14" no
+  vieron ningún cambio); solo las pantallas altas ganaron aire.
+- **Header de card:** pasó por varias formas — header gris
+  (`bg-gray-50`), `context` con "·", `size="compact"`, sin fondo ni
+  divisor, y `tagAlign="end"` con el badge a la derecha — hasta la vigente:
+  badge en línea, divisor siempre visible en las cards con secciones y
+  derecha solo para acciones.
+- **`CopyButton`:** medía `w-8 h-8` con `text-text-muted`; hoy usa
+  `ICON_BTN_SM` y `text-icon`.
+- **Hover destructivo:** usaba los rojos 50 y 200 de la paleta default de
+  Tailwind; desde el 2026-10-06, `error-bg-subtle` / `error-border-subtle`
+  con los mismos valores.
+- **Estructura de archivos:** hasta el 2026-10-06 todo vivía en
+  `src/App.tsx` (~8.700 líneas). Se partió en `components/ui/`,
+  `components/layout/`, `features/`, `data/` y `lib/` sin cambiar
+  comportamiento.

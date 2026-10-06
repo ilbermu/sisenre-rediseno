@@ -14,7 +14,12 @@ A Vite development server is **already running** on `$PORT` (default 8443). You 
 This is the canonical project structure. Start with task-relevant files below. Only follow imports or inspect other files when required, when a documented path is missing, or when the repository contradicts this guide.
 
 - `src/main.tsx` - React entrypoint; imports `src/index.css` and mounts `src/App.tsx` into the `#root` element
-- `src/App.tsx` - Primary application component and the usual starting point for UI work
+- `src/App.tsx` - App shell only: overall layout, sidebar, active-screen state and routing between screens
+- `src/components/ui/` - Design system: reusable components (one per file), `tokens.ts` (button, focus, icon and field class constants) and `index.ts` re-exporting everything
+- `src/components/layout/` - Shell pieces (`NavItem`, `UserMenu`)
+- `src/features/<tool>/` - One folder per tool (`consultas-interrupcion`, `abm`, `herramientas`, `login`, `inicio`, `otros`) with its screens and everything only that tool uses; the usual starting point for UI work
+- `src/data/` - Synthetic data generators, RNG, mocks, domain constants and domain types (`data/types.ts`)
+- `src/lib/` - Formatting helpers (`format.ts`) and generic hooks
 - `src/index.css` - Global CSS entrypoint and Tailwind CSS v4 import
 - `index.html` - Vite HTML shell containing the `#root` element and loading `src/main.tsx`
 - `package.json` - Project dependencies and the Vite build, development, preview, and formatting scripts
