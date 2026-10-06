@@ -1,0 +1,720 @@
+import { useState, useRef, useEffect } from "react";
+import { Shield, Inbox, Plus, Download } from "lucide-react";
+import {
+  actionBtnCls,
+  BTN_SM,
+  CardHeader,
+  FOCUS_RING_INSET,
+  ICON,
+  ICON_BTN_SM,
+  PeriodSelector,
+  rowActionBtnCls,
+  SectionDivider,
+  SelectionActionBar,
+  SortableHeaderCell,
+  TableToolbar,
+  useTableToolbar,
+} from "@/components/ui";
+import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
+import { ABM_ITEMS } from "@/data/dominio";
+import { AbmDeepLink, AbmMode, AbmTableKey, CampoBusqueda } from "@/data/types";
+import { AbmCampo } from "@/features/abm/AbmCampo";
+import { AbmFila } from "@/features/abm/AbmFila";
+import { AbmTableSelector } from "@/features/abm/AbmTableSelector";
+import { ConfirmarBorrarModal } from "@/features/abm/ConfirmarBorrarModal";
+import { ConfirmarModificarModal } from "@/features/abm/ConfirmarModificarModal";
+import { formatNumero } from "@/lib/format";
+
+function exportRowsToCsv(filename: string, headers: string[], rows: string[][]) {
+  const escape = (v: string) => (/[",\n;]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const csv = "﻿" + [headers, ...rows].map((r) => r.map(escape).join(",")).join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${filename}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Vuelca los datos de una fila de resultados en `valores` del formulario,
+// según el mapeo columna→campo de la tabla (config.mapeoFilaACampos).
+// Usado tanto por el estado "consultando" (fila seleccionada en modo
+// buscar) como al entrar a "modificar" — en ambos casos el formulario debe
+// mostrar el dato REAL del registro, nunca arrancar en blanco. Los campos
+// sin mapeo quedan sin tocar (ver AbmCampo: siguen en blanco, pero
+// disabled/atenuados igual).
+function mapearFilaAValores(mapeo: Record<string, string>, fila: Record<string, string>): Record<string, string> {
+  const nuevos: Record<string, string> = {};
+  for (const [columna, campoNombre] of Object.entries(mapeo)) {
+    if (fila[columna] !== undefined) nuevos[campoNombre] = fila[columna];
+  }
+  return nuevos;
+}
+
+// Resuelve el value crudo de un campo (toggle/select/combobox) a su label
+// legible, usando las mismas `opciones` que ya usa AbmCampo — incluyendo el
+// caso de opciones en función/cascada (ej. Localidad depende de Partido).
+function labelDeValor(campo: CampoBusqueda, valor: string, contexto: Record<string, string>): string {
+  if (!valor) return "";
+  if (campo.tipo === "toggle" || campo.tipo === "select" || campo.tipo === "combobox") {
+    const opciones = typeof campo.opciones === "function" ? campo.opciones(contexto) : campo.opciones;
+    const opcion = opciones?.find((o) => (typeof o === "string" ? o === valor : o.value === valor));
+    if (opcion) return typeof opcion === "string" ? opcion : opcion.label;
+  }
+  return valor;
+}
+
+// Componente unico que renderiza cualquiera de las 9 tablas ABM a partir de
+// ABM_TABLE_CONFIGS[tableKey]. `onChangeTable` es el mismo setScreen del
+// componente App — asi el selector interno y el item activo del sidebar
+// comparten el mismo estado sin duplicarlo.
+export function AbmScreen({
+  tableKey,
+  onChangeTable,
+  deepLink,
+  onDeepLinkConsumed,
+  volverVisible,
+  onVolver,
+}: {
+  tableKey: AbmTableKey;
+  onChangeTable: (k: AbmTableKey) => void;
+  // Deep-link pendiente desde afuera (ej. drawer de Consultas de
+  // interrupción) — se aplica una vez y se descarta via onDeepLinkConsumed.
+  deepLink?: AbmDeepLink | null;
+  onDeepLinkConsumed?: () => void;
+  // Se llegó acá por un deep-link (no por navegación normal del sidebar) —
+  // muestra el botón "←" (solo ícono) en el masthead.
+  volverVisible?: boolean;
+  onVolver?: () => void;
+}) {
+  const config = ABM_TABLE_CONFIGS[tableKey];
+  // Tier 760px: la grilla plana del panel de Búsqueda (ver más abajo) es de
+  // 2 columnas por default, ya validado contra Tabla 2 (12 campos, 6 filas
+  // — entra sin scroll). Tablas con más campos que eso (CDS8: 14, la más
+  // cargada — sección Cliente sola tiene 9) no entran en 6 filas y siguen
+  // necesitando scroll con solo 2 columnas; el criterio de "cero scroll"
+  // pesa más que mantener el mismo número de columnas en todas las tablas.
+  // Contar los campos totales de la tabla (no medir nada en el DOM) alcanza
+  // para decidirlo de antemano, sin necesidad de una lista hardcodeada de
+  // tablas ni de lógica por tabla en el JSX de abajo.
+  const totalCamposTabla = config.secciones.reduce((acc, sec) => acc + sec.filas.flat().length, 0);
+  const usaTresColumnasTier2 = totalCamposTabla > 12;
+  const filasGridColsTier2Cls = usaTresColumnasTier2 ? "[@media(max-height:760px)]:grid-cols-3" : "[@media(max-height:760px)]:grid-cols-2";
+  // Si la tabla usa 3 columnas, un campo `expandirBotones` necesita las 3
+  // para ocupar todo el ancho (no las 2 de siempre) — ver más abajo.
+  const expandirBotonesSpanCls = usaTresColumnasTier2 ? "[@media(max-height:760px)]:col-span-3" : "[@media(max-height:760px)]:col-span-2";
+  const [mode, setMode] = useState<AbmMode>("buscar");
+  const [showData, setShowData] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<number | null>(null);
+  const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [valores, setValores] = useState<Record<string, string>>({});
+  // Foto del registro tal como estaba al entrar a Modificar — se compara
+  // contra `valores` (que sí cambia con cada edición) para saber qué
+  // campos cambiaron, ver ConfirmarModificarModal.
+  const [valoresOriginales, setValoresOriginales] = useState<Record<string, string>>({});
+  const [modalModificarAbierto, setModalModificarAbierto] = useState(false);
+  const [filaABorrar, setFilaABorrar] = useState<number | null>(null);
+  // Índices (de config.rows) borrados en esta sesión — config.rows es mock
+  // estático derivado de la config, no estado real, así que "borrar" no
+  // puede sacar la fila del array: en cambio se la excluye de Resultados
+  // (visibleIndices más abajo) sin tocar los índices de las demás filas,
+  // que siguen usándose como identidad en selectedRow/mapeoFilaACampos/etc.
+  const [filasBorradas, setFilasBorradas] = useState<Set<number>>(new Set());
+  const camposLocked = config.camposReadonlyEnModificar ?? [];
+
+  // Reset al cambiar de tabla — corre primero.
+  useEffect(() => {
+    setMode("buscar");
+    setShowData(false);
+    setSelectedRow(null);
+    setValores({});
+    setValoresOriginales({});
+    setFilasBorradas(new Set());
+  }, [tableKey]);
+
+  // Aplica un deep-link pendiente para ESTA tabla — corre después del
+  // reset de arriba (mismo commit cuando tableKey y deepLink cambian
+  // juntos, que es el caso normal), así su estado gana. Se descarta con
+  // onDeepLinkConsumed apenas se aplica, para no reaplicarse en loop.
+  useEffect(() => {
+    if (!deepLink || deepLink.tableKey !== tableKey) return;
+    if (deepLink.modo === "alta") {
+      setMode("alta");
+      setShowData(false);
+      setSelectedRow(null);
+      setValores({ [deepLink.campo]: deepLink.valor });
+    } else {
+      setMode("buscar");
+      setValores({ [deepLink.campo]: deepLink.valor });
+      setShowData(true);
+      const idx = config.rows.findIndex((r) => r[deepLink.columna] === deepLink.valor);
+      setSelectedRow(idx >= 0 ? idx : null);
+    }
+    onDeepLinkConsumed?.();
+  }, [deepLink, tableKey]);
+
+  // Estado "consultando" — hay una fila seleccionada en Resultados
+  // mientras se sigue en modo buscar. Vuelca los datos de esa fila (según
+  // config.mapeoFilaACampos) en el formulario de Búsqueda, en solo-lectura
+  // — no cambia mode ni título/botones del panel (eso es "modificar", una
+  // acción aparte que ahora arranca con los mismos datos, ver
+  // handleAbrirModificar). Corre después del efecto de deep-link: si se
+  // llega acá con una fila ya preseleccionada, esta pasada completa el
+  // formulario con TODOS los campos mapeados (el deep-link por sí solo
+  // precarga uno nada más).
+  useEffect(() => {
+    if (mode !== "buscar") return;
+    if (selectedRow === null) {
+      setValores({});
+      return;
+    }
+    setValores(mapearFilaAValores(config.mapeoFilaACampos, config.rows[selectedRow]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, selectedRow, tableKey]);
+
+  function setValor(nombre: string, v: string) {
+    // `limpiaAlCambiar` (config del campo que cambió) — típicamente el
+    // campo dependiente de una cascada (ver Partido -> Localidad en CDS8),
+    // para que no quede seleccionado un valor que ya no es una opción
+    // válida del campo dependiente.
+    const campo = config.secciones.flatMap((s) => s.filas.flat()).find((c) => c.nombre === nombre);
+    setValores((prev) => {
+      const next = { ...prev, [nombre]: v };
+      for (const otro of campo?.limpiaAlCambiar ?? []) next[otro] = "";
+      return next;
+    });
+  }
+
+  const hasSelection = selectedRow !== null;
+  const consultando = mode === "buscar" && hasSelection;
+  const columnKeys = config.columnasResultado.map((c) => c.key);
+  const getCells = (row: Record<string, string>) => columnKeys.map((k) => row[k] ?? "");
+  const { search, setSearch, sortIdx, sortDir, toggleSort, visibleIndices: visibleIndicesConBorradas } =
+    useTableToolbar(config.rows, getCells, tableKey);
+  // Excluye las filas "borradas" de Resultados (navegación por teclado,
+  // export, conteo) sin renumerar nada — los índices que quedan siguen
+  // siendo los mismos de config.rows, que es lo que usan selectedRow,
+  // mapeoFilaACampos y el resto del formulario.
+  const visibleIndices = visibleIndicesConBorradas.filter((i) => !filasBorradas.has(i));
+
+  // Navegación por teclado en Resultados: flecha abajo/arriba mueve la
+  // selección entre filas visibles y autocompleta Búsqueda en vivo (mismo
+  // patrón que la tabla de Interrupciones en Consultas de interrupción,
+  // ver handleModListKeyDown/modListRef).
+  const resultadosListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedRow === null || !resultadosListRef.current) return;
+    resultadosListRef.current
+      .querySelector<HTMLElement>(`[data-row-index="${selectedRow}"]`)
+      ?.scrollIntoView({ block: "nearest" });
+  }, [selectedRow]);
+
+  function handleResultadosKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (!showData || mode !== "buscar" || visibleIndices.length === 0) return;
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    if (selectedRow === null) {
+      setSelectedRow(e.key === "ArrowDown" ? visibleIndices[0] : visibleIndices[visibleIndices.length - 1]);
+      return;
+    }
+    const currentPos = visibleIndices.indexOf(selectedRow);
+    const nextPos =
+      e.key === "ArrowDown"
+        ? Math.min(currentPos + 1, visibleIndices.length - 1)
+        : Math.max(currentPos - 1, 0);
+    setSelectedRow(visibleIndices[Math.max(nextPos, 0)]);
+  }
+
+  function handleLimpiar() {
+    setShowData(false);
+    setSelectedRow(null);
+    setValores({});
+  }
+  function handleBuscar() {
+    setShowData(true);
+    setSelectedRow(null);
+  }
+  function handleAbrirAlta() {
+    // No toca showData/selectedRow — el panel de Resultados sigue
+    // mostrando exactamente lo que tenía (solo se atenúa vía el wrapper
+    // de la derecha, ver `mode !== "buscar"` más abajo), no se resetea.
+    setMode("alta");
+    setValores({});
+  }
+  function handleCancelarAlta() {
+    // Sin setSelectedRow(null) acá, si había una fila seleccionada al
+    // entrar a Alta, el efecto de "consultando" la vuelve a volcar en
+    // `valores` apenas mode pasa a "buscar" — el formulario quedaría en
+    // estado "placeholder" en vez de "empty".
+    setMode("buscar");
+    setSelectedRow(null);
+    setValores({});
+  }
+  function handleGuardarAlta() {
+    setMode("buscar");
+    setSelectedRow(null);
+    setValores({});
+  }
+  // Modificar es un ícono por fila (no depende de que la fila ya esté
+  // seleccionada) — toma el índice directo en vez de leer `selectedRow` del
+  // closure, así funciona igual de bien sobre una fila recién clickeada que
+  // sobre una ya seleccionada. El panel de Resultados no se toca (ni
+  // showData ni selectedRow se resetean): sigue mostrando exactamente los
+  // mismos resultados, con esta fila resaltada, solo atenuado vía el
+  // wrapper de la derecha — igual que en modo Insertar.
+  function handleAbrirModificar(i: number) {
+    const filaActual = config.rows[i];
+    const valoresIniciales = mapearFilaAValores(config.mapeoFilaACampos, filaActual);
+    setSelectedRow(i);
+    setMode("modificar");
+    setValores(valoresIniciales);
+    setValoresOriginales(valoresIniciales);
+  }
+  function handleCancelarModificar() {
+    // Misma razón que handleCancelarAlta: sin limpiar selectedRow, el
+    // efecto de "consultando" recompletaría el formulario apenas mode
+    // vuelve a "buscar" (la fila sigue seleccionada en Resultados), y el
+    // campo quedaría en "placeholder" en vez de volver a "empty". El panel
+    // de Resultados en sí no se resetea (showData no se toca): sigue
+    // mostrando los mismos resultados, solo sin ninguna fila resaltada.
+    setMode("buscar");
+    setSelectedRow(null);
+    setValores({});
+    setValoresOriginales({});
+  }
+  function handleGuardarModificar() {
+    setModalModificarAbierto(true);
+  }
+  function handleCancelarConfirmarModificar() {
+    // Solo cierra el modal — sigue en modo Modificando, no se pierde la edición.
+    setModalModificarAbierto(false);
+  }
+  function handleConfirmarModificar(nota: string) {
+    // TODO: config.rows es mock derivado de la config, no estado real —
+    // todavía no hay dónde persistir el cambio ni la nota (mismo caso que
+    // Borrar). Por ahora cierra el flujo igual que antes.
+    setModalModificarAbierto(false);
+    setMode("buscar");
+    setSelectedRow(null);
+    setValores({});
+    setValoresOriginales({});
+  }
+
+  function handleAbrirBorrar(i: number) {
+    setFilaABorrar(i);
+  }
+  function handleCancelarBorrar() {
+    setFilaABorrar(null);
+  }
+  function handleConfirmarBorrar() {
+    if (filaABorrar !== null) {
+      setFilasBorradas((prev) => new Set(prev).add(filaABorrar));
+      // La fila borrada no puede seguir seleccionada — si lo estaba,
+      // "consultando" quedaría mostrando el dato de un registro que ya no
+      // aparece en Resultados.
+      if (selectedRow === filaABorrar) setSelectedRow(null);
+    }
+    setFilaABorrar(null);
+  }
+
+  const totalPages = Math.max(1, Math.ceil(config.totalRegistros / 25));
+
+  // Campos que cambiaron respecto a `valoresOriginales` (la foto tomada al
+  // entrar a Modificar) — alimenta ConfirmarModificarModal. Excluye
+  // "readonly" (no editables, nunca cambian) y resuelve value → label
+  // legible vía labelDeValor para toggle/select/combobox.
+  const camposModificados = config.secciones
+    .flatMap((s) => s.filas.flat())
+    .filter((c) => c.tipo !== "readonly" && (valores[c.nombre] ?? "") !== (valoresOriginales[c.nombre] ?? ""))
+    .map((c) => ({
+      label: c.label,
+      anterior: labelDeValor(c, valoresOriginales[c.nombre] ?? "", valoresOriginales),
+      nuevo: labelDeValor(c, valores[c.nombre] ?? "", valores),
+    }));
+
+  return (
+    <>
+      {/* Masthead — selector de tabla (hace de título) a la izquierda, período
+          a la derecha. Único agregado condicional: el link "Volver" cuando
+          se llegó acá por un deep-link (ver AbmDeepLink) — nada de Insertar
+          ni dropdown genérico. */}
+      <header
+        className="flex items-center gap-3 px-6 border-b border-border bg-bg-app shrink-0"
+        style={{ minHeight: "var(--header-min-height, 60px)" }}
+      >
+        {volverVisible && (
+          <button
+            type="button"
+            onClick={onVolver}
+            title="Volver a Consultas de interrupción"
+            aria-label="Volver a Consultas de interrupción"
+            className={`flex items-center justify-center ${ICON_BTN_SM} -ml-1.5 rounded-sm text-icon hover:text-secondary hover:bg-fill-muted transition-colors shrink-0`}
+          >
+            ←
+          </button>
+        )}
+        <div className="flex-1 min-w-0">
+          <AbmTableSelector value={tableKey} onChange={onChangeTable} />
+        </div>
+        <PeriodSelector />
+      </header>
+
+      {/* Content */}
+      <div className="flex-1 flex overflow-hidden p-5 gap-5" key={mode}>
+
+        {/* ── Left column: form ── */}
+        <div
+          // Tier 760px: el split pasa de 41/resto a ~47/resto — al revés que
+          // en Interrupciones/Reposiciones (acá es Búsqueda la que le sobra
+          // espacio a Resultados y necesita más ancho para acomodar más
+          // columnas de campos, ver la sección de abajo). El ancho normal
+          // (41%, inline) tiene prioridad de especificidad sobre una clase
+          // sin `!important`, de ahí el `!w-[47%]`.
+          className="shadow-sm flex flex-col rounded-md border border-border bg-surface shrink-0 overflow-hidden [@media(max-height:760px)]:!w-[47%]"
+          style={{ width: "41%" }}
+        >
+          <CardHeader
+            title={mode === "alta" ? "Insertando en" : mode === "modificar" ? "Modificando" : "Búsqueda"}
+            tag={config.code}
+            padX="px-5"
+          />
+          <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
+            {config.secciones.map((sec) => {
+              const conteoPorLongitud = new Map<number, number>();
+              for (const fila of sec.filas) conteoPorLongitud.set(fila.length, (conteoPorLongitud.get(fila.length) ?? 0) + 1);
+              // Tier 760px reemplaza el sistema de filas/columnasCompartidas
+              // de acá abajo por una grilla fija y genérica: TODOS los
+              // campos de la sección, sin importar cómo la tabla los
+              // agrupó en `filas`, se aplanan y se acomodan de a 2 por
+              // línea en un grid-template-columns: repeat(2, minmax(0,1fr))
+              // — el wrap natural de CSS grid, no un reordenamiento manual
+              // por tabla. Mismo mecanismo para las 9 tablas.
+              const camposPlanos = sec.filas.flat();
+              return (
+                <div key={sec.titulo}>
+                  <SectionDivider title={sec.titulo} />
+                  {/* Tamaño normal: sistema de filas de siempre. */}
+                  <div className="flex flex-col gap-3 [@media(max-height:760px)]:hidden">
+                    {sec.filas.map((fila, fi) => (
+                      <AbmFila
+                        key={fi}
+                        fila={fila}
+                        mode={mode}
+                        valores={valores}
+                        setValor={setValor}
+                        camposLocked={camposLocked}
+                        consultando={consultando}
+                        columnasCompartidas={(conteoPorLongitud.get(fila.length) ?? 0) > 1}
+                      />
+                    ))}
+                  </div>
+                  {/* Tier 760px: grilla fija a lo ancho completo del panel
+                      — 2 o 3 columnas según cuántos campos tenga la tabla
+                      en total (ver totalCamposTabla más arriba) — cada
+                      campo (toggle, select o input) estira a w-full dentro
+                      de su celda. */}
+                  <div className={`hidden [@media(max-height:760px)]:grid ${filasGridColsTier2Cls} [@media(max-height:760px)]:items-end [@media(max-height:760px)]:gap-3`}>
+                    {camposPlanos.map((campo) => (
+                      // `expandirBotones` es la señal existente de "este
+                      // toggle necesita todo el ancho disponible, no una
+                      // celda" (ver Causa en CDS3, Zona en CDS7) — acá eso
+                      // se traduce en ocupar todas las columnas de la
+                      // grilla plana (2 o 3 según la tabla), no solo una.
+                      // Sin esto, un toggle de 1-2 opciones largas queda a
+                      // una fracción del ancho del panel y el texto rompe a
+                      // 2 líneas.
+                      <div key={campo.nombre} className={campo.expandirBotones ? expandirBotonesSpanCls : ""}>
+                        <AbmCampo
+                          campo={campo}
+                          mode={mode}
+                          value={valores[campo.nombre]}
+                          onChange={(v) => setValor(campo.nombre, v)}
+                          lockedEnModificar={camposLocked.includes(campo.nombre)}
+                          consultando={consultando}
+                          valoresFormulario={valores}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="shrink-0 border-t border-border px-5 py-4 flex gap-3">
+            {mode === "buscar" ? (
+              <>
+                <button
+                  onClick={handleLimpiar}
+                  disabled={!showData}
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                >Limpiar</button>
+                <button
+                  onClick={handleBuscar}
+                  disabled={showData}
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                >Buscar</button>
+              </>
+            ) : mode === "alta" ? (
+              <>
+                <button
+                  onClick={handleCancelarAlta}
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99]"
+                >Cancelar</button>
+                <button
+                  onClick={handleGuardarAlta}
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
+                >Insertar</button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleCancelarModificar}
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99]"
+                >Cancelar</button>
+                <button
+                  onClick={handleGuardarModificar}
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
+                >Guardar</button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* ── Right column: results — se atenua y deshabilita en modo alta
+            y en modo modificar, para que el foco visual quede en el panel
+            Búsqueda ── */}
+        <div
+          className={`shadow-sm flex-1 flex flex-col border border-border rounded-md bg-surface overflow-hidden transition-opacity duration-(--duration-base) ${
+            mode !== "buscar" ? "opacity-50 pointer-events-none" : ""
+          }`}
+        >
+          <CardHeader
+            title="Resultados"
+            tag={config.code}
+            actions={
+              <div className="flex items-center gap-2">
+                {/* Auditoría es una acción de panel, no de registro: genera
+                    una auditoría de todos los campos modificados en el
+                    conjunto de resultados, no de una fila puntual — por eso
+                    vive acá siempre visible/habilitada, no en la fila ni
+                    atada a una selección (corrige un comportamiento heredado
+                    del producto original que la ataba a un registro). */}
+                <button type="button" title="Auditoría" aria-label="Auditoría" className={actionBtnCls("neutral")}>
+                  <span className="inline-flex items-center gap-1.5"><Shield size={ICON.md} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Auditoría</span></span>
+                </button>
+                {showData && (
+                  <button
+                    type="button"
+                    title="Exportar"
+                    aria-label="Exportar"
+                    onClick={() =>
+                      exportRowsToCsv(
+                        config.exportFilename,
+                        config.columnasResultado.map((c) => c.label),
+                        visibleIndices.map((i) => getCells(config.rows[i]))
+                      )
+                    }
+                    className={actionBtnCls("neutral")}
+                  >
+                    <span className="inline-flex items-center gap-1.5"><Download size={ICON.md} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Exportar</span></span>
+                  </button>
+                )}
+                {config.hasInsertar && (
+                  <button type="button" title="Insertar" aria-label="Insertar" onClick={handleAbrirAlta} className={actionBtnCls("neutral")}>
+                    <span className="inline-flex items-center gap-1.5"><Plus size={ICON.sm} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Insertar</span></span>
+                  </button>
+                )}
+              </div>
+            }
+          />
+          {showData && (
+            <TableToolbar search={search} onSearchChange={setSearch} hideExport />
+          )}
+
+          {/* Contenedor de la tabla — mx-4 mb-4 con borde propio, sin línea
+              entre él y el toolbar (proximidad, ver TableToolbar); sin datos
+              no hay toolbar y suma mt-3 para no quedar pegado al header.
+              Adentro: la línea de registro seleccionado, la tabla con
+              scroll propio y el pie de paginación. */}
+          <div className={`flex-1 min-h-0 mx-4 mb-4 flex flex-col border border-border rounded-sm overflow-hidden ${showData ? "" : "mt-3"}`}>
+          {hasSelection && (
+            <SelectionActionBar recordLabel={config.rows[selectedRow!][columnKeys[0]]} />
+          )}
+
+          {/* Header + Body — un solo <table> (thead+tbody), no dos divs
+              flex separados: así el navegador mide el ancho de cada
+              columna teniendo en cuenta header + TODAS las filas juntas
+              (mismo criterio que la Tabla 4 de Consultas de interrupción),
+              lo que además es la única forma de garantizar que header y
+              filas queden alineados en columnas shrink-to-fit — con divs
+              independientes por fila cada una mide su propio ancho por su
+              cuenta y se desalinean entre sí.
+              Cada columna de datos usa w-[1%] + whitespace-nowrap — el
+              truco estándar de CSS para "esta columna no debe crecer, se
+              achica a su contenido" en table-layout:auto (que además evita
+              el wrap a dos líneas, ej. "SAN FERNANDO" en CDS7/Zona). La
+              única columna SIN ese freno es el spacer vacío entre la
+              última columna de datos y Acciones: al ser la única sin
+              límite de ancho, absorbe ella sola todo el espacio sobrante
+              de la fila. Acciones mantiene su ancho fijo (w-40), pegada a
+              la derecha. */}
+          <div
+            ref={resultadosListRef}
+            tabIndex={showData ? 0 : -1}
+            onKeyDown={handleResultadosKeyDown}
+            className={`flex-1 min-h-0 overflow-y-auto ${FOCUS_RING_INSET}`}
+          >
+            {!showData ? (
+              <div className="flex flex-col items-center justify-center h-full gap-3 text-text-faint">
+                <Inbox size={ICON.xl} strokeWidth={1.25} />
+                <p className="text-body-lg text-text-muted mt-1">
+                  No hay resultados para los filtros aplicados
+                </p>
+                <p className="text-body-sm text-text-muted">
+                  Completá los filtros y presioná{" "}
+                  <span className="font-semibold text-secondary">Buscar</span>
+                </p>
+              </div>
+            ) : (
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-border">
+                    {config.columnasResultado.map((c, ci) => (
+                      <th key={c.key} className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left">
+                        <SortableHeaderCell
+                          label={c.label}
+                          active={sortIdx === ci}
+                          dir={sortDir}
+                          onClick={() => toggleSort(ci)}
+                        />
+                      </th>
+                    ))}
+                    <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid" />
+                    <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase text-text-muted">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleIndices.map((i) => {
+                    const row = config.rows[i];
+                    const isSelected = selectedRow === i;
+                    const isHovered = hoveredRow === i;
+                    return (
+                      <tr
+                        key={i}
+                        data-row-index={i}
+                        onClick={() => setSelectedRow(isSelected ? null : i)}
+                        onMouseEnter={() => setHoveredRow(i)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        className="border-b border-border-subtle cursor-pointer transition-colors duration-(--duration-fast)"
+                        style={{ backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined }}
+                      >
+                        {config.columnasResultado.map((c, ci) => (
+                          <td
+                            key={c.key}
+                            className={`w-[1%] whitespace-nowrap px-4 py-2.5 ${
+                              c.mono ? "text-code font-mono tabular-nums" : isSelected ? "text-body text-secondary font-medium" : "text-body text-text"
+                            }`}
+                            style={{
+                              ...(c.mono
+                                ? {
+                                    color: isSelected ? "var(--color-secondary)" : "var(--color-text)",
+                                    fontWeight: isSelected ? 600 : 400,
+                                  }
+                                : undefined),
+                              // Acento de selección en la primera celda, no
+                              // en el <tr>: con border-collapse un borde
+                              // puesto directo en la fila no renderiza de
+                              // forma confiable en todos los navegadores.
+                              borderLeft: ci === 0 ? (isSelected ? "3px solid var(--color-primary)" : "3px solid transparent") : undefined,
+                            }}
+                          >
+                            {row[c.key]}
+                          </td>
+                        ))}
+                        {/* Spacer — celda vacía, sin ancho fijo: absorbe
+                            sola todo el sobrante de la fila. */}
+                        <td />
+                        {/* Modificar/Borrar — con texto (no solo ícono,
+                            ambiguo) siempre visibles por fila, ya no atados
+                            a tener la fila seleccionada. stopPropagation:
+                            no deben togglear la selección de la fila (eso
+                            lo maneja el onClick del <tr>). */}
+                        <td className="w-40 px-4 py-2.5">
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); handleAbrirModificar(i); }}
+                              className={rowActionBtnCls("neutral")}
+                            >
+                              Modificar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); handleAbrirBorrar(i); }}
+                              className={rowActionBtnCls("destructive")}
+                            >
+                              Borrar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Footer */}
+          {showData && (
+            <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-md shrink-0 flex items-center justify-between">
+              <span className="text-body-sm text-text">
+                Registros encontrados:{" "}
+                <span className="font-semibold text-secondary">
+                  {formatNumero(config.totalRegistros)}
+                </span>
+              </span>
+              <div className="flex items-center gap-2 text-body-sm text-text-muted">
+                <button className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`} disabled>
+                  Anterior
+                </button>
+                <span>
+                  Pág. <span className="font-medium text-text">1</span> de{" "}
+                  <span className="font-medium text-text">{formatNumero(totalPages)}</span>
+                </span>
+                <button
+                  className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`}
+                  disabled={totalPages <= 1}
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          )}
+          </div>
+        </div>
+      </div>
+
+      <ConfirmarBorrarModal
+        open={filaABorrar !== null}
+        registro={filaABorrar !== null ? config.rows[filaABorrar][config.columnasResultado[0].key] : ""}
+        tabla={ABM_ITEMS.find((it) => it.screen === tableKey)?.label ?? config.titulo}
+        onCancelar={handleCancelarBorrar}
+        onConfirmar={handleConfirmarBorrar}
+      />
+      <ConfirmarModificarModal
+        open={modalModificarAbierto}
+        cambios={camposModificados}
+        onCancelar={handleCancelarConfirmarModificar}
+        onConfirmar={handleConfirmarModificar}
+      />
+    </>
+  );
+}
