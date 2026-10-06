@@ -10,6 +10,11 @@ import { BTN_SM, FOCUS_RING } from "@/components/ui/tokens";
 // contraste completo, sin hover, sin responder a clic ni teclado; el grupo
 // es enfocable una sola vez (aria-readonly) y las opciones no son
 // tabulables. `ariaLabel` nombra el grupo para el lector de pantalla.
+// Igual ancho (default): todas las opciones miden lo mismo, el ancho de la
+// más larga — contenedor inline-grid grid-flow-col auto-cols-fr, cada botón
+// w-full con el texto centrado. `igualAncho={false}` vuelve a la fila con
+// wrap: solo para listas largas de opciones que no entran en una línea
+// (ej. el Motivo de RevisarCambiosContent).
 export default function ButtonSelectGroup({
   options,
   selected,
@@ -18,6 +23,7 @@ export default function ButtonSelectGroup({
   sizeCls = BTN_SM,
   readOnly = false,
   ariaLabel,
+  igualAncho = true,
 }: {
   options: string[];
   selected: string[];
@@ -26,10 +32,13 @@ export default function ButtonSelectGroup({
   sizeCls?: string;
   readOnly?: boolean;
   ariaLabel?: string;
+  igualAncho?: boolean;
 }) {
+  const contenedorCls = igualAncho ? "inline-grid grid-flow-col auto-cols-fr gap-1.5" : "flex gap-1.5 flex-wrap";
+  const anchoOpcionCls = igualAncho ? "w-full" : "";
   if (readOnly) {
     return (
-      <div role="radiogroup" aria-readonly="true" aria-label={ariaLabel} tabIndex={0} className={`flex gap-1.5 flex-wrap rounded-sm ${FOCUS_RING}`}>
+      <div role="radiogroup" aria-readonly="true" aria-label={ariaLabel} tabIndex={0} className={`${contenedorCls} rounded-sm ${FOCUS_RING}`}>
         {options.map((opt) => {
           const isSel = selected.includes(opt);
           return (
@@ -37,7 +46,7 @@ export default function ButtonSelectGroup({
               key={opt}
               role="radio"
               aria-checked={isSel}
-              className={`${sizeCls} border shrink-0 inline-flex items-center justify-center select-none cursor-default ${
+              className={`${sizeCls} ${anchoOpcionCls} border shrink-0 inline-flex items-center justify-center select-none cursor-default ${
                 isSel ? "bg-primary-tint border-primary text-secondary" : "bg-surface border-border-strong text-text"
               }`}
             >
@@ -49,7 +58,7 @@ export default function ButtonSelectGroup({
     );
   }
   return (
-    <div className="flex gap-1.5 flex-wrap">
+    <div className={contenedorCls}>
       {options.map((opt) => {
         const isSel = selected.includes(opt);
         return (
@@ -59,7 +68,7 @@ export default function ButtonSelectGroup({
             disabled={disabled}
             aria-pressed={isSel}
             onClick={() => onToggle(opt)}
-            className={`${sizeCls} border transition-colors duration-(--duration-base) shrink-0 ${
+            className={`${sizeCls} ${anchoOpcionCls} border text-center transition-colors duration-(--duration-base) shrink-0 ${
               disabled
                 ? isSel
                   ? "bg-primary-tint/60 border-primary/50 text-text-faint cursor-not-allowed"

@@ -123,7 +123,7 @@ export default function AbmCampo({
             aria-readonly="true"
             aria-label={`${campo.label}: ${seleccionada?.label ?? "sin valor"}`}
             tabIndex={0}
-            className={`flex gap-2 ${labelExterno ? "" : "mt-0.5"} w-fit rounded-sm ${FOCUS_RING}`}
+            className={`inline-grid grid-flow-col auto-cols-fr gap-2 ${labelExterno ? "" : "mt-0.5"} rounded-sm ${FOCUS_RING}`}
           >
             {toggleOpts.map((opt) => {
               const active = v === opt.value;
@@ -132,7 +132,7 @@ export default function AbmCampo({
                   key={opt.value}
                   role="radio"
                   aria-checked={active}
-                  className={`${BTN_SEG_MD} flex items-center justify-center border select-none cursor-default ${
+                  className={`${BTN_SEG_MD} w-full flex items-center justify-center border select-none cursor-default ${
                     active ? "border-primary bg-primary-tint text-secondary" : "border-border-strong bg-surface text-text"
                   }`}
                 >
@@ -151,7 +151,12 @@ export default function AbmCampo({
           id={labelExterno?.controlId}
           role={labelExterno ? "group" : undefined}
           aria-labelledby={labelExterno?.labelId}
-          className={`flex gap-2 ${labelExterno ? "" : "mt-0.5"} ${intrinseco ? "" : "[@media(max-height:760px)]:w-full"}`}
+          // Igual ancho: todas las opciones miden lo que la más larga
+          // (inline-grid auto-cols-fr + botones w-full). Con
+          // expandirBotones, o en la grilla plana del tier 760px, el grupo
+          // ocupa todo el ancho de su celda (grid w-full) y las opciones se
+          // reparten parejo.
+          className={`${campo.expandirBotones && !intrinseco ? "grid w-full" : "inline-grid"} grid-flow-col auto-cols-fr gap-2 ${labelExterno ? "" : "mt-0.5"} ${intrinseco ? "" : "[@media(max-height:760px)]:grid [@media(max-height:760px)]:w-full"}`}
         >
           {toggleOpts.map((opt) => {
             const active = v === opt.value;
@@ -161,12 +166,9 @@ export default function AbmCampo({
                 type="button"
                 disabled={isDisabled}
                 onClick={() => onChange?.(active ? "" : opt.value)}
-                // Tier 760px: la grilla plana de AbmScreen estira TODO
-                // campo a w-full en su celda, toggles incluidos — de ahí el
-                // flex-1 incondicional en ese breakpoint (en tamaño normal
-                // sigue siendo shrink-to-fit salvo que expandirBotones lo
-                // pida explícitamente).
-                className={`${BTN_SEG_MD} ${campo.expandirBotones && !intrinseco ? "flex-1" : ""} ${intrinseco ? "" : "[@media(max-height:760px)]:flex-1"} flex items-center justify-center border select-none transition-colors duration-(--duration-base) ${
+                // w-full: llena su columna del grid del grupo (todas las
+                // columnas miden lo mismo, ver el contenedor).
+                className={`${BTN_SEG_MD} w-full flex items-center justify-center border select-none transition-colors duration-(--duration-base) ${
                   estado === "disabled" ? "cursor-not-allowed opacity-60" : isDisabled ? "cursor-default" : "cursor-pointer"
                 } ${
                   active

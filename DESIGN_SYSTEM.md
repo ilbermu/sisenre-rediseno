@@ -236,6 +236,13 @@ Vigesimocuarta pasada (también 06/10/2026):
   Modificar (CDS2) es una lista continua de `FormRow`, con el mismo ritmo y
   separador entre todas las filas.
 
+Vigesimoquinta pasada (también 06/10/2026):
+
+- **Toggles de igual ancho:** en `ButtonSelectGroup` y en el toggle de
+  `AbmCampo`, todas las opciones de un grupo miden lo que la más larga
+  (`inline-grid grid-flow-col auto-cols-fr`). El Motivo de
+  `RevisarCambiosContent` conserva la fila con wrap (`igualAncho={false}`).
+
 ## Índice
 
 **1. Fundamentos**
@@ -822,11 +829,19 @@ primario relleno en una barra de selección.
 filter bar de Consultas de interrupción, opciones de confirmación del ABM).
 
 **Anatomía:** fila de botones outline con bordes; el seleccionado usa el
-patrón tint (`bg-primary-tint border-primary text-secondary`).
+patrón tint (`bg-primary-tint border-primary text-secondary`). **Todas las
+opciones de un grupo miden lo mismo**, el ancho de la más larga
+(`inline-grid grid-flow-col auto-cols-fr`, cada botón `w-full` con el texto
+centrado). Vale igual para el toggle de `AbmCampo` (BT/MT/AT, Sí/No,
+Interno/Externo, Forzado/Programado) y para el grupo de fase R/S/T; con
+`expandirBotones` el grupo ocupa todo el ancho y las opciones se reparten
+parejo. Única excepción: `igualAncho={false}` (fila con wrap) para listas
+largas de opciones que no entran en una línea, como el Motivo de
+`RevisarCambiosContent`.
 
 **Props:** `options: string[]`, `selected: string[]`, `onToggle(opt)`,
 `disabled?`, `sizeCls?` (default `BTN_SM`; `BTN_SEG_MD` en filas de campos),
-`readOnly?`, `ariaLabel?`.
+`readOnly?`, `ariaLabel?`, `igualAncho?` (default `true`).
 
 **Estados:** reposo, hover (tint), seleccionado (tint persistente),
 deshabilitado (`fill-muted` + `text-faint`; si estaba seleccionado,

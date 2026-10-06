@@ -65,6 +65,7 @@ export default function RevisarCambiosContent({
           options={NOTA_OPCIONES}
           selected={seleccionBoton ? [seleccionBoton] : []}
           onToggle={(opt) => motivo.setNota(opt === "Otra (especificar)" ? "__manual__" : opt)}
+          igualAncho={false}
         />
         {motivo.esManual && (
           <input
