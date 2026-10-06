@@ -57,7 +57,7 @@
   --color-warning: #D97706;
 
   /* Foco */
-  --color-focus: #1565C0;
+  --color-focus: #076AEE; /* = primary-strong (4.88:1 sobre blanco) */
 
   /* Warning / alert */
   --color-warning-bg: #FFFBEB;

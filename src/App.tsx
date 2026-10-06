@@ -547,7 +547,16 @@ function fechaEnRango(d: Date | null, r: RangoFecha | null): boolean {
   return true;
 }
 
-const FILTER_FOCUS_CLS = "focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2";
+// Foco del sistema (ver DESIGN_SYSTEM.md, "Foco"):
+//   FOCUS_RING        → anillo de un control (botón, trigger, link).
+//   FOCUS_RING_INSET  → mismo anillo hacia adentro, para elementos que tocan
+//                       el borde de su contenedor (filas, secciones, listas
+//                       navegables): el overflow del padre no lo recorta.
+//   FIELD_FOCUS       → estado de foco de un CAMPO (input, select, textarea):
+//                       borde + halo, distinto del anillo de un control.
+const FOCUS_RING = "focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2";
+const FOCUS_RING_INSET = "focus-visible:outline-2 focus-visible:outline-focus focus-visible:-outline-offset-2";
+const FIELD_FOCUS = "focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10";
 
 // Trigger compartido por las dos variantes. Reposo: sin borde ni fondo,
 // hover = hover secundario de la app (el de actionBtnCls). Abierto:
@@ -578,7 +587,7 @@ function FilterTriggerButton({
         aria-expanded={open}
         disabled={disabled}
         onClick={onToggle}
-        className={`h-8 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-all disabled:text-text-faint disabled:cursor-not-allowed disabled:pointer-events-none ${FILTER_FOCUS_CLS} ${
+        className={`h-8 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-all disabled:text-text-faint disabled:cursor-not-allowed disabled:pointer-events-none ${FOCUS_RING} ${
           open
             ? "bg-primary-tint border-primary text-secondary"
             : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
@@ -597,7 +606,7 @@ function FilterTriggerButton({
         aria-expanded={open}
         disabled={disabled}
         onClick={onToggle}
-        className={`h-full pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 whitespace-nowrap disabled:cursor-not-allowed ${FILTER_FOCUS_CLS}`}
+        className={`h-full pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 whitespace-nowrap disabled:cursor-not-allowed ${FOCUS_RING}`}
       >
         {label}: <span className="tabular-nums">{aplicado}</span>
         {chevron}
@@ -607,7 +616,7 @@ function FilterTriggerButton({
         aria-label={`Quitar filtro ${label}`}
         disabled={disabled}
         onClick={onClear}
-        className={`h-full px-1.5 rounded-sm inline-flex items-center disabled:cursor-not-allowed ${FILTER_FOCUS_CLS}`}
+        className={`h-full px-1.5 rounded-sm inline-flex items-center disabled:cursor-not-allowed ${FOCUS_RING}`}
       >
         <X size={12} strokeWidth={1.5} />
       </button>
@@ -1368,7 +1377,7 @@ function TableToolbar({
         placeholder={searchPlaceholder}
         aria-label={searchPlaceholder.replace(/…$/, "")}
         disabled={disabled}
-        className="w-full h-8 pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150 disabled:bg-fill-muted disabled:text-text-faint disabled:placeholder:text-text-faint disabled:cursor-not-allowed"
+        className={`w-full h-8 pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted ${FIELD_FOCUS} transition-all duration-150 disabled:bg-fill-muted disabled:text-text-faint disabled:placeholder:text-text-faint disabled:cursor-not-allowed`}
       />
     </div>
   );
@@ -2535,7 +2544,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     }
   }
 
-  const inputCls = "w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-border-strong rounded-sm bg-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";
+  const inputCls = `w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-border-strong rounded-sm bg-surface ${FIELD_FOCUS} transition-all`;
   const inputStyle: React.CSSProperties = { letterSpacing: "0.14px" };
   const labelStyle: React.CSSProperties = { letterSpacing: "0.14px" };
 
@@ -3228,7 +3237,7 @@ function ConfirmarModificarModal({
               value={notaManual}
               onChange={(e) => setNotaManual(e.target.value)}
               placeholder="Escribí el motivo de la modificación"
-              className="mt-2 w-full h-9 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10"
+              className={`mt-2 w-full h-9 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted ${FIELD_FOCUS}`}
             />
           )}
         </div>
@@ -3246,11 +3255,11 @@ const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
 // existían por separado como inputCls/selectCls, ya unificadas acá).
 const MOD_FIELD_CLS =
   "w-full h-8 px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text " +
-  "placeholder:text-text-muted focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150";
+  "placeholder:text-text-muted " + FIELD_FOCUS + " transition-all duration-150";
 
 const MOD_SELECT_CLS =
   "h-8 px-2.5 pr-7 text-body bg-surface border border-border-strong rounded-sm text-text appearance-none " +
-  "cursor-pointer focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150 shrink-0";
+  "cursor-pointer " + FIELD_FOCUS + " transition-all duration-150 shrink-0";
 
 // Campos del flyout "Más filtros" de la Card A. Cada uno se puede aplicar,
 // mostrar como chip removible debajo de la filter bar, y contar para el
@@ -3707,7 +3716,7 @@ function ReposicionesLista({
         aria-label="Reposiciones"
         tabIndex={rows.length > 0 ? 0 : -1}
         onKeyDown={handleKeyDown}
-        className="min-h-0 overflow-y-auto overflow-x-hidden outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+        className={`min-h-0 overflow-y-auto overflow-x-hidden ${FOCUS_RING_INSET}`}
       >
         {rows.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
@@ -3807,7 +3816,7 @@ function RelacionadaChip({
       type="button"
       onClick={onClick}
       aria-label={booleana ? `${nombre}: ${valor}, abrir` : `${nombre}: ${valor} registros, abrir`}
-      className={`${baseCls} bg-surface border-border hover:bg-primary-tint hover:border-primary active:bg-chip-border-hover transition-[background-color,border-color] duration-[120ms] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2`}
+      className={`${baseCls} bg-surface border-border hover:bg-primary-tint hover:border-primary active:bg-chip-border-hover transition-[background-color,border-color] duration-[120ms] ${FOCUS_RING}`}
     >
       {etiqueta}
       <span className="w-0 min-w-full text-body-lg whitespace-nowrap font-medium text-secondary">{valor}</span>
@@ -4416,7 +4425,7 @@ function FaseReposicionFicha({
           onClick={handleCopiarDatosReposicion}
           aria-label="Copiar datos de la reposición"
           title="Copiar datos de la reposición"
-          className="w-8 h-8 flex items-center justify-center rounded-sm border border-transparent text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 transition-all shrink-0"
+          className={`w-8 h-8 flex items-center justify-center rounded-sm border border-transparent text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary ${FOCUS_RING} transition-all shrink-0`}
         >
           <ClipboardList size={14} strokeWidth={1.5} />
         </button>
@@ -5351,7 +5360,7 @@ function ModificarContent({
               ref={modListRef}
               tabIndex={modShowData ? 0 : -1}
               onKeyDown={handleModListKeyDown}
-              className="min-h-0 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+              className={`min-h-0 overflow-y-auto ${FOCUS_RING_INSET}`}
             >
               {!modShowData ? (
                 <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-8">
@@ -7533,7 +7542,7 @@ function AbmScreen({
             ref={resultadosListRef}
             tabIndex={showData ? 0 : -1}
             onKeyDown={handleResultadosKeyDown}
-            className="flex-1 min-h-0 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+            className={`flex-1 min-h-0 overflow-y-auto ${FOCUS_RING_INSET}`}
           >
             {!showData ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-text-faint">
@@ -8561,7 +8570,7 @@ export default function App() {
                     onClick={irAInicio}
                     aria-label="Inicio"
                     title="Inicio"
-                    className="flex items-center rounded-xs text-text-muted hover:text-text transition-colors focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
+                    className={`flex items-center rounded-xs text-text-muted hover:text-text transition-colors ${FOCUS_RING}`}
                   >
                     <Home size={14} strokeWidth={1.5} aria-hidden />
                   </button>
