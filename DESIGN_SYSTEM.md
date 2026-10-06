@@ -70,6 +70,19 @@ Sexta pasada (también 06/10/2026):
 - **Este documento:** reorganizado en Fundamentos / Componentes / Patrones;
   la narrativa histórica pasó a `docs/PROGRESO.md`.
 
+Séptima pasada (también 06/10/2026):
+
+- **Header de card con anatomía fija:** token `--card-header-h` (56 / 48 /
+  44px por tier); `CardHeader` con alto fijo, línea siempre (salvo
+  `level="section"`), `px-(--card-px)` y una sola línea con el contexto
+  inline (`context: { label, value }`). Se eliminaron las props `divider`,
+  `padX`, `chrome`, `subtitle` y `reserveSubtitle`, y el token
+  `--card-header-py`.
+- **Cuerpos de card:** pasan a `px-(--card-px)` (paneles ABM, Exportación,
+  Consolidación, Filtros, Notas) para alinear con el header.
+- **`Modal`:** sin `headerExtra`, su línea de título usa `--card-header-h` y
+  `--card-px`.
+
 ## Índice
 
 **1. Fundamentos**
@@ -595,72 +608,59 @@ el lenguaje de la acción primaria).
 
 ## CardHeader
 
-**Para qué:** el header de toda card y de toda sección de card. Ningún
-header se arma a mano.
+**Para qué:** el header de card — de toda card y de toda sección de card,
+y la referencia del header de `Modal`. Ningún header se arma a mano.
 
-**Anatomía:**
-
-```
-┌──────────────────────────────────────────────────────────┐
-│ Título [CDS4]                                   [acciones]│
-│ subtítulo en gris, con el ID en mono                      │
-└──────────────────────────────────────────────────────────┘
-```
-
-Con `divider` (header de una card con secciones) se suma la línea inferior:
+**Anatomía fija** — una sola línea, alto por token, línea siempre:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Título [CDS4]                                   [acciones]│  py-(--card-header-py)
-│ subtítulo en gris, con el ID en mono                      │
-├──────────────────────────────────────────────────────────┤  divisor, siempre visible
+│ Título [CDS4] · ETIQUETA valor-en-mono          [acciones]│  h-(--card-header-h), px-(--card-px)
+├──────────────────────────────────────────────────────────┤  border-b border-border, siempre
 ```
 
 | Slot | Prop | Tokens | Contenido |
 |---|---|---|---|
-| Título | `title` | `text-heading-md text-text` (`heading-sm` con `level="section"`) | Nombre de la card. Una línea, trunca |
+| Título | `title` | `text-heading-md text-text` (`heading-sm` con `level="section"`) | Nombre de la card. No trunca |
 | Badge | `tag` | `CodeBadge` | Código de origen (CDS2, CDS4…), **en línea con el título**. Opcional |
-| Subtítulo | `subtitle` | `text-body-sm text-text-muted`; IDs y fechas en `text-code font-mono` | Contexto de los datos, debajo del título. Opcional |
-| Acciones | `actions` | botones `actionBtnCls` / `BTN_MD` | A la derecha, centradas en vertical. Opcional |
+| Contexto | `context: { label, value }` | "·" en `text-text-faint`; etiqueta `text-heading-xs uppercase text-text-muted`; valor `text-code font-mono text-text-muted` | En la **misma línea**, después del título. Trunca antes que el título. Opcional |
+| Acciones | `actions` | botones `actionBtnCls` / `BTN_MD` | A la derecha (`ml-auto`), centradas en vertical. Opcional |
 
-**Props:** `title`, `tag?`, `subtitle?`, `reserveSubtitle?`, `actions?`,
-`padX?` (default `px-4`), `divider?`, `chrome?`, `level?` (`"card"` |
+**Props:** `title`, `tag?`, `context?`, `actions?`, `level?` (`"card"` |
 `"section"`).
 
-- **Sin fondo.** Sin `divider` no lleva línea: la separación la da el
-  espaciado (`pt-3 pb-2`) y el alto sale del contenido.
-- **Badge en línea, derecha solo para acciones.** No hay variante con el
-  badge a la derecha.
-- **Mismo padding horizontal que el cuerpo de la card.** Con `chrome`, todo
-  sale de las variables de chrome: `px-(--card-px)` (pisa `padX`),
-  `py-(--card-header-py)` con `divider` y `pt-(--card-section-py)` en
-  `level="section"`. Sin `chrome`, `padX` iguala el padding del cuerpo
-  (`px-5` en los paneles del ABM y Notas, `px-6` en Exportación,
-  Consolidación y Filtros).
-- **Cuándo lleva subtítulo:** cuando los datos de la card dependen de algo
+| Token | > 900px de alto | ≤ 900px | ≤ 760px |
+|---|---|---|---|
+| `--card-header-h` (alto) | 56px | 48px | 44px |
+| `--card-px` (padding horizontal, header y cuerpo) | 24px | `calc(var(--spacing) * 4)` ≈ 13.6px | `calc(var(--spacing) * 4)` ≈ 12.8px |
+
+- **Ningún header define su alto o su padding a mano.** Alto
+  `h-(--card-header-h)` sin padding vertical, contenido centrado;
+  `px-(--card-px)` siempre. Así dos cards lado a lado (Interrupciones y
+  Reposiciones) tienen exactamente el mismo alto, con o sin contexto.
+- **Línea siempre** (`border-b border-border`) en `level="card"`. Con
+  `level="section"` (Reclamos durante la interrupción, Tablas relacionadas)
+  el header tiene el mismo alto y padding, título en `heading-sm` y **sin**
+  línea: la sección ya se separa con su `border-t`.
+- **El cuerpo de la card usa el mismo `px-(--card-px)`** para alinear con el
+  header; su padding vertical es propio de cada card.
+- **Sin fondo.** El header es transparente y deja ver el radio de la card.
+- **Badge en línea, derecha solo para acciones.**
+- **Cuándo lleva contexto:** cuando los datos de la card dependen de algo
   que no está a la vista en la propia card — el **registro padre**
-  ("INTERRUPCIÓN SELECCIONADA `AFZ…`" en Reposiciones, "Interrupción
-  `AFZ…`" en Reclamos; "REPOSICIÓN `1 de 5 · 22/07/2026 14:50`" en Tablas
-  relacionadas) o el **alcance** de lo que se muestra cuando no hay un
-  toolbar donde ponerlo. No lleva subtítulo si solo repetiría el título.
-- **Cómo se escribe el subtítulo:** en minúsculas, sin "·" inicial; el "·"
-  solo separa fragmentos. Un ID, una referencia o una fecha va en
-  `text-code font-mono`. En las cards con secciones el registro padre va
-  como `SubtituloEtiquetado` (etiqueta `text-heading-xs uppercase` + valor
-  `text-code font-mono`).
-- **`reserveSubtitle`:** reserva la línea aunque todavía no haya nada que
-  mostrar, para que el header no cambie de alto cuando el subtítulo aparece
-  y dos cards lado a lado queden alineadas.
+  ("· INTERRUPCIÓN `AFZ…`" en Reposiciones y en Reclamos; "· REPOSICIÓN
+  `1 de 5 · 22/07/2026 14:50`" en Tablas relacionadas). Sin registro, no se
+  muestra (el alto no cambia). No lleva contexto si solo repetiría el título.
 
 **Estados:** sin estados propios. Dentro de una sección clickeable (patrón
 stretched button) hereda el hover de la sección porque es transparente.
 
-**Accesibilidad:** la línea reservada vacía lleva `aria-hidden`. Las
-acciones son botones con texto o `aria-label`.
+**Accesibilidad:** el "·" separador es `aria-hidden`. Las acciones son
+botones con texto o `aria-label`.
 
-**Qué no hacer:** acciones sobre el registro seleccionado en `actions` (solo
-alcance tabla: Insertar, Exportar, Auditoría); badge a la derecha; fondo
-propio.
+**Qué no hacer:** alto o padding propios; un subtítulo en segunda línea;
+acciones sobre el registro seleccionado en `actions` (solo alcance tabla:
+Insertar, Exportar, Auditoría); badge a la derecha; fondo propio.
 
 **Archivo:** `src/components/ui/CardHeader.tsx`.
 
@@ -851,7 +851,9 @@ contenedores con borde).
 `rounded-xl shadow-lg` (`--z-modal`). Header transparente con
 `border-b border-border` — el mismo tratamiento que `CardHeader`, en todos
 los modales por igual —, título `text-heading-md` + subtítulo mono
-opcional + cerrar (`ICON_BTN_SM`). Body `bg-surface` con `p-5` que crece
+opcional + cerrar (`ICON_BTN_SM`). Sin `headerExtra`, la línea del título
+usa los tokens de `CardHeader`: alto `h-(--card-header-h)` sin padding
+vertical y `px-(--card-px)`. Body `bg-surface` con `p-5` que crece
 con el contenido y scrollea hasta el tope de alto. Footer con botones a la
 derecha (`modalNeutralBtnCls` + `modalPrimaryBtnCls`).
 
@@ -859,8 +861,9 @@ derecha (`modalNeutralBtnCls` + `modalPrimaryBtnCls`).
 `"lg"` 920 / `"xl"` 1120), `footer?`, `children`, y para extenderlo sin
 tocar a los demás:
 - **`headerExtra`**: segunda línea dentro del bloque del header (ej.
-  "Interrupción `<ref>`" + `CopyButton`). Con ella, el título pasa a
-  `pt-3.5 pb-0` y `headerExtra` aporta `mt-0.5 pb-3.5`.
+  "Interrupción `<ref>`" + `CopyButton`). Con ella, la línea del título
+  no usa el alto fijo: va `px-5 pt-3.5 pb-0` y `headerExtra` aporta
+  `mt-0.5 pb-3.5`.
 - **`bodyPadding={false}`**: saca el `p-5` del body (layouts propios de
   borde a borde).
 - **`bodyOverflow="hidden"`** (default `"auto"`): el body deja de
@@ -1125,9 +1128,8 @@ dividido en franjas por líneas `border-border` a todo el ancho.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Título (heading-md) [CDS4]                   [acciones]  │  header
-│ ETIQUETA (heading-xs) valor-en-mono                      │
-├──────────────────────────────────────────────────────────┤  divisor del header (siempre)
+│ Título (heading-md) [CDS4] · ETIQUETA valor  [acciones] │  header (alto fijo --card-header-h)
+├──────────────────────────────────────────────────────────┤  línea del header (siempre)
 │ [Buscar referencia…] | Fecha ▾              40 de 40 reg. │  toolbar (siempre; sin datos: deshabilitado, "0 registros")
 ├──────────────────────────────────────────────────────────┤  línea superior de la tabla
 │ COLUMNA           COLUMNA                    (fill-subtle)│  thead
@@ -1140,7 +1142,7 @@ dividido en franjas por líneas `border-border` a todo el ancho.
 └──────────────────────────────────────────────────────────┘
 ```
 
-- **Header de card:** `CardHeader` con `divider` y `chrome` — título
+- **Header de card:** `CardHeader` — título
   `heading-md` con el badge CDS en línea, acciones (si hay) a la derecha,
   línea inferior a todo el ancho, siempre visible.
 - **Toolbar siempre presente:** se renderiza aunque no haya resultados.
@@ -1242,7 +1244,7 @@ comparar columnas u ordenarlas, va tabla.
 
 - **Registro seleccionado:** fila resaltada en su tabla
   (`bg-primary-tint` + `inset-shadow-row-selected`). En paneles que muestran
-  datos hijos de ese registro, el registro va como subtítulo del header
+  datos hijos de ese registro, el registro va como contexto del header
   (ej. "Interrupción `<ref>`").
 - **Detalle:** se abre desde la sección de detalle clickeable (ej.
   `ReclamosResumenCompacto` → "Datos de la interrupción"), sin un botón
@@ -1283,7 +1285,6 @@ el **chrome** de los **datos**:
 | Variable | Qué controla | > 900px de alto | ≤ 900px y ≤ 760px |
 |---|---|---|---|
 | `--card-px` | padding horizontal de card (header, toolbar, extremos de tabla, paginador, secciones) | 24px | `calc(var(--spacing) * 4)` |
-| `--card-header-py` | padding vertical del header con divisor | 16px | `calc(var(--spacing) * 3)` |
 | `--card-section-py` | aire superior de una sección y inferior de su cuerpo | 20px | `calc(var(--spacing) * 3)` |
 | `--page-px` | padding horizontal de la página | 32px | `calc(var(--spacing) * 5)` |
 | `--page-pt` | padding superior (e inferior) de la página | 24px | `calc(var(--spacing) * 5)` |
