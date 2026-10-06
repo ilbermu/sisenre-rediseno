@@ -512,14 +512,16 @@ Tokens de z-index por rol, `z-(--z-…)`:
 | Token | Valor | Elementos |
 |---|---|---|
 | `--z-sticky` | 10 | `th` sticky de tablas, contenido sobre el pill del sidebar |
-| `--z-dropdown` | 30 | dropdowns, popovers, flyouts, filter bar con flyout |
+| `--z-raised` | 20 | filter bar de Consultas de interrupción y backdrop del flyout "Más filtros" |
+| `--z-dropdown` | 30 | dropdowns, popovers, flyouts (el menú del sidebar colapsado queda siempre sobre el filter bar) |
 | `--z-overlay` | 40 | scrim de modales |
 | `--z-modal` | 50 | panel de modal |
 | `--z-toast` | 60 | notificaciones (sin uso todavía) |
 | `--z-tooltip` | 70 | tooltip del sidebar |
 
-El backdrop del flyout "Más filtros" (`z-20`) queda entre `sticky` y
-`dropdown` y no tiene token: es la única capa fuera de la escala.
+El flyout "Más filtros" (`dropdown`) queda sobre su backdrop y sobre el
+filter bar (`raised`); el backdrop está en la misma capa que el filter bar y,
+por ir después en el DOM, lo cubre mientras el flyout está abierto.
 
 ## Movimiento
 

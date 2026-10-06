@@ -5106,7 +5106,7 @@ function ModificarContent({
             sola fila + flyout "Más filtros" anclado a la derecha. */}
         <div className="relative shrink-0">
           <div className="relative">
-            <div className="relative z-(--z-dropdown) flex items-center gap-2 [@media(max-height:760px)]:flex-wrap">
+            <div className="relative z-(--z-raised) flex items-center gap-2 [@media(max-height:760px)]:flex-wrap">
             {/* Ancho fijo (no crece a ocupar el sobrante) para que se vea
                 proporcionado contra Nivel/Fase — 190px en tamaño normal,
                 bastante más chico en tier 760px vía el `!` important de
@@ -5206,7 +5206,7 @@ function ModificarContent({
                 contiene los chips) para que su posición no se vea afectada
                 por si hay o no una fila de chips debajo. */}
             {flyoutOpen && (
-              <div className="fixed inset-0 z-20" onClick={() => setFlyoutOpen(false)} />
+              <div className="fixed inset-0 z-(--z-raised)" onClick={() => setFlyoutOpen(false)} />
             )}
 
             {/* Flyout "Más filtros" */}
