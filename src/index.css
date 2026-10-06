@@ -159,7 +159,8 @@
 
   /* Capas (z-index) — por rol; usar z-(--z-…) */
   --z-sticky: 10; /* headers de tabla sticky, contenido que debe quedar sobre un pill */
-  --z-raised: 20; /* filter bar con flyout y su backdrop: sobre sticky, bajo dropdowns */
+  --z-dismiss: 15; /* backdrops que cierran un panel con clic afuera sin tapar la barra que lo abrió */
+  --z-raised: 20; /* filter bar con flyout: sobre sticky y dismiss, bajo dropdowns */
   --z-dropdown: 30; /* dropdowns, popovers, flyouts */
   --z-overlay: 40; /* scrim de modales */
   --z-modal: 50; /* paneles de modal */

@@ -527,16 +527,18 @@ Tokens de z-index por rol, `z-(--z-…)`:
 | Token | Valor | Elementos |
 |---|---|---|
 | `--z-sticky` | 10 | `th` sticky de tablas, contenido sobre el pill del sidebar |
-| `--z-raised` | 20 | filter bar de Consultas de interrupción y backdrop del flyout "Más filtros" |
+| `--z-dismiss` | 15 | backdrops que cierran un panel con clic afuera sin tapar la barra que lo abrió (flyout "Más filtros") |
+| `--z-raised` | 20 | filter bar de Consultas de interrupción |
 | `--z-dropdown` | 30 | dropdowns, popovers, flyouts (el menú del sidebar colapsado queda siempre sobre el filter bar) |
 | `--z-overlay` | 40 | scrim de modales |
 | `--z-modal` | 50 | panel de modal |
 | `--z-toast` | 60 | notificaciones (sin uso todavía) |
 | `--z-tooltip` | 70 | tooltip del sidebar |
 
-El flyout "Más filtros" (`dropdown`) queda sobre su backdrop y sobre el
-filter bar (`raised`); el backdrop está en la misma capa que el filter bar y,
-por ir después en el DOM, lo cubre mientras el flyout está abierto.
+El flyout "Más filtros" (`dropdown`) queda sobre el filter bar (`raised`),
+y su backdrop (`dismiss`) queda debajo del filter bar: con el flyout abierto
+los controles del filter bar siguen siendo clickeables y un clic en las
+cards lo cierra.
 
 ## Movimiento
 

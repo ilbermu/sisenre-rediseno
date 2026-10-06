@@ -5205,7 +5205,7 @@ function ModificarContent({
                 contiene los chips) para que su posición no se vea afectada
                 por si hay o no una fila de chips debajo. */}
             {flyoutOpen && (
-              <div className="fixed inset-0 z-(--z-raised)" onClick={() => setFlyoutOpen(false)} />
+              <div className="fixed inset-0 z-(--z-dismiss)" onClick={() => setFlyoutOpen(false)} />
             )}
 
             {/* Flyout "Más filtros" */}
