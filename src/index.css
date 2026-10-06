@@ -35,6 +35,10 @@
   --color-viz-milestone-muted: color-mix(in srgb, var(--color-viz-milestone) 70%, white); /* hito fuera del 80% */
   --color-viz-tick: var(--color-neutral-300); /* marcas del eje de horas */
 
+  /* Gradiente de marca (avatares) — ver @utility bg-brand-gradient */
+  --color-brand-gradient-from: #1565C0;
+  --color-brand-gradient-to: #1E3A8A;
+
   /* Superficies */
   --color-bg-app: #FAFAFA; /* fondo de página y sidebar */
   --color-surface: #FFFFFF; /* cards, modales, popovers, dropdowns */
@@ -358,6 +362,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
  * (th de tabla): con el relleno translúcido se vería pasar por debajo el
  * contenido que scrollea.
  */
+@utility bg-brand-gradient {
+  background: linear-gradient(135deg, var(--color-brand-gradient-from), var(--color-brand-gradient-to));
+}
+
 /* Texto en mayúsculas sobre tokens que no son heading-xs (que ya lleva su
    tracking en el token): mayúsculas + 0.06em. Nunca tracking arbitrario. */
 @utility caps {

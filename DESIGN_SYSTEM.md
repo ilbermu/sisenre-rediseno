@@ -31,6 +31,18 @@ independiente):
 10. **Limpieza:** comentario de botones, Inter sin peso 700, nombre del
     paquete `sisenre`.
 
+Segunda pasada (también 06/10/2026):
+
+- **Capas:** `--z-raised` (20) para el filter bar y el backdrop del flyout.
+- **Botones de ícono:** `ICON_BTN_SM` / `ICON_BTN_MD` (`size-(--control-*)`).
+- **Movimiento reducido:** la app va dentro de `<MotionConfig
+  reducedMotion="user">`.
+- **Rojos:** `--color-error-bg-subtle` y `--color-error-border-subtle`
+  reemplazan `red-50` / `red-200`.
+- **Mayúsculas:** utilidad `caps`; sin `tracking-[…]` arbitrario.
+- **Gradiente de marca:** `--color-brand-gradient-from/to` y `bg-brand-gradient`.
+- **Limpieza:** comentario de `ReclamosTimeline` sin hex de referencia.
+
 ## Tipografía
 
 Escala única, definida en `@theme` de `src/index.css`. Cada token es

@@ -1096,8 +1096,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
         className={`w-full flex items-center gap-2 rounded-sm px-1.5 py-1.5 transition-colors hover:bg-fill-muted ${open ? "bg-fill-muted" : ""}`}
       >
         <div
-          className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-label text-white"
-          style={{ background: "linear-gradient(135deg,#1565C0,#1E3A8A)" }}
+          className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-label text-white bg-brand-gradient"
         >
           R
         </div>
@@ -3864,19 +3863,15 @@ function RelacionadaChip({
 // de Modificar interrupción, debajo de su tabla (ReclamosResumenCompacto),
 // que abre ese modal.
 //
-// Fuente de verdad visual: _ref/_ref_grafico_reclamos_timeline.html —
-// estructura (header + chip DURACIÓN → KPIs → pista → INICIO/FIN),
-// tipografía, espaciados y coordenadas Y del SVG replicados de ahí. Hex de
-// la referencia → tokens:
-//   #5A6B7A / #8A99A8 / #9AA8B5 / #BCC7D2 (textos) → text-muted
-//   #D9E2EC → border (borde de la card) · #DCE5EE → viz-track (pista del SVG)
-//   #1D558C → secondary (primer reclamo, valores) · #4D97FA → primary (banda)
-//   #EAF1FC / #C6DCFA → primary-tint / chip-border (chip de duración)
-//   #8FA6BE → viz-milestone (hito dentro del 80%) · #AEC0D3 → viz-milestone-muted (fuera)
-//   (pista, marcas e hitos son geometría del gráfico: usan los tokens
-//   --color-viz-* de index.css, sobre la escala neutral)
-//   #5F84A8 (rótulo del chip) y #7FA8DB (rótulo de la banda) no tienen token:
-//   se arman con color-mix sobre secondary / primary.
+// Estructura: header + chip DURACIÓN → KPIs → pista → INICIO/FIN. Colores
+// por token:
+//   textos → text-muted · borde de la card → border
+//   pista → viz-track · hito dentro del 80% → viz-milestone · fuera →
+//   viz-milestone-muted · marcas de hora → viz-tick (geometría del gráfico:
+//   tokens --color-viz-* de index.css, sobre la escala neutral)
+//   primer reclamo y valores → secondary · banda de densidad → primary
+//   chip de duración → primary-tint / chip-border
+//   rótulos del chip y de la banda → color-mix sobre secondary / primary.
 // La X no sale de un viewBox fijo: el viewBox usa el ancho real medido, la
 // pista va de x=8 a ancho−8 y cada reclamo se ubica proporcional a su
 // tiempo desde el inicio — así la separación mínima de 5px es en px reales.
@@ -8409,8 +8404,7 @@ export default function App() {
               title="Expandir"
             >
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-heading-sm text-white"
-                style={{ background: "linear-gradient(135deg,#1565C0,#1E3A8A)" }}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-heading-sm text-white bg-brand-gradient"
               >E</div>
             </button>
           )}
