@@ -108,6 +108,7 @@
   --text-heading-xs: 11px;
   --text-heading-xs--line-height: 16px;
   --text-heading-xs--font-weight: 600;
+  --text-heading-xs--letter-spacing: 0.06em; /* mayúsculas: el tracking va en el token */
 
   --text-body-lg: 14px;
   --text-body-lg--line-height: 20px;

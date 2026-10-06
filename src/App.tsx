@@ -349,7 +349,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 function SectionDivider({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-2.5 mb-3 mt-1">
-      <span className="text-heading-xs uppercase tracking-[0.09em] text-text-muted whitespace-nowrap select-none">
+      <span className="text-heading-xs uppercase text-text-muted whitespace-nowrap select-none">
         {title}
       </span>
       <div className="flex-1 h-px bg-border" />
@@ -464,7 +464,7 @@ function PeriodSelector() {
           style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           <div className="px-3 py-2.5 border-b border-border-subtle">
-            <p className="text-heading-xs text-text-muted uppercase tracking-[0.08em] select-none">Seleccioná el período</p>
+            <p className="text-heading-xs text-text-muted uppercase select-none">Seleccioná el período</p>
           </div>
           <div className="p-1.5 flex flex-col gap-0.5">
           {PERIODS.map((p) => (
@@ -752,7 +752,7 @@ function FilterDateRangePanel({
     { label: "Últimos 7 días", rango: () => { const n = new Date(); return [new Date(n.getTime() - 7 * 24 * 3600_000), n]; } },
   ];
 
-  const rotuloCls = "block mb-1 text-heading-xs uppercase tracking-[0.08em] text-text-muted";
+  const rotuloCls = "block mb-1 text-heading-xs uppercase text-text-muted";
   const extremo = (nombre: "Desde" | "Hasta", fecha: string, setFecha: (v: string) => void, hora: string, setHora: (v: string) => void) => (
     <div>
       <span className={rotuloCls}>{nombre}</span>
@@ -1281,7 +1281,7 @@ function SortableHeaderCell({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1 text-heading-xs uppercase tracking-[0.07em] select-none cursor-pointer transition-colors hover:text-text ${
+      className={`flex items-center gap-1 text-heading-xs uppercase select-none cursor-pointer transition-colors hover:text-text ${
         active ? "text-secondary" : "text-text-muted"
       } ${className}`}
     >
@@ -1308,7 +1308,7 @@ function SortableTh({
   onClick: () => void;
 }) {
   return (
-    <th className="sticky top-0 z-10 bg-fill-subtle-solid border-b border-border px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] select-none whitespace-nowrap">
+    <th className="sticky top-0 z-10 bg-fill-subtle-solid border-b border-border px-4 py-3 text-left text-heading-xs uppercase select-none whitespace-nowrap">
       <button
         type="button"
         onClick={onClick}
@@ -1571,7 +1571,7 @@ function Modal({
 function ListBox({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col border border-border rounded-md overflow-hidden" style={{ height: 160 }}>
-      <div className="px-3 py-2 border-b border-border bg-fill-subtle rounded-t-md text-heading-xs uppercase tracking-[0.07em] text-text-muted shrink-0">
+      <div className="px-3 py-2 border-b border-border bg-fill-subtle rounded-t-md text-heading-xs uppercase text-text-muted shrink-0">
         {title}
       </div>
       <div className="flex-1 overflow-y-auto p-2">{children}</div>
@@ -1883,7 +1883,7 @@ function CambiaFasesModal({
           <thead>
             <tr className="bg-fill-subtle border-b border-border">
               {["Fase", "Fecha", "Id elemento", "Tipo elemento", "Cadena", "Cliente"].map((c) => (
-                <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted select-none whitespace-nowrap">
+                <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase text-text-muted select-none whitespace-nowrap">
                   {c}
                 </th>
               ))}
@@ -1988,7 +1988,7 @@ function AltaClientesModal({
           <thead>
             <tr className="bg-fill-subtle border-b border-border">
               {["Interrupción", "Repo", "Cadena/Cuenta", "Clientes T4", "Clientes T6", "Clientes T9", "Clientes T10"].map((c) => (
-                <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted select-none whitespace-nowrap">
+                <th key={c} className="px-4 py-3 text-left text-heading-xs uppercase text-text-muted select-none whitespace-nowrap">
                   {c}
                 </th>
               ))}
@@ -2171,7 +2171,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="border border-border rounded-md overflow-hidden" style={{ height: 160 }}>
             <div className="grid grid-cols-3 bg-fill-subtle rounded-t-md border-b border-border">
               {["Campo 1", "Campo 2", "Campo 3"].map((c) => (
-                <div key={c} className="px-3 py-2 text-heading-xs uppercase tracking-[0.07em] text-text-muted">
+                <div key={c} className="px-3 py-2 text-heading-xs uppercase text-text-muted">
                   {c}
                 </div>
               ))}
@@ -2400,7 +2400,7 @@ function IntercambioModal({
               <thead>
                 <tr className="bg-fill-subtle border-b border-border">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
-                    <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted whitespace-nowrap">
+                    <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase text-text-muted whitespace-nowrap">
                       {c}
                     </th>
                   ))}
@@ -2482,7 +2482,7 @@ function IntercambioModal({
               <thead>
                 <tr className="bg-fill-subtle border-b border-border">
                   {["Fecha", "Clientes", "Repo"].map((c) => (
-                    <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted whitespace-nowrap">
+                    <th key={c} className="px-3 py-2 text-left text-heading-xs uppercase text-text-muted whitespace-nowrap">
                       {c}
                     </th>
                   ))}
@@ -2900,7 +2900,7 @@ function CronogramaEnre() {
 
           <div className="border-t border-border my-3" />
 
-          <p className="text-heading-xs uppercase tracking-[0.07em] text-text-muted mb-2">Fechas clave</p>
+          <p className="text-heading-xs uppercase text-text-muted mb-2">Fechas clave</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <FieldLabel>Entrega de tablas</FieldLabel>
@@ -2941,7 +2941,7 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
       </div>
 
       {/* Quick access */}
-      <p className="text-heading-xs uppercase tracking-[0.09em] text-text-muted mb-3">Accesos frecuentes</p>
+      <p className="text-heading-xs uppercase text-text-muted mb-3">Accesos frecuentes</p>
       <div className="grid grid-cols-2 gap-4 mb-8" style={{ maxWidth: 760 }}>
         {quickLinks.map((item) => (
           <div
@@ -2968,7 +2968,7 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
       </div>
 
       {/* Cronograma ENRE */}
-      <p className="text-heading-xs uppercase tracking-[0.09em] text-text-muted mb-3">Cronograma ENRE</p>
+      <p className="text-heading-xs uppercase text-text-muted mb-3">Cronograma ENRE</p>
       <CronogramaEnre />
     </div>
   );
@@ -2985,7 +2985,7 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-heading-xs uppercase tracking-[0.05em] text-text-muted mb-1 truncate">{label}</p>
+      <p className="text-heading-xs uppercase text-text-muted mb-1 truncate">{label}</p>
       <div className="h-(--control-sm) px-2 flex items-center text-body-sm bg-fill-muted border border-border rounded-sm text-text truncate">
         {value || " "}
       </div>
@@ -3209,7 +3209,7 @@ function ConfirmarModificarModal({
     >
       <div className="flex flex-col gap-5">
         <div>
-          <p className="text-heading-xs uppercase tracking-[0.07em] text-text-muted mb-3">Resumen de cambios</p>
+          <p className="text-heading-xs uppercase text-text-muted mb-3">Resumen de cambios</p>
           {cambios.length === 0 ? (
             <p className="text-body-sm text-text-muted">No se detectaron cambios respecto al registro original.</p>
           ) : (
@@ -3227,7 +3227,7 @@ function ConfirmarModificarModal({
         </div>
 
         <div className="rounded-md border border-primary bg-primary-tint p-4">
-          <p className="text-heading-xs uppercase tracking-[0.07em] text-secondary mb-1">Motivo</p>
+          <p className="text-heading-xs uppercase text-secondary mb-1">Motivo</p>
           <p className="text-body-sm text-text-muted mb-3">
             Seleccioná una nota o ingresá una manual para justificar este cambio.
           </p>
@@ -3654,7 +3654,7 @@ function CardHeader({
 function SubtituloEtiquetado({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
   return (
     <>
-      <span className="text-heading-xs uppercase tracking-[0.06em] mr-1.5">{etiqueta}</span>
+      <span className="text-heading-xs uppercase mr-1.5">{etiqueta}</span>
       <span className="text-code font-mono tabular-nums">{children}</span>
     </>
   );
@@ -5139,7 +5139,7 @@ function ModificarContent({
                 <select> nativo (ver más abajo): ocupan menos ancho por lo
                 que aportan, justo lo que le faltaba a esta fila. */}
             <div className="contents [@media(max-height:760px)]:hidden">
-              <span className="text-heading-xs uppercase tracking-[0.08em] text-text-muted shrink-0">Origen</span>
+              <span className="text-heading-xs uppercase text-text-muted shrink-0">Origen</span>
               <ButtonSelectGroup
                 options={["Interno", "Externo"]}
                 selected={origenSel ? [origenSel] : []}
@@ -5148,7 +5148,7 @@ function ModificarContent({
                 sizeCls={BTN_SEG_MD}
               />
 
-              <span className="text-heading-xs uppercase tracking-[0.08em] text-text-muted shrink-0">Tipo</span>
+              <span className="text-heading-xs uppercase text-text-muted shrink-0">Tipo</span>
               <ButtonSelectGroup
                 options={["Forzado", "Programado"]}
                 selected={tipoSel ? [tipoSel] : []}
@@ -5253,7 +5253,7 @@ function ModificarContent({
           {/* Chips de filtros aplicados (flyout) — franja propia, no texto suelto */}
           {activeFlyoutFields.length > 0 && (
             <div className="flex items-center flex-wrap gap-2 mt-4 px-3 py-2 rounded-sm border border-border bg-fill-subtle">
-              <span className="text-heading-xs uppercase tracking-[0.06em] text-text-muted shrink-0">
+              <span className="text-heading-xs uppercase text-text-muted shrink-0">
                 Filtros aplicados:
               </span>
               {activeFlyoutFields.map((f) => (
@@ -5560,7 +5560,7 @@ function ModificarContent({
           // condicional): sin una segunda línea debajo, el header siempre
           // cierra parejo.
           <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2">
-            <span className="text-heading-xs uppercase tracking-[0.06em] text-text-muted">Interrupción</span>
+            <span className="text-heading-xs uppercase text-text-muted">Interrupción</span>
             <span className="text-code font-mono tabular-nums text-text">
               {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
             </span>
@@ -6540,7 +6540,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
           style={{ ...dropdownAnchorStyle(direction, 5) }}
         >
           <div className="px-3 py-2.5 border-b border-border-subtle">
-            <p className="text-heading-xs text-text-muted uppercase tracking-[0.08em] select-none">Cambiar de tabla</p>
+            <p className="text-heading-xs text-text-muted uppercase select-none">Cambiar de tabla</p>
           </div>
           <div className="p-1.5 flex flex-col gap-0.5 max-h-96 overflow-y-auto">
             {ABM_TABLE_ORDER.map((k) => {
@@ -7575,7 +7575,7 @@ function AbmScreen({
                       </th>
                     ))}
                     <th className="sticky top-0 z-10 bg-fill-subtle-solid" />
-                    <th className="sticky top-0 z-10 bg-fill-subtle-solid w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted">
+                    <th className="sticky top-0 z-10 bg-fill-subtle-solid w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase text-text-muted">
                       Acciones
                     </th>
                   </tr>
@@ -7805,14 +7805,14 @@ function PlanillaConsolidadaContent() {
 
           <div className="grid grid-cols-2 gap-4 mt-3">
             <div>
-              <p className="text-heading-xs uppercase tracking-[0.07em] text-text-muted mb-1.5">Máxima duración</p>
+              <p className="text-heading-xs uppercase text-text-muted mb-1.5">Máxima duración</p>
               <div className="grid grid-cols-2 gap-3">
                 <div><FieldLabel>Interrupción</FieldLabel><input readOnly value={datos.maxDuracionRef} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
                 <div><FieldLabel>Valor</FieldLabel><input readOnly value={String(datos.maxDuracionValor)} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
               </div>
             </div>
             <div>
-              <p className="text-heading-xs uppercase tracking-[0.07em] text-text-muted mb-1.5">Máximo marginal ajustado</p>
+              <p className="text-heading-xs uppercase text-text-muted mb-1.5">Máximo marginal ajustado</p>
               <div className="grid grid-cols-2 gap-3">
                 <div><FieldLabel>Interrupción</FieldLabel><input readOnly value={datos.maxMarginalRef} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
                 <div><FieldLabel>Valor</FieldLabel><input readOnly value={datos.maxMarginalValor} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
@@ -7926,8 +7926,8 @@ function GestorNotasContent() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-fill-subtle border-b border-border">
-                  <th className="px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted">Nota</th>
-                  <th className="w-24 px-3 py-2 text-left text-heading-xs uppercase tracking-[0.07em] text-text-muted">Posición</th>
+                  <th className="px-3 py-2 text-left text-heading-xs uppercase text-text-muted">Nota</th>
+                  <th className="w-24 px-3 py-2 text-left text-heading-xs uppercase text-text-muted">Posición</th>
                   <th className="w-14 px-2 py-2" />
                 </tr>
                 <tr className="border-b border-border">
@@ -8517,7 +8517,7 @@ export default function App() {
               type="button"
               onClick={handleOtrosParentClick}
               aria-expanded={otrosExpanded}
-              className="w-full flex items-center gap-1 px-1 pt-5 pb-1.5 text-heading-xs uppercase tracking-[0.1em] text-text-muted select-none hover:text-text transition-colors"
+              className="w-full flex items-center gap-1 px-1 pt-5 pb-1.5 text-heading-xs uppercase text-text-muted select-none hover:text-text transition-colors"
             >
               <span className="flex-1 text-left">Otros</span>
               <span className={`shrink-0 transition-transform duration-150 ${otrosExpanded ? "" : "-rotate-90"}`}>
@@ -8525,7 +8525,7 @@ export default function App() {
               </span>
             </button>
           ) : (
-            <p className="px-1 pt-5 pb-1.5 text-heading-xs uppercase tracking-[0.1em] text-text-muted select-none">Otros</p>
+            <p className="px-1 pt-5 pb-1.5 text-heading-xs uppercase text-text-muted select-none">Otros</p>
           )}
           {(!compactSidebar || otrosExpanded) && !collapsed && (
             <div className="flex flex-col gap-0.5">
