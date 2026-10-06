@@ -51,28 +51,44 @@
   --color-text-faint: #8F8E89; /* SOLO controles deshabilitados y elementos decorativos sin información */
   --color-icon: #7D7C77; /* íconos funcionales */
 
-  /* Semánticos */
-  --color-error: #DC2626;
-  --color-success: #16A34A;
-  --color-warning: #D97706;
-
   /* Foco */
   --color-focus: #076AEE; /* = primary-strong (4.88:1 sobre blanco) */
 
-  /* Warning / alert */
+  /*
+   * Semánticos — cinco familias con el mismo esquema:
+   *   base        → ícono, acento, relleno fuerte
+   *   bg          → fondo suave
+   *   border      → borde sobre bg
+   *   text-strong → texto sobre bg (contraste AA)
+   * success / warning / error / info llevan significado; neutral es para
+   * estados sin carga semántica. info y neutral todavía sin uso en
+   * componentes.
+   */
+  --color-success: #16A34A;
+  --color-success-bg: #DCFCE7;
+  --color-success-border: #86EFAC;
+  --color-success-text-strong: #15803D;
+
+  --color-warning: #D97706;
   --color-warning-bg: #FFFBEB;
   --color-warning-border: #FCD34D;
-  --color-warning-text: #B45309;
+  --color-warning-text-strong: #B45309;
 
-  /* Borde del botón destructivo (outline rojo) */
-  --color-error-border: #FCA5A5;
-  --color-error-border-hover: #F87171;
-
-  /* Pares "existe / no existe" */
-  --color-success-bg: #DCFCE7;
-  --color-success-text-strong: #15803D;
+  --color-error: #DC2626;
   --color-error-bg: #FEE2E2;
+  --color-error-border: #FCA5A5;
+  --color-error-border-hover: #F87171; /* hover del botón destructivo outline */
   --color-error-text-strong: #B91C1C;
+
+  --color-info: #076AEE; /* = primary-strong */
+  --color-info-bg: #EBF4FF; /* = primary-tint */
+  --color-info-border: #B9D2FB; /* = chip-border */
+  --color-info-text-strong: #1D558C; /* = secondary */
+
+  --color-neutral: #78716C; /* = neutral-500 */
+  --color-neutral-bg: #F5F5F4; /* = neutral-100 */
+  --color-neutral-border: #D6D3D1; /* = neutral-300 */
+  --color-neutral-text-strong: #44403C; /* = neutral-700 */
 
   /* Chip/badge (borde y hover del botón cerrar) */
   --color-chip-border: #B9D2FB;

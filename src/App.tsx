@@ -2856,7 +2856,7 @@ function CronogramaEnre() {
               if (etapa === "entrega") {
                 clase = claseCeldaBase + " bg-primary-tint border-primary text-secondary";
               } else if (etapa === "correccion") {
-                clase = claseCeldaBase + " bg-warning-bg border-warning-border text-warning-text";
+                clase = claseCeldaBase + " bg-warning-bg border-warning-border text-warning-text-strong";
               } else if (etapa === "tentativa") {
                 clase = claseCeldaBase + " border-error-border text-error";
                 estiloExtra.backgroundColor = "var(--color-error-bg)";
