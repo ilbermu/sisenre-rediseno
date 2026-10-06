@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Shield, Inbox, Plus, Download } from "lucide-react";
+import { Shield, Inbox, Plus, Download, X } from "lucide-react";
 import {
   actionBtnCls,
   BTN_SM,
@@ -15,6 +15,7 @@ import {
   SectionDivider,
   SelectionActionBar,
   SortableHeaderCell,
+  TableCounter,
   TableToolbar,
   useTableToolbar,
 } from "@/components/ui";
@@ -224,6 +225,18 @@ export default function AbmScreen({
       ?.scrollIntoView({ block: "nearest" });
   }, [selectedRow]);
 
+  // Layout "barra": Escape con una fila seleccionada la deselecciona (las
+  // acciones de registro viven en la barra de herramientas solo mientras
+  // hay selección). No actúa con un modal abierto (Modificar, Borrar).
+  useEffect(() => {
+    if (!esBarra || selectedRow === null || mode !== "buscar" || filaABorrar !== null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedRow(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [esBarra, selectedRow, mode, filaABorrar]);
+
   function handleResultadosKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (!showData || mode !== "buscar" || visibleIndices.length === 0) return;
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
@@ -348,14 +361,12 @@ export default function AbmScreen({
     }));
 
   // Split: Resultados se atenúa en Insertar/Modificar (el foco queda en el
-  // panel de la izquierda). Barra: Modificar es un modal (el scrim ya tapa
-  // la pantalla); se atenúa con el flyout "Más filtros" abierto, como las
-  // cards de Consultas de interrupción.
-  const atenuarResultados = esBarra ? flyoutOpen : mode !== "buscar";
+  // panel de la izquierda).
+  const atenuarResultados = mode !== "buscar";
   const resultadosCard = (
         /* ── Right column: results — se atenua y deshabilita en modo alta
             y en modo modificar, para que el foco visual quede en el panel
-            Búsqueda (en layout "barra", ver atenuarResultados) ── */
+            Búsqueda ── */
         <div
           className={`shadow-sm flex-1 flex flex-col border border-border rounded-md bg-surface overflow-hidden transition-opacity duration-(--duration-base) ${
             atenuarResultados ? "opacity-50 pointer-events-none" : ""
@@ -366,6 +377,9 @@ export default function AbmScreen({
             tag={config.code}
             actions={
               <div className="flex items-center gap-2">
+                {/* Auditoría y Exportar: DEPRECADO en layout barra — pendiente
+                    de reubicar (en layout "barra" no se renderizan; ver
+                    resultadosBarra). Siguen vivos en el layout "split". */}
                 {/* Auditoría es una acción de panel, no de registro: genera
                     una auditoría de todos los campos modificados en el
                     conjunto de resultados, no de una fila puntual — por eso
@@ -437,15 +451,7 @@ export default function AbmScreen({
             onKeyDown={handleResultadosKeyDown}
             className={`flex-1 min-h-0 overflow-y-auto ${FOCUS_RING_INSET}`}
           >
-            {!showData && esBarra ? (
-              // Layout "barra": el mismo estado vacío que la tabla de
-              // Interrupciones en Consultas de interrupción.
-              <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-8">
-                <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
-                <p className="text-label text-text-muted">Sin resultados</p>
-                <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
-              </div>
-            ) : !showData ? (
+            {!showData ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-text-faint">
                 <Inbox size={ICON.xl} strokeWidth={1.25} />
                 <p className="text-body-lg text-text-muted mt-1">
@@ -577,6 +583,165 @@ export default function AbmScreen({
           </div>
         </div>
   );
+  // ── Layout "barra": Resultados sin contenedor ─────────────────────────
+  // La tabla se apoya directo en el fondo de la página, debajo de la barra
+  // de búsqueda (gap --page-gap) y con el mismo --page-px, así arrancan en
+  // la misma vertical. Encima, la barra de herramientas de la tabla, de alto
+  // fijo, con dos modos que no cambian su alto:
+  //   sin selección → buscador de la tabla + contador "N de M registros";
+  //   con selección → SelectionActionBar + Modificar / Borrar + ✕.
+  // Las acciones de registro existen SOLO con una fila seleccionada: no hay
+  // columna de acciones por fila. Auditoría y Exportar: DEPRECADO en layout
+  // barra — pendiente de reubicar (su código y handlers siguen en
+  // resultadosCard, que usa el layout "split").
+  // Se atenúa con el flyout "Más filtros" abierto, como las cards de
+  // Consultas de interrupción.
+  const registrosVisibles = config.rows.length - filasBorradas.size;
+  const resultadosBarra = (
+    <div
+      className={`flex-1 min-h-0 flex flex-col transition-opacity duration-(--duration-base) ${
+        flyoutOpen ? "opacity-50 pointer-events-none" : ""
+      }`}
+    >
+      {/* Barra de herramientas — alto fijo (--control-md + py-2). */}
+      <div className="shrink-0 py-2">
+        <div className="h-(--control-md) flex items-center gap-3">
+          {hasSelection ? (
+            <SelectionActionBar
+              bare
+              recordLabel={config.rows[selectedRow!][columnKeys[0]]}
+              actions={
+                <>
+                  <button type="button" onClick={() => handleAbrirModificar(selectedRow!)} className={actionBtnCls("neutral")}>
+                    Modificar
+                  </button>
+                  <button type="button" onClick={() => handleAbrirBorrar(selectedRow!)} className={actionBtnCls("destructive")}>
+                    Borrar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRow(null)}
+                    aria-label="Deseleccionar"
+                    title="Deseleccionar"
+                    className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors`}
+                  >
+                    <X size={ICON.sm} strokeWidth={1.5} />
+                  </button>
+                </>
+              }
+            />
+          ) : (
+            <>
+              <div className="w-60 shrink-0">
+                <TableToolbar search={search} onSearchChange={setSearch} hideExport bare disabled={!showData} />
+              </div>
+              <div className="ml-auto shrink-0">
+                {showData
+                  ? <TableCounter visibles={visibleIndices.length} total={registrosVisibles} />
+                  : <TableCounter visibles={0} />}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Tabla — el scroll es del body de la tabla, nunca de la página. */}
+      <div
+        ref={resultadosListRef}
+        tabIndex={showData ? 0 : -1}
+        onKeyDown={handleResultadosKeyDown}
+        className={`flex-1 min-h-0 overflow-y-auto ${FOCUS_RING_INSET}`}
+      >
+        {!showData ? (
+          // Mismo estado vacío que la tabla de Interrupciones en Consultas
+          // de interrupción, centrado en el área de la tabla, sin contenedor.
+          <div className="h-full flex flex-col items-center justify-center gap-2 text-center px-8">
+            <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
+            <p className="text-label text-text-muted">Sin resultados</p>
+            <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
+          </div>
+        ) : (
+          // border-separate + separadores en <td>: con border-collapse un
+          // borde de fila puede pintarse por encima del <th> sticky.
+          <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
+            <thead>
+              <tr>
+                {columnas.map((c, ci) => (
+                  // Sticky con fondo opaco del color de la página (bg-bg-app),
+                  // sin relleno propio: solo la línea inferior.
+                  <th key={c.key} className="sticky top-0 z-(--z-sticky) bg-bg-app border-b border-border w-[1%] whitespace-nowrap px-3 py-2 text-left">
+                    <SortableHeaderCell
+                      label={c.label}
+                      active={sortIdx === ci}
+                      dir={sortDir}
+                      onClick={() => toggleSort(ci)}
+                    />
+                  </th>
+                ))}
+                {/* Spacer — absorbe el sobrante de la fila. */}
+                <th className="sticky top-0 z-(--z-sticky) bg-bg-app border-b border-border" />
+              </tr>
+            </thead>
+            <tbody>
+              {visibleIndices.map((i) => {
+                const row = config.rows[i];
+                const isSelected = selectedRow === i;
+                return (
+                  <tr
+                    key={i}
+                    data-row-index={i}
+                    onClick={() => setSelectedRow(isSelected ? null : i)}
+                    className={`cursor-pointer transition-colors duration-(--duration-fast) ${isSelected ? "bg-primary-tint" : "hover:bg-fill-muted"}`}
+                  >
+                    {columnas.map((c, ci) => (
+                      <td
+                        key={c.key}
+                        className={`w-[1%] whitespace-nowrap px-3 py-2.5 border-b border-border-subtle ${
+                          c.mono ? "text-code font-mono tabular-nums" : "text-body"
+                        } ${isSelected ? "text-secondary font-medium" : "text-text"} ${
+                          ci === 0 && isSelected ? "inset-shadow-row-selected" : ""
+                        }`}
+                      >
+                        {celda(row, c)}
+                      </td>
+                    ))}
+                    <td className="border-b border-border-subtle" />
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Paginación — al pie de la tabla, sin relleno, con línea superior. */}
+      {showData && (
+        <div className="shrink-0 border-t border-border py-2 flex items-center justify-between">
+          <span className="text-body-sm text-text">
+            Registros encontrados:{" "}
+            <span className="font-semibold text-secondary">
+              {formatNumero(config.totalRegistros)}
+            </span>
+          </span>
+          <div className="flex items-center gap-2 text-body-sm text-text-muted">
+            <button className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`} disabled>
+              Anterior
+            </button>
+            <span>
+              Pág. <span className="font-medium text-text">1</span> de{" "}
+              <span className="font-medium text-text">{formatNumero(totalPages)}</span>
+            </span>
+            <button
+              className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`}
+              disabled={totalPages <= 1}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -624,7 +789,7 @@ export default function AbmScreen({
               flyoutOpen={flyoutOpen}
               setFlyoutOpen={setFlyoutOpen}
             />
-            {resultadosCard}
+            {resultadosBarra}
           </div>
         </div>
       ) : (

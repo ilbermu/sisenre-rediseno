@@ -107,6 +107,15 @@ Décima pasada (también 06/10/2026):
   de identificación/clasificación en la fila, el resto en "Más filtros"),
   con el estado `valores` del ABM; de Consultas queda solo el formato.
 
+Undécima pasada (también 06/10/2026):
+
+- **ABM, variante barra:** Resultados sin contenedor (tabla sobre el fondo,
+  `thead` sticky en `bg-bg-app`, paginación con `border-t`); barra de
+  herramientas de alto fijo con modo selección (`SelectionActionBar` con
+  `actions` y `bare`); Modificar / Borrar solo con un registro seleccionado
+  (sin columna de acciones; ✕ o Escape deseleccionan); Auditoría y Exportar
+  deprecados en esta variante, pendientes de reubicar.
+
 ## Índice
 
 **1. Fundamentos**
@@ -1004,16 +1013,18 @@ largo (ABM).
 
 ## SelectionActionBar
 
-**Para qué:** confirmar qué registro está seleccionado en el panel del ABM
-("REGISTRO SELECCIONADO `<id>`"), sin acciones.
+**Para qué:** confirmar qué registro está seleccionado en el ABM
+("REGISTRO SELECCIONADO `<id>`").
 
 **Anatomía:** punto `bg-primary`, overline `text-heading-xs uppercase
 text-secondary`, id en `text-code font-mono`; `border-b border-border`.
 
-**Props:** `recordLabel`.
+**Props:** `recordLabel`, `actions?` (slot a la derecha, `ml-auto`), `bare?`
+(sin padding ni `border-b` propios, para vivir dentro de otra barra).
 
-**Qué no hacer:** agregar acciones: Modificar/Borrar viven en la fila y
-Auditoría en el header del panel.
+**Qué no hacer:** acciones en el layout split del ABM (ahí Modificar/Borrar
+viven en la fila y Auditoría en el header del panel). En el layout barra,
+`actions` lleva Modificar, Borrar y Deseleccionar.
 
 **Archivo:** `src/components/ui/SelectionActionBar.tsx`.
 
@@ -1400,13 +1411,12 @@ período) es el mismo en los dos.
 │ [               ]       [      ]  [BT|MT|AT]        [     ▾]        [Interno|Externo]   [Forzado|Programado]  [Más filtros] [Limpiar] [Buscar] │  barra, sin contenedor
 │ FILTROS APLICADOS: (chip ×) (chip ×)                                     │  solo si hay filtros del flyout
 │                                                                (gap --page-gap)
-│ ┌ Resultados [CDS2]                         [Auditoría] [Exportar] ┐    │
-│ ├──────────────────────────────────────────────────────────────────┤    │
-│ │ [buscador]                                                       │    │
-│ │ REFERENCIA  FECHA  NIVEL  FASE  ORIGEN  TIPO  CÓD. EQUIPO  ALIM. MT  ACCIONES │
-│ │ …                                            [Modificar] [Borrar] │    │
-│ │ Registros encontrados · Anterior  Pág. 1 de N  Siguiente          │    │
-│ └──────────────────────────────────────────────────────────────────┘    │
+│ [buscador]                                        40 de 40 registros   │  barra de herramientas (sin selección)
+│ • REGISTRO SELECCIONADO BFZ…        [Modificar] [Borrar] [✕]            │  … o con un registro seleccionado
+│ REFERENCIA  FECHA  NIVEL  FASE  ORIGEN  TIPO  CÓD. EQUIPO  ALIM. MT     │  thead sobre el fondo, border-b
+│ fila…                                                                   │  border-b border-border-subtle
+│─────────────────────────────────────────────────────────────────────────│
+│ Registros encontrados: N              Anterior  Pág. 1 de N  Siguiente  │  paginación, border-t
 ```
 
 - **Formato compartido con Consultas, campos de la tabla.** De Consultas se
@@ -1433,20 +1443,38 @@ período) es el mismo en los dos.
     sus valores y Limpiar los vacía.
 - **Diferencia con Consultas y con el split:** seleccionar una fila **no**
   deshabilita la barra ni le vuelca datos (no hay estado "consultando").
-- **Resultados a ancho completo:** una sola card debajo de la barra
-  (`gap-(--page-gap)`, padding de página `--page-px` / `--page-pt`), con el
-  mismo `CardHeader`, acciones de header, toolbar, tabla, acciones de fila
-  y paginación que el panel Resultados del split. Columnas propias
-  (`columnasResultadoBarra`); una columna con `campo` muestra la etiqueta
-  de la opción (Interno/Externo, Forzado/Programado), también para buscar,
-  ordenar y exportar. Estado vacío antes de buscar: el de Interrupciones en
-  Consultas ("Completá los filtros y presioná Buscar"). Se atenúa con el
-  flyout abierto.
-- **Modificar en modal:** la acción de fila abre un `Modal` (título de la
-  config, referencia en `headerExtra`) con las mismas secciones y campos
-  del formulario (`AbmFila` / `AbmCampo`, respetando
-  `camposReadonlyEnModificar`); pie Cancelar + Guardar. Guardar abre el
-  mismo `ConfirmarModificarModal`. Borrar no cambia.
+- **Resultados sin contenedor:** sin card, sin `CardHeader` "Resultados".
+  Debajo de la barra (`gap-(--page-gap)`), a ancho completo y con el mismo
+  `--page-px`, así barra y tabla arrancan en la misma vertical:
+  - **Barra de herramientas de la tabla**, de alto fijo (`--control-md` +
+    `py-2`), con dos modos que no cambian su alto: sin selección, el
+    buscador de la tabla + `TableCounter`; con un registro seleccionado,
+    `SelectionActionBar` (`bare`) con Modificar y Borrar (`actionBtnCls`
+    neutral y destructivo, `md`) y un botón de ícono ✕ (`ICON_BTN_SM`,
+    "Deseleccionar").
+  - **Tabla sobre el fondo:** `thead` sin relleno (solo `border-b
+    border-border`, `heading-xs` en `text-muted`), sticky con fondo
+    `bg-bg-app`; filas con `border-b border-border-subtle`, hover
+    `fill-muted`, seleccionada `primary-tint` + `inset-shadow-row-selected`.
+    El scroll es del body de la tabla, nunca de la página.
+  - **Paginación** al pie, sin relleno, con `border-t border-border`.
+  - **Estado vacío** antes de buscar: el de Interrupciones en Consultas
+    ("Completá los filtros y presioná Buscar"), centrado en el área de la
+    tabla, sin contenedor.
+  - Columnas propias (`columnasResultadoBarra`); una columna con `campo`
+    muestra la etiqueta de la opción (Interno/Externo, Forzado/Programado),
+    también para buscar y ordenar. Se atenúa con el flyout abierto.
+- **Acciones de registro solo con selección:** no hay columna de acciones
+  por fila (ni en reposo ni en hover). Modificar y Borrar aparecen en la
+  barra de herramientas solo con un registro seleccionado; ✕ o Escape lo
+  deseleccionan. Las flechas siguen moviendo la selección.
+- **Auditoría y Exportar: deprecados en esta variante** (no se renderizan;
+  pendientes de reubicar). Siguen en el layout split.
+- **Modificar en modal:** abre un `Modal` (título de la config, referencia
+  en `headerExtra`) con las mismas secciones y campos del formulario
+  (`AbmFila` / `AbmCampo`, respetando `camposReadonlyEnModificar`); pie
+  Cancelar + Guardar. Guardar abre el mismo `ConfirmarModificarModal`.
+  Borrar abre `ConfirmarBorrarModal`, como en el split.
 - **Sin Insertar:** el layout barra no tiene formulario de alta; solo sirve
   para tablas sin `hasInsertar` (CDS2).
 
