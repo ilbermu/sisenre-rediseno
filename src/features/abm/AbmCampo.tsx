@@ -28,6 +28,7 @@ export default function AbmCampo({
   lockedEnModificar,
   consultando,
   valoresFormulario,
+  controlado = false,
 }: {
   campo: CampoBusqueda;
   mode: AbmMode;
@@ -47,10 +48,15 @@ export default function AbmCampo({
   // función, para resolver opciones en cascada según otro campo (ej.
   // Localidad según Partido) sin acoplar acá el nombre de ningún campo.
   valoresFormulario?: Record<string, string>;
+  // Fuerza el modo controlado también en estado "empty" (modo buscar). La
+  // barra de búsqueda del layout "barra" lo necesita para contar los campos
+  // con valor (badge de "Más filtros", chips) y para que Limpiar los vacíe.
+  // Default false: el panel de Búsqueda del layout "split" no cambia.
+  controlado?: boolean;
 }) {
   const estado = estadoDeCampo(campo, mode, !!consultando, !!lockedEnModificar);
   const isDisabled = estado === "placeholder" || estado === "disabled";
-  const controlled = estado !== "empty";
+  const controlled = controlado || estado !== "empty";
   const estadoCls = ESTADO_CLASES[estado];
   // "readonly" (config) es un valor derivado/no tipeable por su cuenta, no
   // un widget propio — en estado "empty"/"enabled" (alta) se ve y escribe

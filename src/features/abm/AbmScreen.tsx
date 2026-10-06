@@ -117,10 +117,9 @@ export default function AbmScreen({
   const [filasBorradas, setFilasBorradas] = useState<Set<number>>(new Set());
   const camposLocked = config.camposReadonlyEnModificar ?? [];
   // Layout "barra" (PRUEBA, solo CDS2 — ver AbmLayout): la búsqueda vive en
-  // su propia barra con sus propios valores (`valoresBusqueda`), así abrir
-  // Modificar (que carga el registro en `valores`) no pisa los filtros.
+  // una barra apoyada en el fondo, con el mismo estado (`valores` /
+  // setValor) que el panel de Búsqueda del layout "split".
   const esBarra = config.layout === "barra";
-  const [valoresBusqueda, setValoresBusqueda] = useState<Record<string, string>>({});
   const [flyoutOpen, setFlyoutOpen] = useState(false);
 
   // Reset al cambiar de tabla — corre primero.
@@ -131,7 +130,6 @@ export default function AbmScreen({
     setValores({});
     setValoresOriginales({});
     setFilasBorradas(new Set());
-    setValoresBusqueda({});
     setFlyoutOpen(false);
   }, [tableKey]);
 
@@ -246,7 +244,6 @@ export default function AbmScreen({
     setShowData(false);
     setSelectedRow(null);
     setValores({});
-    setValoresBusqueda({});
   }
   function handleBuscar() {
     setShowData(true);
@@ -617,15 +614,10 @@ export default function AbmScreen({
           <div className="flex-1 min-h-0 flex flex-col gap-(--page-gap)">
             <AbmBarraBusqueda
               config={config}
-              valores={valoresBusqueda}
-              onChange={(nombre, v) => setValoresBusqueda((prev) => ({ ...prev, [nombre]: v }))}
-              onLimpiarCampos={(nombres) =>
-                setValoresBusqueda((prev) => {
-                  const next = { ...prev };
-                  for (const n of nombres) next[n] = "";
-                  return next;
-                })
-              }
+              mode="buscar"
+              valores={valores}
+              setValor={setValor}
+              camposLocked={camposLocked}
               showData={showData}
               onBuscar={handleBuscar}
               onLimpiar={handleLimpiar}

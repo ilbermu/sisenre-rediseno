@@ -122,16 +122,18 @@ type ColumnaResultado = {
 //                       Modificar se abre en un modal.
 export type AbmLayout = "split" | "barra";
 
-// Campos de la barra de búsqueda del layout "barra" — todos son `nombre` de
-// campos ya definidos en `secciones` (tipo, opciones y labels salen de ahí).
+// Barra de búsqueda del layout "barra": qué secciones de `secciones` van en
+// la fila y cuáles en el flyout "Más filtros". Los campos, controles,
+// opciones y labels salen siempre de esas secciones (se renderizan con
+// AbmCampo, igual que en el panel de Búsqueda del layout "split").
 export type AbmBarraBusqueda = {
-  // Fila principal, en orden: campo + placeholder corto + ancho fijo (px).
-  principales: { nombre: string; placeholder?: string; ancho: number }[];
-  // Después del divisor: toggles como ButtonSelectGroup con su etiqueta
-  // (heading-xs); en tier 760px pasan a ValuePicker de `anchoTier760` px.
-  segmentados: { nombre: string; etiqueta: string; anchoTier760: number }[];
-  // Campos del flyout "Más filtros", renderizados con AbmCampo.
-  masFiltros: string[];
+  // Títulos de sección (SeccionBusqueda.titulo) cuyos campos van en la fila.
+  seccionesBarra: string[];
+  // Títulos de sección cuyos campos van en el flyout "Más filtros".
+  seccionesMasFiltros: string[];
+  // Ancho fijo (px) por campo en la fila; un campo sin ancho toma el ancho
+  // de su contenido (toggles: el de sus opciones). Nunca se estiran.
+  anchos: Record<string, number>;
   // Título del modal de Modificar (en este layout, Modificar es un modal).
   tituloModificar: string;
 };

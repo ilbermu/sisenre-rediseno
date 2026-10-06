@@ -98,6 +98,15 @@ Novena pasada (también 06/10/2026):
   `columnasResultadoBarra` y Modificar en un modal. El resto de las tablas
   sigue con el layout split.
 
+Décima pasada (también 06/10/2026):
+
+- **ABM, variante barra:** la barra deja de copiar los controles de
+  Consultas (input de código, `ValuePicker` de Nivel/Fase, Origen/Tipo con
+  sus selects del tier 760, inputs de texto del flyout). Ahora todos los
+  campos se renderizan con `AbmCampo` desde la config de la tabla (secciones
+  de identificación/clasificación en la fila, el resto en "Más filtros"),
+  con el estado `valores` del ABM; de Consultas queda solo el formato.
+
 ## Índice
 
 **1. Fundamentos**
@@ -1381,13 +1390,14 @@ período) es el mismo en los dos.
   derecha. Seleccionar una fila vuelca sus datos en el formulario
   ("consultando"); Insertar y Modificar usan el mismo panel de la izquierda
   y atenúan Resultados.
-- **`barra`** (en prueba, solo CDS2): la búsqueda de Consultas de
-  interrupción llevada al ABM.
+- **`barra`** (en prueba, solo CDS2): el formato de la búsqueda de
+  Consultas de interrupción con los campos de la tabla.
 
 ```
 ┌ masthead: [Tabla 2 · CDS2 ▾]                                [Período ▾] ┐
 │                                                                         │
-│ [código] [fecha] [Nivel] [Fase] | ORIGEN [I|E] TIPO [F|P]  [Más filtros] [Limpiar] [Buscar] │  barra, sin contenedor
+│ Código de interrupción  Fecha     Nivel de tensión  Fase eléctrica  Origen              Tipo                      │  labels (FieldLabel)
+│ [               ]       [      ]  [BT|MT|AT]        [     ▾]        [Interno|Externo]   [Forzado|Programado]  [Más filtros] [Limpiar] [Buscar] │  barra, sin contenedor
 │ FILTROS APLICADOS: (chip ×) (chip ×)                                     │  solo si hay filtros del flyout
 │                                                                (gap --page-gap)
 │ ┌ Resultados [CDS2]                         [Auditoría] [Exportar] ┐    │
@@ -1399,17 +1409,30 @@ período) es el mismo en los dos.
 │ └──────────────────────────────────────────────────────────────────┘    │
 ```
 
-- **Barra de búsqueda** (`AbmBarraBusqueda`): copia del filter bar de
-  Consultas de interrupción — fila única apoyada en el fondo, mismas
-  clases, capas (`--z-raised` la barra, `--z-dismiss` el backdrop,
-  `--z-dropdown` el flyout) y comportamiento por tier (Origen/Tipo pasan a
-  `ValuePicker` en 760px). Los campos salen de `barraBusqueda` en la config
-  (`principales`, `segmentados`, `masFiltros`); tipo, opciones y labels, de
-  `secciones`. El flyout "Más filtros" renderiza cada campo con `AbmCampo`,
-  así usa el control que define la tabla (combobox con lista larga, toggle
-  Sí/No…). Badge con la cantidad y chips de filtros aplicados.
-- **Diferencia con Consultas:** seleccionar una fila **no** deshabilita la
-  barra ni le vuelca datos.
+- **Formato compartido con Consultas, campos de la tabla.** De Consultas se
+  copia solo el formato (`AbmBarraBusqueda`): fila única apoyada en el
+  fondo (`--z-raised`), "Más filtros" con badge y flyout anclado a la
+  derecha (`--z-dropdown`, backdrop en `--z-dismiss`), chips de filtros
+  aplicados, y Limpiar + Buscar a la derecha (`ml-auto`, Buscar primario
+  último). Los campos y controles salen **siempre** de la config de la
+  tabla: cada uno se renderiza con `AbmCampo` — mismo label (`FieldLabel`
+  arriba), control, opciones, placeholder y estado (`valores` / `setValor`)
+  que en el panel de Búsqueda del split.
+  - **Fila:** las secciones de identificación y clasificación
+    (`barraBusqueda.seccionesBarra`; en CDS2, "Identificación" y
+    "Clasificación"), en su orden.
+  - **"Más filtros":** el resto (`seccionesMasFiltros`; en CDS2, "Datos de
+    red"). El badge cuenta esos campos con valor.
+  - **Alineación y anchos:** la fila alinea por la base (`items-end`): los
+    botones quedan a la altura de los controles, no de los labels. Cada
+    campo tiene ancho fijo acorde a su contenido (`barraBusqueda.anchos`;
+    los toggles, el de sus opciones) y no se estira. En el tier de 760px la
+    fila hace wrap; los toggles no se reemplazan por selects.
+  - **Controlados:** los inputs de texto van controlados también en modo
+    buscar (`AbmCampo` con `controlado`), así el badge y los chips cuentan
+    sus valores y Limpiar los vacía.
+- **Diferencia con Consultas y con el split:** seleccionar una fila **no**
+  deshabilita la barra ni le vuelca datos (no hay estado "consultando").
 - **Resultados a ancho completo:** una sola card debajo de la barra
   (`gap-(--page-gap)`, padding de página `--page-px` / `--page-pt`), con el
   mismo `CardHeader`, acciones de header, toolbar, tabla, acciones de fila
