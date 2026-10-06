@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import {
-  ChevronLeft, ChevronRight, ChevronDown, FileText, Pencil, Clipboard, UserPlus, Shield, Search,
+  ChevronLeft, ChevronDown, FileText, Pencil, Clipboard, UserPlus, Shield, Search,
   Home, Wrench,
 } from "lucide-react";
 import Logo from "@/imports/Logo/index";
 import NavItem from "@/components/layout/NavItem";
+import TopBar from "@/components/layout/TopBar";
 import UserMenu from "@/components/layout/UserMenu";
-import { FOCUS_RING, ICON, ICON_BTN_SM, PeriodSelector } from "@/components/ui";
+import { ICON, ICON_BTN_SM } from "@/components/ui";
 import { isAbmTableKey } from "@/data/abmTables";
 import { ABM_ITEMS } from "@/data/dominio";
 import { AbmDeepLink, AbmTableKey, Screen } from "@/data/types";
@@ -48,6 +49,18 @@ const HERRAMIENTAS_ITEMS: { key: HerramientaKey; label: string; pendiente?: bool
   { key: "altaclientes", label: "Alta clientes", pendiente: true },
   { key: "intercambio",  label: "Intercambio",   pendiente: true },
 ];
+
+// Título del top bar por pantalla (todas salvo el ABM, que tiene su propio
+// encabezado con el selector de tabla).
+const TITULOS_PANTALLA: Partial<Record<Screen, string>> = {
+  welcome: "Inicio",
+  modificar: "Búsqueda de interrupciones",
+  generaciontxt: "Generación de txt",
+  planillaconsolidada: "Planilla consolidada",
+  gestornotas: "Gestor de notas",
+  insertaclientes: "Inserta clientes en BDTH",
+  auditoria: "Reporte de auditoría",
+};
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
@@ -449,53 +462,9 @@ export default function App() {
           />
         ) : (
           <>
-            {/* Encabezado de página de Consultas de interrupción — apoyado en
-                el fondo, sin borde inferior: breadcrumb (Inicio > pantalla)
-                y debajo el título de la vista, con el selector de período a
-                la derecha, a la altura del título. Solo esta pantalla; el
-                resto sigue con el top bar de abajo. */}
-            {screen === "modificar" ? (
-              <header className="px-5 pt-4 shrink-0">
-                <nav aria-label="Ruta" className="flex items-center gap-1.5 text-body-sm text-text-muted">
-                  <button
-                    type="button"
-                    onClick={irAInicio}
-                    aria-label="Inicio"
-                    title="Inicio"
-                    className={`flex items-center rounded-xs text-text-muted hover:text-text transition-colors ${FOCUS_RING}`}
-                  >
-                    <Home size={ICON.sm} strokeWidth={1.5} aria-hidden />
-                  </button>
-                  <ChevronRight size={ICON.xs} strokeWidth={1.5} aria-hidden className="text-text-faint" />
-                  <span aria-current="page">Consultas de interrupción</span>
-                </nav>
-                <div className="mt-1 flex items-center gap-4">
-                  <h1 className="flex-1 min-w-0 truncate text-heading-lg text-text">Búsqueda de interrupciones</h1>
-                  <PeriodSelector />
-                </div>
-              </header>
-            ) : (
-            /* Top bar — reservado para título de pantalla + selector de
-                período, transversal al resto de la app: no le agregues nada
-                más acá. Consultas de interrupción usa su propio encabezado
-                de página (arriba). */
-            <header
-              className="flex items-center px-6 border-b border-border bg-bg-app shrink-0"
-              style={{ minHeight: "var(--header-min-height, 60px)" }}
-            >
-              <div className="flex items-center gap-2.5 flex-1">
-                {screen === "welcome" && (
-                  <h1 className="text-heading-md text-text">Inicio</h1>
-                )}
-                {screen === "generaciontxt" && <h1 className="text-heading-md text-text">Generación de txt</h1>}
-                {screen === "planillaconsolidada" && <h1 className="text-heading-md text-text">Planilla consolidada</h1>}
-                {screen === "gestornotas" && <h1 className="text-heading-md text-text">Gestor de notas</h1>}
-                {screen === "insertaclientes" && <h1 className="text-heading-md text-text">Inserta clientes en BDTH</h1>}
-                {screen === "auditoria" && <h1 className="text-heading-md text-text">Reporte de auditoría</h1>}
-              </div>
-              <PeriodSelector />
-            </header>
-            )}
+            {/* Top bar — mismo en todas las pantallas salvo el ABM (que
+                tiene su encabezado propio con el selector de tabla). */}
+            {TITULOS_PANTALLA[screen] && <TopBar title={TITULOS_PANTALLA[screen]!} />}
 
             {/* Content */}
             {screen === "welcome" && <WelcomeContent onIrATabla={goToAbmTable} />}

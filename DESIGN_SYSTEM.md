@@ -83,6 +83,13 @@ Séptima pasada (también 06/10/2026):
 - **`Modal`:** sin `headerExtra`, su línea de título usa `--card-header-h` y
   `--card-px`.
 
+Octava pasada (también 06/10/2026):
+
+- **`TopBar`:** el top bar sale de `App.tsx` a `src/components/layout/TopBar.tsx`
+  (prop `title`, mapa pantalla → título). Consultas de interrupción deja su
+  encabezado propio (breadcrumb + título `heading-lg` + período) y usa
+  `TopBar` con "Búsqueda de interrupciones", como Inicio y "Otros".
+
 ## Índice
 
 **1. Fundamentos**
@@ -120,6 +127,7 @@ Séptima pasada (también 06/10/2026):
 [SortableHeaderCell / SortableTh](#sortableheadercell--sortableth) ·
 [TableCounter](#tablecounter) ·
 [TableToolbar y useTableToolbar](#tabletoolbar-y-usetabletoolbar) ·
+[TopBar](#topbar) ·
 [UnderlineTabs](#underlinetabs) ·
 [ValuePicker](#valuepicker)
 
@@ -423,7 +431,7 @@ Tokens en `@theme` de `src/index.css`. Se eligen por **rol**.
 
 | Token | Clase | Uso |
 |---|---|---|
-| `--color-bg-app` | `bg-bg-app` | `#FAFAFA`, gris neutro. Fondo de página: shell de la app, selector de herramienta, sidebar, top bar y encabezado de página |
+| `--color-bg-app` | `bg-bg-app` | `#FAFAFA`, gris neutro. Fondo de página: shell de la app, selector de herramienta, sidebar y top bar |
 | `--color-surface` | `bg-surface` | Todo lo que se apoya sobre el fondo: cards, modales, popovers, dropdowns, inputs, botones secundarios, paginadores |
 | `--color-border` | `border-border`, `bg-border` | Borde de contenedores (cards, popovers, dropdowns), divisores (bajo un header, bajo el `thead`, pie de tabla) y líneas de 1px (`h-px` / `w-px bg-border`) |
 | `--color-border-strong` | `border-border-strong` | Controles: inputs, selects, botones secundarios, checkbox y radio, badges de código. Tienen que seguir leyéndose como campos |
@@ -933,7 +941,7 @@ input.
 
 ## PeriodSelector
 
-**Para qué:** selector del período de trabajo, en el encabezado de página.
+**Para qué:** selector del período de trabajo, a la derecha del `TopBar` (y en el encabezado del ABM).
 
 **Anatomía:** trigger `BTN_MD` outline con ícono `Calendar`, período y
 chevron que rota; panel con overline "Seleccioná el período" y la lista de
@@ -1063,6 +1071,28 @@ nombra (ver [Toolbar de tabla y filtros](#toolbar-de-tabla-y-filtros)).
 **Archivo:** `src/components/ui/TableToolbar.tsx`,
 `src/components/ui/useTableToolbar.ts`.
 
+## TopBar
+
+**Para qué:** el encabezado de pantalla. **Todas las pantallas salvo el
+ABM** (que tiene su encabezado propio con el selector de tabla) usan
+`TopBar`. No hay breadcrumb ni encabezados de página propios.
+
+**Anatomía:** `<header>` con título `h1 text-heading-md text-text` a la
+izquierda y `PeriodSelector` a la derecha; `px-6`, `border-b border-border`,
+fondo `bg-bg-app` y alto mínimo `var(--header-min-height, 60px)` (44px en
+el tier de 760px). El contenido de la pantalla arranca debajo con su propio
+padding (`pt-(--page-pt)` en Consultas de interrupción).
+
+**Props:** `title`. El título de cada pantalla sale del mapa
+`TITULOS_PANTALLA` de `src/App.tsx`.
+
+**Accesibilidad:** el título es el `h1` de la pantalla.
+
+**Qué no hacer:** agregarle algo más que el título y el período; títulos
+`heading-lg`; breadcrumbs.
+
+**Archivo:** `src/components/layout/TopBar.tsx`.
+
 ## UnderlineTabs
 
 **Para qué:** EL patrón de tabs de contenido — elegir qué vista se muestra
@@ -1176,8 +1206,8 @@ dividido en franjas por líneas `border-border` a todo el ancho.
 - **Gap entre cards:** `gap-(--cards-gap)`, un único valor por pantalla.
 - **Búsqueda sin contenedor:** en Consultas de interrupción la fila de
   filtros no es una card: se apoya directo en el fondo de la página,
-  debajo del encabezado de página (breadcrumb + título `heading-lg` +
-  selector de período a la derecha, sin borde inferior).
+  debajo del `TopBar` ("Búsqueda de interrupciones"), con
+  `pt-(--page-pt)` y `px-(--page-px)`.
 - **Acciones del registro** (Desarmes, Lotes, Nivel/Tipo, Replicar,
   Cambia fases, Alta clientes, Intercambio) no viven en la pantalla: son
   los ítems del grupo desplegable "Herramientas" del menú lateral (mismo
@@ -1259,7 +1289,7 @@ comparar columnas u ordenarlas, va tabla.
 
 ## Orden de botones
 
-Aplica a header de página, header de card, filter bar, toolbar y pie de modal:
+Aplica a top bar, header de card, filter bar, toolbar y pie de modal:
 
 1. **Secundarios** (outline) primero.
 2. **Primario** después — máximo uno por zona, siempre el último a la
@@ -1288,7 +1318,7 @@ el **chrome** de los **datos**:
 | `--card-section-py` | aire superior de una sección y inferior de su cuerpo | 20px | `calc(var(--spacing) * 3)` |
 | `--page-px` | padding horizontal de la página | 32px | `calc(var(--spacing) * 5)` |
 | `--page-pt` | padding superior (e inferior) de la página | 24px | `calc(var(--spacing) * 5)` |
-| `--page-gap` | gap vertical entre encabezado, filter bar y fila de cards | 24px | `calc(var(--spacing) * 4)` |
+| `--page-gap` | gap vertical entre filter bar y fila de cards | 24px | `calc(var(--spacing) * 4)` |
 | `--cards-gap` | gap entre cards | 24px | `calc(var(--spacing) * 4)` |
 
 Se definen en `:root` de `src/index.css`. Se usan con la sintaxis de

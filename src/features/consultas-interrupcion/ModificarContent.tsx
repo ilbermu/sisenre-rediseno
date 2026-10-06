@@ -428,7 +428,7 @@ export default function ModificarContent({
     <div className="flex-1 min-h-0 flex flex-col gap-(--page-gap)">
 
         {/* Búsqueda — sin contenedor: la fila de filtros se apoya directo
-            en el fondo de la página, debajo del título del encabezado. Una
+            en el fondo de la página, debajo del top bar. Una
             sola fila + flyout "Más filtros" anclado a la derecha. */}
         <div className="relative shrink-0">
           <div className="relative">
