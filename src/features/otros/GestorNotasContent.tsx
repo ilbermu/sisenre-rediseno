@@ -63,7 +63,6 @@ export default function GestorNotasContent() {
         <div className="flex-1 bg-surface rounded-lg border border-border overflow-hidden">
           <CardHeader
             title="Notas"
-            padX="px-5"
             actions={
               <button type="button" onClick={abrirNueva} className={modalPrimaryBtnCls}>
                 Agregar nota

@@ -380,7 +380,6 @@ export default function AbmScreen({
           <CardHeader
             title={mode === "alta" ? "Insertando en" : mode === "modificar" ? "Modificando" : "Búsqueda"}
             tag={config.code}
-            padX="px-5"
           />
           <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
             {config.secciones.map((sec) => {

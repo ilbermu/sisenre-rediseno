@@ -71,9 +71,7 @@ export default function ReclamosResumenCompacto({
       <CardHeader
         title="Reclamos durante la interrupción"
         level="section"
-        chrome
-        reserveSubtitle
-        subtitle={habilitada && referencia ? <>Interrupción <span className="text-code font-mono tabular-nums">{referencia}</span></> : undefined}
+        context={habilitada && referencia ? { label: "Interrupción", value: referencia } : undefined}
         actions={
           <button
             type="button"

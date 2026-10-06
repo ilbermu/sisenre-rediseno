@@ -31,7 +31,7 @@ export default function AuditoriaContent() {
   return (
     <div className="flex-1 overflow-y-auto px-10 py-10">
       <div className="bg-surface rounded-lg border border-border" style={{ maxWidth: 720 }}>
-        <CardHeader title="Filtros" padX="px-6" />
+        <CardHeader title="Filtros" />
         <div className="p-6 grid grid-cols-2 gap-6">
           <div>
             <ValuePicker

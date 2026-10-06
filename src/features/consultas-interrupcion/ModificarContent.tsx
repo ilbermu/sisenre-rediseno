@@ -44,7 +44,6 @@ import FaseReposicionFicha from "@/features/consultas-interrupcion/FaseReposicio
 import ReclamosResumenCompacto from "@/features/consultas-interrupcion/ReclamosResumenCompacto";
 import RelacionadaChip from "@/features/consultas-interrupcion/RelacionadaChip";
 import ReposicionesLista from "@/features/consultas-interrupcion/ReposicionesLista";
-import SubtituloEtiquetado from "@/features/consultas-interrupcion/SubtituloEtiquetado";
 import AltaClientesModal from "@/features/consultas-interrupcion/herramientas/AltaClientesModal";
 import CambiaFasesModal from "@/features/consultas-interrupcion/herramientas/CambiaFasesModal";
 import DesarmeModal from "@/features/consultas-interrupcion/herramientas/DesarmeModal";
@@ -640,7 +639,7 @@ export default function ModificarContent({
         {/* Header — sin subtítulo (el contador va en el toolbar). Sin
             acciones: "Datos de la interrupción" se abre desde la sección
             Reclamos. */}
-        <CardHeader title="Interrupciones" tag="CDS2" divider chrome />
+        <CardHeader title="Interrupciones" tag="CDS2" />
 
         {/* Toolbar de tabla — FUERA del contenedor de la tabla, sin fondo ni
             línea divisoria con la tabla (ver DESIGN_SYSTEM.md, "Patrones
@@ -771,16 +770,13 @@ export default function ModificarContent({
           className="shadow-sm flex-1 min-w-0 max-h-full flex flex-col rounded-md border border-border bg-surface"
         >
           {/* La interrupción seleccionada (registro padre de las
-              reposiciones) va como subtítulo del header: "INTERRUPCIÓN
-              SELECCIONADA" + ID. El divisor del header hace de línea
-              superior de la tabla. */}
+              reposiciones) va como contexto del header, en la misma línea
+              del título: "· INTERRUPCIÓN" + ID. La línea del header hace de
+              línea superior de la lista. */}
           <CardHeader
             title="Reposiciones"
             tag="CDS4"
-            divider
-            chrome
-            reserveSubtitle
-            subtitle={selectedRecord ? <SubtituloEtiquetado etiqueta="Interrupción seleccionada">{selectedRecord.referencia}</SubtituloEtiquetado> : undefined}
+            context={selectedRecord ? { label: "Interrupción", value: selectedRecord.referencia } : undefined}
           />
 
           <div className="min-h-0 flex flex-col">
@@ -804,17 +800,15 @@ export default function ModificarContent({
                   "Tablas relacionadas", preseleccionado en la reposición
                   actual (modSelectedFase es la única fuente de verdad,
                   compartida entre esta card y el modal) y en el tab del
-                  chip clickeado. La reposición activa va como subtítulo:
+                  chip clickeado. La reposición activa va como contexto:
                   "REPOSICIÓN" + "X de N · hora". */}
               <div className="shrink-0 border-t border-border">
                 <CardHeader
                   title="Tablas relacionadas"
                   level="section"
-                  chrome
-                  reserveSubtitle
-                  subtitle={
+                  context={
                     filaFaseSeleccionada
-                      ? <SubtituloEtiquetado etiqueta="Reposición">{modSelectedFase !== null ? modSelectedFase + 1 : VALOR_VACIO} de {tabla4Rows.length} · {filaFaseSeleccionada.horaRep}</SubtituloEtiquetado>
+                      ? { label: "Reposición", value: `${modSelectedFase !== null ? modSelectedFase + 1 : VALOR_VACIO} de ${tabla4Rows.length} · ${filaFaseSeleccionada.horaRep}` }
                       : undefined
                   }
                 />
