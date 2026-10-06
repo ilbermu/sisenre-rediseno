@@ -53,6 +53,27 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       anchos: { codigoInterrupcion: 200, fecha: 170, faseElectrica: 104 },
       tituloModificar: "Modificar interrupción",
     },
+    // Formulario del modal de Modificar (codigoInterrupcion no aparece: va
+    // en el header del modal).
+    formLayout: [
+      { titulo: "Identificación", filas: [[{ campo: "fecha", ancho: "md" }]] },
+      {
+        titulo: "Clasificación",
+        filas: [
+          [{ campo: "nivelTension", ancho: "auto" }, { campo: "faseElectrica", ancho: "sm" }],
+          [{ campo: "origen", ancho: "auto" }, { campo: "tipo", ancho: "auto" }],
+        ],
+      },
+      {
+        titulo: "Datos de red",
+        filas: [
+          [{ campo: "codigoEquipoOperado", ancho: "sm" }, { campo: "descEquipoOperado", ancho: "full" }],
+          [{ campo: "divisionRedNormal", ancho: "auto" }],
+          [{ campo: "alimentadorMT", ancho: "sm" }, { campo: "cadenaElectricaAguasArriba", ancho: "md" }],
+          [{ campo: "ctMtBtEquipoOperado", ancho: "md" }],
+        ],
+      },
+    ],
     secciones: [
       {
         titulo: "Identificación",

@@ -211,6 +211,15 @@ Vigesimoprimera pasada (también 06/10/2026):
   split).
 - **Regla nueva:** nunca un modal sobre otro. `Modal` suma la prop `paso`.
 
+Vigesimosegunda pasada (también 06/10/2026):
+
+- **Formulario de edición** (patrón nuevo): una columna, labels arriba,
+  filas de 1 a 3 campos que van juntos, ancho de campo por token
+  (`--field-w-sm` 160 / `md` 240 / `lg` 360, `full`, toggles intrínsecos),
+  16px entre filas y 24px entre secciones, layout declarado por tabla
+  (`formLayout`). Reemplaza la grilla de 2 columnas y la regla "izquierda
+  campos / derecha botones" del modal de edición de registro (CDS2).
+
 ## Índice
 
 **1. Fundamentos**
@@ -263,6 +272,7 @@ Vigesimoprimera pasada (también 06/10/2026):
 [Orden de botones](#orden-de-botones) ·
 [Aire: chrome vs datos](#aire-chrome-vs-datos) ·
 [Modal de trabajo](#modal-de-trabajo) ·
+[Formulario de edición](#formulario-de-edición) ·
 [Modal de edición de registro](#modal-de-edición-de-registro) ·
 [Nunca un modal sobre otro](#nunca-un-modal-sobre-otro) ·
 [Layout de ABM — variante barra](#layout-de-abm--variante-barra-en-prueba-solo-tabla-2) ·
@@ -1713,6 +1723,36 @@ período) es el mismo en los dos.
 - **Sin Insertar:** el layout barra no tiene formulario de alta; solo sirve
   para tablas sin `hasInsertar` (CDS2).
 
+## Formulario de edición
+
+Cómo se arma un formulario de edición (hoy, el paso 1 del [modal de
+edición de registro](#modal-de-edición-de-registro)). Fuentes: Carbon
+(Forms pattern) y Atlassian (Forms).
+
+- **Una sola columna de lectura**, labels arriba (`FieldLabel`, con su
+  margen de siempre). Nada alineado a una "columna derecha" ni estirado
+  para llenar.
+- **Filas de 1 a 3 campos, solo si van juntos lógicamente** (ej. Nivel de
+  tensión + Fase eléctrica; Origen + Tipo). Cada fila: `flex items-start
+  gap-x-4`, sin wrap en el ancho del modal.
+- **Ancho de campo según el largo de su contenido**, por token:
+
+  | Ancho | Valor | Uso típico |
+  |---|---|---|
+  | `sm` | `--field-w-sm` 160px | códigos cortos, fase, alimentador |
+  | `md` | `--field-w-md` 240px | fechas, cadenas, códigos largos |
+  | `lg` | `--field-w-lg` 360px | textos medianos |
+  | `full` | el resto de la fila (`flex-1 min-w-0`) | descripciones, listas largas |
+  | `auto` | intrínseco | toggles (siempre, sin token) |
+
+  Los tokens no se redefinen por tier.
+- **Espaciado (formularios contenidos):** 16px entre filas (`gap-y-4`),
+  24px entre secciones (`gap-6`); título de sección con `SectionDivider`.
+- **Layout declarado por tabla, no calculado:** `formLayout` en la config
+  (`src/data/abmTables.ts`): secciones → filas → `{ campo, ancho }`. Los
+  campos se renderizan con `AbmCampo`. Una tabla sin `formLayout` pone cada
+  campo en su fila (toggles `auto`, el resto `full`).
+
 ## Modal de edición de registro
 
 Para editar un registro desde una tabla cuando el formulario no está a la
@@ -1728,21 +1768,12 @@ pasos: **Editar → Revisar**.
   (`text-body-sm text-text-muted`, prop `paso`); ✕ a la derecha, centrado en
   el bloque. Los headers de modal con label son la excepción documentada a
   la regla de header de una línea. El identificador no aparece en el body.
-- **Paso 1 — Editar: layout por sección.** Cada sección es su bloque:
-  título (`SectionDivider`) y debajo una grilla de 2 columnas iguales
-  (`gap-x-4`) que se apilan **por separado** (`flex-col gap-4` cada una),
-  así un campo nunca cambia de sección:
-  - **izquierda:** campos de texto, fecha, select y combobox, en el orden de
-    la config, a ancho completo de su columna (el valor trunca, con
-    `title`);
-  - **derecha:** los toggles, en el orden de la config, a su ancho
-    intrínseco.
-  - Ej. CDS2: Identificación → Fecha | (vacío); Clasificación → Fase
-    eléctrica | Nivel de tensión, Origen, Tipo; Datos de red → Código de
-    equipo, Descripción, Cadena, Alimentador MT, CT MT/BT | División red
-    normal.
-  - 24px entre secciones (`gap-6`); el mismo `FieldLabel` (y margen) que el
-    resto de la app; una sección con un solo campo se mantiene.
+- **Paso 1 — Editar:** el formulario de la tabla según su `formLayout`
+  (ver [Formulario de edición](#formulario-de-edición)). En CDS2:
+  Identificación → [Fecha `md`]; Clasificación → [Nivel de tensión, Fase
+  eléctrica `sm`] · [Origen, Tipo (read-only)]; Datos de red → [Código de
+  equipo `sm`, Descripción `full`] · [División red normal] · [Alimentador
+  MT `sm`, Cadena eléctrica `md`] · [CT MT/BT `md`].
   - **No editables en read-only** (ver [Estados: disabled vs
     read-only](#estados-disabled-vs-read-only)): el toggle con su valor
     marcado a contraste completo y un candado junto al label — **nunca como

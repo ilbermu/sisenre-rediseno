@@ -243,6 +243,13 @@
   --control-xs: 24px; /* mínimo WCAG 2.5.8 — fijo en todos los tiers, sin redefinir */
   --control-sm: 28px; /* BTN_SM, filtros de toolbar, segmented compacto */
   --control-md: 36px; /* BTN_MD, campos (input, select, DateTimeField), segmented en filas de campos */
+
+  /* Ancho de campo según el largo de su contenido (formularios de edición,
+     ver DESIGN_SYSTEM.md, "Formulario de edición"). Sin redefinir por tier.
+     "full" = el resto del ancho de la fila; los toggles, ancho intrínseco. */
+  --field-w-sm: 160px; /* códigos cortos, fase, alimentador */
+  --field-w-md: 240px; /* fechas, cadenas, códigos largos */
+  --field-w-lg: 360px; /* textos medianos */
 }
 
 @media (max-height: 900px) {

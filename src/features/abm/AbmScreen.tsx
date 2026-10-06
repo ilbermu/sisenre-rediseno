@@ -22,7 +22,7 @@ import {
 } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { ABM_ITEMS } from "@/data/dominio";
-import { AbmDeepLink, AbmMode, AbmTableKey } from "@/data/types";
+import { AbmDeepLink, AbmFormLayout, AbmMode, AbmTableKey, AnchoCampo } from "@/data/types";
 import AbmBarraBusqueda from "@/features/abm/AbmBarraBusqueda";
 import AbmCampo from "@/features/abm/AbmCampo";
 import AbmFila from "@/features/abm/AbmFila";
@@ -856,9 +856,21 @@ export default function AbmScreen({
   // sección en estado read-only (AbmCampo `readOnly`), nunca disabled.
   const campoReferencia = config.mapeoFilaACampos[columnKeys[0]];
   const esNoEditable = (c: (typeof camposTabla)[number]) => c.tipo === "readonly" || camposLocked.includes(c.nombre);
-  const seccionesModificar = config.secciones
-    .map((sec) => ({ ...sec, campos: sec.filas.flat().filter((c) => c.nombre !== campoReferencia) }))
-    .filter((sec) => sec.campos.length > 0);
+  // Layout del formulario: el declarado en config.formLayout; si la tabla
+  // no lo declara, cada campo en su fila (toggles a su ancho, el resto
+  // "full"). Sin el campo de la referencia.
+  const formLayoutModificar: AbmFormLayout = (
+    config.formLayout ??
+    config.secciones.map((sec) => ({
+      titulo: sec.titulo,
+      filas: sec.filas.flat().map((c) => [{ campo: c.nombre, ancho: (c.tipo === "toggle" ? "auto" : "full") as AnchoCampo }]),
+    }))
+  )
+    .map((sec) => ({
+      ...sec,
+      filas: sec.filas.map((fila) => fila.filter((f) => f.campo !== campoReferencia)).filter((fila) => fila.length > 0),
+    }))
+    .filter((sec) => sec.filas.length > 0);
   const referenciaModificar = selectedRow !== null ? config.rows[selectedRow][columnKeys[0]] : "";
 
   return (
@@ -982,11 +994,12 @@ export default function AbmScreen({
             - header con label de contexto arriba del título (Carbon "modal
               label"): la referencia en mono + CopyButton xs; junto al
               título, "Paso N de 2";
-            - paso 1 "Editar": cada sección es su bloque (título + grilla de
-              2 columnas que se apilan por separado): a la izquierda los
-              campos de texto, fecha, select y combobox; a la derecha los
-              toggles, en el orden de la config. Inputs a ancho completo de
-              su columna; toggles a su ancho intrínseco. Los no editables
+            - paso 1 "Editar": formulario de una columna según
+              config.formLayout (ver DESIGN_SYSTEM.md, "Formulario de
+              edición"): secciones → filas de 1 a 3 campos que van juntos →
+              cada campo con su ancho por token (--field-w-sm/md/lg, "full"
+              = el resto de la fila, "auto" = intrínseco). Filas flex sin
+              wrap; 16px entre filas, 24px entre secciones. Los no editables
               (Origen, Tipo) en read-only. "Revisar cambios" se habilita
               solo con cambios respecto del registro original;
             - paso 2 "Revisar": RevisarCambiosContent (el mismo contenido
@@ -1024,37 +1037,40 @@ export default function AbmScreen({
           <div ref={bodyModificarRef}>
             {pasoModificar === 1 ? (
               <div className="flex flex-col gap-6">
-                {seccionesModificar.map((sec) => {
-                  const campo = (c: (typeof sec.campos)[number]) => (
-                    <AbmCampo
-                      key={c.nombre}
-                      campo={c}
-                      mode={mode}
-                      value={valores[c.nombre]}
-                      onChange={(v) => setValor(c.nombre, v)}
-                      valoresFormulario={valores}
-                      readOnly={esNoEditable(c)}
-                      intrinseco
-                    />
-                  );
-                  return (
-                    <div key={sec.titulo} className="flex flex-col gap-4">
-                      {/* El separador sin sus márgenes propios: el espaciado
-                          lo dan los gaps del bloque. */}
-                      <div className="[&>div]:mt-0 [&>div]:mb-0">
-                        <SectionDivider title={sec.titulo} />
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-4">
-                        <div className="min-w-0 flex flex-col gap-4">
-                          {sec.campos.filter((c) => c.tipo !== "toggle").map(campo)}
-                        </div>
-                        <div className="min-w-0 flex flex-col gap-4">
-                          {sec.campos.filter((c) => c.tipo === "toggle").map(campo)}
-                        </div>
-                      </div>
+                {formLayoutModificar.map((sec) => (
+                  <div key={sec.titulo} className="flex flex-col gap-4">
+                    {/* El separador sin sus márgenes propios: el espaciado lo
+                        dan los gaps del bloque. */}
+                    <div className="[&>div]:mt-0 [&>div]:mb-0">
+                      <SectionDivider title={sec.titulo} />
                     </div>
-                  );
-                })}
+                    {sec.filas.map((fila) => (
+                      <div key={fila.map((f) => f.campo).join("+")} className="flex flex-nowrap items-start gap-x-4">
+                        {fila.map(({ campo: nombre, ancho }) => {
+                          const c = camposTabla.find((x) => x.nombre === nombre);
+                          if (!c) return null;
+                          return (
+                            <div
+                              key={nombre}
+                              className={ancho === "full" ? "flex-1 min-w-0" : ancho === "auto" ? "shrink-0" : "shrink-0 min-w-0"}
+                              style={ancho === "sm" || ancho === "md" || ancho === "lg" ? { width: `var(--field-w-${ancho})` } : undefined}
+                            >
+                              <AbmCampo
+                                campo={c}
+                                mode={mode}
+                                value={valores[c.nombre]}
+                                onChange={(v) => setValor(c.nombre, v)}
+                                valoresFormulario={valores}
+                                readOnly={esNoEditable(c)}
+                                intrinseco
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                ))}
               </div>
             ) : (
               <RevisarCambiosContent cambios={camposModificados} motivo={motivoModificar} />
