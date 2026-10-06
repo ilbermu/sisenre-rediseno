@@ -143,6 +143,15 @@
   --z-toast: 60; /* notificaciones (todavía sin uso) */
   --z-tooltip: 70; /* tooltips */
 
+  /* Movimiento — duraciones y curva; usar duration-(--duration-…) */
+  --duration-fast: 100ms; /* hover de filas y chips, micro-feedback */
+  --duration-base: 150ms; /* default: botones, campos, toggles */
+  --duration-slow: 250ms; /* destellos, colapso de sidebar */
+  --ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
+  /* Las utilidades transition-* de Tailwind toman estos defaults */
+  --default-transition-duration: var(--duration-base);
+  --default-transition-timing-function: var(--ease-standard);
+
   /* Radios — por rol (ver DESIGN_SYSTEM.md, "Radios") */
   --radius-*: initial;
   --radius-xs: 4px; /* badges de código, checkbox, celdas del mini calendario, leyendas */
@@ -316,7 +325,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity var(--duration-base) var(--ease-standard);
   z-index: var(--z-tooltip);
   border: 1px solid rgba(255,255,255,0.12);
 }
@@ -333,4 +342,27 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 @utility bg-fill-subtle-solid {
   background-color: var(--color-surface);
   background-image: linear-gradient(var(--color-fill-subtle), var(--color-fill-subtle));
+}
+
+/*
+ * Movimiento reducido: transiciones y animaciones a ~0ms. El spinner de
+ * carga (animate-spin) queda afuera: es información (indica que la app
+ * está trabajando), no decoración.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-spin {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
 }

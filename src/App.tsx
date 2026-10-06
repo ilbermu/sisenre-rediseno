@@ -384,7 +384,7 @@ function NavItem({
       disabled={disabled}
       title={disabled && disabledTitle ? disabledTitle : !collapsed ? label + (code ? ` · ${code}` : "") : undefined}
       style={{ position: "relative" }}
-      className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-all duration-150 group
+      className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-colors duration-(--duration-base) group
         ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
         ${disabled
           ? "border-transparent text-text-faint cursor-not-allowed"
@@ -453,12 +453,12 @@ function PeriodSelector() {
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`${BTN_MD} group flex items-center gap-1.5 border transition-all duration-150
+        className={`${BTN_MD} group flex items-center gap-1.5 border transition-colors duration-(--duration-base)
           ${open ? "bg-primary-tint border-primary text-secondary" : "bg-surface border-border-strong text-text hover:border-primary hover:bg-primary-tint hover:text-secondary"}`}
       >
         <span className={`transition-colors ${open ? "text-secondary" : "text-icon group-hover:text-secondary"}`}><Calendar size={ICON.md} strokeWidth={1.5} /></span>
         <span>{selected}</span>
-        <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
+        <span className={`transition-transform duration-(--duration-base) ${open ? "rotate-180" : ""}`}>
           <ChevronDown size={ICON.md} strokeWidth={1.5} />
         </span>
       </button>
@@ -591,7 +591,7 @@ function FilterTriggerButton({
         aria-expanded={open}
         disabled={disabled}
         onClick={onToggle}
-        className={`h-(--control-sm) px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-all disabled:text-text-faint disabled:cursor-not-allowed disabled:pointer-events-none ${FOCUS_RING} ${
+        className={`h-(--control-sm) px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-colors disabled:text-text-faint disabled:cursor-not-allowed disabled:pointer-events-none ${FOCUS_RING} ${
           open
             ? "bg-primary-tint border-primary text-secondary"
             : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
@@ -786,7 +786,7 @@ function FilterDateRangePanel({
             key={a.label}
             type="button"
             onClick={() => completar(...a.rango())}
-            className={`${BTN_SM} border transition-all duration-150 shrink-0 bg-surface border-border-strong text-text hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]`}
+            className={`${BTN_SM} border transition-[color,background-color,border-color,transform] duration-(--duration-base) shrink-0 bg-surface border-border-strong text-text hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]`}
           >
             {a.label}
           </button>
@@ -848,8 +848,8 @@ function DateTimeChevron({ orientation }: ChevronProps) {
 const DAY_PICKER_CLASSNAMES = {
   month: "relative flex flex-col",
   month_caption: "flex items-center justify-center h-6 mb-2",
-  button_previous: "absolute left-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all",
-  button_next: "absolute right-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all",
+  button_previous: "absolute left-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors",
+  button_next: "absolute right-0 top-0 w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors",
   month_grid: "w-full border-collapse",
   weekdays: "",
   weekday: "text-heading-xs uppercase text-text-muted pb-1",
@@ -1038,14 +1038,14 @@ function DateTimeField({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className={`${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all`}
+              className={`${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-colors`}
             >
               Cerrar
             </button>
             <button
               type="button"
               onClick={aplicar}
-              className={`${BTN_MD} text-white bg-primary-strong hover:bg-primary-hover transition-all`}
+              className={`${BTN_MD} text-white bg-primary-strong hover:bg-primary-hover transition-colors`}
             >
               Aplicar
             </button>
@@ -1088,7 +1088,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
               <p className="text-body font-medium text-text truncate">Rdellamagiora</p>
               <p className="text-caption text-text-muted mt-0.5 truncate">Operador</p>
             </div>
-            <span className={`text-icon transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
+            <span className={`text-icon transition-transform duration-(--duration-base) ${open ? "rotate-180" : ""}`}>
               <ChevronDown size={ICON.md} strokeWidth={1.5} />
             </span>
           </>
@@ -1153,9 +1153,9 @@ type ActionItem = {
 
 function actionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return `${BTN_MD} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.98] whitespace-nowrap`;
+    return `${BTN_MD} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-red-50 hover:border-error-border-hover transition-[color,background-color,border-color,transform] active:scale-[0.98] whitespace-nowrap`;
   }
-  return `${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.98] whitespace-nowrap`;
+  return `${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] active:scale-[0.98] whitespace-nowrap`;
 }
 
 // Variante compacta de actionBtnCls — mismo botón outline/secundario ya
@@ -1166,9 +1166,9 @@ function actionBtnCls(variant?: ActionItem["variant"]) {
 // Resultados) donde el tamaño md no entra prolijo.
 function rowActionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return `${BTN_SM} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-red-50 hover:border-error-border-hover transition-all active:scale-[0.97] whitespace-nowrap`;
+    return `${BTN_SM} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-red-50 hover:border-error-border-hover transition-[color,background-color,border-color,transform] active:scale-[0.97] whitespace-nowrap`;
   }
-  return `${BTN_SM} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all active:scale-[0.97] whitespace-nowrap`;
+  return `${BTN_SM} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] active:scale-[0.97] whitespace-nowrap`;
 }
 
 // Confirmación visual de qué registro está seleccionado — solo la línea
@@ -1386,7 +1386,7 @@ function TableToolbar({
         placeholder={searchPlaceholder}
         aria-label={searchPlaceholder.replace(/…$/, "")}
         disabled={disabled}
-        className={`w-full h-(--control-sm) pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted ${FIELD_FOCUS} transition-all duration-150 disabled:bg-fill-muted disabled:text-text-faint disabled:placeholder:text-text-faint disabled:cursor-not-allowed`}
+        className={`w-full h-(--control-sm) pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted ${FIELD_FOCUS} transition-[border-color,box-shadow,background-color] duration-(--duration-base) disabled:bg-fill-muted disabled:text-text-faint disabled:placeholder:text-text-faint disabled:cursor-not-allowed`}
       />
     </div>
   );
@@ -1419,11 +1419,11 @@ function TableToolbar({
 // outline para cancelar, azul solido para la accion primaria). Cierra con X,
 // click en el overlay o Escape.
 const modalFilledBtnBase =
-  "h-(--control-md) px-5 rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-(--control-md) px-5 rounded-sm text-body font-medium text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 const modalPrimaryBtnCls = modalFilledBtnBase + " bg-primary-strong hover:bg-primary-hover";
 const modalDestructiveBtnCls = modalFilledBtnBase + " bg-error hover:bg-error-text-strong";
 const modalNeutralBtnCls =
-  "h-(--control-md) px-5 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
+  "h-(--control-md) px-5 rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 
 function Modal({
   title,
@@ -1544,7 +1544,7 @@ function Modal({
             <button
               type="button"
               onClick={onClose}
-              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all"
+              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors"
             >
               <X size={ICON.sm} strokeWidth={1.5} />
             </button>
@@ -1617,7 +1617,7 @@ function ModalCheckbox({
         className="sr-only"
       />
       <span
-        className={`w-4 h-4 rounded-xs border flex items-center justify-center shrink-0 transition-colors duration-150 ${
+        className={`w-4 h-4 rounded-xs border flex items-center justify-center shrink-0 transition-colors duration-(--duration-base) ${
           checked ? "bg-primary-strong border-primary-strong" : "bg-surface border-border-strong hover:border-primary"
         }`}
       >
@@ -1642,11 +1642,11 @@ function ModalRadio({ label, checked, onSelect }: { label: string; checked: bool
       className="inline-flex items-center gap-1.5 text-body text-text cursor-pointer select-none"
     >
       <span
-        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-150 ${
+        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-(--duration-base) ${
           checked ? "border-primary-strong" : "border-border-strong hover:border-primary"
         }`}
       >
-        <span className={`w-2 h-2 rounded-full bg-primary-strong transition-transform duration-150 ${checked ? "scale-100" : "scale-0"}`} />
+        <span className={`w-2 h-2 rounded-full bg-primary-strong transition-transform duration-(--duration-base) ${checked ? "scale-100" : "scale-0"}`} />
       </span>
       {label}
     </label>
@@ -2553,7 +2553,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     }
   }
 
-  const inputCls = `w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-border-strong rounded-sm bg-surface ${FIELD_FOCUS} transition-all`;
+  const inputCls = `w-full px-[8px] py-[12px] [@media(max-height:760px)]:py-[var(--login-input-py,12px)] border border-border-strong rounded-sm bg-surface ${FIELD_FOCUS} transition-[border-color,box-shadow,background-color]`;
   const inputStyle: React.CSSProperties = { letterSpacing: "0.14px" };
   const labelStyle: React.CSSProperties = { letterSpacing: "0.14px" };
 
@@ -2609,7 +2609,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
                 type="submit"
                 disabled={loading}
                 aria-busy={loading}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-sm text-white bg-primary-strong hover:bg-primary-hover disabled:pointer-events-none active:scale-[0.99] transition-all font-sans text-body font-medium"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-sm text-white bg-primary-strong hover:bg-primary-hover disabled:pointer-events-none active:scale-[0.99] transition-[color,background-color,border-color,transform] font-sans text-body font-medium"
                 style={{
                   paddingTop: "var(--login-button-py, 12px)", paddingBottom: "var(--login-button-py, 12px)", paddingLeft: 24, paddingRight: 24,
                 }}
@@ -2676,7 +2676,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
                 onClick={() => !opt.disabled && onSelect(opt.id)}
                 onMouseEnter={() => setHovered(opt.id)}
                 onMouseLeave={() => setHovered(null)}
-                className="group w-full text-left px-5 py-4 rounded-lg border border-border bg-surface shadow-sm transition-all duration-150 enabled:hover:bg-primary-tint enabled:hover:border-primary enabled:hover:shadow-md"
+                className="group w-full text-left px-5 py-4 rounded-lg border border-border bg-surface shadow-sm transition-[color,background-color,border-color,box-shadow] duration-(--duration-base) enabled:hover:bg-primary-tint enabled:hover:border-primary enabled:hover:shadow-md"
                 style={{
                   cursor: opt.disabled ? "not-allowed" : "pointer",
                   opacity: opt.disabled ? 0.55 : 1,
@@ -2689,7 +2689,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
                   </div>
                   {!opt.disabled && (
                     <span
-                      className="shrink-0 ml-4 text-icon group-enabled:group-hover:text-secondary transition-all duration-150"
+                      className="shrink-0 ml-4 text-icon group-enabled:group-hover:text-secondary transition-[color,transform] duration-(--duration-base)"
                       style={{ transform: isHov ? "translateX(3px)" : "none" }}
                     >
                       <ChevronRight size={ICON.md} strokeWidth={1.5} />
@@ -2951,7 +2951,7 @@ function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }
           <div
             key={item.code}
             onClick={() => onIrATabla(item.tableKey)}
-            className="group bg-surface rounded-lg border border-border px-5 py-4 cursor-pointer shadow-sm transition-all duration-150 hover:bg-primary-tint hover:border-primary hover:shadow-md"
+            className="group bg-surface rounded-lg border border-border px-5 py-4 cursor-pointer shadow-sm transition-[color,background-color,border-color,box-shadow] duration-(--duration-base) hover:bg-primary-tint hover:border-primary hover:shadow-md"
           >
             <div className="flex items-start gap-3">
               <span className="mt-0.5 text-primary shrink-0">{item.icon}</span>
@@ -3264,11 +3264,11 @@ const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
 // existían por separado como inputCls/selectCls, ya unificadas acá).
 const MOD_FIELD_CLS =
   "w-full h-(--control-md) px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text " +
-  "placeholder:text-text-muted " + FIELD_FOCUS + " transition-all duration-150";
+  "placeholder:text-text-muted " + FIELD_FOCUS + " transition-[border-color,box-shadow,background-color] duration-(--duration-base)";
 
 const MOD_SELECT_CLS =
   "h-(--control-md) px-2.5 pr-7 text-body bg-surface border border-border-strong rounded-sm text-text appearance-none " +
-  "cursor-pointer " + FIELD_FOCUS + " transition-all duration-150 shrink-0";
+  "cursor-pointer " + FIELD_FOCUS + " transition-[border-color,box-shadow,background-color] duration-(--duration-base) shrink-0";
 
 // Campos del flyout "Más filtros" de la Card A. Cada uno se puede aplicar,
 // mostrar como chip removible debajo de la filter bar, y contar para el
@@ -3825,7 +3825,7 @@ function RelacionadaChip({
       type="button"
       onClick={onClick}
       aria-label={booleana ? `${nombre}: ${valor}, abrir` : `${nombre}: ${valor} registros, abrir`}
-      className={`${baseCls} bg-surface border-border hover:bg-primary-tint hover:border-primary active:bg-chip-border-hover transition-[background-color,border-color] duration-[120ms] ${FOCUS_RING}`}
+      className={`${baseCls} bg-surface border-border hover:bg-primary-tint hover:border-primary active:bg-chip-border-hover transition-[background-color,border-color] duration-(--duration-fast) ${FOCUS_RING}`}
     >
       {etiqueta}
       <span className="w-0 min-w-full text-body-lg whitespace-nowrap font-medium text-secondary">{valor}</span>
@@ -4398,7 +4398,7 @@ function FaseReposicionFicha({
     // en wrap queda anclada arriba a la derecha.
     <div aria-live="polite" className="px-5 py-3 shrink-0">
       <div
-        className={`border border-border rounded-md px-4 py-2.5 flex items-center gap-3 transition-colors duration-300 ${flash ? "bg-primary-tint" : "bg-surface"}`}
+        className={`border border-border rounded-md px-4 py-2.5 flex items-center gap-3 transition-colors duration-(--duration-slow) ${flash ? "bg-primary-tint" : "bg-surface"}`}
       >
       <div className="flex items-center flex-wrap gap-x-2 gap-y-1 min-w-0 text-body-sm">
         <span className="font-semibold text-text whitespace-nowrap">Reposición {fila.nro}</span>
@@ -4434,7 +4434,7 @@ function FaseReposicionFicha({
           onClick={handleCopiarDatosReposicion}
           aria-label="Copiar datos de la reposición"
           title="Copiar datos de la reposición"
-          className={`w-8 h-8 flex items-center justify-center rounded-sm border border-transparent text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary ${FOCUS_RING} transition-all shrink-0`}
+          className={`w-8 h-8 flex items-center justify-center rounded-sm border border-transparent text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary ${FOCUS_RING} transition-colors shrink-0`}
         >
           <ClipboardList size={ICON.sm} strokeWidth={1.5} />
         </button>
@@ -4449,7 +4449,7 @@ function FaseReposicionFicha({
             onClick={() => onChangeReposicion(reposicionIndex - 1)}
             disabled={reposicionIndex <= 0}
             aria-label="Reposición anterior"
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             <ChevronLeft size={ICON.sm} strokeWidth={1.5} />
           </button>
@@ -4458,7 +4458,7 @@ function FaseReposicionFicha({
             onClick={() => onChangeReposicion(reposicionIndex + 1)}
             disabled={reposicionIndex >= totalReposiciones - 1}
             aria-label="Reposición siguiente"
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             <ChevronRight size={ICON.sm} strokeWidth={1.5} />
           </button>
@@ -4587,7 +4587,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
         onClick={handleCopy}
         aria-label={`Copiar ${label}`}
         title={copied ? "Copiada" : `Copiar ${label}`}
-        className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all shrink-0"
+        className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors shrink-0"
       >
         {copied ? <Check size={ICON.sm} strokeWidth={1.5} className="text-success-text-strong" /> : <Copy size={ICON.sm} strokeWidth={1.5} />}
       </button>
@@ -4625,7 +4625,7 @@ function ButtonSelectGroup({
             disabled={disabled}
             aria-pressed={isSel}
             onClick={() => onToggle(opt)}
-            className={`${sizeCls} border transition-all duration-150 shrink-0 ${
+            className={`${sizeCls} border transition-colors duration-(--duration-base) shrink-0 ${
               disabled
                 ? isSel
                   ? "bg-primary-tint/60 border-primary/50 text-text-faint cursor-not-allowed"
@@ -4727,7 +4727,7 @@ function PersistentActionsBar({
         className={actionBtnCls("neutral") + " inline-flex items-center gap-1.5"}
       >
         Acciones
-        <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}><ChevronDown size={ICON.md} strokeWidth={1.5} /></span>
+        <span className={`transition-transform duration-(--duration-base) ${open ? "rotate-180" : ""}`}><ChevronDown size={ICON.md} strokeWidth={1.5} /></span>
       </button>
       {open && (
         <div
@@ -5043,7 +5043,7 @@ function ModificarContent({
     <button
       type="button"
       onClick={() => setFlyoutOpen((v) => !v)}
-      className={`${BTN_MD} border flex items-center gap-1.5 transition-all duration-150 ${
+      className={`${BTN_MD} border flex items-center gap-1.5 transition-colors duration-(--duration-base) ${
         activeFlyoutFields.length > 0
           ? "bg-primary-tint border-primary text-secondary"
           : "bg-surface border-border-strong text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
@@ -5073,13 +5073,13 @@ function ModificarContent({
           setFaseSel("");
         }}
         disabled={!modShowData}
-        className={`${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
+        className={`${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
       >Limpiar</button>
       <button
         type="button"
         onClick={() => { setModShowData(true); setModSelectedRow(null); }}
         disabled={modShowData}
-        className={`${BTN_MD} text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
+        className={`${BTN_MD} text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
       >Buscar</button>
     </>
   );
@@ -5207,7 +5207,7 @@ function ModificarContent({
                   <button
                     type="button"
                     onClick={() => setFlyoutOpen(false)}
-                    className="w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all"
+                    className="w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors"
                   >
                     <X size={ICON.sm} strokeWidth={1.5} />
                   </button>
@@ -5244,7 +5244,7 @@ function ModificarContent({
                     <button
                       type="button"
                       onClick={() => setFlyoutOpen(false)}
-                      className={`${BTN_MD} text-white bg-primary-strong hover:bg-primary-hover transition-all`}
+                      className={`${BTN_MD} text-white bg-primary-strong hover:bg-primary-hover transition-colors`}
                     >
                       Aplicar
                     </button>
@@ -5287,7 +5287,7 @@ function ModificarContent({
           si el contenido no entra, la tabla se achica y scrollea adentro,
           nunca la página. Las cards NO llevan overflow-hidden: recortaría
           el panel del filtro de Fecha y cualquier otro popover. ── */}
-      <div className={`flex-1 min-h-0 flex items-start gap-(--cards-gap) transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
+      <div className={`flex-1 min-h-0 flex items-start gap-(--cards-gap) transition-opacity duration-(--duration-base) ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
 
       {/* ── Card Interrupciones — card con secciones (ver DESIGN_SYSTEM.md,
           "Card con secciones"): header con divisor → toolbar → tabla al ras
@@ -6521,7 +6521,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="group flex items-center gap-2 h-(--control-md) pl-1.5 pr-2 -ml-1.5 rounded-sm min-w-0 transition-colors duration-150 hover:bg-fill-muted"
+        className="group flex items-center gap-2 h-(--control-md) pl-1.5 pr-2 -ml-1.5 rounded-sm min-w-0 transition-colors duration-(--duration-base) hover:bg-fill-muted"
       >
         {/* Lápiz fijo — no el ícono por tabla: el masthead del panel de
             trabajo siempre representa "estás en la herramienta de ABM",
@@ -6534,7 +6534,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
         >
           {current.code}
         </span>
-        <span className={`shrink-0 text-icon transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
+        <span className={`shrink-0 text-icon transition-transform duration-(--duration-base) ${open ? "rotate-180" : ""}`}>
           <ChevronDown size={ICON.md} strokeWidth={1.5} />
         </span>
       </button>
@@ -6681,7 +6681,7 @@ function AbmCampo({
                 // flex-1 incondicional en ese breakpoint (en tamaño normal
                 // sigue siendo shrink-to-fit salvo que expandirBotones lo
                 // pida explícitamente).
-                className={`${BTN_SEG_MD} ${campo.expandirBotones ? "flex-1" : ""} [@media(max-height:760px)]:flex-1 flex items-center justify-center border select-none transition-all duration-150 ${
+                className={`${BTN_SEG_MD} ${campo.expandirBotones ? "flex-1" : ""} [@media(max-height:760px)]:flex-1 flex items-center justify-center border select-none transition-colors duration-(--duration-base) ${
                   estado === "disabled" ? "cursor-not-allowed opacity-60" : isDisabled ? "cursor-default" : "cursor-pointer"
                 } ${
                   active
@@ -6925,7 +6925,7 @@ function ValuePicker({
               <button
                 type="button"
                 onClick={cerrar}
-                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all"
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors"
               >
                 <X size={ICON.sm} strokeWidth={1.5} />
               </button>
@@ -7435,34 +7435,34 @@ function AbmScreen({
                 <button
                   onClick={handleLimpiar}
                   disabled={!showData}
-                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >Limpiar</button>
                 <button
                   onClick={handleBuscar}
                   disabled={showData}
-                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >Buscar</button>
               </>
             ) : mode === "alta" ? (
               <>
                 <button
                   onClick={handleCancelarAlta}
-                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99]"
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarAlta}
-                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
                 >Insertar</button>
               </>
             ) : (
               <>
                 <button
                   onClick={handleCancelarModificar}
-                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-all duration-150 active:scale-[0.99]"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99]"
                 >Cancelar</button>
                 <button
                   onClick={handleGuardarModificar}
-                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-all duration-150 active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
+                  className="flex-1 h-(--control-md) rounded-sm text-body font-medium text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] bg-primary-strong hover:bg-primary-hover"
                 >Guardar</button>
               </>
             )}
@@ -7473,7 +7473,7 @@ function AbmScreen({
             y en modo modificar, para que el foco visual quede en el panel
             Búsqueda ── */}
         <div
-          className={`shadow-sm flex-1 flex flex-col border border-border rounded-md bg-surface overflow-hidden transition-opacity duration-150 ${
+          className={`shadow-sm flex-1 flex flex-col border border-border rounded-md bg-surface overflow-hidden transition-opacity duration-(--duration-base) ${
             mode !== "buscar" ? "opacity-50 pointer-events-none" : ""
           }`}
         >
@@ -7596,7 +7596,7 @@ function AbmScreen({
                         onClick={() => setSelectedRow(isSelected ? null : i)}
                         onMouseEnter={() => setHoveredRow(i)}
                         onMouseLeave={() => setHoveredRow(null)}
-                        className="border-b border-border-subtle cursor-pointer transition-colors duration-100"
+                        className="border-b border-border-subtle cursor-pointer transition-colors duration-(--duration-fast)"
                         style={{ backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined }}
                       >
                         {config.columnasResultado.map((c, ci) => (
@@ -8355,7 +8355,7 @@ export default function App() {
         // truncan con ellipsis + title (tooltip nativo) si no entran, en vez
         // de encimarse o cortarse sin indicación.
         width: collapsed ? 60 : compactSidebar ? 190 : 256,
-        transition: "width 220ms cubic-bezier(0.4,0,0.2,1)",
+        transition: "width var(--duration-slow) var(--ease-standard)",
         backgroundColor: "var(--color-bg-app)",
         display: "flex", flexDirection: "column",
         flexShrink: 0, overflow: "hidden",
@@ -8431,7 +8431,7 @@ export default function App() {
             aria-expanded={abmExpanded}
             title={!collapsed ? "Alta, Baja y Modificación" : undefined}
             style={{ position: "relative" }}
-            className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-all duration-150 group
+            className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-colors duration-(--duration-base) group
               ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
               ${isAbmTableKey(screen)
                 ? "border-transparent bg-secondary/10 text-secondary"
@@ -8442,7 +8442,7 @@ export default function App() {
             {!collapsed && (
               <>
                 <span className="flex-1 min-w-0 truncate text-body text-left">Alta, Baja y Modificación</span>
-                <span className={`shrink-0 transition-transform duration-150 ${abmExpanded ? "" : "-rotate-90"}`}>
+                <span className={`shrink-0 transition-transform duration-(--duration-base) ${abmExpanded ? "" : "-rotate-90"}`}>
                   <ChevronDown size={ICON.md} strokeWidth={1.5} />
                 </span>
               </>
@@ -8476,7 +8476,7 @@ export default function App() {
             aria-expanded={herramientasExpanded}
             title={!collapsed ? "Herramientas" : undefined}
             style={{ position: "relative" }}
-            className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-all duration-150 group mt-0.5
+            className={`sidebar-item-btn w-full flex items-center gap-2 rounded-sm border transition-colors duration-(--duration-base) group mt-0.5
               ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
               border-transparent text-text hover:bg-fill-muted`}
           >
@@ -8484,7 +8484,7 @@ export default function App() {
             {!collapsed && (
               <>
                 <span className="flex-1 min-w-0 truncate text-body text-left">Herramientas</span>
-                <span className={`shrink-0 transition-transform duration-150 ${herramientasExpanded ? "" : "-rotate-90"}`}>
+                <span className={`shrink-0 transition-transform duration-(--duration-base) ${herramientasExpanded ? "" : "-rotate-90"}`}>
                   <ChevronDown size={ICON.md} strokeWidth={1.5} />
                 </span>
               </>
@@ -8524,7 +8524,7 @@ export default function App() {
               className="w-full flex items-center gap-1 px-1 pt-5 pb-1.5 text-heading-xs uppercase text-text-muted select-none hover:text-text transition-colors"
             >
               <span className="flex-1 text-left">Otros</span>
-              <span className={`shrink-0 transition-transform duration-150 ${otrosExpanded ? "" : "-rotate-90"}`}>
+              <span className={`shrink-0 transition-transform duration-(--duration-base) ${otrosExpanded ? "" : "-rotate-90"}`}>
                 <ChevronDown size={ICON.md} strokeWidth={1.5} />
               </span>
             </button>
