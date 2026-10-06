@@ -21,7 +21,6 @@ export const ABM_ITEMS: { code: string; label: string; screen?: Screen; key?: st
 
 export const PERIODS = ["Agosto 2026","Julio 2026","Junio 2026","Mayo 2026","Abril 2026"];
 
-// ─── Modal: Confirmar modificación ─────────────────────────────────────────
 const NOTA_PRESETS = ["Procesar Lotes", "Test 2", "Test 3", "Alta manual / Modifico", "2da Alta Manual"];
 export const NOTA_OPCIONES = [...NOTA_PRESETS, "Otra (especificar)"];
 

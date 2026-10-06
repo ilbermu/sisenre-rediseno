@@ -12,6 +12,8 @@ import { crearRng, hashSemilla } from "@/data/rng";
 import { generarConsolidacionSintetica } from "@/data/sinteticos";
 import { formatFechaHora } from "@/lib/format";
 
+// ─── Planilla consolidada ───────────────────────────────────────────────────
+
 export function PlanillaConsolidadaContent() {
   const [datos, setDatos] = useState(() => generarConsolidacionSintetica(crearRng(hashSemilla("planilla-consolidada"))));
   const [fechaProceso, setFechaProceso] = useState("12/08/2026 09:19");

@@ -55,6 +55,8 @@ import { NivelTipoModal } from "@/features/consultas-interrupcion/herramientas/N
 import { ReplicarModal } from "@/features/consultas-interrupcion/herramientas/ReplicarModal";
 import { VALOR_VACIO } from "@/lib/format";
 
+// ─── Modificar content ────────────────────────────────────────────────────────
+
 // "dd/mm/aaaa hh:mm" → Date, sobre parseDateTimeStr (null si no parsea).
 function fechaHoraDeStr(v: string): Date | null {
   const { date, time } = parseDateTimeStr(v);

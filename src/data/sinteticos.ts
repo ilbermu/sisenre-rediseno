@@ -197,8 +197,6 @@ export const CDS4_ROWS = (() => {
 // generadas para la vista de muestra.
 export const CDS4_TOTAL = 48213;
 
-// ─── Modificar content ────────────────────────────────────────────────────────
-
 export const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
 
 // Fase eléctrica de la reposición — sesgada hacia monofásicas (R/S/T) y RST
@@ -355,8 +353,6 @@ export function generarFilasTabla9(seed: string, referencia: string, nroReposici
     cadenaCodeSintetica(rng),
   ]);
 }
-
-// ─── Planilla consolidada ───────────────────────────────────────────────────
 
 export function generarConsolidacionSintetica(rng: () => number) {
   return {

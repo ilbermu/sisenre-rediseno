@@ -49,6 +49,8 @@ const HERRAMIENTAS_ITEMS: { key: HerramientaKey; label: string; pendiente?: bool
   { key: "intercambio",  label: "Intercambio",   pendiente: true },
 ];
 
+// ─── App ──────────────────────────────────────────────────────────────────────
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>("login");
   const [collapsed, setCollapsed] = useState(false);

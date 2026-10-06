@@ -49,8 +49,6 @@ export const BTN_MD = "h-(--control-md) px-4 rounded-sm text-body font-medium";
 // Segmented (ButtonSelectGroup) en filas con campos y botones md: alto de campo.
 export const BTN_SEG_MD = "h-(--control-md) px-2.5 rounded-sm text-label";
 
-// ─── Login screen ─────────────────────────────────────────────────────────────
-
 export type ActionItem = {
   label: string;
   onClick?: () => void;
@@ -78,14 +76,6 @@ export function rowActionBtnCls(variant?: ActionItem["variant"]) {
   return `${BTN_SM} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] active:scale-[0.97] whitespace-nowrap`;
 }
 
-// ─── Modal estándar ─────────────────────────────────────────────────────────
-// Standard compartido para toda accion de tabla que requiera un dialogo
-// (Desarmes, Nivel/Tipo, Replicar, Cambia fases, Alta clientes, Lotes,
-// Intercambio, y las que vengan despues). Overlay + panel centrado, header
-// con titulo/subtitulo y boton X, body libre por contenido, footer con
-// botones alineados a la derecha (mismo lenguaje que Buscar/Limpiar: neutral
-// outline para cancelar, azul solido para la accion primaria). Cierra con X,
-// click en el overlay o Escape.
 const modalFilledBtnBase =
   "h-(--control-md) px-5 rounded-sm text-body font-medium text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 export const modalPrimaryBtnCls = modalFilledBtnBase + " bg-primary-strong hover:bg-primary-hover";

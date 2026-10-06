@@ -8,6 +8,7 @@ import {
 } from "@/components/ui";
 import { NOTA_OPCIONES } from "@/data/dominio";
 
+// ─── Modal: Confirmar modificación ─────────────────────────────────────────
 export function ConfirmarModificarModal({
   open,
   cambios,

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui";
 import { ALTA_CLIENTES_ROWS } from "@/data/mocks";
 
+// ─── Modal: Alta de clientes ────────────────────────────────────────────────
 export function AltaClientesModal({
   open,
   onClose,

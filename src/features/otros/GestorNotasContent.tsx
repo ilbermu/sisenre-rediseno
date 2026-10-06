@@ -15,6 +15,8 @@ import {
 } from "@/components/ui";
 import { NOTAS_INICIALES } from "@/data/mocks";
 
+// ─── Gestor de notas ────────────────────────────────────────────────────────
+
 export function GestorNotasContent() {
   const [notas, setNotas] = useState(NOTAS_INICIALES);
   const [filtro, setFiltro] = useState("");

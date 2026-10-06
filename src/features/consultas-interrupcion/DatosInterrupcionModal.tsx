@@ -2,6 +2,12 @@ import { Modal, modalNeutralBtnCls, modalPrimaryBtnCls, ReadOnlyField } from "@/
 import { ReclamosInterrupcion } from "@/data/types";
 import { ReclamosTimeline } from "@/features/consultas-interrupcion/ReclamosTimeline";
 
+// ─── Modal: Datos de la interrupción ───────────────────────────────────────
+// Mismo chrome que el resto de los modales de la app (Modal genérico:
+// header claro, X, footer con modalNeutralBtnCls/modalPrimaryBtnCls), sin
+// excepciones de color — "Procesar" usa el mismo azul primario que el botón
+// principal de cualquier otro modal.
+
 const DATOS_INTERRUPCION_COLUMNS: { label: string; value: string }[][] = [
   [
     { label: "Repos", value: "1" },

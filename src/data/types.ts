@@ -1,4 +1,3 @@
-// ─── Modal: Cambia fases ────────────────────────────────────────────────────
 export type FaseRow = { fase: number; fecha: string; idElemento: string; tipoElemento: string; cadena: string; cliente: number };
 
 // Fila de la lista de Reposiciones (Tabla 4/CDS4) — campos con nombre en vez
@@ -23,14 +22,6 @@ export type FaseReposicion = {
 // gráfico: ~10% sin reclamos; del resto 50% 1, 35% 2, 10% 3-15, 5% 16-400.
 // La curva típica: arranca rápido, pica al rato y decae.
 export type ReclamosInterrupcion = { inicio: Date; fin: Date; minutos: number[] };
-
-// ─── ABM engine (config-driven) ────────────────────────────────────────────
-// Motor generico para las 9 tablas ABM (CDS2..CDS9-NM). En vez de un
-// componente por tabla, cada tabla es una entrada de ABM_TABLE_CONFIGS y
-// AbmScreen renderiza formulario de busqueda + tabla de resultados + action
-// bar contextual a partir de esa config. CDS2/CDS3/CDS4 quedan migradas a
-// este motor reproduciendo exactamente su comportamiento actual; CDS5..CDS9NM
-// son tablas nuevas relevadas de capturas de produccion.
 
 export type AbmTableKey = "cds2" | "cds3" | "cds4" | "cds5" | "cds6" | "cds7" | "cds8" | "cds9" | "cds9nm";
 

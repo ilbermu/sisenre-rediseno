@@ -2,6 +2,14 @@ import { useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { ICON, ICON_BTN_SM } from "@/components/ui/tokens";
 
+// ─── Modal estándar ─────────────────────────────────────────────────────────
+// Standard compartido para toda accion de tabla que requiera un dialogo
+// (Desarmes, Nivel/Tipo, Replicar, Cambia fases, Alta clientes, Lotes,
+// Intercambio, y las que vengan despues). Overlay + panel centrado, header
+// con titulo/subtitulo y boton X, body libre por contenido, footer con
+// botones alineados a la derecha (mismo lenguaje que Buscar/Limpiar: neutral
+// outline para cancelar, azul solido para la accion primaria). Cierra con X,
+// click en el overlay o Escape.
 export function Modal({
   title,
   subtitle,

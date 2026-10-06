@@ -300,7 +300,7 @@
 /*
  * Sistema de tamaños de botón — 2 tamaños únicos para toda la app, anclados
  * a los tokens de arriba (nada de alto/padding/tipografía/radius suelto por
- * instancia — ver BTN_SM/BTN_MD en App.tsx, junto a actionBtnCls y
+ * instancia — ver BTN_SM/BTN_MD en components/ui/tokens.ts, junto a actionBtnCls y
  * rowActionBtnCls).
  *
  * sm (compacto) — acciones inline de fila (Modificar/Borrar en las tablas

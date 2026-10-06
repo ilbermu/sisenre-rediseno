@@ -10,6 +10,8 @@ import { ABM_ITEMS } from "@/data/dominio";
 import { USUARIOS_SISENRE_DEMO } from "@/data/mocks";
 import { AbmTableKey } from "@/data/types";
 
+// ─── Reporte de auditoría ───────────────────────────────────────────────────
+
 export function AuditoriaContent() {
   const [usuario, setUsuario] = useState("");
   const [tablasSel, setTablasSel] = useState<Set<AbmTableKey>>(new Set());

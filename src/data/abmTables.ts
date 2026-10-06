@@ -25,6 +25,14 @@ import {
 } from "@/data/sinteticos";
 import { AbmTableConfig, AbmTableKey } from "@/data/types";
 
+// ─── ABM engine (config-driven) ────────────────────────────────────────────
+// Motor generico para las 9 tablas ABM (CDS2..CDS9-NM). En vez de un
+// componente por tabla, cada tabla es una entrada de ABM_TABLE_CONFIGS y
+// AbmScreen renderiza formulario de busqueda + tabla de resultados + action
+// bar contextual a partir de esa config. CDS2/CDS3/CDS4 quedan migradas a
+// este motor reproduciendo exactamente su comportamiento actual; CDS5..CDS9NM
+// son tablas nuevas relevadas de capturas de produccion.
+
 export const ABM_TABLE_ORDER: AbmTableKey[] = ["cds2", "cds3", "cds4", "cds5", "cds6", "cds7", "cds8", "cds9", "cds9nm"];
 
 export function isAbmTableKey(s: string): s is AbmTableKey {

@@ -4,6 +4,8 @@ import imgLoginBg from "@/imports/Login/login-bg.png";
 import Logo from "@/imports/Logo/index";
 import { FIELD_FOCUS, ICON } from "@/components/ui";
 
+// ─── Login screen ─────────────────────────────────────────────────────────────
+
 export function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
