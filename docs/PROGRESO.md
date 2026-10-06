@@ -272,7 +272,8 @@ Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
 - **Headers desalineados**: Interrupciones no lleva subtítulo y su header
   mide 16px menos que el de Reposiciones (`reserveSubtitle`), así que los
   divisores de las dos cards no quedan a la misma altura
-  (`src/features/consultas-interrupcion/ModificarContent.tsx`).
+  (`src/features/consultas-interrupcion/ModificarContent.tsx`). **Resuelto el 2026-10-06** (`20de44d`): `CardHeader` con alto fijo
+  `--card-header-h`; las dos cards miden lo mismo.
 - **Ancho a 1366px**: "Buscar" sigue cortado contra el borde derecho y los
   toggles Origen/Tipo se apilan en dos renglones. Preexistente.
 - **"Orden por Fecha"**: en Interrupciones es un filtro por rango
@@ -296,6 +297,106 @@ Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
 
 Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
 `src/features/login/LoginScreen.tsx` (`LoginScreen`).
+
+## 2026-10-06
+
+### Qué se hizo
+
+- **Aire de chrome y Consultas de interrupción** (`f9d05c5`): variables
+  `--card-px`, `--page-px/pt/gap`, `--cards-gap`… (más aire solo en
+  pantallas > 900px de alto; en notebooks, mismos valores que antes).
+  Reposiciones pasa de tabla a lista de filas (`ReposicionesLista`); el
+  toolbar de Interrupciones se renderiza siempre.
+- **Fundamentos del DS** (`3be848c` … `b5fe113`, un commit por tema): escala
+  neutra única (`--color-neutral-*`, sin `gray-*`) y tokens `--color-viz-*`;
+  foco único (`FOCUS_RING`, `FOCUS_RING_INSET`, `FIELD_FOCUS`,
+  `PEER_FOCUS_RING`); alto de controles fuera de `--spacing`
+  (`--control-xs/sm/md`, mínimo 24px) y `ICON_BTN_*`; tracking en el token y
+  utilidad `caps`; constante `ICON`; capas `--z-*` (incluye `raised`,
+  `dismiss`); movimiento (`--duration-*`, `--ease-standard`, reduced motion,
+  `MotionConfig`); semánticos completos (+ `error-bg-subtle`); scrim y
+  gradiente de marca como tokens; voseo y helpers de formato
+  (`formatNumero`, `formatFecha`, `formatFechaHora`, `VALOR_VACIO`); radios
+  reales con `name` y foco visible en checkbox/radio.
+- **Refactor estructural** (`750d1ad` … `96daf55`): `src/App.tsx` (~8.700
+  líneas) partido en `components/ui/` (design system + `tokens.ts` +
+  `index.ts`), `components/layout/`, `features/<herramienta>/`, `data/` y
+  `lib/`, sin cambios de comportamiento (CSS generado idéntico en cada
+  paso). Export default por componente (AGENTS.md). `DESIGN_SYSTEM.md`
+  reorganizado en Fundamentos / Componentes / Patrones; la narrativa
+  histórica pasó a "Historia de decisiones del DS" (abajo).
+- **Headers** (`4d9e1c7` … `a34ce75`): `CardHeader` con anatomía fija (alto
+  `--card-header-h`, línea siempre, `px-(--card-px)`, contexto en la misma
+  línea); cuerpos de card a `px-(--card-px)`; header de `Modal` con los
+  mismos tokens. `TopBar` compartido: Consultas de interrupción deja su
+  encabezado con breadcrumb.
+- **ABM Tabla 2, prueba de layout "barra"** (`dd45d6c` … `7210868`): barra
+  de búsqueda con el formato de la de Consultas y los campos de cds2
+  (`AbmCampo`); tabla de resultados en su caja, sin card; barra de
+  herramientas con contador o, con selección, Modificar / Borrar (ghost) y
+  ✕; un solo buscador; Auditoría y Exportar deprecados en esta variante.
+  El resto de las tablas sigue con el layout split.
+- **Botones** (`2a841b0`, `ef2569d`, `21a2d13`): variante ghost
+  (`ghostBtnCls`, solo sm) y regla de jerarquía (página: md con borde;
+  tabla/registro: sm ghost); acciones de fila del split a ghost;
+  `rowActionBtnCls` eliminado; sin letter-spacing fuera de `heading-xs` y
+  `caps`.
+- **Modal de edición de registro** (`9056195` … `28cebc9`, ABM Tabla 2):
+  `size="form"` (640px), label de contexto arriba del título (referencia +
+  `CopyButton` xs), formulario horizontal en filas (`FormRow` nuevo, label a
+  la izquierda, controles en una columna fija `--form-control-w`), Origen y
+  Tipo en estado read-only (nuevo, distinto de disabled), flujo Editar →
+  Revisar en el mismo modal (`RevisarCambiosContent`, "Paso N de 2"), y
+  dropdowns en portal dentro de modales (`FloatingPanel`,
+  `--z-modal-popover`). Regla: nunca un modal sobre otro.
+- **Toggles y fase** (`5302904`, `404a067`): opciones de un grupo con igual
+  ancho (`ButtonSelectGroup` y toggle de `AbmCampo`); campo tipo `"fase"`
+  (R/S/T de selección múltiple, valor ordenado) para `faseElectrica` de
+  cds2.
+
+### Pendientes abiertos
+
+- **Sin probar en el navegador**: todo lo de hoy. En particular: tiers
+  ≤900/≤760px (alto de controles, `--card-px` ≈13px en notebooks, menos que
+  antes), layout barra de Tabla 2, modal de Modificar (filas, read-only,
+  portal de fecha/select alineado a la derecha, paso 2), igual ancho de los
+  toggles y botones de fase.
+- **Modal sobre modal que queda**: el combobox de lista larga (Descripción
+  equipo operado) abre su lista como modal centrado encima del modal de
+  Modificar (`src/components/ui/ValuePicker.tsx`, variante `modal`).
+- **Popovers de `FilterTrigger` dentro de "Tablas relacionadas"** no usan
+  `FloatingPanel` (`src/components/ui/FilterTrigger.tsx`).
+- **Layout barra (Tabla 2)**: Buscar no filtra de verdad (muestra todas las
+  filas, igual que el split); no soporta Insertar; Auditoría y Exportar
+  pendientes de reubicar; la barra comparte `valores` con el modal de
+  Modificar, así que al cerrarlo se vacían los filtros
+  (`src/features/abm/AbmScreen.tsx`).
+- **Fase eléctrica como texto libre** en cds4 y cds5
+  (`src/data/abmTables.ts`): candidatas al tipo `"fase"`.
+- **Desalineaciones horizontales**: el título de `TopBar` (`px-6`) no
+  coincide con `--page-px` del contenido de Consultas; en `Modal`, el header
+  (`--card-px`) no coincide con el `p-5` del body.
+- **Código sin uso**: `ICON_BTN_MD` (`src/components/ui/tokens.ts`),
+  `--field-w-sm/md/lg` (`src/index.css`), `SubtituloEtiquetado`
+  (`src/features/consultas-interrupcion/SubtituloEtiquetado.tsx`) y
+  `PersistentActionsBar` (ver pendientes del 2026-10-05).
+- **Archivos grandes** (candidatos a partir): `ModificarContent.tsx` (1.130
+  líneas), `AbmScreen.tsx` (1.077), `data/abmTables.ts` (633).
+- **Tailwind escanea los `.md`**: una clase mencionada en `DESIGN_SYSTEM.md`
+  o en esta bitácora se genera en el CSS aunque la app no la use.
+- Siguen abiertos de días anteriores: herramientas sin conectar,
+  `PersistentActionsBar`, ancho a 1366px, "Orden por Fecha", cards del ABM
+  y Notas con `overflow-hidden`, botón "Copiar datos de la reposición",
+  placeholders y tiles en 0 de Tablas relacionadas, choque de nombre
+  "Fase", "Procesar" con `opacity-40` y `handleConfirmarModificar` sin
+  persistencia real.
+
+### Cómo levantar el proyecto
+
+Mismos comandos (ver entrada del 2026-09-23). Cambió la estructura: el
+paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
+(ver "Project Structure" en `AGENTS.md`). Login del prototipo:
+`src/features/login/LoginScreen.tsx`.
 
 ## Historia de decisiones del DS
 
