@@ -165,6 +165,14 @@ Decimoséptima pasada (también 06/10/2026):
   `heading-xs` y `caps`, tampoco inline.
 - **`rowActionBtnCls` eliminado** (las acciones de fila son ghost).
 
+Decimoctava pasada (también 06/10/2026):
+
+- **Modal de edición de registro** (ABM Tabla 2, layout barra): ancho `sm`,
+  mismos campos y grilla que el panel de Búsqueda (`renderSecciones`
+  compartido), campos no editables como contexto en el header (Referencia +
+  `CopyButton` · Origen · Tipo) y Guardar habilitado solo con cambios.
+  Patrón nuevo en Patrones.
+
 ## Índice
 
 **1. Fundamentos**
@@ -215,6 +223,7 @@ Decimoséptima pasada (también 06/10/2026):
 [Orden de botones](#orden-de-botones) ·
 [Aire: chrome vs datos](#aire-chrome-vs-datos) ·
 [Modal de trabajo](#modal-de-trabajo) ·
+[Modal de edición de registro](#modal-de-edición-de-registro) ·
 [Layout de ABM — variante barra](#layout-de-abm--variante-barra-en-prueba-solo-tabla-2) ·
 [Barra de contexto de registro](#barra-de-contexto-de-registro) ·
 [Contenedores flex con scroll](#contenedores-flex-con-scroll) ·
@@ -1586,13 +1595,38 @@ período) es el mismo en los dos.
   deseleccionan. Las flechas siguen moviendo la selección.
 - **Auditoría y Exportar: deprecados en esta variante** (no se renderizan;
   pendientes de reubicar). Siguen en el layout split.
-- **Modificar en modal:** abre un `Modal` (título de la config, referencia
-  en `headerExtra`) con las mismas secciones y campos del formulario
-  (`AbmFila` / `AbmCampo`, respetando `camposReadonlyEnModificar`); pie
-  Cancelar + Guardar. Guardar abre el mismo `ConfirmarModificarModal`.
-  Borrar abre `ConfirmarBorrarModal`, como en el split.
+- **Modificar en modal:** abre un [modal de edición de
+  registro](#modal-de-edición-de-registro). Guardar abre el mismo
+  `ConfirmarModificarModal`; Borrar abre `ConfirmarBorrarModal`, como en el
+  split.
 - **Sin Insertar:** el layout barra no tiene formulario de alta; solo sirve
   para tablas sin `hasInsertar` (CDS2).
+
+## Modal de edición de registro
+
+Para editar un registro desde una tabla cuando el formulario no está a la
+vista (ej. Modificar en el layout barra del ABM).
+
+- **Ancho `sm`** (480px): con el `p-5` del body da el mismo ancho útil
+  (~440px) que el panel de Búsqueda del ABM split.
+- **Mismos campos y grilla que el formulario de búsqueda de esa tabla:**
+  secciones con `SectionDivider`, `gap-5` entre secciones, filas con
+  `AbmFila` / `AbmCampo` y las mismas reglas de grilla (columnas
+  compartidas, campos compactos, ancho de campo solo, grilla plana en el
+  tier de 760px). Sin anchos propios.
+- **Los campos no editables nunca van como inputs deshabilitados en el
+  body:** van como contexto del registro en `headerExtra` (patrón [barra de
+  contexto de registro](#barra-de-contexto-de-registro)), en una línea que
+  trunca: etiqueta `text-heading-xs uppercase text-text-muted` + valor
+  `text-code font-mono` + `CopyButton`, "·" en `text-text-faint` y los
+  demás valores con su etiqueta legible en `text-body-sm text-text-muted`
+  (ej. "REFERENCIA `BFZ…` · Externo · Forzado"). Todo lo que está en el
+  body es editable; una sección que queda con un solo campo se mantiene.
+- **Guardar habilitado solo con cambios** respecto del registro original
+  (estado disabled estándar); si se vuelve al valor original, se deshabilita
+  de nuevo. Escape, ✕ y Cancelar cierran sin guardar.
+- El body scrollea solo si el contenido supera el alto disponible
+  (comportamiento estándar de `Modal`).
 
 ## Barra de contexto de registro
 

@@ -4,6 +4,7 @@ import {
   actionBtnCls,
   BTN_SM,
   CardHeader,
+  CopyButton,
   FOCUS_RING_INSET,
   ghostBtnCls,
   ICON,
@@ -188,6 +189,72 @@ export default function AbmScreen({
       return next;
     });
   }
+
+  // Secciones del formulario (separador + filas de AbmFila; en tier 760px,
+  // grilla plana) — las mismas reglas para el panel de Búsqueda del layout
+  // "split" y para el modal de Modificar del layout "barra", así los campos
+  // se acomodan exactamente igual en los dos.
+  const renderSecciones = (secciones: typeof config.secciones) =>
+    secciones.map((sec) => {
+              const conteoPorLongitud = new Map<number, number>();
+              for (const fila of sec.filas) conteoPorLongitud.set(fila.length, (conteoPorLongitud.get(fila.length) ?? 0) + 1);
+              // Tier 760px reemplaza el sistema de filas/columnasCompartidas
+              // de acá abajo por una grilla fija y genérica: TODOS los
+              // campos de la sección, sin importar cómo la tabla los
+              // agrupó en `filas`, se aplanan y se acomodan de a 2 por
+              // línea en un grid-template-columns: repeat(2, minmax(0,1fr))
+              // — el wrap natural de CSS grid, no un reordenamiento manual
+              // por tabla. Mismo mecanismo para las 9 tablas.
+              const camposPlanos = sec.filas.flat();
+              return (
+                <div key={sec.titulo}>
+                  <SectionDivider title={sec.titulo} />
+                  {/* Tamaño normal: sistema de filas de siempre. */}
+                  <div className="flex flex-col gap-3 [@media(max-height:760px)]:hidden">
+                    {sec.filas.map((fila, fi) => (
+                      <AbmFila
+                        key={fi}
+                        fila={fila}
+                        mode={mode}
+                        valores={valores}
+                        setValor={setValor}
+                        camposLocked={camposLocked}
+                        consultando={consultando}
+                        columnasCompartidas={(conteoPorLongitud.get(fila.length) ?? 0) > 1}
+                      />
+                    ))}
+                  </div>
+                  {/* Tier 760px: grilla fija a lo ancho completo del panel
+                      — 2 o 3 columnas según cuántos campos tenga la tabla
+                      en total (ver totalCamposTabla más arriba) — cada
+                      campo (toggle, select o input) estira a w-full dentro
+                      de su celda. */}
+                  <div className={`hidden [@media(max-height:760px)]:grid ${filasGridColsTier2Cls} [@media(max-height:760px)]:items-end [@media(max-height:760px)]:gap-3`}>
+                    {camposPlanos.map((campo) => (
+                      // `expandirBotones` es la señal existente de "este
+                      // toggle necesita todo el ancho disponible, no una
+                      // celda" (ver Causa en CDS3, Zona en CDS7) — acá eso
+                      // se traduce en ocupar todas las columnas de la
+                      // grilla plana (2 o 3 según la tabla), no solo una.
+                      // Sin esto, un toggle de 1-2 opciones largas queda a
+                      // una fracción del ancho del panel y el texto rompe a
+                      // 2 líneas.
+                      <div key={campo.nombre} className={campo.expandirBotones ? expandirBotonesSpanCls : ""}>
+                        <AbmCampo
+                          campo={campo}
+                          mode={mode}
+                          value={valores[campo.nombre]}
+                          onChange={(v) => setValor(campo.nombre, v)}
+                          lockedEnModificar={camposLocked.includes(campo.nombre)}
+                          consultando={consultando}
+                          valoresFormulario={valores}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            });
 
   const hasSelection = selectedRow !== null;
   const consultando = mode === "buscar" && hasSelection;
@@ -764,6 +831,20 @@ export default function AbmScreen({
     </div>
   );
 
+  // Modal de edición (layout "barra"): campos no editables fuera del body.
+  const esNoEditable = (c: (typeof camposTabla)[number]) => c.tipo === "readonly" || camposLocked.includes(c.nombre);
+  const seccionesEditables = config.secciones
+    .map((sec) => ({ ...sec, filas: sec.filas.map((fila) => fila.filter((c) => !esNoEditable(c))).filter((fila) => fila.length > 0) }))
+    .filter((sec) => sec.filas.length > 0);
+  const referenciaModificar = selectedRow !== null ? config.rows[selectedRow][columnKeys[0]] : "";
+  // Contexto: los no editables que no son la referencia, con su etiqueta
+  // legible (ej. origen "E" → "Externo"), del registro original.
+  const campoReferencia = config.mapeoFilaACampos[columnKeys[0]];
+  const contextoModificar = camposTabla
+    .filter((c) => esNoEditable(c) && c.nombre !== campoReferencia)
+    .map((c) => labelDeValor(c, valoresOriginales[c.nombre] ?? "", valoresOriginales))
+    .filter((v) => v !== "");
+
   return (
     <>
       {/* Masthead — selector de tabla (hace de título) a la izquierda, período
@@ -832,66 +913,7 @@ export default function AbmScreen({
             tag={config.code}
           />
           <div className="flex-1 overflow-y-auto px-(--card-px) py-5 flex flex-col gap-5">
-            {config.secciones.map((sec) => {
-              const conteoPorLongitud = new Map<number, number>();
-              for (const fila of sec.filas) conteoPorLongitud.set(fila.length, (conteoPorLongitud.get(fila.length) ?? 0) + 1);
-              // Tier 760px reemplaza el sistema de filas/columnasCompartidas
-              // de acá abajo por una grilla fija y genérica: TODOS los
-              // campos de la sección, sin importar cómo la tabla los
-              // agrupó en `filas`, se aplanan y se acomodan de a 2 por
-              // línea en un grid-template-columns: repeat(2, minmax(0,1fr))
-              // — el wrap natural de CSS grid, no un reordenamiento manual
-              // por tabla. Mismo mecanismo para las 9 tablas.
-              const camposPlanos = sec.filas.flat();
-              return (
-                <div key={sec.titulo}>
-                  <SectionDivider title={sec.titulo} />
-                  {/* Tamaño normal: sistema de filas de siempre. */}
-                  <div className="flex flex-col gap-3 [@media(max-height:760px)]:hidden">
-                    {sec.filas.map((fila, fi) => (
-                      <AbmFila
-                        key={fi}
-                        fila={fila}
-                        mode={mode}
-                        valores={valores}
-                        setValor={setValor}
-                        camposLocked={camposLocked}
-                        consultando={consultando}
-                        columnasCompartidas={(conteoPorLongitud.get(fila.length) ?? 0) > 1}
-                      />
-                    ))}
-                  </div>
-                  {/* Tier 760px: grilla fija a lo ancho completo del panel
-                      — 2 o 3 columnas según cuántos campos tenga la tabla
-                      en total (ver totalCamposTabla más arriba) — cada
-                      campo (toggle, select o input) estira a w-full dentro
-                      de su celda. */}
-                  <div className={`hidden [@media(max-height:760px)]:grid ${filasGridColsTier2Cls} [@media(max-height:760px)]:items-end [@media(max-height:760px)]:gap-3`}>
-                    {camposPlanos.map((campo) => (
-                      // `expandirBotones` es la señal existente de "este
-                      // toggle necesita todo el ancho disponible, no una
-                      // celda" (ver Causa en CDS3, Zona en CDS7) — acá eso
-                      // se traduce en ocupar todas las columnas de la
-                      // grilla plana (2 o 3 según la tabla), no solo una.
-                      // Sin esto, un toggle de 1-2 opciones largas queda a
-                      // una fracción del ancho del panel y el texto rompe a
-                      // 2 líneas.
-                      <div key={campo.nombre} className={campo.expandirBotones ? expandirBotonesSpanCls : ""}>
-                        <AbmCampo
-                          campo={campo}
-                          mode={mode}
-                          value={valores[campo.nombre]}
-                          onChange={(v) => setValor(campo.nombre, v)}
-                          lockedEnModificar={camposLocked.includes(campo.nombre)}
-                          consultando={consultando}
-                          valoresFormulario={valores}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+            {renderSecciones(config.secciones)}
           </div>
 
           <div className="shrink-0 border-t border-border px-(--card-px) py-4 flex gap-3">
@@ -938,53 +960,47 @@ export default function AbmScreen({
       </div>
       )}
 
-      {/* Layout "barra": Modificar en un modal, con las mismas secciones y
-          campos del formulario (AbmFila/AbmCampo, respetando
-          camposReadonlyEnModificar). Guardar dispara el mismo
-          ConfirmarModificarModal y flujo que el layout split. */}
+      {/* Layout "barra": Modificar en un modal de edición de registro (ver
+          DESIGN_SYSTEM.md, "Modal de edición de registro"):
+            - ancho sm (480px): con el p-5 del body da el mismo ancho útil
+              (~440px) que el panel de Búsqueda del layout split;
+            - el body usa renderSecciones (mismas reglas de grilla que ese
+              panel) con SOLO los campos editables;
+            - los no editables (camposReadonlyEnModificar y tipo "readonly")
+              van como contexto del registro en headerExtra, nunca como
+              inputs deshabilitados;
+            - Guardar se habilita solo con cambios respecto del registro
+              original. Guardar dispara el mismo ConfirmarModificarModal y
+              flujo que el layout split; Escape, ✕ y Cancelar cierran sin
+              guardar. */}
       {esBarra && (
         <Modal
           title={config.barraBusqueda?.tituloModificar ?? "Modificar"}
+          size="sm"
           open={mode === "modificar"}
           onClose={handleCancelarModificar}
           headerExtra={
-            <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2">
-              <span className="text-heading-xs uppercase text-text-muted">{columnas[0].label}</span>
-              <span className="text-code font-mono tabular-nums text-text">
-                {selectedRow !== null ? config.rows[selectedRow][columnKeys[0]] : ""}
-              </span>
+            <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2 min-w-0">
+              <span className="shrink-0 text-heading-xs uppercase text-text-muted">{columnas[0].label}</span>
+              <span className="shrink-0 text-code font-mono tabular-nums text-text">{referenciaModificar}</span>
+              <CopyButton value={referenciaModificar} label={columnas[0].label.toLowerCase()} />
+              {contextoModificar.length > 0 && (
+                <>
+                  <span className="shrink-0 text-text-faint" aria-hidden>·</span>
+                  <span className="min-w-0 truncate text-body-sm text-text-muted">{contextoModificar.join(" · ")}</span>
+                </>
+              )}
             </div>
           }
           footer={
             <>
               <button type="button" onClick={handleCancelarModificar} className={modalNeutralBtnCls}>Cancelar</button>
-              <button type="button" onClick={handleGuardarModificar} className={modalPrimaryBtnCls}>Guardar</button>
+              <button type="button" onClick={handleGuardarModificar} disabled={camposModificados.length === 0} className={modalPrimaryBtnCls}>Guardar</button>
             </>
           }
         >
           <div className="flex flex-col gap-5">
-            {config.secciones.map((sec) => {
-              const conteoPorLongitud = new Map<number, number>();
-              for (const fila of sec.filas) conteoPorLongitud.set(fila.length, (conteoPorLongitud.get(fila.length) ?? 0) + 1);
-              return (
-                <div key={sec.titulo}>
-                  <SectionDivider title={sec.titulo} />
-                  <div className="flex flex-col gap-3">
-                    {sec.filas.map((fila, fi) => (
-                      <AbmFila
-                        key={fi}
-                        fila={fila}
-                        mode={mode}
-                        valores={valores}
-                        setValor={setValor}
-                        camposLocked={camposLocked}
-                        columnasCompartidas={(conteoPorLongitud.get(fila.length) ?? 0) > 1}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+            {renderSecciones(seccionesEditables)}
           </div>
         </Modal>
       )}
