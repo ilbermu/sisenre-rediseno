@@ -200,6 +200,17 @@ Vigésima pasada (también 06/10/2026):
 - **Limpieza:** se eliminan `CopyChip` y la prop `titleExtra` de `Modal`;
   `CopyButton` suma `size="xs"`.
 
+Vigesimoprimera pasada (también 06/10/2026):
+
+- **Modal de edición de registro** (ABM Tabla 2): layout por sección con
+  dos columnas independientes (izquierda campos, derecha toggles) — sin
+  `grid-auto-flow: dense`, que movía campos entre secciones; Descripción
+  equipo operado vuelve a una columna. Flujo de dos pasos en el mismo modal
+  (Editar → Revisar, "Paso N de 2"): ya no abre `ConfirmarModificarModal`
+  encima; su contenido pasa a `RevisarCambiosContent` (compartido con el
+  split).
+- **Regla nueva:** nunca un modal sobre otro. `Modal` suma la prop `paso`.
+
 ## Índice
 
 **1. Fundamentos**
@@ -253,6 +264,7 @@ Vigésima pasada (también 06/10/2026):
 [Aire: chrome vs datos](#aire-chrome-vs-datos) ·
 [Modal de trabajo](#modal-de-trabajo) ·
 [Modal de edición de registro](#modal-de-edición-de-registro) ·
+[Nunca un modal sobre otro](#nunca-un-modal-sobre-otro) ·
 [Layout de ABM — variante barra](#layout-de-abm--variante-barra-en-prueba-solo-tabla-2) ·
 [Barra de contexto de registro](#barra-de-contexto-de-registro) ·
 [Contenedores flex con scroll](#contenedores-flex-con-scroll) ·
@@ -1094,6 +1106,9 @@ extenderlo sin tocar a los demás:
   `text-code font-mono text-text-muted` + `CopyButton` `xs`). El header
   pasa a dos líneas (`px-(--card-px) py-3`), con ✕ centrado en el bloque.
   Es la excepción documentada a la regla de header de una línea.
+- **`paso`** (`{ actual, total }`): indicador "Paso N de M" junto al título,
+  para un modal de varios pasos (ver [Nunca un modal sobre
+  otro](#nunca-un-modal-sobre-otro)).
 - **`headerExtra`**: segunda línea dentro del bloque del header (ej.
   "Interrupción `<ref>`" + `CopyButton`). Con ella, la línea del título
   no usa el alto fijo: va `px-5 pt-3.5 pb-0` y `headerExtra` aporta
@@ -1701,39 +1716,59 @@ período) es el mismo en los dos.
 ## Modal de edición de registro
 
 Para editar un registro desde una tabla cuando el formulario no está a la
-vista (ej. Modificar en el layout barra del ABM).
+vista (ej. Modificar en el layout barra del ABM). Un solo modal con dos
+pasos: **Editar → Revisar**.
 
-- **Tamaño `form`** (640px).
-- **Label de contexto arriba del título** (Carbon "modal label", prop
-  `label` de `Modal`): el registro sobre el que actúa el modal — la
-  referencia en `text-code font-mono text-text-muted` + `CopyButton` `xs`.
-  Debajo, el título (`text-heading-md`); ✕ a la derecha, centrado en el
-  bloque de dos líneas. Los headers de modal con label son la excepción
-  documentada a la regla de header de una línea. El identificador no
-  aparece en el body.
-- **Grilla única de 2 columnas** para todo el formulario (`grid-cols-2
-  gap-x-4 gap-y-4`, `grid-auto-flow: dense`), no las filas del panel de
-  Búsqueda:
-  - campos en el orden de la config, **1 columna cada uno**; los combobox
-    con lista larga ocupan las 2 (`col-span-2`) y el flujo denso sube el
-    campo siguiente al hueco que queda (ej. División red normal al lado de
-    Código de equipo operado);
-  - inputs, selects, fecha y combobox a ancho completo de **su** columna;
-    toggles a su ancho intrínseco, alineados a la izquierda;
-  - el mismo `FieldLabel` (y margen) que el resto de la app;
-  - títulos de sección (`SectionDivider`) en las 2 columnas, 24px entre
-    secciones; una sección que queda con un solo campo se mantiene;
-  - en los tiers bajos sigue en 2 columnas; el body scrollea si no entra.
-- **Los campos no editables quedan en su sección en estado read-only**
-  (ver [Estados: disabled vs read-only](#estados-disabled-vs-read-only)):
-  el toggle con su valor marcado a contraste completo y un candado junto al
-  label — **nunca como controles deshabilitados**.
-- **Guardar habilitado solo con cambios** respecto del registro original
-  (estado disabled estándar); si se vuelve al valor original, se deshabilita
-  de nuevo. Escape, ✕ y Cancelar cierran sin guardar.
+- **Tamaño `form`** (640px), el mismo en los dos pasos; el alto se ajusta al
+  contenido.
+- **Header:** label de contexto arriba del título (Carbon "modal label",
+  prop `label` de `Modal`) con el registro sobre el que actúa — la
+  referencia en `text-code font-mono text-text-muted` + `CopyButton` `xs` —;
+  debajo el título (`text-heading-md`) con el indicador "Paso N de 2"
+  (`text-body-sm text-text-muted`, prop `paso`); ✕ a la derecha, centrado en
+  el bloque. Los headers de modal con label son la excepción documentada a
+  la regla de header de una línea. El identificador no aparece en el body.
+- **Paso 1 — Editar: layout por sección.** Cada sección es su bloque:
+  título (`SectionDivider`) y debajo una grilla de 2 columnas iguales
+  (`gap-x-4`) que se apilan **por separado** (`flex-col gap-4` cada una),
+  así un campo nunca cambia de sección:
+  - **izquierda:** campos de texto, fecha, select y combobox, en el orden de
+    la config, a ancho completo de su columna (el valor trunca, con
+    `title`);
+  - **derecha:** los toggles, en el orden de la config, a su ancho
+    intrínseco.
+  - Ej. CDS2: Identificación → Fecha | (vacío); Clasificación → Fase
+    eléctrica | Nivel de tensión, Origen, Tipo; Datos de red → Código de
+    equipo, Descripción, Cadena, Alimentador MT, CT MT/BT | División red
+    normal.
+  - 24px entre secciones (`gap-6`); el mismo `FieldLabel` (y margen) que el
+    resto de la app; una sección con un solo campo se mantiene.
+  - **No editables en read-only** (ver [Estados: disabled vs
+    read-only](#estados-disabled-vs-read-only)): el toggle con su valor
+    marcado a contraste completo y un candado junto al label — **nunca como
+    controles deshabilitados**.
+  - Pie: Cancelar · **Revisar cambios** (primario, habilitado solo si algún
+    campo es distinto del original).
+- **Paso 2 — Revisar:** mismo modal y mismo header; el body pasa a
+  `RevisarCambiosContent` (Resumen de cambios + Motivo, el mismo contenido
+  que la confirmación del layout split). Pie: **Volver** (outline, vuelve al
+  paso 1 con todo lo editado) · **Guardar** (primario, habilitado solo con
+  un motivo válido). Guardar hace exactamente lo que hacía la confirmación
+  y cierra.
+- Al pasar de paso, el foco va al primer elemento interactivo del body
+  nuevo. Escape, ✕ y Cancelar cierran todo el flujo sin guardar, en
+  cualquier paso.
 - Los dropdowns del formulario se abren en un portal
   ([FloatingPanel](#floatingpanel)): la lista completa de un combobox nunca
   queda recortada por el body.
+
+## Nunca un modal sobre otro
+
+**Nunca se abre un modal desde otro modal.** Si una acción dentro de un
+modal necesita un paso extra (revisar, justificar, confirmar), es un
+**paso del mismo modal**: el body cambia, el header indica "Paso N de M"
+(prop `paso` de `Modal`) y el pie ofrece Volver junto al primario. El ancho
+no cambia entre pasos.
 
 ## Barra de contexto de registro
 

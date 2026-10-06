@@ -1,4 +1,4 @@
-import { Fragment, useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Shield, Inbox, Plus, Download, X } from "lucide-react";
 import {
   actionBtnCls,
@@ -29,6 +29,7 @@ import AbmFila from "@/features/abm/AbmFila";
 import AbmTableSelector from "@/features/abm/AbmTableSelector";
 import ConfirmarBorrarModal from "@/features/abm/ConfirmarBorrarModal";
 import ConfirmarModificarModal from "@/features/abm/ConfirmarModificarModal";
+import RevisarCambiosContent, { useMotivoCambio } from "@/features/abm/RevisarCambiosContent";
 import { labelDeValor } from "@/features/abm/labelDeValor";
 import { formatNumero } from "@/lib/format";
 
@@ -123,6 +124,12 @@ export default function AbmScreen({
   // setValor) que el panel de Búsqueda del layout "split".
   const esBarra = config.layout === "barra";
   const [flyoutOpen, setFlyoutOpen] = useState(false);
+  // Modal de edición de registro (layout "barra"): un solo modal con dos
+  // pasos — 1 Editar, 2 Revisar (Resumen de cambios + Motivo). Nunca se abre
+  // ConfirmarModificarModal encima: el paso 2 es el mismo modal.
+  const [pasoModificar, setPasoModificar] = useState<1 | 2>(1);
+  const motivoModificar = useMotivoCambio();
+  const bodyModificarRef = useRef<HTMLDivElement>(null);
 
   // Reset al cambiar de tabla — corre primero.
   useEffect(() => {
@@ -362,6 +369,8 @@ export default function AbmScreen({
     setMode("modificar");
     setValores(valoresIniciales);
     setValoresOriginales(valoresIniciales);
+    setPasoModificar(1);
+    motivoModificar.reset();
   }
   function handleCancelarModificar() {
     // Misma razón que handleCancelarAlta: sin limpiar selectedRow, el
@@ -374,10 +383,21 @@ export default function AbmScreen({
     setSelectedRow(null);
     setValores({});
     setValoresOriginales({});
+    setPasoModificar(1);
   }
   function handleGuardarModificar() {
     setModalModificarAbierto(true);
   }
+  // Al pasar de paso, el foco va al primer elemento interactivo del body
+  // nuevo (no en la apertura: ahí el foco lo maneja Modal).
+  const pasoPrevioRef = useRef(pasoModificar);
+  useEffect(() => {
+    if (pasoPrevioRef.current === pasoModificar) return;
+    pasoPrevioRef.current = pasoModificar;
+    bodyModificarRef.current
+      ?.querySelector<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+      ?.focus();
+  }, [pasoModificar]);
   function handleCancelarConfirmarModificar() {
     // Solo cierra el modal — sigue en modo Modificando, no se pierde la edición.
     setModalModificarAbierto(false);
@@ -958,27 +978,29 @@ export default function AbmScreen({
 
       {/* Layout "barra": Modificar en un modal de edición de registro (ver
           DESIGN_SYSTEM.md, "Modal de edición de registro"):
-            - size "form" (640px);
+            - size "form" (640px), igual en los dos pasos;
             - header con label de contexto arriba del título (Carbon "modal
-              label"): la referencia en mono + CopyButton xs;
-            - body con una grilla única de 2 columnas (no AbmFila): cada
-              campo ocupa 1 columna, salvo los combobox con lista larga (2);
-              grid-auto-flow dense sube el campo siguiente al hueco que deja
-              uno de ancho completo. Títulos de sección en las 2 columnas,
-              gap-6 entre secciones (gap-y-4 + mt-2). Inputs, selects, fecha
-              y combobox a ancho completo de SU columna; toggles a su ancho
-              intrínseco;
-            - los no editables (Origen, Tipo) en read-only;
-            - Guardar habilitado solo con cambios respecto del registro
-              original. Guardar dispara el mismo ConfirmarModificarModal y
-              flujo que el layout split; Escape, ✕ y Cancelar cierran sin
-              guardar. */}
+              label"): la referencia en mono + CopyButton xs; junto al
+              título, "Paso N de 2";
+            - paso 1 "Editar": cada sección es su bloque (título + grilla de
+              2 columnas que se apilan por separado): a la izquierda los
+              campos de texto, fecha, select y combobox; a la derecha los
+              toggles, en el orden de la config. Inputs a ancho completo de
+              su columna; toggles a su ancho intrínseco. Los no editables
+              (Origen, Tipo) en read-only. "Revisar cambios" se habilita
+              solo con cambios respecto del registro original;
+            - paso 2 "Revisar": RevisarCambiosContent (el mismo contenido
+              de ConfirmarModificarModal, sin modal propio). Volver regresa
+              al paso 1 con todo lo editado; Guardar (motivo válido) hace lo
+              mismo que la confirmación del split y cierra;
+            - Escape, ✕ y Cancelar cierran todo el flujo sin guardar. */}
       {esBarra && (
         <Modal
           title={config.barraBusqueda?.tituloModificar ?? "Modificar"}
           size="form"
           open={mode === "modificar"}
           onClose={handleCancelarModificar}
+          paso={{ actual: pasoModificar, total: 2 }}
           label={
             <>
               <span className="min-w-0 truncate text-code font-mono tabular-nums text-text-muted">{referenciaModificar}</span>
@@ -986,24 +1008,26 @@ export default function AbmScreen({
             </>
           }
           footer={
-            <>
-              <button type="button" onClick={handleCancelarModificar} className={modalNeutralBtnCls}>Cancelar</button>
-              <button type="button" onClick={handleGuardarModificar} disabled={camposModificados.length === 0} className={modalPrimaryBtnCls}>Guardar</button>
-            </>
+            pasoModificar === 1 ? (
+              <>
+                <button type="button" onClick={handleCancelarModificar} className={modalNeutralBtnCls}>Cancelar</button>
+                <button type="button" onClick={() => setPasoModificar(2)} disabled={camposModificados.length === 0} className={modalPrimaryBtnCls}>Revisar cambios</button>
+              </>
+            ) : (
+              <>
+                <button type="button" onClick={() => setPasoModificar(1)} className={modalNeutralBtnCls}>Volver</button>
+                <button type="button" onClick={() => handleConfirmarModificar(motivoModificar.notaFinal)} disabled={!motivoModificar.notaFinal} className={modalPrimaryBtnCls}>Guardar</button>
+              </>
+            )
           }
         >
-          <div className="grid grid-cols-2 gap-x-4 gap-y-4 grid-flow-row-dense">
-            {seccionesModificar.map((sec, si) => (
-              <Fragment key={sec.titulo}>
-                {/* El separador sin sus márgenes propios: el espaciado lo da
-                    la grilla (mt-2 extra arriba de cada sección salvo la
-                    primera → 24px entre secciones). */}
-                <div className={`col-span-2 [&>div]:mt-0 [&>div]:mb-0 ${si > 0 ? "mt-2" : ""}`}>
-                  <SectionDivider title={sec.titulo} />
-                </div>
-                {sec.campos.map((c) => (
-                  <div key={c.nombre} className={c.tipo === "combobox" && c.listaLarga ? "col-span-2" : ""}>
+          <div ref={bodyModificarRef}>
+            {pasoModificar === 1 ? (
+              <div className="flex flex-col gap-6">
+                {seccionesModificar.map((sec) => {
+                  const campo = (c: (typeof sec.campos)[number]) => (
                     <AbmCampo
+                      key={c.nombre}
                       campo={c}
                       mode={mode}
                       value={valores[c.nombre]}
@@ -1012,10 +1036,29 @@ export default function AbmScreen({
                       readOnly={esNoEditable(c)}
                       intrinseco
                     />
-                  </div>
-                ))}
-              </Fragment>
-            ))}
+                  );
+                  return (
+                    <div key={sec.titulo} className="flex flex-col gap-4">
+                      {/* El separador sin sus márgenes propios: el espaciado
+                          lo dan los gaps del bloque. */}
+                      <div className="[&>div]:mt-0 [&>div]:mb-0">
+                        <SectionDivider title={sec.titulo} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4">
+                        <div className="min-w-0 flex flex-col gap-4">
+                          {sec.campos.filter((c) => c.tipo !== "toggle").map(campo)}
+                        </div>
+                        <div className="min-w-0 flex flex-col gap-4">
+                          {sec.campos.filter((c) => c.tipo === "toggle").map(campo)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <RevisarCambiosContent cambios={camposModificados} motivo={motivoModificar} />
+            )}
           </div>
         </Modal>
       )}

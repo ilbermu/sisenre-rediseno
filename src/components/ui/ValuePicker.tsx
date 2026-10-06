@@ -175,7 +175,7 @@ export default function ValuePicker({
         >
           {/* || (no ??): value "" es "sin selección", no un valor real a
               mostrar — con ?? quedaría en blanco en vez del placeholder. */}
-          <span className="block truncate">{seleccionado?.label || currentValue || placeholder}</span>
+          <span className="block truncate" title={seleccionado?.label || currentValue || undefined}>{seleccionado?.label || currentValue || placeholder}</span>
         </button>
         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-icon">
           <ChevronDown size={ICON.md} strokeWidth={1.5} />

@@ -21,6 +21,7 @@ export default function Modal({
   children,
   headerExtra,
   label,
+  paso,
   bodyPadding = true,
   bodyOverflow = "auto",
   bodyClassName = "",
@@ -40,6 +41,10 @@ export default function Modal({
   // (label + título) con ✕ centrado en el bloque — la excepción documentada
   // a la regla de header de una línea. Sin label, el header es el de siempre.
   label?: React.ReactNode;
+  // Modal de varios pasos (ej. Editar → Revisar): indicador "Paso N de M"
+  // junto al título, en text-body-sm text-text-muted. Nunca se abre un modal
+  // desde otro modal: un paso extra es un paso del mismo modal.
+  paso?: { actual: number; total: number };
   // Slot propio para una segunda línea de header, debajo de título/cerrar
   // pero todavía dentro del bloque con borde inferior del header — ej.
   // contexto adicional con un CopyButton. Ningún modal existente lo pasa,
@@ -94,6 +99,10 @@ export default function Modal({
 
   if (!open) return null;
 
+  const pasoIndicador = paso && (
+    <span className="shrink-0 text-body-sm text-text-muted">Paso {paso.actual} de {paso.total}</span>
+  );
+
   return (
     <>
       <div className="fixed inset-0 z-(--z-overlay) bg-scrim" onClick={onClose} />
@@ -131,11 +140,15 @@ export default function Modal({
             {label ? (
               <div className="min-w-0 flex-1 flex flex-col">
                 <div className="min-w-0 flex items-center gap-1">{label}</div>
-                <p className="min-w-0 truncate text-heading-md text-text">{title}</p>
+                <div className="min-w-0 flex items-baseline gap-2">
+                  <p className="min-w-0 truncate text-heading-md text-text">{title}</p>
+                  {pasoIndicador}
+                </div>
               </div>
             ) : (
             <p className={`min-w-0 truncate text-heading-md text-text`}>
               {title}
+              {paso && <span className="ml-2">{pasoIndicador}</span>}
               {subtitle && (
                 <span
                   className="ml-2 text-code text-text-muted font-mono"
