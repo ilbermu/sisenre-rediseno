@@ -1528,7 +1528,7 @@ function Modal({
 
   return (
     <>
-      <div className="fixed inset-0 z-(--z-overlay) bg-black/25" onClick={onClose} />
+      <div className="fixed inset-0 z-(--z-overlay) bg-scrim" onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"
@@ -4155,7 +4155,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
 
             {/* Hito del primer reclamo — siempre igual */}
             <rect x={xs[0] - 1.5} y={g.primeroY} width={3} height={g.primeroH} rx={1.5} className="fill-secondary" />
-            <circle cx={xs[0]} cy={g.circuloY} r={g.circuloR} strokeWidth={2} className="fill-white stroke-secondary" />
+            <circle cx={xs[0]} cy={g.circuloY} r={g.circuloR} strokeWidth={2} className="fill-surface stroke-secondary" />
 
             {/* Marcas de hora (modal) */}
             {g.ejeY !== null &&
@@ -6924,7 +6924,7 @@ function ValuePicker({
       </div>
       {modal && open && !isDisabled && (
         <>
-          <div className="fixed inset-0 z-(--z-overlay) bg-black/25" onClick={cerrar} />
+          <div className="fixed inset-0 z-(--z-overlay) bg-scrim" onClick={cerrar} />
           <div
             className="shadow-lg fixed z-(--z-modal) flex flex-col bg-surface rounded-xl overflow-hidden"
             style={{

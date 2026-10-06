@@ -45,6 +45,7 @@
   --color-border: rgba(20, 20, 19, 0.10); /* bordes de contenedores y divisores */
   --color-border-strong: rgba(20, 20, 19, 0.20); /* bordes de inputs, selects, botones secundarios y controles */
   --color-border-subtle: rgba(20, 20, 19, 0.06); /* separadores entre filas de tabla y de listas */
+  --color-scrim: rgba(20, 20, 19, 0.25); /* fondo de modales (negro cálido, como los neutros) */
   /* Rellenos neutros — siempre translúcidos, así toman la temperatura del fondo */
   --color-fill-subtle: rgba(20, 20, 19, 0.03); /* thead, pie de tabla, barra de filtros activos, campos bloqueados */
   --color-fill-muted: rgba(20, 20, 19, 0.06); /* hover neutro, campos de solo lectura o deshabilitados */
