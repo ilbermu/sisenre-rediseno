@@ -6,7 +6,7 @@ import { FIELD_FOCUS, ICON } from "@/components/ui";
 
 // ─── Login screen ─────────────────────────────────────────────────────────────
 
-export function LoginScreen({ onLogin }: { onLogin: () => void }) {
+export default function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

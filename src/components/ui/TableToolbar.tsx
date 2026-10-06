@@ -9,7 +9,7 @@ import { actionBtnCls, FIELD_FOCUS, ICON } from "@/components/ui/tokens";
 // pueden agregar mas botones a la derecha de Exportar pasandolos como
 // children, sin reestructurar nada. El aria-label del buscador es el
 // placeholder sin los puntos suspensivos.
-export function TableToolbar({
+export default function TableToolbar({
   search,
   onSearchChange,
   onExport,

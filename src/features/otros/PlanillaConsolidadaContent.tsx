@@ -14,7 +14,7 @@ import { formatFechaHora } from "@/lib/format";
 
 // ─── Planilla consolidada ───────────────────────────────────────────────────
 
-export function PlanillaConsolidadaContent() {
+export default function PlanillaConsolidadaContent() {
   const [datos, setDatos] = useState(() => generarConsolidacionSintetica(crearRng(hashSemilla("planilla-consolidada"))));
   const [fechaProceso, setFechaProceso] = useState("12/08/2026 09:19");
   const [usuarioProceso] = useState("Rdellamagiora");

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, X } from "lucide-react";
-import { FieldLabel } from "@/components/ui/FieldLabel";
+import FieldLabel from "@/components/ui/FieldLabel";
 import { dropdownAnchorStyle, useDropdownDirection } from "@/components/ui/dropdown";
 import { ICON, ICON_BTN_SM, MOD_FIELD_CLS, MOD_SELECT_CLS } from "@/components/ui/tokens";
 import { CampoOpcion } from "@/data/types";
@@ -15,7 +15,7 @@ import { CampoOpcion } from "@/data/types";
 // el buscador arriba de la lista (`searchable`) — todo lo demás es un solo
 // chrome, tanto si viene de un <select> corto sin buscador como de un
 // combobox largo con buscador y modal.
-export function ValuePicker({
+export default function ValuePicker({
   label,
   opts,
   value,

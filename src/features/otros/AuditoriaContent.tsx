@@ -12,7 +12,7 @@ import { AbmTableKey } from "@/data/types";
 
 // ─── Reporte de auditoría ───────────────────────────────────────────────────
 
-export function AuditoriaContent() {
+export default function AuditoriaContent() {
   const [usuario, setUsuario] = useState("");
   const [tablasSel, setTablasSel] = useState<Set<AbmTableKey>>(new Set());
 

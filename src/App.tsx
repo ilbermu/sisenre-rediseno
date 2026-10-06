@@ -4,23 +4,23 @@ import {
   Home, Wrench,
 } from "lucide-react";
 import Logo from "@/imports/Logo/index";
-import { NavItem } from "@/components/layout/NavItem";
-import { UserMenu } from "@/components/layout/UserMenu";
+import NavItem from "@/components/layout/NavItem";
+import UserMenu from "@/components/layout/UserMenu";
 import { FOCUS_RING, ICON, ICON_BTN_SM, PeriodSelector } from "@/components/ui";
 import { isAbmTableKey } from "@/data/abmTables";
 import { ABM_ITEMS } from "@/data/dominio";
 import { AbmDeepLink, AbmTableKey, Screen } from "@/data/types";
-import { AbmScreen } from "@/features/abm/AbmScreen";
-import { ModificarContent } from "@/features/consultas-interrupcion/ModificarContent";
-import { LotesModal } from "@/features/herramientas/LotesModal";
-import { WelcomeContent } from "@/features/inicio/WelcomeContent";
-import { LoginScreen } from "@/features/login/LoginScreen";
-import { SelectScreen } from "@/features/login/SelectScreen";
-import { AuditoriaContent } from "@/features/otros/AuditoriaContent";
-import { GeneracionTxtContent } from "@/features/otros/GeneracionTxtContent";
-import { GestorNotasContent } from "@/features/otros/GestorNotasContent";
-import { InsertaClientesContent } from "@/features/otros/InsertaClientesContent";
-import { PlanillaConsolidadaContent } from "@/features/otros/PlanillaConsolidadaContent";
+import AbmScreen from "@/features/abm/AbmScreen";
+import ModificarContent from "@/features/consultas-interrupcion/ModificarContent";
+import LotesModal from "@/features/herramientas/LotesModal";
+import WelcomeContent from "@/features/inicio/WelcomeContent";
+import LoginScreen from "@/features/login/LoginScreen";
+import SelectScreen from "@/features/login/SelectScreen";
+import AuditoriaContent from "@/features/otros/AuditoriaContent";
+import GeneracionTxtContent from "@/features/otros/GeneracionTxtContent";
+import GestorNotasContent from "@/features/otros/GestorNotasContent";
+import InsertaClientesContent from "@/features/otros/InsertaClientesContent";
+import PlanillaConsolidadaContent from "@/features/otros/PlanillaConsolidadaContent";
 import { useMatchMedia } from "@/lib/useMatchMedia";
 
 const OTROS_ITEMS: { label: string; icon: React.ReactNode; screen: Screen }[] = [

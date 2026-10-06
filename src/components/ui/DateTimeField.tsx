@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { DayPicker, useDayPicker, type ChevronProps } from "react-day-picker";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
-import { FieldLabel } from "@/components/ui/FieldLabel";
+import FieldLabel from "@/components/ui/FieldLabel";
 import { dropdownAnchorStyle, useDropdownDirection } from "@/components/ui/dropdown";
 import { BTN_MD, ICON, ICON_BTN_XS, MOD_FIELD_CLS, MOD_SELECT_CLS } from "@/components/ui/tokens";
 import { formatFecha } from "@/lib/format";
@@ -122,7 +122,7 @@ export function DateTimeCaptionLabel(props: React.HTMLAttributes<HTMLSpanElement
   );
 }
 
-export function DateTimeField({
+export default function DateTimeField({
   value,
   onChange,
   disabled,

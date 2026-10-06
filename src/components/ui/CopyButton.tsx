@@ -13,7 +13,7 @@ import { ICON, ICON_BTN_SM } from "@/components/ui/tokens";
 // desmontado. `label` identifica QUÉ se copia (minúscula, sin artículo) para
 // armar aria-label/title/aria-live ("Copiar interrupción" / "Interrupción
 // copiada").
-export function CopyButton({ value, label }: { value: string; label: string }) {
+export default function CopyButton({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

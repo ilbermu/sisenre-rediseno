@@ -15,7 +15,7 @@ import { formatNumero, VALOR_VACIO } from "@/lib/format";
 // reducida: el valor es información (ver DESIGN_SYSTEM.md, regla 6).
 // El ancho lo fija la etiqueta: el valor tiene w-0 + min-w-full, así no
 // aporta al ancho intrínseco y los chips quedan parejos entre sí.
-export function RelacionadaChip({
+export default function RelacionadaChip({
   label,
   raw,
   booleana,

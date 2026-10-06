@@ -25,7 +25,7 @@ const REPOSICIONES_ROW_H = 44;
 // El acento de fila seleccionada usa una sombra inset
 // (inset-shadow-row-selected): no ocupa espacio en el layout, el texto queda
 // en la misma posición seleccionado o no.
-export function ReposicionesLista({
+export default function ReposicionesLista({
   rows,
   selectedIndex,
   onSelect,

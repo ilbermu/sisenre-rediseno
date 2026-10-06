@@ -9,7 +9,7 @@ import {
 import { NOTA_OPCIONES } from "@/data/dominio";
 
 // ─── Modal: Confirmar modificación ─────────────────────────────────────────
-export function ConfirmarModificarModal({
+export default function ConfirmarModificarModal({
   open,
   cambios,
   onCancelar,

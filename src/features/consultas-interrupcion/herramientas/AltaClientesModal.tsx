@@ -10,7 +10,7 @@ import {
 import { ALTA_CLIENTES_ROWS } from "@/data/mocks";
 
 // ─── Modal: Alta de clientes ────────────────────────────────────────────────
-export function AltaClientesModal({
+export default function AltaClientesModal({
   open,
   onClose,
   referencia,

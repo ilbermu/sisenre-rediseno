@@ -105,7 +105,7 @@ const LOTES_TIPOS: LotesTipo[] = [
   },
 ];
 
-export function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [fileName, setFileName] = useState("No se eligió ningún archivo");
   const [activeTipo, setActiveTipo] = useState("0");
   const [selectedOpcion, setSelectedOpcion] = useState<string | null>(null);

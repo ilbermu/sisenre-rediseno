@@ -8,7 +8,7 @@ import {
 import { PERIODS } from "@/data/dominio";
 
 // ─── Modal: Replicar ────────────────────────────────────────────────────────
-export function ReplicarModal({
+export default function ReplicarModal({
   open,
   onClose,
   referencia,

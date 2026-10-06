@@ -1,7 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { ICON } from "@/components/ui/tokens";
 
-export function SelectWrap({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+export default function SelectWrap({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`relative ${className}`}>
       {children}

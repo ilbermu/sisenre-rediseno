@@ -9,7 +9,7 @@ import { VALOR_VACIO } from "@/lib/format";
 // selección de fase existe en ABM y consultas, no acá): <span>, sin hover
 // ni cursor, fuera del orden de tabulación. Cada caja es aria-hidden y un
 // sr-only describe el estado con las fases presentes (ej. "Fases: R, S y T").
-export function FaseIndicador({ fase }: { fase: string }) {
+export default function FaseIndicador({ fase }: { fase: string }) {
   const letras = ["R", "S", "T"] as const;
   const presentes = letras.filter((l) => fase.includes(l));
   const textoFases =

@@ -20,7 +20,7 @@ function estadoDeCampo(campo: CampoBusqueda, mode: AbmMode, consultando: boolean
 // (CampoEstado) que corresponda. Todos los tipos (select/toggle/fecha/texto,
 // readonly de config incluido) pasan por el mismo mecanismo: sin excepciones
 // hardcodeadas por tipo o por tabla.
-export function AbmCampo({
+export default function AbmCampo({
   campo,
   mode,
   value,

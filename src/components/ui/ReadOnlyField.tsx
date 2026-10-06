@@ -1,4 +1,4 @@
-export function ReadOnlyField({ label, value }: { label: string; value: string }) {
+export default function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <p className="text-heading-xs uppercase text-text-muted mb-1 truncate">{label}</p>

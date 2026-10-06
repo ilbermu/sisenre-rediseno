@@ -10,7 +10,7 @@ import { PERIODS } from "@/data/dominio";
 
 // ─── Inserta clientes en BDTH ───────────────────────────────────────────────
 
-export function InsertaClientesContent() {
+export default function InsertaClientesContent() {
   const [cliente, setCliente] = useState("");
   const [validado, setValidado] = useState(false);
   const [periodo, setPeriodo] = useState("");

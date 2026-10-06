@@ -9,7 +9,7 @@ import { PEER_FOCUS_RING } from "@/components/ui/tokens";
 // Desarmes/Alta clientes); pasando ambos queda controlado por el padre
 // (necesario cuando otra parte de la UI, como los botones Copiar/Mover en
 // Intercambio, necesita leer que filas estan tildadas).
-export function ModalCheckbox({
+export default function ModalCheckbox({
   label,
   defaultChecked = false,
   checked: checkedProp,

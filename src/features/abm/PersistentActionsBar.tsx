@@ -20,7 +20,7 @@ import {
 // acciones siempre habilitadas (Desarmes, Lotes) del resto, que dependen
 // de tener una interrupción seleccionada — para que esa diferencia de
 // lógica se note de un vistazo.
-function PersistentActionsBar({
+export default function PersistentActionsBar({
   siempreHabilitadas,
   condicionales,
 }: {

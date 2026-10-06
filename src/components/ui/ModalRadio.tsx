@@ -6,7 +6,7 @@ import { PEER_FOCUS_RING } from "@/components/ui/tokens";
 // `name`: obligatorio y compartido por todas las opciones del grupo — el
 // navegador maneja Tab (entra al grupo una sola vez, en la opción elegida) y
 // flechas (mueven y seleccionan).
-export function ModalRadio({ name, label, checked, onSelect }: { name: string; label: string; checked: boolean; onSelect: () => void }) {
+export default function ModalRadio({ name, label, checked, onSelect }: { name: string; label: string; checked: boolean; onSelect: () => void }) {
   return (
     <label className="inline-flex items-center gap-1.5 text-body text-text cursor-pointer select-none">
       <input type="radio" name={name} checked={checked} onChange={onSelect} className="peer sr-only" />

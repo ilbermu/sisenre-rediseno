@@ -39,20 +39,18 @@ import {
   SAMPLE_ROWS,
 } from "@/data/sinteticos";
 import { AbmDeepLink, FaseReposicion } from "@/data/types";
-import { DatosInterrupcionModal } from "@/features/consultas-interrupcion/DatosInterrupcionModal";
-import { FaseReposicionFicha } from "@/features/consultas-interrupcion/FaseReposicionFicha";
-import { ReclamosResumenCompacto } from "@/features/consultas-interrupcion/ReclamosResumenCompacto";
-import { RelacionadaChip } from "@/features/consultas-interrupcion/RelacionadaChip";
-import { ReposicionesLista } from "@/features/consultas-interrupcion/ReposicionesLista";
-import { SubtituloEtiquetado } from "@/features/consultas-interrupcion/SubtituloEtiquetado";
-import {
-  AltaClientesModal,
-} from "@/features/consultas-interrupcion/herramientas/AltaClientesModal";
-import { CambiaFasesModal } from "@/features/consultas-interrupcion/herramientas/CambiaFasesModal";
-import { DesarmeModal } from "@/features/consultas-interrupcion/herramientas/DesarmeModal";
-import { IntercambioModal } from "@/features/consultas-interrupcion/herramientas/IntercambioModal";
-import { NivelTipoModal } from "@/features/consultas-interrupcion/herramientas/NivelTipoModal";
-import { ReplicarModal } from "@/features/consultas-interrupcion/herramientas/ReplicarModal";
+import DatosInterrupcionModal from "@/features/consultas-interrupcion/DatosInterrupcionModal";
+import FaseReposicionFicha from "@/features/consultas-interrupcion/FaseReposicionFicha";
+import ReclamosResumenCompacto from "@/features/consultas-interrupcion/ReclamosResumenCompacto";
+import RelacionadaChip from "@/features/consultas-interrupcion/RelacionadaChip";
+import ReposicionesLista from "@/features/consultas-interrupcion/ReposicionesLista";
+import SubtituloEtiquetado from "@/features/consultas-interrupcion/SubtituloEtiquetado";
+import AltaClientesModal from "@/features/consultas-interrupcion/herramientas/AltaClientesModal";
+import CambiaFasesModal from "@/features/consultas-interrupcion/herramientas/CambiaFasesModal";
+import DesarmeModal from "@/features/consultas-interrupcion/herramientas/DesarmeModal";
+import IntercambioModal from "@/features/consultas-interrupcion/herramientas/IntercambioModal";
+import NivelTipoModal from "@/features/consultas-interrupcion/herramientas/NivelTipoModal";
+import ReplicarModal from "@/features/consultas-interrupcion/herramientas/ReplicarModal";
 import { VALOR_VACIO } from "@/lib/format";
 
 // ─── Modificar content ────────────────────────────────────────────────────────
@@ -102,7 +100,7 @@ const FLYOUT_FIELDS: { key: keyof FlyoutFilters; label: string; placeholder: str
   { key: "divisionRed", label: "División red normal", placeholder: "S" },
 ];
 
-export function ModificarContent({
+export default function ModificarContent({
   onIrAAbm,
   initialRelTab = null,
   initialReferencia = null,

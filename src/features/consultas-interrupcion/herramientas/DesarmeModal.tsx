@@ -11,7 +11,7 @@ import {
 } from "@/components/ui";
 
 // ─── Modal: Desarmes ────────────────────────────────────────────────────────
-export function DesarmeModal({
+export default function DesarmeModal({
   open,
   onClose,
   referencia,

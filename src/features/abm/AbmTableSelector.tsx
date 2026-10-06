@@ -14,7 +14,7 @@ import { AbmTableKey } from "@/data/types";
 // adicional. Cada opción del panel replica la riqueza visual del sidebar
 // (ícono + nombre + badge), activa resaltada con bg-primary-tint +
 // border-primary + text-secondary.
-export function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (k: AbmTableKey) => void }) {
+export default function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (k: AbmTableKey) => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {

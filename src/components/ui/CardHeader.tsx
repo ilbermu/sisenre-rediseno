@@ -1,4 +1,4 @@
-import { CodeBadge } from "@/components/ui/CodeBadge";
+import CodeBadge from "@/components/ui/CodeBadge";
 
 // Header compartido de toda card y de toda sección de card (Búsqueda,
 // Resultados, Interrupciones, Reposiciones, Reclamos, Tablas relacionadas…).
@@ -32,7 +32,7 @@ import { CodeBadge } from "@/components/ui/CodeBadge";
 // `level="section"` (título en heading-sm, sin divisor). El resto de los
 // usos (paneles ABM, Notas, Exportación…) sigue con el header sin divisor
 // y el padding propio (`padX`).
-export function CardHeader({
+export default function CardHeader({
   title,
   tag,
   subtitle,

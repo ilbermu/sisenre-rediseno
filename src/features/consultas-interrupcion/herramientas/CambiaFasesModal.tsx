@@ -3,7 +3,7 @@ import { ICON_BTN_XS, Modal, modalNeutralBtnCls } from "@/components/ui";
 import { CAMBIA_FASES_ROWS_INIT } from "@/data/mocks";
 
 // ─── Modal: Cambia fases ────────────────────────────────────────────────────
-export function CambiaFasesModal({
+export default function CambiaFasesModal({
   open,
   onClose,
   referencia,

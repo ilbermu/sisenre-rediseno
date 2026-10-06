@@ -19,7 +19,7 @@ import {
 // startMonth === endMonth, así que las flechas del calendario quedan sin
 // efecto y clickear un día aplica y cierra al toque (no hay hora que
 // confirmar aparte, no hace falta botón "Aplicar").
-export function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChange: (d: number) => void; anio: number; mes: number }) {
+export default function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChange: (d: number) => void; anio: number; mes: number }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {

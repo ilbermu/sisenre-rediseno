@@ -1,6 +1,6 @@
 import { Modal, modalNeutralBtnCls, modalPrimaryBtnCls, ReadOnlyField } from "@/components/ui";
 import { ReclamosInterrupcion } from "@/data/types";
-import { ReclamosTimeline } from "@/features/consultas-interrupcion/ReclamosTimeline";
+import ReclamosTimeline from "@/features/consultas-interrupcion/ReclamosTimeline";
 
 // ─── Modal: Datos de la interrupción ───────────────────────────────────────
 // Mismo chrome que el resto de los modales de la app (Modal genérico:
@@ -63,7 +63,7 @@ const DATOS_INTERRUPCION_COLUMNS: { label: string; value: string }[][] = [
   ],
 ];
 
-export function DatosInterrupcionModal({
+export default function DatosInterrupcionModal({
   open,
   onClose,
   referencia,

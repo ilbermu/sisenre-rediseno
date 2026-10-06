@@ -7,7 +7,7 @@
 // mueve el contenido, no el borde. El borde activo (2px primary) se
 // superpone a esa línea de base vía -mb-px. role="tablist"/"tab" +
 // flechas izquierda/derecha para moverse entre opciones.
-export function UnderlineTabs({
+export default function UnderlineTabs({
   options,
   activeKey,
   onSelect,

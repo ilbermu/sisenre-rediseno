@@ -1,9 +1,9 @@
 import { Zap } from "lucide-react";
 import { ICON } from "@/components/ui";
 import { AbmTableKey } from "@/data/types";
-import { CronogramaEnre } from "@/features/inicio/CronogramaEnre";
+import CronogramaEnre from "@/features/inicio/CronogramaEnre";
 
-export function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }) {
+export default function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }) {
   const quickLinks: { code: string; tableKey: AbmTableKey; label: string; desc: string; icon: React.ReactNode }[] = [
     { code: "CDS2", tableKey: "cds2", label: "Interrupciones", desc: "Consulta y gestión de interrupciones computadas", icon: <Zap size={ICON.md} strokeWidth={1.5} /> },
     { code: "CDS3", tableKey: "cds3", label: "Interrupciones no computables", desc: "Registro de interrupciones no imputables", icon: <Zap size={ICON.md} strokeWidth={1.5} /> },

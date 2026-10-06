@@ -10,7 +10,7 @@ import {
 // ─── Modal: Nivel/Tipo ──────────────────────────────────────────────────────
 const NIVEL_TIPO_TIPOS = ["BFZ", "AFZ", "BPR", "MFZ"];
 
-export function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function NivelTipoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <Modal
       title="Bajar nivel de interrupción"

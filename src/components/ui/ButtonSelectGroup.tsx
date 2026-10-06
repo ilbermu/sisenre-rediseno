@@ -5,7 +5,7 @@ import { BTN_SM } from "@/components/ui/tokens";
 // borde + relleno claro (mismo lenguaje que el toggle "Filtro" de
 // AltaClientesModal), nunca el azul relleno reservado para botones de
 // acción primarios.
-export function ButtonSelectGroup({
+export default function ButtonSelectGroup({
   options,
   selected,
   onToggle,

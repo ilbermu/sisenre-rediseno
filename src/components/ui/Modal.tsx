@@ -10,7 +10,7 @@ import { ICON, ICON_BTN_SM } from "@/components/ui/tokens";
 // botones alineados a la derecha (mismo lenguaje que Buscar/Limpiar: neutral
 // outline para cancelar, azul solido para la accion primaria). Cierra con X,
 // click en el overlay o Escape.
-export function Modal({
+export default function Modal({
   title,
   subtitle,
   open,

@@ -4,7 +4,7 @@ import { ABM_ITEMS } from "@/data/dominio";
 
 // ─── Generación de txt ──────────────────────────────────────────────────────
 
-export function GeneracionTxtContent() {
+export default function GeneracionTxtContent() {
   const [tabla, setTabla] = useState("");
 
   function handleExportar() {

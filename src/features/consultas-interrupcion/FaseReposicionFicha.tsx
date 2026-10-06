@@ -25,7 +25,7 @@ import { useMatchMedia } from "@/lib/useMatchMedia";
 // actual, sin comparación previa que dispare un destello espurio. El
 // timeout se limpia tanto al re-disparar como al desmontar. El destello
 // se aplica al contenedor entero (datos + botón copiar + paginador).
-export function FaseReposicionFicha({
+export default function FaseReposicionFicha({
   fila,
   reposicionIndex,
   totalReposiciones,

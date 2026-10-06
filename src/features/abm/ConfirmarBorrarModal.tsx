@@ -5,7 +5,7 @@ import { Modal, modalDestructiveBtnCls, modalNeutralBtnCls } from "@/components/
 // compartido, tamaño "sm". Botón primario en color de error (no el azul de
 // acciones normales) con el verbo de la acción ("Eliminar"), nunca "Sí/No" —
 // así el compromiso queda claro sin releer la pregunta.
-export function ConfirmarBorrarModal({
+export default function ConfirmarBorrarModal({
   open,
   registro,
   tabla,

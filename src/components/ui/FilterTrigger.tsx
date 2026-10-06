@@ -109,7 +109,7 @@ function FilterTriggerButton({
   );
 }
 
-export function FilterTrigger(props: FilterTriggerProps) {
+export default function FilterTrigger(props: FilterTriggerProps) {
   const { label } = props;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

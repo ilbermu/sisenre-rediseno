@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 
 // ─── Sidebar nav item ─────────────────────────────────────────────────────────
 
-export function NavItem({
+export default function NavItem({
   label, code, icon, active, collapsed, onClick, boldLabel = false, disabled = false, disabledTitle,
 }: {
   // `icon` es opcional: filas hijas sin ícono propio (ej. Tabla 2..Tabla 9

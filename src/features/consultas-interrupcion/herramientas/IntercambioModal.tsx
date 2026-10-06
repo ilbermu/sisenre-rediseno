@@ -16,7 +16,7 @@ import {
 // ─── Modal: Intercambio ─────────────────────────────────────────────────────
 type IntercambioRow = { id: number; fecha: string; clientes: number; repo: number };
 
-export function IntercambioModal({
+export default function IntercambioModal({
   open,
   onClose,
   referencia,

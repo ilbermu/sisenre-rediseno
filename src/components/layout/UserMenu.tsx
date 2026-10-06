@@ -4,7 +4,7 @@ import { dropdownAnchorStyle, ICON, useDropdownDirection } from "@/components/ui
 
 // ─── User menu ────────────────────────────────────────────────────────────────
 
-export function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () => void }) {
+export default function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {

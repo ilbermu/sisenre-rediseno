@@ -4,7 +4,7 @@ import { ICON } from "@/components/ui";
 
 // ─── Select screen ────────────────────────────────────────────────────────────
 
-export function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void }) {
+export default function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void }) {
   const [hovered, setHovered] = useState<string | null>(null);
 
   const options = [

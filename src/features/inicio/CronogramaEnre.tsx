@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { FieldLabel } from "@/components/ui";
-import { DiaDelMesField } from "@/features/inicio/DiaDelMesField";
+import DiaDelMesField from "@/features/inicio/DiaDelMesField";
 import { VALOR_VACIO } from "@/lib/format";
 
-export function CronogramaEnre() {
+export default function CronogramaEnre() {
   // El cronograma marca el MES DE ENTREGA/CORRECCIÓN (cuando IT hace el
   // trabajo) — que es un mes POSTERIOR al período que se está procesando.
   // Ej.: IT entrega las tablas de Agosto 2026 recién en septiembre — por

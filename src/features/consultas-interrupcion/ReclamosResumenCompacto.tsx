@@ -27,7 +27,7 @@ import { fmtDuracion, formatFecha, formatHora, formatNumero, VALOR_VACIO } from 
 // hairline: RECLAMOS / INICIO INTERRUPCIÓN / FIN INTERRUPCIÓN / DURACIÓN
 // TOTAL. Fechas completas dd/mm/aaaa hh:mm; si la columna es angosta parten
 // entre fecha y hora, nunca a mitad de la fecha.
-export function ReclamosResumenCompacto({
+export default function ReclamosResumenCompacto({
   datos,
   referencia,
   onClick,

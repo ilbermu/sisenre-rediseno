@@ -1,7 +1,7 @@
 import { AbmMode, CampoBusqueda, CampoTipo } from "@/data/types";
-import { AbmCampo } from "@/features/abm/AbmCampo";
+import AbmCampo from "@/features/abm/AbmCampo";
 
-export function AbmFila({
+export default function AbmFila({
   fila,
   mode,
   valores,

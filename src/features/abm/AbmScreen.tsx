@@ -18,11 +18,11 @@ import {
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { ABM_ITEMS } from "@/data/dominio";
 import { AbmDeepLink, AbmMode, AbmTableKey, CampoBusqueda } from "@/data/types";
-import { AbmCampo } from "@/features/abm/AbmCampo";
-import { AbmFila } from "@/features/abm/AbmFila";
-import { AbmTableSelector } from "@/features/abm/AbmTableSelector";
-import { ConfirmarBorrarModal } from "@/features/abm/ConfirmarBorrarModal";
-import { ConfirmarModificarModal } from "@/features/abm/ConfirmarModificarModal";
+import AbmCampo from "@/features/abm/AbmCampo";
+import AbmFila from "@/features/abm/AbmFila";
+import AbmTableSelector from "@/features/abm/AbmTableSelector";
+import ConfirmarBorrarModal from "@/features/abm/ConfirmarBorrarModal";
+import ConfirmarModificarModal from "@/features/abm/ConfirmarModificarModal";
 import { formatNumero } from "@/lib/format";
 
 function exportRowsToCsv(filename: string, headers: string[], rows: string[][]) {
@@ -71,7 +71,7 @@ function labelDeValor(campo: CampoBusqueda, valor: string, contexto: Record<stri
 // ABM_TABLE_CONFIGS[tableKey]. `onChangeTable` es el mismo setScreen del
 // componente App — asi el selector interno y el item activo del sidebar
 // comparten el mismo estado sin duplicarlo.
-export function AbmScreen({
+export default function AbmScreen({
   tableKey,
   onChangeTable,
   deepLink,

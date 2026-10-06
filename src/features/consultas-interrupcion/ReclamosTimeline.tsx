@@ -162,7 +162,7 @@ function marcasHora(inicio: Date, duracionMin: number, px: (m: number) => number
   return marcas;
 }
 
-export function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
+export default function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
   const g = TIMELINE_MODAL;
   const [pistaRef, ancho] = useAncho<HTMLDivElement>();
   const idBase = useId().replace(/:/g, "");

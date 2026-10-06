@@ -6,7 +6,7 @@ import { PERIODS } from "@/data/dominio";
 
 // ─── Period dropdown ──────────────────────────────────────────────────────────
 
-export function PeriodSelector() {
+export default function PeriodSelector() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(PERIODS[0]);
   const ref = useRef<HTMLDivElement>(null);
