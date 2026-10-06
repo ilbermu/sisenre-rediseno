@@ -12,7 +12,6 @@ import {
   modalNeutralBtnCls,
   modalPrimaryBtnCls,
   PeriodSelector,
-  rowActionBtnCls,
   SectionDivider,
   SelectionActionBar,
   SortableHeaderCell,
@@ -534,14 +533,14 @@ export default function AbmScreen({
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); handleAbrirModificar(i); }}
-                              className={rowActionBtnCls("neutral")}
+                              className={ghostBtnCls("neutral")}
                             >
                               Modificar
                             </button>
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); handleAbrirBorrar(i); }}
-                              className={rowActionBtnCls("destructive")}
+                              className={ghostBtnCls("destructive")}
                             >
                               Borrar
                             </button>

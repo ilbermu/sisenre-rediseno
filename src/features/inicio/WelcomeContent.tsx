@@ -15,7 +15,7 @@ export default function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTabl
     <div className="flex-1 overflow-y-auto px-10 py-10">
       {/* Greeting */}
       <div className="mb-8">
-        <p className="text-heading-xs uppercase tracking-widest text-text-muted mb-1">SISENRE 2.0 · Agosto 2026</p>
+        <p className="text-heading-xs uppercase text-text-muted mb-1">SISENRE 2.0 · Agosto 2026</p>
         <h2 className="text-heading-lg text-text">Buenos días, Rdellamagiora</h2>
         <p className="text-body-lg text-text-muted mt-1">Seleccioná una sección del menú o usá los accesos rápidos para comenzar.</p>
       </div>

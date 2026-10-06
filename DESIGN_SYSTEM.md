@@ -141,6 +141,15 @@ Decimocuarta pasada (también 06/10/2026):
   la tabla pierde su buscador; sin selección muestra solo el contador. La
   búsqueda y los filtros viven únicamente en la barra general.
 
+Decimoquinta pasada (también 06/10/2026):
+
+- **Botones de fila ghost:** Modificar / Borrar por fila del layout split
+  del ABM pasan de `rowActionBtnCls` (outline `sm`) a `ghostBtnCls`
+  (`neutral` / `destructive`), según la regla de jerarquía. `rowActionBtnCls`
+  queda sin uso.
+- **Mayúsculas:** el overline del saludo del Inicio (`WelcomeContent`) pierde
+  `tracking-widest`; el tracking viene del token `heading-xs`.
+
 ## Índice
 
 **1. Fundamentos**
@@ -657,7 +666,7 @@ color/variante.
 | Primario | `bg-primary-strong text-white` sobre `BTN_MD` (o `modalPrimaryBtnCls`) | `md` | La acción principal de una zona (Buscar, Guardar). Máximo uno por zona |
 | Secundario outline | `actionBtnCls("neutral")`, `modalNeutralBtnCls` | `md` | Acciones de página: Limpiar, Más filtros, Cancelar |
 | Destructivo outline | `actionBtnCls("destructive")` | `md` | Acción destructiva de página |
-| Outline de fila | `rowActionBtnCls(variant)` | `sm` | Acciones por fila del layout split del ABM |
+| Outline de fila | `rowActionBtnCls(variant)` | `sm` | Sin uso (las acciones de fila son ghost); se conserva |
 | **Ghost** | `ghostBtnCls("neutral" \| "destructive")` | **solo `sm`** | Acciones de tabla o de registro: barras de selección, toolbars de tabla, filas |
 | Ícono | `ICON_BTN_XS/SM/MD` | por control | Cerrar, copiar, deseleccionar, paginar |
 
