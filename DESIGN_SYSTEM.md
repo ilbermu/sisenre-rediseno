@@ -43,16 +43,21 @@ Segunda pasada (también 06/10/2026):
 - **Gradiente de marca:** `--color-brand-gradient-from/to` y `bg-brand-gradient`.
 - **Limpieza:** comentario de `ReclamosTimeline` sin hex de referencia.
 
-Cuarta pasada (también 06/10/2026):
-
-- **Botones por token:** los botones de paginación con alto por padding (`px-2.5 py-1`, `px-2 py-0.5`) pasan a `BTN_SM`. Ningún botón de texto define su alto con `py-*`.
-- **Checkbox y radio:** control y texto siempre dentro del mismo `<label>`, así el área clickeable incluye el texto; `ModalRadio` ahora lleva un `<input type="radio">` oculto (`sr-only`) dentro del label, en vez de un `onClick` sobre el label.
-
 Tercera pasada (también 06/10/2026):
 
 - **Capas:** `--z-dismiss` (15) para backdrops que cierran un panel sin tapar su barra.
 - **Controles de 24px:** `--control-xs` e `ICON_BTN_XS`; regla de que ningún interactivo usa `--spacing` para su tamaño.
 - **Colores sueltos:** `--color-scrim` / `bg-scrim` para los scrims de modal; `fill-surface` en el círculo del timeline.
+
+Cuarta pasada (también 06/10/2026):
+
+- **Botones por token:** los botones de paginación con alto por padding (`px-2.5 py-1`, `px-2 py-0.5`) pasan a `BTN_SM`. Ningún botón de texto define su alto con `py-*`.
+- **Checkbox y radio:** control y texto siempre dentro del mismo `<label>`, así el área clickeable incluye el texto; `ModalRadio` ahora lleva un `<input type="radio">` oculto (`sr-only`) dentro del label, en vez de un `onClick` sobre el label.
+
+Quinta pasada (también 06/10/2026):
+
+- **Grupos de radio reales:** `ModalRadio` recibe `name` (obligatorio), compartido por las opciones del grupo; el contenedor lleva `role="radiogroup"` y `aria-label`.
+- **Foco en checkbox y radio:** `PEER_FOCUS_RING`. Regla: todo control con `<input>` oculto (`sr-only`) muestra el foco en su representación visible — el input lleva `peer` y la caja o el círculo recibe `peer-focus-visible:outline-*` (mismo aspecto que `FOCUS_RING`).
 
 ## Tipografía
 
@@ -490,6 +495,12 @@ Un solo color de foco, `--color-focus` = `#076AEE` (mismo valor que
   (`MOD_FIELD_CLS`, `MOD_SELECT_CLS`, buscador de tabla, login…).
 - Nada de `focus-visible:outline-*` ni `ring-primary/30` sueltos: se usa la
   constante.
+- **Controles con `<input>` oculto (`sr-only`)** — checkbox y radio:
+  `PEER_FOCUS_RING`. El input lleva `peer` y la caja o el círculo visible
+  recibe `peer-focus-visible:outline-2 outline-focus outline-offset-2`
+  (mismo aspecto que `FOCUS_RING`; no aparece al hacer clic con mouse).
+  Los radios de un grupo comparten `name` y el contenedor es
+  `role="radiogroup"` con `aria-label`.
 - **Ningún elemento interactivo queda con `outline-none` sin reemplazo
   visible.** Una sección con stretched button (`has-[:focus-visible]`) pinta
   el mismo anillo inset en la sección entera; el panel de un modal

@@ -582,6 +582,10 @@ function fechaEnRango(d: Date | null, r: RangoFecha | null): boolean {
 //                       borde + halo, distinto del anillo de un control.
 const FOCUS_RING = "focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2";
 const FOCUS_RING_INSET = "focus-visible:outline-2 focus-visible:outline-focus focus-visible:-outline-offset-2";
+// Controles con <input> oculto (sr-only, checkbox/radio): el input lleva
+// `peer` y su representación visible (la caja o el círculo) recibe el mismo
+// anillo que FOCUS_RING cuando el input tiene foco de teclado.
+const PEER_FOCUS_RING = "peer-focus-visible:outline-2 peer-focus-visible:outline-focus peer-focus-visible:outline-offset-2";
 const FIELD_FOCUS = "focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10";
 
 // Botones de ícono cuadrados — alto/ancho de control, nunca de la escala
@@ -1640,10 +1644,10 @@ function ModalCheckbox({
         type="checkbox"
         checked={checked}
         onChange={(e) => setChecked(e.target.checked)}
-        className="sr-only"
+        className="peer sr-only"
       />
       <span
-        className={`w-4 h-4 rounded-xs border flex items-center justify-center shrink-0 transition-colors duration-(--duration-base) ${
+        className={`w-4 h-4 rounded-xs border flex items-center justify-center shrink-0 transition-colors duration-(--duration-base) ${PEER_FOCUS_RING} ${
           checked ? "bg-primary-strong border-primary-strong" : "bg-surface border-border-strong hover:border-primary"
         }`}
       >
@@ -1661,12 +1665,15 @@ function ModalCheckbox({
 // Radio custom, controlado desde el padre (seleccion mutuamente excluyente
 // entre varios ModalRadio via checked/onSelect) — mismo motivo que el
 // checkbox: nada de estilo nativo del navegador.
-function ModalRadio({ label, checked, onSelect }: { label: string; checked: boolean; onSelect: () => void }) {
+// `name`: obligatorio y compartido por todas las opciones del grupo — el
+// navegador maneja Tab (entra al grupo una sola vez, en la opción elegida) y
+// flechas (mueven y seleccionan).
+function ModalRadio({ name, label, checked, onSelect }: { name: string; label: string; checked: boolean; onSelect: () => void }) {
   return (
     <label className="inline-flex items-center gap-1.5 text-body text-text cursor-pointer select-none">
-      <input type="radio" checked={checked} onChange={onSelect} className="sr-only" />
+      <input type="radio" name={name} checked={checked} onChange={onSelect} className="peer sr-only" />
       <span
-        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-(--duration-base) ${
+        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-(--duration-base) ${PEER_FOCUS_RING} ${
           checked ? "border-primary-strong" : "border-border-strong hover:border-primary"
         }`}
       >
@@ -1733,13 +1740,15 @@ function DesarmeModal({
             <ModalCheckbox label="Desarmo" defaultChecked />
             <ModalCheckbox label="Instalación cliente" defaultChecked />
           </div>
-          <div className="flex items-center gap-5">
+          <div role="radiogroup" aria-label="Desarme por" className="flex items-center gap-5">
             <ModalRadio
+              name="desarme-por"
               label="Por interrupción"
               checked={desarmePor === "interrupcion"}
               onSelect={() => setDesarmePor("interrupcion")}
             />
             <ModalRadio
+              name="desarme-por"
               label="Por reclamo"
               checked={desarmePor === "reclamo"}
               onSelect={() => setDesarmePor("reclamo")}
@@ -2275,6 +2284,7 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               {tipoData.opciones.map((op) => (
                 <div key={op.label} className="flex items-center gap-4 flex-wrap">
                   <ModalRadio
+                    name="lotes-opcion"
                     label={op.label}
                     checked={selectedOpcion === op.label}
                     onSelect={() => setSelectedOpcion(op.label)}
@@ -2286,9 +2296,10 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                     <ValuePicker opts={[]} placeholder="Seleccioná código" wrapClassName="w-44" />
                   )}
                   {op.extra === "causaAlta" && (
-                    <div className="flex items-center gap-4">
-                      <ModalRadio label="<= 3 minutos" checked={causaAlta === "3min"} onSelect={() => setCausaAlta("3min")} />
+                    <div role="radiogroup" aria-label="Causa de alta" className="flex items-center gap-4">
+                      <ModalRadio name="lotes-causa-alta" label="<= 3 minutos" checked={causaAlta === "3min"} onSelect={() => setCausaAlta("3min")} />
                       <ModalRadio
+                        name="lotes-causa-alta"
                         label="Instalación cliente"
                         checked={causaAlta === "instalacion"}
                         onSelect={() => setCausaAlta("instalacion")}
@@ -2403,20 +2414,20 @@ function IntercambioModal({
 
           <div>
             <FieldLabel>Selección</FieldLabel>
-            <div className="flex flex-col gap-2 mt-1">
-              <ModalRadio label="Interrupción" checked={seleccion === "interrupcion"} onSelect={() => setSeleccion("interrupcion")} />
-              <ModalRadio label="Reclamos" checked={seleccion === "reclamos"} onSelect={() => setSeleccion("reclamos")} />
-              <ModalRadio label="CTs" checked={seleccion === "cts"} onSelect={() => setSeleccion("cts")} />
-              <ModalRadio label="Clientes" checked={seleccion === "clientes"} onSelect={() => setSeleccion("clientes")} />
+            <div role="radiogroup" aria-label="Selección" className="flex flex-col gap-2 mt-1">
+              <ModalRadio name="intercambio-seleccion" label="Interrupción" checked={seleccion === "interrupcion"} onSelect={() => setSeleccion("interrupcion")} />
+              <ModalRadio name="intercambio-seleccion" label="Reclamos" checked={seleccion === "reclamos"} onSelect={() => setSeleccion("reclamos")} />
+              <ModalRadio name="intercambio-seleccion" label="CTs" checked={seleccion === "cts"} onSelect={() => setSeleccion("cts")} />
+              <ModalRadio name="intercambio-seleccion" label="Clientes" checked={seleccion === "clientes"} onSelect={() => setSeleccion("clientes")} />
             </div>
           </div>
 
           <div>
             <FieldLabel>Tarifas</FieldLabel>
-            <div className="flex flex-col gap-2 mt-1">
-              <ModalRadio label="Todas" checked={tarifa === "todas"} onSelect={() => setTarifa("todas")} />
-              <ModalRadio label="MT/AT" checked={tarifa === "mtat"} onSelect={() => setTarifa("mtat")} />
-              <ModalRadio label="BT" checked={tarifa === "bt"} onSelect={() => setTarifa("bt")} />
+            <div role="radiogroup" aria-label="Tarifas" className="flex flex-col gap-2 mt-1">
+              <ModalRadio name="intercambio-tarifa" label="Todas" checked={tarifa === "todas"} onSelect={() => setTarifa("todas")} />
+              <ModalRadio name="intercambio-tarifa" label="MT/AT" checked={tarifa === "mtat"} onSelect={() => setTarifa("mtat")} />
+              <ModalRadio name="intercambio-tarifa" label="BT" checked={tarifa === "bt"} onSelect={() => setTarifa("bt")} />
             </div>
           </div>
         </div>
