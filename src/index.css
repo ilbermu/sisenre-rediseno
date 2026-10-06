@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600&family=JetBrains+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
 
 /*
@@ -295,7 +295,7 @@
  *
  * sm (compacto) — acciones inline de fila (Modificar/Borrar en las tablas
  * ABM) y toggles/chips (BT/MT/AT, Interno/Externo, etc.):
- *   height ~28px (h-7) · padding compacto (px-2.5)
+ *   height --control-sm (28px; 26px / 24px en notebooks) · padding compacto (px-2.5)
  *   · tipografía text-label (12/16, medium)
  *   · --radius-sm (6px)
  *
@@ -304,10 +304,10 @@
  * (selector de período, "Cambiar de tabla" — ícono a la izquierda si
  * aplica, chevron a la derecha, mismo espaciado consistente entre texto e
  * íconos):
- *   height ~36px (h-9) · padding normal (px-4)
+ *   height --control-md (36px; 32px / 30px en notebooks) · padding normal (px-4)
  *   · tipografía text-body (13/20) + font-medium — la única excepción
  *     de peso del sistema, igual para primario y secundario
- *   · --radius-md (6px)
+ *   · --radius-sm (6px)
  *
  * No aplica a los <select> nativos (tema aparte, todavía sin resolver).
  */
