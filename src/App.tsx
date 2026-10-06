@@ -102,6 +102,28 @@ function enteroEntre(rng: () => number, min: number, max: number): number {
 function ceros(n: number, ancho: number): string {
   return String(n).padStart(ancho, "0");
 }
+
+// Formatos de la app (ver DESIGN_SYSTEM.md, "Voz y formatos"): un helper por
+// formato, nada de toLocaleString / armado a mano por pantalla.
+// Valor ausente o no aplicable: siempre el mismo guion largo.
+const VALOR_VACIO = "—";
+const NUMERO_ES_AR = new Intl.NumberFormat("es-AR", { useGrouping: "always" } as unknown as Intl.NumberFormatOptions);
+// 1234567 → "1.234.567" (con punto desde los miles, también 1.234)
+function formatNumero(n: number): string {
+  return NUMERO_ES_AR.format(n);
+}
+// dd/mm/aaaa
+function formatFecha(d: Date): string {
+  return `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)}/${d.getFullYear()}`;
+}
+// hh:mm, 24 h
+function formatHora(d: Date): string {
+  return `${ceros(d.getHours(), 2)}:${ceros(d.getMinutes(), 2)}`;
+}
+// dd/mm/aaaa hh:mm, 24 h
+function formatFechaHora(d: Date): string {
+  return `${formatFecha(d)} ${formatHora(d)}`;
+}
 function filasSinteticas<T>(n: number, gen: () => T): T[] {
   return Array.from({ length: n }, gen);
 }
@@ -523,7 +545,7 @@ type FilterTriggerProps =
 
 // "dd/mm hh:mm" — texto del trigger con un rango aplicado.
 function fmtDiaHora(d: Date): string {
-  return `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)} ${ceros(d.getHours(), 2)}:${ceros(d.getMinutes(), 2)}`;
+  return `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)} ${formatHora(d)}`;
 }
 
 function textoRangoFecha(r: RangoFecha): string {
@@ -723,7 +745,7 @@ function FilterDateRangePanel({
   onApply: (value: RangoFecha | null) => void;
 }) {
   const aFecha = (d: Date | null | undefined) => (d ? `${d.getFullYear()}-${ceros(d.getMonth() + 1, 2)}-${ceros(d.getDate(), 2)}` : "");
-  const aHora = (d: Date | null | undefined) => (d ? `${ceros(d.getHours(), 2)}:${ceros(d.getMinutes(), 2)}` : "");
+  const aHora = (d: Date | null | undefined) => (d ? formatHora(d) : "");
   const [desdeFecha, setDesdeFecha] = useState(aFecha(value?.desde));
   const [desdeHora, setDesdeHora] = useState(aHora(value?.desde));
   const [hastaFecha, setHastaFecha] = useState(aFecha(value?.hasta));
@@ -835,10 +857,7 @@ function parseDateTimeStr(v: string): { date: Date | undefined; time: string } {
 
 function formatDateTimeStr(date: Date | undefined, time: string): string {
   if (!date) return "";
-  const dd = String(date.getDate()).padStart(2, "0");
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const yyyy = date.getFullYear();
-  return `${dd}/${mm}/${yyyy} ${time || "00:00"}`;
+  return `${formatFecha(date)} ${time || "00:00"}`;
 }
 
 function DateTimeChevron({ orientation }: ChevronProps) {
@@ -2067,8 +2086,8 @@ const LOTES_TIPOS: LotesTipo[] = [
       { label: "Pasar texto a mayúscula (excluye interrupciones)" },
       { label: "Buscar CT por acometida en T10 Sem" },
       { label: "Nivelación automática" },
-      { label: "Completa Cadenas Vacías en T9" },
-      { label: "Carga Potencia de Cts en 0" },
+      { label: "Completa cadenas vacías en T9" },
+      { label: "Carga potencia de CTs en 0" },
     ],
   },
   {
@@ -2117,7 +2136,7 @@ const LOTES_TIPOS: LotesTipo[] = [
     desc: "Tipo 6 - REF/REF o Reclamo/REF",
     opciones: [
       { label: "Pasaje de reclamos", extra: "conservaCausa" },
-      { label: "Renombrar Interrupciones" },
+      { label: "Renombrar interrupciones" },
     ],
   },
   {
@@ -2140,7 +2159,7 @@ const LOTES_TIPOS: LotesTipo[] = [
   {
     key: "8",
     desc: "Tipo 8 - REF/F/Cadena",
-    opciones: [{ label: "Inserta registros en T5" }, { label: "Elimina Registros en T5" }],
+    opciones: [{ label: "Inserta registros en T5" }, { label: "Elimina registros en T5" }],
   },
 ];
 
@@ -2256,10 +2275,10 @@ function LotesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                     onSelect={() => setSelectedOpcion(op.label)}
                   />
                   {/* Sin más opciones que el placeholder — siempre muestra
-                      "Seleccione código" (mismo criterio que AbmCampo: sin
+                      "Seleccioná código" (mismo criterio que AbmCampo: sin
                       value real, el trigger queda fijo en text-muted). */}
                   {op.extra === "codigoFalla" && (
-                    <ValuePicker opts={[]} placeholder="Seleccione código" wrapClassName="w-44" />
+                    <ValuePicker opts={[]} placeholder="Seleccioná código" wrapClassName="w-44" />
                   )}
                   {op.extra === "causaAlta" && (
                     <div className="flex items-center gap-4">
@@ -2892,7 +2911,7 @@ function CronogramaEnre() {
               <span className="shrink-0 rounded-xs" style={{ width: 10, height: 10, backgroundColor: COLOR_ETAPA.correccion }} />
               <span className="text-body-sm text-text-muted flex-1 min-w-0">Ventana de corrección</span>
               <span className="text-label text-text shrink-0">
-                {hayCorreccion ? `${correccionDesde} – ${correccionHasta} de ${nombreMesEntrega}` : "—"}
+                {hayCorreccion ? `${correccionDesde} – ${correccionHasta} de ${nombreMesEntrega}` : VALOR_VACIO}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -3079,7 +3098,7 @@ function DatosInterrupcionModal({
 
   return (
     <Modal
-      title="Datos de la Interrupción"
+      title="Datos de la interrupción"
       subtitle={referencia}
       open={open}
       onClose={onClose}
@@ -3794,7 +3813,7 @@ function RelacionadaChip({
   booleana: boolean;
   onClick: () => void;
 }) {
-  let valor = "—";
+  let valor = VALOR_VACIO;
   let conContenido = false;
   if (raw !== undefined) {
     if (booleana) {
@@ -3803,7 +3822,7 @@ function RelacionadaChip({
     } else {
       const n = Number(raw);
       conContenido = n > 0;
-      valor = n.toLocaleString("es-AR");
+      valor = formatNumero(n);
     }
   }
   const baseCls = "inline-flex flex-col items-start px-[14px] py-[6px] rounded-sm border text-left";
@@ -3924,13 +3943,9 @@ function partesDuracion(min: number): [string, string] {
   return [txt.slice(0, i), txt.slice(i + 1)];
 }
 
-function fmtFechaHora(d: Date): string {
-  return `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)}/${d.getFullYear()} ${ceros(d.getHours(), 2)}:${ceros(d.getMinutes(), 2)}`;
-}
-
 // "HH:mm", o "dd/mm HH:mm" cuando la interrupción dura más de un día.
 function fmtHoraCorta(d: Date, conDia: boolean): string {
-  const hora = `${ceros(d.getHours(), 2)}:${ceros(d.getMinutes(), 2)}`;
+  const hora = formatHora(d);
   return conDia ? `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)} ${hora}` : hora;
 }
 
@@ -4059,7 +4074,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
       <div className="flex gap-[26px] mb-[14px]">
         <div>
           <span className={kLabel}>TOTAL</span>
-          <span className={kValor}>{resumen ? total.toLocaleString("es-AR") : "—"}</span>
+          <span className={kValor}>{resumen ? formatNumero(total) : VALOR_VACIO}</span>
         </div>
         {resumen && total >= 1 && (
           <div>
@@ -4087,7 +4102,7 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
       <div ref={pistaRef} style={{ height: g.alto }}>
         {resumen && total > 0 && ancho > 0 ? (
           <svg viewBox={`0 0 ${ancho} ${g.alto}`} width="100%" height={g.alto} role="img" className="block overflow-visible">
-            <title>{`${total.toLocaleString("es-AR")} ${total === 1 ? "reclamo" : "reclamos"} sobre la línea de la interrupción`}</title>
+            <title>{`${formatNumero(total)} ${total === 1 ? "reclamo" : "reclamos"} sobre la línea de la interrupción`}</title>
             <defs>
               <linearGradient id={`${idBase}-banda`} x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" style={{ stopColor: "var(--color-primary)", stopOpacity: 0.14 }} />
@@ -4161,11 +4176,11 @@ function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
       <div className="flex justify-between text-caption text-text mt-[7px] tabular-nums">
         <span>
           <span className="block text-caption tracking-[0.05em] text-text-muted mb-[1px]">INICIO</span>
-          {datos ? fmtFechaHora(datos.inicio) : "—"}
+          {datos ? formatFechaHora(datos.inicio) : VALOR_VACIO}
         </span>
         <span className="text-right">
           <span className="block text-caption tracking-[0.05em] text-text-muted mb-[1px]">FIN</span>
-          {datos ? fmtFechaHora(datos.fin) : "—"}
+          {datos ? formatFechaHora(datos.fin) : VALOR_VACIO}
         </span>
       </div>
     </>
@@ -4191,7 +4206,7 @@ function ChipDuracion({ minutos }: { minutos: number }) {
 
 // Resumen de reclamos (card Interrupciones de Modificar interrupción,
 // debajo de la tabla de Interrupciones) — sin gráfico. Sección clickeable
-// que abre "Datos de la Interrupción" (ahí está el gráfico completo,
+// que abre "Datos de la interrupción" (ahí está el gráfico completo,
 // ReclamosTimeline): patrón stretched button (ver el JSX), con hover
 // primary-tint + texto navy sobre toda la sección y foco con --color-focus.
 // Sin estilos propios: todo copiado de elementos del mismo panel —
@@ -4225,17 +4240,15 @@ function ReclamosResumenCompacto({
   const resumen = useMemo(() => (datos ? resumirReclamos(datos) : null), [datos]);
   const fecha = (d: Date) => (
     <>
-      <span className="whitespace-nowrap">
-        {ceros(d.getDate(), 2)}/{ceros(d.getMonth() + 1, 2)}/{d.getFullYear()}
-      </span>{" "}
-      <span className="whitespace-nowrap">{ceros(d.getHours(), 2)}:{ceros(d.getMinutes(), 2)}</span>
+      <span className="whitespace-nowrap">{formatFecha(d)}</span>{" "}
+      <span className="whitespace-nowrap">{formatHora(d)}</span>
     </>
   );
   const columnas: { etiqueta: string; valor: React.ReactNode }[] = [
-    { etiqueta: "RECLAMOS", valor: resumen ? resumen.total.toLocaleString("es-AR") : "—" },
-    { etiqueta: "INICIO INTERRUPCIÓN", valor: datos ? fecha(datos.inicio) : "—" },
-    { etiqueta: "FIN INTERRUPCIÓN", valor: datos ? fecha(datos.fin) : "—" },
-    { etiqueta: "DURACIÓN TOTAL", valor: resumen ? fmtDuracion(resumen.duracionMin) : "—" },
+    { etiqueta: "RECLAMOS", valor: resumen ? formatNumero(resumen.total) : VALOR_VACIO },
+    { etiqueta: "INICIO INTERRUPCIÓN", valor: datos ? fecha(datos.inicio) : VALOR_VACIO },
+    { etiqueta: "FIN INTERRUPCIÓN", valor: datos ? fecha(datos.fin) : VALOR_VACIO },
+    { etiqueta: "DURACIÓN TOTAL", valor: resumen ? fmtDuracion(resumen.duracionMin) : VALOR_VACIO },
   ];
 
   const habilitada = datos !== null;
@@ -4307,7 +4320,7 @@ function FaseIndicador({ fase }: { fase: string }) {
   const presentes = letras.filter((l) => fase.includes(l));
   const textoFases =
     presentes.length <= 1
-      ? `Fase: ${presentes[0] ?? "—"}`
+      ? `Fase: ${presentes[0] ?? VALOR_VACIO}`
       : `Fases: ${presentes.slice(0, -1).join(", ")} y ${presentes[presentes.length - 1]}`;
   return (
     <span className="flex items-center gap-0.5">
@@ -4826,7 +4839,7 @@ function ModificarContent({
   // Cubre selección por click, por teclado (flechas) y la restauración
   // inicial al volver desde ABM, ya que todas pasan por modSelectedRow. Al
   // deseleccionar, el formulario vuelve a su estado en blanco y editable —
-  // mismo criterio que ya usan "Datos de la Interrupción" y "Tablas
+  // mismo criterio que ya usan "Datos de la interrupción" y "Tablas
   // relacionadas" para su estado vacío.
   useEffect(() => {
     if (selectedRecord) {
@@ -4994,7 +5007,7 @@ function ModificarContent({
   const { search: relSearch, setSearch: setRelSearch, sortIdx: relSortIdx, sortDir: relSortDir, toggleSort: relToggleSort, visibleIndices: relVisibleIndices } =
     useTableToolbar(relFilteredRows, relGetCells, relResetKey, relSearchCols);
 
-  // Datos de la Interrupción (widget + modal, Card B) — solo tiene sentido
+  // Datos de la interrupción (widget + modal, Card B) — solo tiene sentido
   // con una interrupción seleccionada; sin selección, la sección completa
   // muestra un estado vacío (ver JSX) y estos valores no se usan.
   // "Fecha última reposición" ahora refleja la reposición seleccionada en
@@ -5298,7 +5311,7 @@ function ModificarContent({
       >
 
         {/* Header — sin subtítulo (el contador va en el toolbar). Sin
-            acciones: "Datos de la Interrupción" se abre desde la sección
+            acciones: "Datos de la interrupción" se abre desde la sección
             Reclamos. */}
         <CardHeader title="Interrupciones" tag="CDS2" divider chrome />
 
@@ -5474,7 +5487,7 @@ function ModificarContent({
                   reserveSubtitle
                   subtitle={
                     filaFaseSeleccionada
-                      ? <SubtituloEtiquetado etiqueta="Reposición">{modSelectedFase !== null ? modSelectedFase + 1 : "—"} de {tabla4Rows.length} · {filaFaseSeleccionada.horaRep}</SubtituloEtiquetado>
+                      ? <SubtituloEtiquetado etiqueta="Reposición">{modSelectedFase !== null ? modSelectedFase + 1 : VALOR_VACIO} de {tabla4Rows.length} · {filaFaseSeleccionada.horaRep}</SubtituloEtiquetado>
                       : undefined
                   }
                 />
@@ -5692,7 +5705,7 @@ function ModificarContent({
                   <div className="flex flex-col items-center gap-3 text-center">
                     <span className="text-text-faint"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
                     <p className="text-heading-sm text-text-muted">Sin registros</p>
-                    <p className="text-body-sm text-text-muted">Sin registros para la reposición {filaFaseSeleccionada?.nro ?? "—"}</p>
+                    <p className="text-body-sm text-text-muted">Sin registros para la reposición {filaFaseSeleccionada?.nro ?? VALOR_VACIO}</p>
                     {abmMapping && (
                       <button
                         type="button"
@@ -6766,7 +6779,7 @@ function ValuePicker({
   modalTitle,
   emptyMessage = "Sin opciones",
   searchPlaceholder = "Buscar...",
-  placeholder = "Seleccione",
+  placeholder = "Seleccioná",
   wrapClassName = "w-full",
   triggerExtraClassName = "",
   triggerStyle,
@@ -7662,7 +7675,7 @@ function AbmScreen({
               <span className="text-body-sm text-text">
                 Registros encontrados:{" "}
                 <span className="font-semibold text-secondary">
-                  {config.totalRegistros.toLocaleString("es-AR")}
+                  {formatNumero(config.totalRegistros)}
                 </span>
               </span>
               <div className="flex items-center gap-2 text-body-sm text-text-muted">
@@ -7671,7 +7684,7 @@ function AbmScreen({
                 </button>
                 <span>
                   Pág. <span className="font-medium text-text">1</span> de{" "}
-                  <span className="font-medium text-text">{totalPages.toLocaleString("es-AR")}</span>
+                  <span className="font-medium text-text">{formatNumero(totalPages)}</span>
                 </span>
                 <button
                   className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors"
@@ -7727,7 +7740,7 @@ function GeneracionTxtContent() {
               value={tabla}
               onChange={setTabla}
               opts={ABM_ITEMS.map((item) => ({ value: item.screen as string, label: item.label }))}
-              placeholder="Seleccione tabla a exportar"
+              placeholder="Seleccioná tabla a exportar"
             />
           </div>
           <button type="button" disabled={!tabla} onClick={handleExportar} className={modalPrimaryBtnCls}>
@@ -7765,7 +7778,7 @@ function PlanillaConsolidadaContent() {
     setProcesando(true);
     setTimeout(() => {
       setDatos(generarConsolidacionSintetica(crearRng(Date.now())));
-      setFechaProceso(new Date().toLocaleString("es-AR").slice(0, 16));
+      setFechaProceso(formatFechaHora(new Date()));
       setProcesando(false);
     }, 900);
   }
@@ -8071,7 +8084,7 @@ function InsertaClientesContent() {
               value={periodo}
               onChange={setPeriodo}
               opts={PERIODS}
-              placeholder="Seleccione período"
+              placeholder="Seleccioná período"
             />
           </div>
           <div className="flex justify-end pt-3 border-t border-border">
@@ -8114,7 +8127,7 @@ function AuditoriaContent() {
         <div className="p-6 grid grid-cols-2 gap-6">
           <div>
             <ValuePicker
-              label="Seleccione usuario"
+              label="Seleccioná usuario"
               opts={USUARIOS_SISENRE_DEMO}
               value={usuario}
               onChange={setUsuario}
@@ -8122,7 +8135,7 @@ function AuditoriaContent() {
             />
           </div>
           <div>
-            <FieldLabel>Seleccione tablas</FieldLabel>
+            <FieldLabel>Seleccioná tablas</FieldLabel>
             <div className="grid grid-cols-2 gap-2 mt-1">
               {ABM_ITEMS.map((item) => (
                 <ModalCheckbox
