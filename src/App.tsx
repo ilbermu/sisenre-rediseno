@@ -1663,10 +1663,8 @@ function ModalCheckbox({
 // checkbox: nada de estilo nativo del navegador.
 function ModalRadio({ label, checked, onSelect }: { label: string; checked: boolean; onSelect: () => void }) {
   return (
-    <label
-      onClick={onSelect}
-      className="inline-flex items-center gap-1.5 text-body text-text cursor-pointer select-none"
-    >
+    <label className="inline-flex items-center gap-1.5 text-body text-text cursor-pointer select-none">
+      <input type="radio" checked={checked} onChange={onSelect} className="sr-only" />
       <span
         className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-(--duration-base) ${
           checked ? "border-primary-strong" : "border-border-strong hover:border-primary"
@@ -2479,9 +2477,9 @@ function IntercambioModal({
             </table>
           </div>
           <div className="flex items-center justify-between text-body-sm text-text-muted">
-            <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Anterior</button>
+            <button className={`${BTN_SM} border border-border-strong bg-surface disabled:opacity-40`} disabled>Anterior</button>
             <span>Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">1</span></span>
-            <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Siguiente</button>
+            <button className={`${BTN_SM} border border-border-strong bg-surface disabled:opacity-40`} disabled>Siguiente</button>
           </div>
           <ModalCheckbox label="Ocultar existentes en ambas interrupciones" checked={ocultarExistentes} onChange={setOcultarExistentes} />
         </div>
@@ -2546,9 +2544,9 @@ function IntercambioModal({
             </table>
           </div>
           <div className="flex items-center justify-between text-body-sm text-text-muted">
-            <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Anterior</button>
+            <button className={`${BTN_SM} border border-border-strong bg-surface disabled:opacity-40`} disabled>Anterior</button>
             <span>Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">1</span></span>
-            <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40" disabled>Siguiente</button>
+            <button className={`${BTN_SM} border border-border-strong bg-surface disabled:opacity-40`} disabled>Siguiente</button>
           </div>
           <div className="relative">
             <input placeholder="Buscar destino" className={MOD_FIELD_CLS} style={{ paddingRight: 36 }} />
@@ -5423,9 +5421,9 @@ function ModificarContent({
               })}
             </div>
             <div className="shrink-0 border-t border-border bg-fill-subtle px-(--card-px) py-1.5 flex items-center justify-between">
-              <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted disabled:opacity-40" disabled>Anterior</button>
+              <button className={`${BTN_SM} border border-border bg-surface text-text-muted disabled:opacity-40`} disabled>Anterior</button>
               <span className="text-caption text-text-muted">Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">2.213</span></span>
-              <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted hover:bg-fill-muted transition-colors">Siguiente</button>
+              <button className={`${BTN_SM} border border-border bg-surface text-text-muted hover:bg-fill-muted transition-colors`}>Siguiente</button>
             </div>
           </div>
           <ReclamosResumenCompacto
@@ -7682,7 +7680,7 @@ function AbmScreen({
                 </span>
               </span>
               <div className="flex items-center gap-2 text-body-sm text-text-muted">
-                <button className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors" disabled>
+                <button className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`} disabled>
                   Anterior
                 </button>
                 <span>
@@ -7690,7 +7688,7 @@ function AbmScreen({
                   <span className="font-medium text-text">{formatNumero(totalPages)}</span>
                 </span>
                 <button
-                  className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors"
+                  className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`}
                   disabled={totalPages <= 1}
                 >
                   Siguiente
@@ -8007,9 +8005,9 @@ function GestorNotasContent() {
                 </SelectWrap>
               </div>
               <div className="flex items-center gap-3 text-body-sm text-text-muted">
-                <button disabled={paginaSegura <= 1} onClick={() => setPagina((p) => p - 1)} className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40">Anterior</button>
+                <button disabled={paginaSegura <= 1} onClick={() => setPagina((p) => p - 1)} className={`${BTN_SM} border border-border-strong bg-surface disabled:opacity-40`}>Anterior</button>
                 <span>Pág. <span className="font-medium text-text">{paginaSegura}</span> de <span className="font-medium text-text">{totalPaginas}</span></span>
-                <button disabled={paginaSegura >= totalPaginas} onClick={() => setPagina((p) => p + 1)} className="px-2.5 py-1 rounded-sm border border-border-strong bg-surface disabled:opacity-40">Siguiente</button>
+                <button disabled={paginaSegura >= totalPaginas} onClick={() => setPagina((p) => p + 1)} className={`${BTN_SM} border border-border-strong bg-surface disabled:opacity-40`}>Siguiente</button>
               </div>
             </div>
           </div>

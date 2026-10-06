@@ -43,6 +43,11 @@ Segunda pasada (también 06/10/2026):
 - **Gradiente de marca:** `--color-brand-gradient-from/to` y `bg-brand-gradient`.
 - **Limpieza:** comentario de `ReclamosTimeline` sin hex de referencia.
 
+Cuarta pasada (también 06/10/2026):
+
+- **Botones por token:** los botones de paginación con alto por padding (`px-2.5 py-1`, `px-2 py-0.5`) pasan a `BTN_SM`. Ningún botón de texto define su alto con `py-*`.
+- **Checkbox y radio:** control y texto siempre dentro del mismo `<label>`, así el área clickeable incluye el texto; `ModalRadio` ahora lleva un `<input type="radio">` oculto (`sr-only`) dentro del label, en vez de un `onClick` sobre el label.
+
 Tercera pasada (también 06/10/2026):
 
 - **Capas:** `--z-dismiss` (15) para backdrops que cierran un panel sin tapar su barra.
@@ -523,7 +528,9 @@ flyout, botón de mes/año del calendario.
 **Regla: ningún elemento interactivo usa tamaños de la escala `--spacing` para
 su alto o ancho** (`w-6`, `h-8`…): siempre `--control-xs/sm/md`. El área
 clickeable de un avatar la define el botón que lo contiene, no el avatar.
-Tabs (`h-10`) siguen con alto propio.
+Tabs (`h-10`) siguen con alto propio. Un botón de texto con borde nunca define
+su alto con `py-*`: usa `BTN_SM` / `BTN_MD`. (Las filas de menú y de lista,
+que son ítems de ancho completo, sí toman su alto del contenido.)
 
 ## Íconos
 
