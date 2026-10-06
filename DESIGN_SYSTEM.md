@@ -7,6 +7,30 @@ esos tokens), no repite los tokens en sí — salvo la escala tipográfica, que
 se documenta acá abajo porque elegir token es una decisión de rol, no de
 tamaño.
 
+## Cambios
+
+**06/10/2026** — limpieza de fundamentos (cada línea es un commit
+independiente):
+
+1. **Escala neutra única:** `--color-gray-*` (grises azulados) reemplazado
+   por `--color-neutral-50…900` (cálida); tokens `--color-viz-*` para el
+   timeline de reclamos.
+2. **Foco único:** `--color-focus` = `#076AEE`; constantes `FOCUS_RING`,
+   `FOCUS_RING_INSET` y `FIELD_FOCUS`.
+3. **Alto de controles:** `--control-sm` / `--control-md` en px por tier,
+   fuera de `--spacing` (mínimo 24px, WCAG 2.5.8).
+4. **Tracking en el token:** `--text-heading-xs--letter-spacing`.
+5. **Íconos:** constante `ICON` (xs 12 · sm 14 · md 16 · xl 40) y trazo 1.5.
+6. **Capas:** tokens `--z-*` por rol.
+7. **Movimiento:** `--duration-*`, `--ease-standard`, transiciones por
+   propiedad, `prefers-reduced-motion`.
+8. **Semánticos:** success / warning / error / info / neutral con el mismo
+   esquema (base, bg, border, text-strong).
+9. **Voz y formatos:** voseo, mayúscula solo en la primera palabra,
+   `formatNumero` / `formatFecha` / `formatFechaHora` y `VALOR_VACIO`.
+10. **Limpieza:** comentario de botones, Inter sin peso 700, nombre del
+    paquete `sisenre`.
+
 ## Tipografía
 
 Escala única, definida en `@theme` de `src/index.css`. Cada token es
@@ -55,9 +79,12 @@ juntos. Se elige por **rol** (qué es el texto), nunca por tamaño.
 - **Un único valor por token en todos los tamaños de pantalla.** Los
   `@media (max-height: …)` de `index.css` solo redefinen `--spacing`, que es
   la única palanca de densidad; no redefinen `--text-*`.
-- **La jerarquía se lee con tamaño y peso, no con mayúsculas.** Los
-  `uppercase` + `tracking-*` que ya existen sobre `heading-xs` y `caption` se
-  mantienen, pero no se agregan nuevos para "subir" un texto de nivel.
+- **La jerarquía se lee con tamaño y peso, no con mayúsculas.** El
+  `uppercase` sobre `heading-xs` se mantiene, pero no se agregan nuevos para
+  "subir" un texto de nivel. El tracking de `heading-xs` (0.06em) viene del
+  token (`--text-heading-xs--letter-spacing`): no se escribe `tracking-[…]`
+  junto a `text-heading-xs`. Los `tracking-[…]` que quedan sobre `caption`
+  son heredados y no se agregan nuevos.
 - **`font-mono` es una familia, no un tamaño.** Tiene dos combinaciones
   documentadas y ninguna más:
   - `text-code font-mono` — el rol para **datos**: IDs, referencias, fechas,
@@ -69,7 +96,7 @@ juntos. Se elige por **rol** (qué es el texto), nunca por tamaño.
 ## Superficies: fondos, bordes y sombras
 
 Tokens en `@theme` de `src/index.css`. Se eligen por **rol**; las clases
-`bg-gray-*`, `border-gray-*`, `text-gray-*` y `bg-white` no se usan.
+`bg-gray-*` (la escala ya no existe), `bg-neutral-*` fuera de los tokens de rol, `border-gray-*`, `text-gray-*` y `bg-white` no se usan.
 
 | Token | Clase | Uso |
 |---|---|---|
@@ -163,7 +190,7 @@ son intercambiables:
 ## Colores de texto
 
 Neutros cálidos, coherentes con `--color-bg-app` y con la base de los
-bordes. `text-gray-*` y `text-black` no se usan.
+bordes. `text-gray-*`, `text-neutral-*` y `text-black` no se usan: el texto sale de los tokens de rol.
 
 | Token | Clase | Hex | Uso |
 |---|---|---|---|
@@ -319,7 +346,7 @@ indicador compuesto de 3 mini-cajas fijas R/S/T (`18×18` — tamaño pedido
 explícitamente, sin paso de la escala de spacing que dé ese valor) — SIEMPRE
 en ese orden, resaltando con tint + `border-chip-border` + `text-secondary`
 las letras presentes en el valor real (ej. "RS" resalta R y S) y
-`gray-300`/`border-border` las ausentes. Es de **solo lectura** (la
+`text-text-faint`/`border-border` las ausentes. Es de **solo lectura** (la
 selección de fase existe en ABM y consultas, no acá): `<span>`, sin hover ni
 cursor, fuera del orden de tabulación. Cada caja es `aria-hidden` y un
 `sr-only` describe el estado con las fases presentes (ej. "Fases: R, S y T").
@@ -390,6 +417,165 @@ contenedor scrollee — un bug real que ya pasó acá: sin `shrink-0`, elegir un
 tab con más contenido comprimía y recortaba una tabla vecina en vez de
 activar el scroll del contenedor. El que scrollea es siempre el contenedor
 exterior, nunca sus secciones.
+
+## Escala neutra y tokens de datos
+
+Una sola escala de grises: `--color-neutral-50…900`, cálida (stone).
+
+| Paso | Hex | Paso | Hex |
+|---|---|---|---|
+| 50 | `#FAFAF9` | 500 | `#78716C` |
+| 100 | `#F5F5F4` | 600 | `#57534E` |
+| 200 | `#E7E5E4` | 700 | `#44403C` |
+| 300 | `#D6D3D1` | 800 | `#292524` |
+| 400 | `#A8A29E` | 900 | `#1C1917` |
+
+- **No se usa la escala directamente en componentes:** el fondo, el borde y
+  el texto salen de los tokens de rol (`surface`, `border`, `text-muted`…);
+  la escala es la base de la que se derivan los semánticos neutrales y los
+  tokens de datos. `--color-gray-*` no existe.
+- **Tokens de datos (`--color-viz-*`)** — geometría de gráficos, por rol,
+  no por tono (hoy, `ReclamosTimeline`):
+
+  | Token | Valor | Uso |
+  |---|---|---|
+  | `--color-viz-track` | `neutral-200` | pista del gráfico y extremo "vacío" del degradé de densidad |
+  | `--color-viz-milestone` | `neutral-400` | hito de reclamo dentro del 80% |
+  | `--color-viz-milestone-muted` | `viz-milestone` al 70% sobre blanco | hito fuera del 80% |
+  | `--color-viz-tick` | `neutral-300` | marcas del eje de horas |
+
+  Los colores de marca del gráfico (primer reclamo, banda de densidad)
+  siguen saliendo de `secondary` / `primary`.
+- El tooltip del sidebar usa `--color-text` de fondo.
+
+## Foco
+
+Un solo color de foco, `--color-focus` = `#076AEE` (mismo valor que
+`primary-strong`, 4.88:1 sobre blanco), y tres constantes en `App.tsx`:
+
+| Constante | Para qué | Clases |
+|---|---|---|
+| `FOCUS_RING` | anillo de un control (botón, trigger de filtro, link, ícono) | `focus-visible:outline-2 outline-focus outline-offset-2` |
+| `FOCUS_RING_INSET` | elementos que tocan el borde de su contenedor: filas, secciones, listas navegables (`role="listbox"`) | mismo anillo con `-outline-offset-2` (hacia adentro, el `overflow` del padre no lo recorta) |
+| `FIELD_FOCUS` | **campos** de texto (input, select, textarea) | `focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10` |
+
+- El foco de un campo (borde + halo) es distinto del anillo de un control:
+  por eso `FIELD_FOCUS` es aparte y se usa en **todos** los campos
+  (`MOD_FIELD_CLS`, `MOD_SELECT_CLS`, buscador de tabla, login…).
+- Nada de `focus-visible:outline-*` ni `ring-primary/30` sueltos: se usa la
+  constante.
+- **Ningún elemento interactivo queda con `outline-none` sin reemplazo
+  visible.** Una sección con stretched button (`has-[:focus-visible]`) pinta
+  el mismo anillo inset en la sección entera; el panel de un modal
+  (`tabIndex=-1`, foco programático, no interactivo) es la única excepción.
+
+## Alto de controles
+
+Los controles tienen alto en px fijo, **fuera de `--spacing`**: en los tiers
+compactos nunca bajan de 24px (WCAG 2.5.8, tamaño mínimo del objetivo).
+
+| Token | > 900px de alto | ≤ 900px | ≤ 760px |
+|---|---|---|---|
+| `--control-sm` | 28px | 26px | 24px |
+| `--control-md` | 36px | 32px | 30px |
+
+`BTN_SM` usa `h-(--control-sm)` y `BTN_MD` `h-(--control-md)`. Mapeo por
+control — **elementos que comparten fila usan el mismo token**:
+
+| Control | Token |
+|---|---|
+| Botones `BTN_SM` (acciones de fila, toggles), segmented compacto (`ButtonSelectGroup` por defecto), periodicidad | `sm` |
+| Buscador de tabla (`TableToolbar`) y `FilterTrigger` (viven juntos en el toolbar) | `sm` |
+| Chips redondeados (rango, filtros aplicados), campo de solo lectura compacto (`ReadOnlyField`), buscador de listas del selector | `sm` |
+| Botones `BTN_MD` (Buscar, Limpiar, Guardar, pie de modal), `PeriodSelector`, botón de calendario | `md` |
+| Campos: `MOD_FIELD_CLS` / `MOD_SELECT_CLS` (input, select, `ValuePicker`, `DateTimeField`), campos de solo lectura estilo campo, nota manual | `md` |
+| Segmented en filas de campos con botones md (`BTN_SEG_MD`: filter bar, grillas ABM) | `md` |
+
+Íconos-botón cuadrados (`w-7 h-7`, `w-8 h-8`) y tabs (`h-10`) siguen con alto
+fijo propio.
+
+## Íconos
+
+Constante `ICON` en `App.tsx`: `xs` 12 · `sm` 14 · `md` 16 · `xl` 40.
+
+- Se usa siempre `size={ICON.sm}`, nunca un número suelto. Un ícono de 13px
+  pasa a `sm`, de 15px a `md`.
+- `strokeWidth` 1.5 en todos, salvo `xl` (estado vacío, `Inbox`), que usa
+  1.25.
+- Íconos SVG propios (check del checkbox, ×, flechas de orden) son
+  geometría del componente y llevan su trazo propio.
+
+## Capas
+
+Tokens de z-index por rol, `z-(--z-…)`:
+
+| Token | Valor | Elementos |
+|---|---|---|
+| `--z-sticky` | 10 | `th` sticky de tablas, contenido sobre el pill del sidebar |
+| `--z-dropdown` | 30 | dropdowns, popovers, flyouts, filter bar con flyout |
+| `--z-overlay` | 40 | scrim de modales |
+| `--z-modal` | 50 | panel de modal |
+| `--z-toast` | 60 | notificaciones (sin uso todavía) |
+| `--z-tooltip` | 70 | tooltip del sidebar |
+
+El backdrop del flyout "Más filtros" (`z-20`) queda entre `sticky` y
+`dropdown` y no tiene token: es la única capa fuera de la escala.
+
+## Movimiento
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--duration-fast` | 100ms | hover de filas y chips |
+| `--duration-base` | 150ms | default: botones, campos, toggles, íconos que rotan |
+| `--duration-slow` | 250ms | destello de la ficha de reposición, colapso del sidebar |
+| `--ease-standard` | `cubic-bezier(0.2, 0, 0.38, 0.9)` | curva única |
+
+- Las utilidades `transition-*` toman estos valores por default
+  (`--default-transition-*`); las duraciones explícitas se escriben
+  `duration-(--duration-base)`.
+- **Nada de `transition-all`:** se transiciona la propiedad que cambia —
+  `transition-colors`, `transition-opacity`, `transition-transform` o
+  `transition-[…]` con las propiedades exactas (ej. botón con
+  `active:scale-*`: `transition-[color,background-color,border-color,transform]`).
+- `@media (prefers-reduced-motion: reduce)` lleva transiciones y animaciones
+  a ~0ms. El spinner de carga (`animate-spin`) queda afuera: es información.
+
+## Semánticos
+
+Cinco familias con el mismo esquema (`src/index.css`):
+
+| Familia | base | bg | border | text-strong |
+|---|---|---|---|---|
+| `success` | `#16A34A` | `#DCFCE7` | `#86EFAC` | `#15803D` |
+| `warning` | `#D97706` | `#FFFBEB` | `#FCD34D` | `#B45309` |
+| `error` | `#DC2626` | `#FEE2E2` | `#FCA5A5` | `#B91C1C` |
+| `info` | `#076AEE` | `#EBF4FF` | `#B9D2FB` | `#1D558C` |
+| `neutral` | `#78716C` | `#F5F5F4` | `#D6D3D1` | `#44403C` |
+
+- Clases: `bg-<familia>-bg`, `border-<familia>-border`,
+  `text-<familia>-text-strong`, y la base como `text-<familia>` / `bg-<familia>`.
+- `error` suma `--color-error-border-hover` (hover del botón destructivo).
+- `success`, `warning` y `error` llevan significado; `neutral` es para
+  estados sin carga semántica; `info` está en la familia azul de la marca.
+  **`info` y `neutral` todavía no se usan en ningún componente.**
+
+## Voz y formatos
+
+- **Voseo en toda la app:** "Seleccioná", "Ingresá", "Completá",
+  "Presioná" — nunca la forma de usted ("Seleccione", "Ingrese").
+- **Mayúscula solo en la primera palabra** de labels, títulos y botones
+  ("Datos de la interrupción"), salvo siglas y nombres propios (CDS2,
+  BT/MT/AT, Edenor, CTs). Los labels abreviados heredados de la base
+  ("Hue Ini SR", "Max Med SR"…) no se tocan.
+- **Helpers únicos** (`App.tsx`), sin `toLocaleString` ni armado a mano:
+
+  | Helper | Resultado |
+  |---|---|
+  | `formatNumero(n)` | es-AR, miles con punto desde 1.000 ("1.234.567") |
+  | `formatFecha(d)` | `dd/mm/aaaa` |
+  | `formatHora(d)` | `hh:mm`, 24 h |
+  | `formatFechaHora(d)` | `dd/mm/aaaa hh:mm`, 24 h |
+  | `VALOR_VACIO` | `"—"`, para todo valor ausente o no aplicable |
 
 ## Aire: chrome vs datos
 
@@ -650,13 +836,13 @@ dividido en franjas por líneas `border-border` a todo el ancho.
    un valor (el valor es información, no decoración). Si no es interactivo,
    se renderiza como elemento no interactivo (`<div>`, fuera del orden de
    tabulación, `cursor-default`, sin hover) con borde punteado
-   (`border-dashed border-border`, sin fondo) y texto `gray-500` — ej.
+   (`border-dashed border-border`, sin fondo) y texto `text-text-muted` — ej.
    los tiles de "Tablas relacionadas" con 0, "No" o sin selección.
 7. **Barra de contexto de registro**: cuando una vista (modal, drawer) opera
    sobre un registro, arriba va un contenedor único (borde de card, fondo
    blanco) con identificador en semibold + tag de código de origen
    (`CodeBadge`, el de `CardHeader`) + metadatos como texto plano separados
-   por "·", valor en `gray-700` y unidades/labels en `gray-500`. Sin chips
+   por "·", valor en `text-text` y unidades/labels en `text-text-muted`. Sin chips
    internos, salvo estados de solo lectura (p. ej. fases, `FaseIndicador`)
    o controles. Navegación entre registros anclada a la derecha
    (`ml-auto self-start`: con el grupo izquierdo en wrap, queda arriba a la
