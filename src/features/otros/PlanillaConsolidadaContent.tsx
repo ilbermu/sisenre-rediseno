@@ -57,7 +57,7 @@ export default function PlanillaConsolidadaContent() {
     <div className="flex-1 overflow-y-auto px-10 py-10">
       <div className="bg-surface rounded-lg border border-border" style={{ maxWidth: 760 }}>
         <CardHeader title="Consolidación" />
-        <div className="p-6">
+        <div className="px-(--card-px) py-6">
           <div className="grid grid-cols-2 gap-4">
             <div><FieldLabel>Fecha último proceso</FieldLabel><input readOnly value={fechaProceso} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>
             <div><FieldLabel>Usuario último proceso</FieldLabel><input readOnly value={usuarioProceso} className={MOD_FIELD_CLS + ESTADO_CLASES.disabled} /></div>

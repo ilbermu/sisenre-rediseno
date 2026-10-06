@@ -69,7 +69,7 @@ export default function GestorNotasContent() {
               </button>
             }
           />
-          <div className="p-5">
+          <div className="px-(--card-px) py-5">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-fill-subtle border-b border-border">

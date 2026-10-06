@@ -32,7 +32,7 @@ export default function AuditoriaContent() {
     <div className="flex-1 overflow-y-auto px-10 py-10">
       <div className="bg-surface rounded-lg border border-border" style={{ maxWidth: 720 }}>
         <CardHeader title="Filtros" />
-        <div className="p-6 grid grid-cols-2 gap-6">
+        <div className="px-(--card-px) py-6 grid grid-cols-2 gap-6">
           <div>
             <ValuePicker
               label="Seleccioná usuario"
@@ -56,7 +56,7 @@ export default function AuditoriaContent() {
             </div>
           </div>
         </div>
-        <div className="flex justify-end px-6 pb-6">
+        <div className="flex justify-end px-(--card-px) pb-6">
           <button
             type="button"
             disabled={!usuario || tablasSel.size === 0}

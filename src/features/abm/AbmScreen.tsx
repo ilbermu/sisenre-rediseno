@@ -381,7 +381,7 @@ export default function AbmScreen({
             title={mode === "alta" ? "Insertando en" : mode === "modificar" ? "Modificando" : "Búsqueda"}
             tag={config.code}
           />
-          <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
+          <div className="flex-1 overflow-y-auto px-(--card-px) py-5 flex flex-col gap-5">
             {config.secciones.map((sec) => {
               const conteoPorLongitud = new Map<number, number>();
               for (const fila of sec.filas) conteoPorLongitud.set(fila.length, (conteoPorLongitud.get(fila.length) ?? 0) + 1);
@@ -444,7 +444,7 @@ export default function AbmScreen({
             })}
           </div>
 
-          <div className="shrink-0 border-t border-border px-5 py-4 flex gap-3">
+          <div className="shrink-0 border-t border-border px-(--card-px) py-4 flex gap-3">
             {mode === "buscar" ? (
               <>
                 <button
@@ -535,12 +535,12 @@ export default function AbmScreen({
             <TableToolbar search={search} onSearchChange={setSearch} hideExport />
           )}
 
-          {/* Contenedor de la tabla — mx-4 mb-4 con borde propio, sin línea
+          {/* Contenedor de la tabla — mx-(--card-px) mb-4 con borde propio, sin línea
               entre él y el toolbar (proximidad, ver TableToolbar); sin datos
               no hay toolbar y suma mt-3 para no quedar pegado al header.
               Adentro: la línea de registro seleccionado, la tabla con
               scroll propio y el pie de paginación. */}
-          <div className={`flex-1 min-h-0 mx-4 mb-4 flex flex-col border border-border rounded-sm overflow-hidden ${showData ? "" : "mt-3"}`}>
+          <div className={`flex-1 min-h-0 mx-(--card-px) mb-4 flex flex-col border border-border rounded-sm overflow-hidden ${showData ? "" : "mt-3"}`}>
           {hasSelection && (
             <SelectionActionBar recordLabel={config.rows[selectedRow!][columnKeys[0]]} />
           )}

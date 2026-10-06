@@ -4,8 +4,8 @@ import { actionBtnCls, FIELD_FOCUS, ICON } from "@/components/ui/tokens";
 // Barra de herramientas de tabla — buscador cliente-side a la izquierda,
 // Exportar a la derecha. Va FUERA del contenedor de la tabla, sin fondo
 // propio y sin línea divisoria con la tabla: se vincula a ella por
-// proximidad (px-4 py-3, alineada con el borde del contenedor de la tabla,
-// mx-4) — ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla". Se le
+// proximidad (px-(--card-px) py-3, alineada con el borde del contenedor de
+// la tabla, mx-(--card-px)) — ver DESIGN_SYSTEM.md, "Patrones de contenedor y tabla". Se le
 // pueden agregar mas botones a la derecha de Exportar pasandolos como
 // children, sin reestructurar nada. El aria-label del buscador es el
 // placeholder sin los puntos suspensivos.
@@ -57,7 +57,7 @@ export default function TableToolbar({
   if (bare) return searchBox;
 
   return (
-    <div className="px-4 py-3 shrink-0 flex items-center justify-between gap-3">
+    <div className="px-(--card-px) py-3 shrink-0 flex items-center justify-between gap-3">
       {searchBox}
       {(!hideExport || children) && (
         <div className="flex items-center gap-2 shrink-0">

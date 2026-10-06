@@ -109,13 +109,15 @@ export default function Modal({
             transparente, deja ver el radio del contenedor), aplica a los 13 usos de Modal por
             igual, no es una prop opt-in. border-b como divisor con el body
             (bg-surface, sin cambios). título/cerrar siempre; headerExtra (si
-            viene) se apila debajo, todavía dentro de este mismo bloque. Con
-            headerExtra, el título pasa a pt-3.5/pb-0 (en vez de py-4) — el
+            viene) se apila debajo, todavía dentro de este mismo bloque. Sin
+            headerExtra, la línea de título usa los tokens de CardHeader:
+            alto h-(--card-header-h) sin padding vertical y px-(--card-px).
+            Con headerExtra, el título pasa a px-5 pt-3.5/pb-0 — el
             padding inferior del bloque entero lo aporta headerExtra (su
             propio pb-3.5, ver call site), con solo mt-0.5 de gap interno
             entre las dos líneas. */}
         <div className="border-b border-border shrink-0">
-          <div className={`px-5 flex items-center justify-between gap-3 ${headerExtra ? "pt-3.5 pb-0" : "py-4"}`}>
+          <div className={`flex items-center justify-between gap-3 ${headerExtra ? "px-5 pt-3.5 pb-0" : "h-(--card-header-h) px-(--card-px)"}`}>
             <p className={`min-w-0 truncate text-heading-md text-text`}>
               {title}
               {subtitle && (
