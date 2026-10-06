@@ -4,7 +4,7 @@ import {
   actionBtnCls,
   BTN_SM,
   CardHeader,
-  CopyButton,
+  CopyChip,
   FOCUS_RING_INSET,
   ghostBtnCls,
   ICON,
@@ -194,7 +194,9 @@ export default function AbmScreen({
   // grilla plana) — las mismas reglas para el panel de Búsqueda del layout
   // "split" y para el modal de Modificar del layout "barra", así los campos
   // se acomodan exactamente igual en los dos.
-  const renderSecciones = (secciones: typeof config.secciones) =>
+  // `camposSoloLectura`: campos que se muestran como dato fijo (modal de
+  // edición de registro); el panel del split no pasa ninguno.
+  const renderSecciones = (secciones: typeof config.secciones, camposSoloLectura: string[] = []) =>
     secciones.map((sec) => {
               const conteoPorLongitud = new Map<number, number>();
               for (const fila of sec.filas) conteoPorLongitud.set(fila.length, (conteoPorLongitud.get(fila.length) ?? 0) + 1);
@@ -221,6 +223,7 @@ export default function AbmScreen({
                         camposLocked={camposLocked}
                         consultando={consultando}
                         columnasCompartidas={(conteoPorLongitud.get(fila.length) ?? 0) > 1}
+                        camposSoloLectura={camposSoloLectura}
                       />
                     ))}
                   </div>
@@ -248,6 +251,7 @@ export default function AbmScreen({
                           lockedEnModificar={camposLocked.includes(campo.nombre)}
                           consultando={consultando}
                           valoresFormulario={valores}
+                          soloLectura={camposSoloLectura.includes(campo.nombre)}
                         />
                       </div>
                     ))}
@@ -831,19 +835,18 @@ export default function AbmScreen({
     </div>
   );
 
-  // Modal de edición (layout "barra"): campos no editables fuera del body.
-  const esNoEditable = (c: (typeof camposTabla)[number]) => c.tipo === "readonly" || camposLocked.includes(c.nombre);
-  const seccionesEditables = config.secciones
-    .map((sec) => ({ ...sec, filas: sec.filas.map((fila) => fila.filter((c) => !esNoEditable(c))).filter((fila) => fila.length > 0) }))
-    .filter((sec) => sec.filas.length > 0);
-  const referenciaModificar = selectedRow !== null ? config.rows[selectedRow][columnKeys[0]] : "";
-  // Contexto: los no editables que no son la referencia, con su etiqueta
-  // legible (ej. origen "E" → "Externo"), del registro original.
+  // Modal de edición (layout "barra"): el identificador del registro (el
+  // campo de la primera columna de Resultados) va como CopyChip en la línea
+  // del título y no aparece en el body; los demás campos no editables
+  // (camposReadonlyEnModificar y tipo "readonly") quedan en su sección como
+  // dato fijo (AbmCampo `soloLectura`), nunca como controles deshabilitados.
   const campoReferencia = config.mapeoFilaACampos[columnKeys[0]];
-  const contextoModificar = camposTabla
-    .filter((c) => esNoEditable(c) && c.nombre !== campoReferencia)
-    .map((c) => labelDeValor(c, valoresOriginales[c.nombre] ?? "", valoresOriginales))
-    .filter((v) => v !== "");
+  const esNoEditable = (c: (typeof camposTabla)[number]) => c.tipo === "readonly" || camposLocked.includes(c.nombre);
+  const seccionesModificar = config.secciones
+    .map((sec) => ({ ...sec, filas: sec.filas.map((fila) => fila.filter((c) => c.nombre !== campoReferencia)).filter((fila) => fila.length > 0) }))
+    .filter((sec) => sec.filas.length > 0);
+  const camposSoloLecturaModificar = camposTabla.filter((c) => esNoEditable(c) && c.nombre !== campoReferencia).map((c) => c.nombre);
+  const referenciaModificar = selectedRow !== null ? config.rows[selectedRow][columnKeys[0]] : "";
 
   return (
     <>
@@ -964,11 +967,11 @@ export default function AbmScreen({
           DESIGN_SYSTEM.md, "Modal de edición de registro"):
             - ancho sm (480px): con el p-5 del body da el mismo ancho útil
               (~440px) que el panel de Búsqueda del layout split;
+            - header de una línea: título + CopyChip con la referencia (el
+              chip no se corta; trunca el título) + ✕;
             - el body usa renderSecciones (mismas reglas de grilla que ese
-              panel) con SOLO los campos editables;
-            - los no editables (camposReadonlyEnModificar y tipo "readonly")
-              van como contexto del registro en headerExtra, nunca como
-              inputs deshabilitados;
+              panel) sin la referencia; los demás no editables (Origen,
+              Tipo) quedan en su sección como dato fijo;
             - Guardar se habilita solo con cambios respecto del registro
               original. Guardar dispara el mismo ConfirmarModificarModal y
               flujo que el layout split; Escape, ✕ y Cancelar cierran sin
@@ -979,19 +982,7 @@ export default function AbmScreen({
           size="sm"
           open={mode === "modificar"}
           onClose={handleCancelarModificar}
-          headerExtra={
-            <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2 min-w-0">
-              <span className="shrink-0 text-heading-xs uppercase text-text-muted">{columnas[0].label}</span>
-              <span className="shrink-0 text-code font-mono tabular-nums text-text">{referenciaModificar}</span>
-              <CopyButton value={referenciaModificar} label={columnas[0].label.toLowerCase()} />
-              {contextoModificar.length > 0 && (
-                <>
-                  <span className="shrink-0 text-text-faint" aria-hidden>·</span>
-                  <span className="min-w-0 truncate text-body-sm text-text-muted">{contextoModificar.join(" · ")}</span>
-                </>
-              )}
-            </div>
-          }
+          titleExtra={<CopyChip value={referenciaModificar} label={columnas[0].label.toLowerCase()} />}
           footer={
             <>
               <button type="button" onClick={handleCancelarModificar} className={modalNeutralBtnCls}>Cancelar</button>
@@ -1000,7 +991,7 @@ export default function AbmScreen({
           }
         >
           <div className="flex flex-col gap-5">
-            {renderSecciones(seccionesEditables)}
+            {renderSecciones(seccionesModificar, camposSoloLecturaModificar)}
           </div>
         </Modal>
       )}

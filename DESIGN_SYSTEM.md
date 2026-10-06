@@ -173,6 +173,16 @@ Decimoctava pasada (también 06/10/2026):
   `CopyButton` · Origen · Tipo) y Guardar habilitado solo con cambios.
   Patrón nuevo en Patrones.
 
+Decimonovena pasada (también 06/10/2026):
+
+- **`CopyChip`** (nuevo, `components/ui`): identificador copiable en la
+  línea del título de un modal; la lógica de copia de `CopyButton` pasa a
+  `useCopiar`, compartida. `Modal` suma `titleExtra`; `ReadOnlyField` suma
+  la variante `plain`.
+- **Modal de edición de registro** (ABM Tabla 2): reemplaza la línea de
+  contexto en `headerExtra` por un header de una línea con la referencia
+  como `CopyChip`; Origen y Tipo vuelven a "Clasificación" como dato fijo.
+
 ## Índice
 
 **1. Fundamentos**
@@ -194,6 +204,7 @@ Decimoctava pasada (también 06/10/2026):
 [CardHeader](#cardheader) ·
 [CodeBadge](#codebadge) ·
 [CopyButton](#copybutton) ·
+[CopyChip](#copychip) ·
 [DateTimeField](#datetimefield) ·
 [Dropdowns flotantes](#dropdowns-flotantes-dropdownts) ·
 [FaseIndicador](#faseindicador) ·
@@ -852,7 +863,35 @@ está implementada. Por eso el botón "Copiar datos de la reposición" (ícono
 `ClipboardList`, handler vacío pendiente de definición) no usa este
 componente ni su feedback.
 
-**Archivo:** `src/components/ui/CopyButton.tsx`.
+**Archivo:** `src/components/ui/CopyButton.tsx`. La copia y el estado
+`copied` salen de `useCopiar` (`src/components/ui/useCopiar.ts`), compartido
+con `CopyChip`.
+
+## CopyChip
+
+**Para qué:** mostrar el identificador de un registro (ej. la referencia de
+una interrupción) y copiarlo con un clic — en la línea del título de un
+[modal de edición de registro](#modal-de-edición-de-registro).
+
+**Anatomía:** botón-chip `h-(--control-xs) px-2 rounded-sm border
+border-border bg-fill-muted`, valor en `text-code font-mono text-text` e
+ícono `Copy` (`ICON.xs`, `text-icon`) a la derecha. No se achica
+(`shrink-0`): si no entra junto al título, trunca el título.
+
+**Props:** `value`, `label` (qué se copia, en minúscula y sin artículo).
+
+**Estados:** reposo; hover = hover secundario del sistema (`border-primary`
++ `bg-primary-tint` + `text-secondary`); copiado — **solo si la copia
+ocurrió** (`useCopiar`, misma lógica que `CopyButton`), el ícono pasa a
+`Check` (`text-success-text-strong`) por 1.5s; foco `FOCUS_RING`.
+
+**Accesibilidad:** `aria-label` "Copiar \<label\> \<valor\>"; anuncio
+"\<Label\> copiada" en un `sr-only aria-live="polite"`.
+
+**Qué no hacer:** usarlo como chip de filtro o de estado; simular el éxito
+de la copia.
+
+**Archivo:** `src/components/ui/CopyChip.tsx`.
 
 ## DateTimeField
 
@@ -1007,6 +1046,9 @@ derecha (`modalNeutralBtnCls` + `modalPrimaryBtnCls`).
 **Props:** `title`, `subtitle?`, `open`, `onClose`, `size?` (`"sm"` 480 /
 `"lg"` 920 / `"xl"` 1120), `footer?`, `children`, y para extenderlo sin
 tocar a los demás:
+- **`titleExtra`**: contenido en la MISMA línea del título, a su derecha
+  (ej. `CopyChip` con el identificador del registro); no se achica, trunca
+  el título.
 - **`headerExtra`**: segunda línea dentro del bloque del header (ej.
   "Interrupción `<ref>`" + `CopyButton`). Con ella, la línea del título
   no usa el alto fijo: va `px-5 pt-3.5 pb-0` y `headerExtra` aporta
@@ -1097,14 +1139,18 @@ seleccionada (tint).
 
 ## ReadOnlyField
 
-**Para qué:** par etiqueta/valor de solo lectura en grillas densas (datos
-de la interrupción).
+**Para qué:** par etiqueta/valor de solo lectura.
 
-**Anatomía:** etiqueta `text-heading-xs uppercase text-text-muted` + caja
-`h-(--control-sm)` `bg-fill-muted` `border-border` con el valor en
-`text-body-sm`.
+**Anatomía — dos variantes:**
+- **`box`** (default) — grillas densas (datos de la interrupción): etiqueta
+  `text-heading-xs uppercase text-text-muted` + caja `h-(--control-sm)`
+  `bg-fill-muted` `border-border` con el valor en `text-body-sm`.
+- **`plain`** — dato fijo dentro de un formulario: `FieldLabel` (igual que
+  los campos vecinos) + valor en `text-body text-text`, sin caja ni borde,
+  centrado en `h-(--control-md)` para que la fila quede alineada con los
+  controles. En el ABM lo arma `AbmCampo` con `soloLectura`.
 
-**Props:** `label`, `value`.
+**Props:** `label`, `value`, `variant?` (`"box"` | `"plain"`).
 
 **Qué no hacer:** usarlo para un campo editable deshabilitado (eso es el
 campo con su estado disabled).
@@ -1609,19 +1655,20 @@ vista (ej. Modificar en el layout barra del ABM).
 
 - **Ancho `sm`** (480px): con el `p-5` del body da el mismo ancho útil
   (~440px) que el panel de Búsqueda del ABM split.
+- **Header de una línea:** título + identificador del registro como
+  [`CopyChip`](#copychip) (prop `titleExtra` de `Modal`) + ✕. Sin
+  `headerExtra`. Si no entra, trunca el título, nunca el chip.
 - **Mismos campos y grilla que el formulario de búsqueda de esa tabla:**
   secciones con `SectionDivider`, `gap-5` entre secciones, filas con
   `AbmFila` / `AbmCampo` y las mismas reglas de grilla (columnas
   compartidas, campos compactos, ancho de campo solo, grilla plana en el
-  tier de 760px). Sin anchos propios.
-- **Los campos no editables nunca van como inputs deshabilitados en el
-  body:** van como contexto del registro en `headerExtra` (patrón [barra de
-  contexto de registro](#barra-de-contexto-de-registro)), en una línea que
-  trunca: etiqueta `text-heading-xs uppercase text-text-muted` + valor
-  `text-code font-mono` + `CopyButton`, "·" en `text-text-faint` y los
-  demás valores con su etiqueta legible en `text-body-sm text-text-muted`
-  (ej. "REFERENCIA `BFZ…` · Externo · Forzado"). Todo lo que está en el
-  body es editable; una sección que queda con un solo campo se mantiene.
+  tier de 760px). Sin anchos propios. El identificador no aparece en el
+  body (ya está en el chip); una sección que queda con un solo campo se
+  mantiene.
+- **Los campos no editables quedan en su sección, como dato fijo**
+  (`ReadOnlyField` `plain`: `FieldLabel` + valor legible, ej. "Externo",
+  sin caja), en su posición de la config — **nunca como controles
+  deshabilitados**.
 - **Guardar habilitado solo con cambios** respecto del registro original
   (estado disabled estándar); si se vuelve al valor original, se deshabilita
   de nuevo. Escape, ✕ y Cancelar cierran sin guardar.

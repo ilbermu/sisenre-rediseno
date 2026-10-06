@@ -19,6 +19,7 @@ export default function Modal({
   footer,
   children,
   headerExtra,
+  titleExtra,
   bodyPadding = true,
   bodyOverflow = "auto",
   bodyClassName = "",
@@ -31,6 +32,11 @@ export default function Modal({
   size?: "sm" | "lg" | "xl";
   footer?: React.ReactNode;
   children: React.ReactNode;
+  // Slot en la MISMA línea del título, a su derecha (ej. CopyChip con el
+  // identificador del registro, ver "Modal de edición de registro"). No se
+  // achica: si no entra, trunca el título. Sin esto, la línea del título
+  // es la de siempre.
+  titleExtra?: React.ReactNode;
   // Slot propio para una segunda línea de header, debajo de título/cerrar
   // pero todavía dentro del bloque con borde inferior del header — ej.
   // contexto adicional con un CopyButton. Ningún modal existente lo pasa,
@@ -118,6 +124,12 @@ export default function Modal({
             entre las dos líneas. */}
         <div className="border-b border-border shrink-0">
           <div className={`flex items-center justify-between gap-3 ${headerExtra ? "px-5 pt-3.5 pb-0" : "h-(--card-header-h) px-(--card-px)"}`}>
+            {titleExtra ? (
+              <div className="min-w-0 flex-1 flex items-center gap-2">
+                <p className="min-w-0 truncate text-heading-md text-text">{title}</p>
+                <div className="shrink-0 flex items-center">{titleExtra}</div>
+              </div>
+            ) : (
             <p className={`min-w-0 truncate text-heading-md text-text`}>
               {title}
               {subtitle && (
@@ -128,6 +140,7 @@ export default function Modal({
                 </span>
               )}
             </p>
+            )}
             <button
               type="button"
               onClick={onClose}

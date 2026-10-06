@@ -5,8 +5,10 @@ import {
   ESTADO_CLASES,
   FieldLabel,
   MOD_FIELD_CLS,
+  ReadOnlyField,
   ValuePicker,
 } from "@/components/ui";
+import { labelDeValor } from "@/features/abm/labelDeValor";
 import { AbmMode, CampoBusqueda } from "@/data/types";
 
 function estadoDeCampo(campo: CampoBusqueda, mode: AbmMode, consultando: boolean, lockedEnModificar: boolean): CampoEstado {
@@ -29,6 +31,7 @@ export default function AbmCampo({
   consultando,
   valoresFormulario,
   controlado = false,
+  soloLectura = false,
 }: {
   campo: CampoBusqueda;
   mode: AbmMode;
@@ -53,7 +56,15 @@ export default function AbmCampo({
   // con valor (badge de "Más filtros", chips) y para que Limpiar los vacíe.
   // Default false: el panel de Búsqueda del layout "split" no cambia.
   controlado?: boolean;
+  // Dato fijo (no editable) dentro del formulario: ReadOnlyField "plain" —
+  // FieldLabel + valor legible (etiqueta de la opción), sin caja ni
+  // controles deshabilitados. Lo usa el modal de edición de registro para
+  // los campos no editables. Default false: nada cambia en el resto.
+  soloLectura?: boolean;
 }) {
+  if (soloLectura) {
+    return <ReadOnlyField variant="plain" label={campo.label} value={labelDeValor(campo, value ?? "", valoresFormulario ?? {})} />;
+  }
   const estado = estadoDeCampo(campo, mode, !!consultando, !!lockedEnModificar);
   const isDisabled = estado === "placeholder" || estado === "disabled";
   const controlled = controlado || estado !== "empty";
