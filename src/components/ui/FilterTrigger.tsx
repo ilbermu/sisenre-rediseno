@@ -6,7 +6,7 @@ import { ceros, fmtDiaHora, formatHora } from "@/lib/format";
 
 // ─── Filter trigger ───────────────────────────────────────────────────────────
 // Trigger de filtro por columna para el toolbar de una tabla (Interrupciones,
-// modal "Tablas relacionadas"). ÚNICO botón sin borde en reposo de la app, y
+// modal "Tablas relacionadas"). Uno de los botones sin borde en reposo (junto con los ghost y los de ícono), y
 // solo como trigger de filtro — ver DESIGN_SYSTEM.md, "Patrones de contenedor
 // y tabla". Dos variantes con el MISMO trigger (FilterTriggerButton):
 //   list       → lista de valores con conteo, selección única;

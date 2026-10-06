@@ -76,6 +76,20 @@ export function rowActionBtnCls(variant?: ActionItem["variant"]) {
   return `${BTN_SM} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] active:scale-[0.97] whitespace-nowrap`;
 }
 
+// Variante ghost — acciones de tabla o de registro (barras de selección,
+// toolbars de tabla, filas): siempre tamaño sm (BTN_SM), sin borde visible
+// ni fondo en reposo, para no competir con las acciones de página (md, con
+// borde). `border-transparent` mantiene el mismo alto que un botón con
+// borde. Hover y activo: relleno neutro (fill-muted) o error suave en la
+// destructiva; sin escala. Ver DESIGN_SYSTEM.md, "Botones".
+export function ghostBtnCls(tone: "neutral" | "destructive") {
+  const base = `${BTN_SM} border border-transparent bg-transparent inline-flex items-center justify-center whitespace-nowrap transition-colors duration-(--duration-base) ${FOCUS_RING} disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`;
+  if (tone === "destructive") {
+    return `${base} text-error hover:bg-error-bg-subtle hover:text-error-text-strong active:bg-error-bg-subtle active:text-error-text-strong`;
+  }
+  return `${base} text-text hover:bg-fill-muted active:bg-fill-muted`;
+}
+
 const modalFilledBtnBase =
   "h-(--control-md) px-5 rounded-sm text-body font-medium text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none";
 export const modalPrimaryBtnCls = modalFilledBtnBase + " bg-primary-strong hover:bg-primary-hover";

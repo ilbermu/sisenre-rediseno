@@ -124,6 +124,17 @@ Duodécima pasada (también 06/10/2026):
   herramientas queda afuera, sobre el fondo, a `gap-2` de la caja. Sigue
   sin card de Resultados y sin Auditoría/Exportar.
 
+Decimotercera pasada (también 06/10/2026):
+
+- **Botón ghost:** `ghostBtnCls("neutral" | "destructive")` en `tokens.ts`,
+  solo `sm`, sin borde ni fondo en reposo. Regla de jerarquía: acciones de
+  página `md` con borde; acciones de tabla o de registro `sm` ghost; nunca
+  se mezclan en una zona. `FilterTrigger` deja de ser el único botón sin
+  borde (también los ghost y los de ícono).
+- **ABM, variante barra:** Modificar / Borrar de la barra de selección pasan
+  a ghost, con separador antes de ✕.
+- **Mayúsculas:** `SelectionActionBar` y `FieldLabel` sin `tracking-wide`.
+
 ## Índice
 
 **1. Fundamentos**
@@ -140,6 +151,7 @@ Duodécima pasada (también 06/10/2026):
 
 **2. Componentes** (`src/components/ui/`)
 [tokens.ts](#tokensts) ·
+[Botones](#botones) ·
 [ButtonSelectGroup](#buttonselectgroup) ·
 [CardHeader](#cardheader) ·
 [CodeBadge](#codebadge) ·
@@ -615,6 +627,7 @@ color/variante/hover.
 | `BTN_SM`, `BTN_MD` | Los dos únicos tamaños de botón: alto `--control-sm`/`md`, padding, tipografía (`text-label` / `text-body font-medium`), `rounded-sm` |
 | `BTN_SEG_MD` | Segmented con alto de campo, para filas con campos y botones md |
 | `actionBtnCls(variant)`, `rowActionBtnCls(variant)` | Botón outline de panel (`md`) y de fila (`sm`), variante neutral o `destructive` |
+| `ghostBtnCls(tone)` | Botón ghost (`sm`, sin borde ni fondo en reposo), tono `neutral` o `destructive` — ver [Botones](#botones) |
 | `modalPrimaryBtnCls`, `modalNeutralBtnCls`, `modalDestructiveBtnCls` | Botones del pie de modal |
 | `ICON`, `ICON_BTN_XS/SM/MD` | Tamaños de ícono y de botón de ícono |
 | `FOCUS_RING`, `FOCUS_RING_INSET`, `PEER_FOCUS_RING`, `FIELD_FOCUS` | Foco (ver [Foco](#foco)) |
@@ -624,6 +637,54 @@ color/variante/hover.
 
 **Qué no hacer:** estilar un botón nuevo con su propio alto, radio o tamaño
 de texto; escribir clases de foco a mano.
+
+**Archivo:** `src/components/ui/tokens.ts`.
+
+## Botones
+
+**Para qué:** las acciones. No hay un componente `<Button/>`: cada botón
+arma su clase con las constantes de `tokens.ts` y suma solo su
+color/variante.
+
+| Variante | Clase | Tamaño | Uso |
+|---|---|---|---|
+| Primario | `bg-primary-strong text-white` sobre `BTN_MD` (o `modalPrimaryBtnCls`) | `md` | La acción principal de una zona (Buscar, Guardar). Máximo uno por zona |
+| Secundario outline | `actionBtnCls("neutral")`, `modalNeutralBtnCls` | `md` | Acciones de página: Limpiar, Más filtros, Cancelar |
+| Destructivo outline | `actionBtnCls("destructive")` | `md` | Acción destructiva de página |
+| Outline de fila | `rowActionBtnCls(variant)` | `sm` | Acciones por fila del layout split del ABM |
+| **Ghost** | `ghostBtnCls("neutral" \| "destructive")` | **solo `sm`** | Acciones de tabla o de registro: barras de selección, toolbars de tabla, filas |
+| Ícono | `ICON_BTN_XS/SM/MD` | por control | Cerrar, copiar, deseleccionar, paginar |
+
+**Ghost — anatomía:** `BTN_SM` (`h-(--control-sm)`, `px-2.5`, `text-label`,
+`rounded-sm`), `border border-transparent` (mismo alto que un botón con
+borde) y sin fondo.
+
+**Ghost — estados:**
+
+| Estado | `neutral` | `destructive` |
+|---|---|---|
+| Reposo | `text-text`, sin borde visible ni fondo | `text-error`, sin borde visible ni fondo |
+| Hover / activo | `bg-fill-muted` | `bg-error-bg-subtle` + `text-error-text-strong` |
+| Foco | `FOCUS_RING` | `FOCUS_RING` |
+| Deshabilitado | `opacity-40`, `cursor-not-allowed`, sin eventos | igual |
+
+Sin escala al presionar; `transition-colors` con `--duration-base`.
+
+**Jerarquía:**
+- **Acciones de página** (buscar, limpiar, filtros, guardar): `md`, con
+  borde; el primario, relleno.
+- **Acciones de tabla o de registro** (barras de selección, toolbars de
+  tabla, filas): `sm`, ghost.
+- **Nunca se mezclan tamaños ni variantes dentro de una misma zona.** Si
+  una zona necesita separar grupos, un separador vertical (`w-px h-4
+  bg-border`).
+- **Sin borde en reposo** solo hay tres casos: `FilterTrigger`, los botones
+  ghost y los botones de ícono. Todo otro botón de texto lleva borde.
+
+**Accesibilidad:** botones con texto; un botón de ícono lleva `aria-label`.
+
+**Qué no hacer:** ghost en `md`; ghost para una acción de página; un
+primario relleno en una barra de selección.
 
 **Archivo:** `src/components/ui/tokens.ts`.
 
@@ -865,8 +926,9 @@ la × tiene `aria-label="Quitar filtro <columna>"`; lista con
 `role="dialog"`. Escape cierra solo el panel (corta la propagación para no
 cerrar el `Modal` que lo contiene). Foco `FOCUS_RING`.
 
-**Qué no hacer:** es el **único** botón sin borde en reposo de la app — no
-copiar ese tratamiento para otra cosa; anidar la × dentro del botón.
+**Qué no hacer:** usar su tratamiento (sin borde en reposo, hover tint)
+fuera de un trigger de filtro — los otros botones sin borde son los ghost y
+los de ícono, ver [Botones](#botones); anidar la × dentro del botón.
 
 **Archivo:** `src/components/ui/FilterTrigger.tsx`.
 
@@ -1460,8 +1522,10 @@ período) es el mismo en los dos.
     el fondo, sin fondo ni borde propios, de alto fijo (`--control-md`) con
     dos modos que no cambian su alto: sin selección, el buscador de la tabla
     + `TableCounter`; con un registro seleccionado, `SelectionActionBar`
-    (`bare`) con Modificar y Borrar (`actionBtnCls` neutral y destructivo,
-    `md`) y un botón de ícono ✕ (`ICON_BTN_SM`, "Deseleccionar").
+    (`bare`) con Modificar y Borrar (`ghostBtnCls` neutral y destructivo,
+    `sm`), un separador vertical y un botón de ícono ✕ (`ICON_BTN_SM`,
+    "Deseleccionar"). Son acciones de registro: no compiten con Más filtros
+    / Limpiar / Buscar, que son acciones de página.
   - **La tabla conserva su contenedor**, a `gap-2` de la barra de
     herramientas: la misma caja que dentro del panel Resultados del split
     (`border border-border rounded-md bg-surface shadow-sm`), `thead`

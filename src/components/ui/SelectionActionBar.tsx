@@ -21,7 +21,7 @@ export default function SelectionActionBar({
   return (
     <div className={`${bare ? "min-w-0 flex-1" : "px-4 py-3 border-b border-border"} shrink-0 flex items-center gap-2.5`}>
       <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-      <span className="text-heading-xs text-secondary uppercase tracking-wide select-none">
+      <span className="text-heading-xs text-secondary uppercase select-none">
         Registro seleccionado
       </span>
       <span

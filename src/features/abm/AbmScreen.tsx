@@ -5,6 +5,7 @@ import {
   BTN_SM,
   CardHeader,
   FOCUS_RING_INSET,
+  ghostBtnCls,
   ICON,
   ICON_BTN_SM,
   Modal,
@@ -617,12 +618,15 @@ export default function AbmScreen({
             recordLabel={config.rows[selectedRow!][columnKeys[0]]}
             actions={
               <>
-                <button type="button" onClick={() => handleAbrirModificar(selectedRow!)} className={actionBtnCls("neutral")}>
+                {/* Acciones de registro: sm, ghost (no compiten con Más
+                    filtros / Limpiar / Buscar, que son acciones de página). */}
+                <button type="button" onClick={() => handleAbrirModificar(selectedRow!)} className={ghostBtnCls("neutral")}>
                   Modificar
                 </button>
-                <button type="button" onClick={() => handleAbrirBorrar(selectedRow!)} className={actionBtnCls("destructive")}>
+                <button type="button" onClick={() => handleAbrirBorrar(selectedRow!)} className={ghostBtnCls("destructive")}>
                   Borrar
                 </button>
+                <div className="w-px h-4 bg-border shrink-0" />
                 <button
                   type="button"
                   onClick={() => setSelectedRow(null)}
