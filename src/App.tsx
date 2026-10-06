@@ -1127,7 +1127,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
           <div className="my-1 border-t border-border" />
           <button
             onClick={() => { setOpen(false); onLogout(); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-body text-error hover:text-error-text-strong hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-body text-error hover:text-error-text-strong hover:bg-error-bg-subtle transition-colors"
           >
             <LogOut size={ICON.md} strokeWidth={1.5} /> Cerrar sesión
           </button>
@@ -1176,7 +1176,7 @@ type ActionItem = {
 
 function actionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return `${BTN_MD} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-red-50 hover:border-error-border-hover transition-[color,background-color,border-color,transform] active:scale-[0.98] whitespace-nowrap`;
+    return `${BTN_MD} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-error-bg-subtle hover:border-error-border-hover transition-[color,background-color,border-color,transform] active:scale-[0.98] whitespace-nowrap`;
   }
   return `${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] active:scale-[0.98] whitespace-nowrap`;
 }
@@ -1189,7 +1189,7 @@ function actionBtnCls(variant?: ActionItem["variant"]) {
 // Resultados) donde el tamaño md no entra prolijo.
 function rowActionBtnCls(variant?: ActionItem["variant"]) {
   if (variant === "destructive") {
-    return `${BTN_SM} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-red-50 hover:border-error-border-hover transition-[color,background-color,border-color,transform] active:scale-[0.97] whitespace-nowrap`;
+    return `${BTN_SM} border border-error-border bg-surface text-error hover:text-error-text-strong hover:bg-error-bg-subtle hover:border-error-border-hover transition-[color,background-color,border-color,transform] active:scale-[0.97] whitespace-nowrap`;
   }
   return `${BTN_SM} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] active:scale-[0.97] whitespace-nowrap`;
 }
@@ -2623,7 +2623,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             </div>
 
             {error && (
-              <p className="mt-3 shrink-0 text-body-sm text-error-text-strong bg-red-50 border border-red-200 rounded-sm px-3 py-2">{error}</p>
+              <p className="mt-3 shrink-0 text-body-sm text-error-text-strong bg-error-bg-subtle border border-error-border-subtle rounded-sm px-3 py-2">{error}</p>
             )}
 
             {/* Button */}
@@ -4708,7 +4708,7 @@ function PersistentActionsBar({
         disabled={a.disabled}
         onClick={() => { a.onClick?.(); setOpen(false); }}
         className={`w-full flex items-center px-2.5 py-2 rounded-sm text-left text-body transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none ${
-          a.variant === "destructive" ? "text-error hover:text-error-text-strong hover:bg-red-50" : "text-text hover:bg-fill-muted"
+          a.variant === "destructive" ? "text-error hover:text-error-text-strong hover:bg-error-bg-subtle" : "text-text hover:bg-fill-muted"
         }`}
       >
         {a.label}

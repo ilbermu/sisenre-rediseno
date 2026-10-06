@@ -76,6 +76,8 @@
 
   --color-error: #DC2626;
   --color-error-bg: #FEE2E2;
+  --color-error-bg-subtle: #FEF2F2; /* hover destructivo y fondos de aviso (bg = estado/badge) */
+  --color-error-border-subtle: #FECACA; /* borde de un aviso sobre bg-subtle */
   --color-error-border: #FCA5A5;
   --color-error-border-hover: #F87171; /* hover del botón destructivo outline */
   --color-error-text-strong: #B91C1C;

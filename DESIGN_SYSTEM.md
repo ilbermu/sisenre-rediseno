@@ -556,7 +556,12 @@ Cinco familias con el mismo esquema (`src/index.css`):
 
 - Clases: `bg-<familia>-bg`, `border-<familia>-border`,
   `text-<familia>-text-strong`, y la base como `text-<familia>` / `bg-<familia>`.
-- `error` suma `--color-error-border-hover` (hover del botón destructivo).
+- `error` suma `--color-error-border-hover` (hover del botón destructivo) y
+  dos tokens suaves: `--color-error-bg-subtle` (`#FEF2F2`) y
+  `--color-error-border-subtle` (`#FECACA`). **Criterio:** `error-bg` es para
+  estado/badge ("no existe"); `error-bg-subtle` para el hover destructivo y
+  los fondos de aviso (con `error-border-subtle`). No se usan clases de la
+  paleta default de Tailwind (`red-*`, `blue-*`…).
 - `success`, `warning` y `error` llevan significado; `neutral` es para
   estados sin carga semántica; `info` está en la familia azul de la marca.
   **`info` y `neutral` todavía no se usan en ningún componente.**
