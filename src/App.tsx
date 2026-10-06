@@ -1160,6 +1160,10 @@ const BTN_SM = "h-(--control-sm) px-2.5 rounded-sm text-label";
 const BTN_MD = "h-(--control-md) px-4 rounded-sm text-body font-medium";
 // Segmented (ButtonSelectGroup) en filas con campos y botones md: alto de campo.
 const BTN_SEG_MD = "h-(--control-md) px-2.5 rounded-sm text-label";
+// Botones de ícono cuadrados: mismo alto que el control con el que comparten
+// fila (md si van con botones/campos md); sueltos, sm.
+const ICON_BTN_SM = "size-(--control-sm)";
+const ICON_BTN_MD = "size-(--control-md)";
 
 // ─── Login screen ─────────────────────────────────────────────────────────────
 
@@ -1563,7 +1567,7 @@ function Modal({
             <button
               type="button"
               onClick={onClose}
-              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors"
+              className={`shrink-0 ${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors`}
             >
               <X size={ICON.sm} strokeWidth={1.5} />
             </button>
@@ -4447,7 +4451,7 @@ function FaseReposicionFicha({
           onClick={handleCopiarDatosReposicion}
           aria-label="Copiar datos de la reposición"
           title="Copiar datos de la reposición"
-          className={`w-8 h-8 flex items-center justify-center rounded-sm border border-transparent text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary ${FOCUS_RING} transition-colors shrink-0`}
+          className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm border border-transparent text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary ${FOCUS_RING} transition-colors shrink-0`}
         >
           <ClipboardList size={ICON.sm} strokeWidth={1.5} />
         </button>
@@ -4462,7 +4466,7 @@ function FaseReposicionFicha({
             onClick={() => onChangeReposicion(reposicionIndex - 1)}
             disabled={reposicionIndex <= 0}
             aria-label="Reposición anterior"
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
           >
             <ChevronLeft size={ICON.sm} strokeWidth={1.5} />
           </button>
@@ -4471,7 +4475,7 @@ function FaseReposicionFicha({
             onClick={() => onChangeReposicion(reposicionIndex + 1)}
             disabled={reposicionIndex >= totalReposiciones - 1}
             aria-label="Reposición siguiente"
-            className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
           >
             <ChevronRight size={ICON.sm} strokeWidth={1.5} />
           </button>
@@ -4600,7 +4604,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
         onClick={handleCopy}
         aria-label={`Copiar ${label}`}
         title={copied ? "Copiada" : `Copiar ${label}`}
-        className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors shrink-0"
+        className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors shrink-0`}
       >
         {copied ? <Check size={ICON.sm} strokeWidth={1.5} className="text-success-text-strong" /> : <Copy size={ICON.sm} strokeWidth={1.5} />}
       </button>
@@ -6938,7 +6942,7 @@ function ValuePicker({
               <button
                 type="button"
                 onClick={cerrar}
-                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors"
+                className={`shrink-0 ${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors`}
               >
                 <X size={ICON.sm} strokeWidth={1.5} />
               </button>
@@ -7349,7 +7353,7 @@ function AbmScreen({
             onClick={onVolver}
             title="Volver a Consultas de interrupción"
             aria-label="Volver a Consultas de interrupción"
-            className="flex items-center justify-center w-8 h-8 -ml-1.5 rounded-sm text-icon hover:text-secondary hover:bg-fill-muted transition-colors shrink-0"
+            className={`flex items-center justify-center ${ICON_BTN_SM} -ml-1.5 rounded-sm text-icon hover:text-secondary hover:bg-fill-muted transition-colors shrink-0`}
           >
             ←
           </button>
@@ -7979,7 +7983,7 @@ function GestorNotasContent() {
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); abrirEditar(n.id, n.texto); }}
-                        className="w-7 h-7 flex items-center justify-center rounded-sm text-icon hover:bg-primary-tint hover:text-secondary transition-colors"
+                        className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-primary-tint hover:text-secondary transition-colors`}
                         title="Editar"
                       >
                         <Pencil size={ICON.md} strokeWidth={1.5} />
@@ -8026,7 +8030,7 @@ function GestorNotasContent() {
               title={b.title}
               disabled={!seleccionada}
               onClick={() => seleccionada && mover(seleccionada, b.dir)}
-              className="w-9 h-9 flex items-center justify-center rounded-sm border border-border-strong bg-surface text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm border border-border-strong bg-surface text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary disabled:opacity-30 disabled:pointer-events-none transition-colors`}
             >
               {b.icon}
             </button>
@@ -8391,7 +8395,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setCollapsed(true)}
-                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-sm text-icon hover:text-text hover:bg-fill-muted transition-colors"
+                className={`shrink-0 ${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:text-text hover:bg-fill-muted transition-colors`}
                 title="Colapsar"
               >
                 <ChevronLeft size={ICON.md} strokeWidth={1.5} />
@@ -8401,7 +8405,7 @@ export default function App() {
             /* Collapsed: small E monogram matching brand blue */
             <button
               onClick={() => setCollapsed(false)}
-              className="mx-auto w-8 h-8 flex items-center justify-center rounded-sm transition-colors hover:bg-fill-muted"
+              className={`mx-auto ${ICON_BTN_SM} flex items-center justify-center rounded-sm transition-colors hover:bg-fill-muted`}
               title="Expandir"
             >
               <div
