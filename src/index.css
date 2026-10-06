@@ -172,15 +172,47 @@
  * se volvió a subir un escalón (--spacing ~80% del default) — el recorte
  * más agresivo ya no hacía falta.
  */
+/*
+ * Aire del "chrome" (estructura) — ver DESIGN_SYSTEM.md, "Aire: chrome vs
+ * datos". Paddings y gaps de página y cards que NO dependen de --spacing:
+ * en pantallas altas (> 900px de alto) son px fijos; en los dos tiers de
+ * abajo se redefinen en términos de --spacing para dar EXACTAMENTE los
+ * valores de antes (las notebooks de 14" no cambian). Filas de tabla,
+ * celdas, inputs, botones y filter bar NO usan estas variables.
+ */
+:root {
+  --card-px: 24px;
+  --card-header-py: 16px;
+  --card-section-py: 20px;
+  --page-px: 32px;
+  --page-pt: 24px;
+  --page-gap: 24px;
+  --cards-gap: 24px;
+}
+
 @media (max-height: 900px) {
   :root {
     --spacing: 0.2125rem;
+    --card-px: calc(var(--spacing) * 4);
+    --card-header-py: calc(var(--spacing) * 3);
+    --card-section-py: calc(var(--spacing) * 3);
+    --page-px: calc(var(--spacing) * 5);
+    --page-pt: calc(var(--spacing) * 5);
+    --page-gap: calc(var(--spacing) * 4);
+    --cards-gap: calc(var(--spacing) * 4);
   }
 }
 
 @media (max-height: 760px) {
   :root {
     --spacing: 0.2rem;
+    --card-px: calc(var(--spacing) * 4);
+    --card-header-py: calc(var(--spacing) * 3);
+    --card-section-py: calc(var(--spacing) * 3);
+    --page-px: calc(var(--spacing) * 5);
+    --page-pt: calc(var(--spacing) * 5);
+    --page-gap: calc(var(--spacing) * 4);
+    --cards-gap: calc(var(--spacing) * 4);
     /* Franja de título de pantalla + selector de período — tanto la de App
        (pantallas normales) como el masthead propio de AbmScreen (selector
        de tabla + período) comparten este mismo alto fijo en `minHeight`

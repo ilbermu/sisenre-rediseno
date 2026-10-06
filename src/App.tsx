@@ -500,7 +500,7 @@ function PeriodSelector() {
 type RangoFecha = { desde: Date | null; hasta: Date | null };
 
 type FilterTriggerProps =
-  | {
+  ({
       variant?: "list";
       label: string;
       options: { value: string; count: number }[];
@@ -512,7 +512,10 @@ type FilterTriggerProps =
       label: string;
       value: RangoFecha | null;
       onChange: (value: RangoFecha | null) => void;
-    };
+    }) & {
+  // Estado deshabilitado: sin hover ni apertura (ej. toolbar sin resultados).
+  disabled?: boolean;
+};
 
 // "dd/mm hh:mm" — texto del trigger con un rango aplicado.
 function fmtDiaHora(d: Date): string {
@@ -557,12 +560,14 @@ function FilterTriggerButton({
   open,
   onToggle,
   onClear,
+  disabled = false,
 }: {
   label: string;
   aplicado: string | null;
   open: boolean;
   onToggle: () => void;
   onClear: () => void;
+  disabled?: boolean;
 }) {
   const chevron = open ? <ChevronUp size={12} strokeWidth={1.5} /> : <ChevronDown size={12} strokeWidth={1.5} />;
   if (aplicado === null) {
@@ -571,8 +576,9 @@ function FilterTriggerButton({
         type="button"
         aria-haspopup="dialog"
         aria-expanded={open}
+        disabled={disabled}
         onClick={onToggle}
-        className={`h-8 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-all ${FILTER_FOCUS_CLS} ${
+        className={`h-8 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-all disabled:text-text-faint disabled:cursor-not-allowed disabled:pointer-events-none ${FILTER_FOCUS_CLS} ${
           open
             ? "bg-primary-tint border-primary text-secondary"
             : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
@@ -589,8 +595,9 @@ function FilterTriggerButton({
         type="button"
         aria-haspopup="dialog"
         aria-expanded={open}
+        disabled={disabled}
         onClick={onToggle}
-        className={`h-full pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 whitespace-nowrap ${FILTER_FOCUS_CLS}`}
+        className={`h-full pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 whitespace-nowrap disabled:cursor-not-allowed ${FILTER_FOCUS_CLS}`}
       >
         {label}: <span className="tabular-nums">{aplicado}</span>
         {chevron}
@@ -598,8 +605,9 @@ function FilterTriggerButton({
       <button
         type="button"
         aria-label={`Quitar filtro ${label}`}
+        disabled={disabled}
         onClick={onClear}
-        className={`h-full px-1.5 rounded-sm inline-flex items-center ${FILTER_FOCUS_CLS}`}
+        className={`h-full px-1.5 rounded-sm inline-flex items-center disabled:cursor-not-allowed ${FILTER_FOCUS_CLS}`}
       >
         <X size={12} strokeWidth={1.5} />
       </button>
@@ -641,6 +649,7 @@ function FilterTrigger(props: FilterTriggerProps) {
         open={open}
         onToggle={() => setOpen((v) => !v)}
         onClear={() => props.onChange(null)}
+        disabled={props.disabled}
       />
       {open && (
         props.variant === "date-range" ? (
@@ -1302,10 +1311,11 @@ function SortableTh({
 
 // Contador del toolbar de tabla ("N de M registros") — siempre visible,
 // también sin filtros, para que el layout no salte al aplicar uno.
-function TableCounter({ visibles, total }: { visibles: number; total: number }) {
+// Sin `total` (ej. toolbar sin resultados): "N registros".
+function TableCounter({ visibles, total }: { visibles: number; total?: number }) {
   return (
     <span className="text-caption text-text-muted tabular-nums whitespace-nowrap">
-      <span className="font-semibold text-text">{visibles}</span> de {total} registros
+      <span className="font-semibold text-text">{visibles}</span>{total === undefined ? "" : ` de ${total}`} registros
     </span>
   );
 }
@@ -1326,6 +1336,7 @@ function TableToolbar({
   searchPlaceholder = "Buscar en la tabla…",
   children,
   bare = false,
+  disabled = false,
 }: {
   search: string;
   onSearchChange: (v: string) => void;
@@ -1343,6 +1354,8 @@ function TableToolbar({
   // está el modo normal). El ancho lo controla quien lo envuelve. Default
   // false — ningún llamado existente cambia.
   bare?: boolean;
+  // Buscador deshabilitado (estado disabled del sistema: fill-muted + text-faint).
+  disabled?: boolean;
 }) {
   const searchBox = (
     <div className="relative flex-1 max-w-[320px]">
@@ -1354,7 +1367,8 @@ function TableToolbar({
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder={searchPlaceholder}
         aria-label={searchPlaceholder.replace(/…$/, "")}
-        className="w-full h-8 pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150"
+        disabled={disabled}
+        className="w-full h-8 pl-8 pr-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted focus:outline-none focus:border-focus focus:ring-2 focus:ring-focus/10 transition-all duration-150 disabled:bg-fill-muted disabled:text-text-faint disabled:placeholder:text-text-faint disabled:cursor-not-allowed"
       />
     </div>
   );
@@ -3275,9 +3289,9 @@ const STATUS_ITEMS = [
   { label: "TABLA 9", alert: false, tabKey: "tabla9" },
 ];
 
-// Fila de la tabla de Reposiciones (Tabla 4/CDS4) — campos con nombre en vez
-// de string[][], para que ReposicionesTable pueda renderizar la celda Equipo
-// a dos líneas (código + descripción) sin depender de posiciones de array.
+// Fila de la lista de Reposiciones (Tabla 4/CDS4) — campos con nombre en vez
+// de string[][], para que ReposicionesLista pueda renderizar código y
+// descripción del equipo por separado sin depender de posiciones de array.
 type FaseReposicion = {
   nro: number;
   horaRep: string;
@@ -3555,21 +3569,27 @@ function CodeBadge({ code }: { code: string }) {
 //   actions  → a la derecha: solo acciones de alcance tabla, nunca sobre el
 //              registro seleccionado — salvo el botón "stretched" de una
 //              sección clickeable (ver ReclamosResumenCompacto).
-// Sin línea divisoria ni fondo: la separación con el contenido la da el
-// espaciado (pt-3 pb-2), y el alto sale del contenido (no hay alto fijo).
+// Sin fondo: el alto sale del contenido (no hay alto fijo). Por defecto sin
+// línea divisoria (la separación la da el espaciado pt-3 pb-2); con `divider`
+// lleva línea inferior a todo el ancho.
 // `reserveSubtitle`: reserva la línea del subtítulo aunque todavía no haya
 // nada que mostrar (ej. sin interrupción seleccionada), para que el header
 // no cambie de alto — y dos cards lado a lado no se desalineen — cuando el
 // subtítulo aparece.
 // `padX`: padding horizontal, SIEMPRE el mismo que el cuerpo de la card
 // (px-4 en la vista de trabajo, que es el default).
+// `chrome`: el aire sale de las variables de chrome de index.css en vez de
+// --spacing — px-(--card-px) (pisa `padX`), py-(--card-header-py) con
+// `divider` y pt-(--card-section-py) en `level="section"`. Ver
+// DESIGN_SYSTEM.md, "Aire: chrome vs datos".
 //
 // Card con secciones (Consultas de interrupción — ver DESIGN_SYSTEM.md,
-// "Card con secciones"): el header de la card lleva `divider` (línea
-// inferior a todo el ancho, py-3 simétrico) y el badge a la derecha
-// (`tagAlign="end"`); el header de cada sección lleva `level="section"`
-// (título en heading-sm, sin divisor). El resto de los usos (paneles ABM,
-// Notas, Exportación…) sigue con el header sin divisor y el badge en línea.
+// "Card con secciones"): el header de la card lleva `divider` (siempre
+// visible) y `chrome`, con el badge en línea junto al título (el lado
+// derecho queda solo para acciones); el header de cada sección lleva
+// `level="section"` (título en heading-sm, sin divisor). El resto de los
+// usos (paneles ABM, Notas, Exportación…) sigue con el header sin divisor
+// y el padding propio (`padX`).
 function CardHeader({
   title,
   tag,
@@ -3578,7 +3598,7 @@ function CardHeader({
   actions,
   padX = "px-4",
   divider = false,
-  tagAlign = "inline",
+  chrome = false,
   level = "card",
 }: {
   title: string;
@@ -3588,15 +3608,19 @@ function CardHeader({
   actions?: React.ReactNode;
   padX?: string;
   divider?: boolean;
-  tagAlign?: "inline" | "end";
+  chrome?: boolean;
   level?: "card" | "section";
 }) {
+  const px = chrome ? "px-(--card-px)" : padX;
+  const py = divider
+    ? `${chrome ? "py-(--card-header-py)" : "py-3"} border-b border-border`
+    : `${chrome && level === "section" ? "pt-(--card-section-py)" : "pt-3"} pb-2`;
   return (
-    <div className={`${padX} ${divider ? "py-3 border-b border-border" : "pt-3 pb-2"} shrink-0 flex items-center gap-3`}>
+    <div className={`${px} ${py} shrink-0 flex items-center gap-3`}>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className={`min-w-0 truncate text-text ${level === "section" ? "text-heading-sm" : "text-heading-md"}`}>{title}</span>
-          {tag && tagAlign === "inline" && <CodeBadge code={tag} />}
+          {tag && <CodeBadge code={tag} />}
         </div>
         {(subtitle || reserveSubtitle) && (
           <p className="truncate text-body-sm text-text-muted" aria-hidden={subtitle ? undefined : true}>
@@ -3604,7 +3628,6 @@ function CardHeader({
           </p>
         )}
       </div>
-      {tag && tagAlign === "end" && <CodeBadge code={tag} />}
       {actions && <div className="shrink-0">{actions}</div>}
     </div>
   );
@@ -3623,61 +3646,33 @@ function SubtituloEtiquetado({ etiqueta, children }: { etiqueta: string; childre
   );
 }
 
-// Alto de header (th sticky) y de fila de ReposicionesTable, en px —
-// fila = code 16 + caption 16 (celda Equipo, 2 líneas) + py-2 16 + borde 1
-// = 49 en el tier normal (se deja en 50). El header es un alto FIJO de 32
-// (múltiplo de 4, borde incluido) con el texto centrado en vertical: no
-// lleva padding vertical, así que no depende de --spacing ni suma el borde
-// por afuera. En los tiers compactos (--spacing más chico, ver index.css;
-// la tipografía no cambia entre tiers) el padding de las filas mide menos,
-// así que el alto se FIJA en el
-// <tr> (style height), para que las filas queden parejas entre tiers. Ya
-// no se usan para calcular un alto de 5 filas: la tabla toma el alto
-// disponible (flex-1, igual que la lista de Interrupciones) y puede asomar
-// una fila cortada abajo.
-const REPOSICIONES_HEADER_H = 32;
-const REPOSICIONES_ROW_H = 50;
+// Alto fijo de fila de ReposicionesLista, en px — una sola línea (text-body
+// 20px) con aire; fuera de la escala --spacing, así las filas quedan parejas
+// entre tiers (la tipografía no cambia entre tiers).
+const REPOSICIONES_ROW_H = 44;
 
-// Tabla de Reposiciones (Tabla 4) de la Card B "Reposiciones" (Modificar
-// interrupción) — única instancia de este componente: el drawer "Tablas
-// relacionadas" que también la usaba (con heightMode "auto" + bare) se
-// reemplazó por un modal enfocado en una sola reposición a la vez (ver
-// FaseReposicionFicha y el paginador ‹ › del modal), así que esas dos
-// props quedaron sin uso y se sacaron junto con su lógica; modSelectedFase
-// sigue siendo la única fuente de verdad, compartida vía el paginador del
-// modal en vez de esta tabla. Mismo criterio con `footer`: "Tablas
-// relacionadas" pasó de pie de la tabla a card propia debajo de ella (por
-// coherencia con Reclamos en la card Interrupciones), y la prop se sacó.
-// Columnas fijas (Reposición/Hora/Fase/
-// Equipo/Usuarios BT vienen de FaseReposicion, no de un array genérico) —
-// `cols` solo aporta las etiquetas de header, para que DRAWER_TABS siga
-// siendo la única fuente de los títulos. Alto flexible: el contenedor y el
-// área scrolleable son flex-1 min-h-0, así que la tabla llena el alto que
-// le deja su padre (el mismo mecanismo que la lista de Interrupciones) —
-// antes era un alto fijo de 5 filas vía la prop maxHeight, que se sacó.
-// Header <th> sticky + scroll propio + fila seleccionada con acento celeste. Ref, hover y navegación por
-// teclado (flechas arriba/abajo) son internos — no hay estado que
-// compartir ahí, solo el índice seleccionado.
-//
-// El acento de fila seleccionada usa una sombra inset (inset-shadow-row-selected, no borderLeft): con
-// border-collapse, un borde puesto en <td> se pinta en la capa de bordes
-// de la tabla, no en la celda, y esa capa puede quedar por ENCIMA del
-// <th> sticky al scrollear (el th sticky no lo tapa). El inset box-shadow
-// se pinta dentro de la celda como cualquier otro fondo — nunca escapa por
-// encima del header. Ventaja extra: al no ocupar espacio en el layout (a
-// diferencia del borderLeft, que necesitaba reservar 3px siempre,
-// transparente cuando no estaba seleccionada, para que el texto no se
-// corriera), el texto queda en la misma posición seleccionada o no, sin
-// necesidad de ese truco. La tabla pasa de border-collapse a
-// border-separate/border-spacing-0 y los separadores de fila se mueven de
-// <tr> a <td> — bajo border-separate los bordes puestos en <tr> no pintan.
-function ReposicionesTable({
-  cols,
+// Lista de Reposiciones (Tabla 4/CDS4) de la Card B "Reposiciones" (Modificar
+// interrupción) — única instancia. Lista de filas, no tabla (ver
+// DESIGN_SYSTEM.md, "Lista de filas"): cada reposición tiene pocos campos y
+// un identificador principal, así que va en UNA línea sin thead:
+//   izquierda (min-w-0 flex-1, trunca) → "Reposición {nro}" + código de
+//     equipo (font-mono) + descripción del equipo, todo muted salvo el nro.
+//   derecha (shrink-0, gap fijo)       → FaseIndicador · hora · "{n} usuarios BT".
+// modSelectedFase sigue siendo la única fuente de verdad, compartida con el
+// modal "Tablas relacionadas" — acá solo viven hover y ref. Alto flexible:
+// el contenedor y el área scrolleable son min-h-0, así que la lista llena el
+// alto que le deja su padre (mismo mecanismo que la lista de Interrupciones)
+// y scrollea sola. Semántica: role="listbox" (aria-label "Reposiciones") con
+// filas role="option"/aria-selected; navegación por teclado (flechas
+// arriba/abajo) interna.
+// El acento de fila seleccionada usa una sombra inset
+// (inset-shadow-row-selected): no ocupa espacio en el layout, el texto queda
+// en la misma posición seleccionado o no.
+function ReposicionesLista({
   rows,
   selectedIndex,
   onSelect,
 }: {
-  cols: string[];
   rows: FaseReposicion[];
   selectedIndex: number | null;
   onSelect: (index: number | null) => void;
@@ -3706,76 +3701,52 @@ function ReposicionesTable({
 
   return (
     <div className="min-h-0 flex flex-col">
-    <div
-      ref={listRef}
-      tabIndex={rows.length > 0 ? 0 : -1}
-      onKeyDown={handleKeyDown}
-      className="min-h-0 overflow-y-auto overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
-    >
-      <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
-        <thead>
-          <tr style={{ height: REPOSICIONES_HEADER_H }}>
-            {cols.map((c, ci) => (
-              <th
-                key={c}
-                className={`sticky top-0 z-10 bg-fill-subtle-solid px-3 first:pl-4 last:pr-4 py-0 border-b border-border text-heading-xs uppercase tracking-[0.06em] text-text-muted whitespace-nowrap ${
-                  ci === cols.length - 1 ? "text-right" : "text-left"
-                }`}
+      <div
+        ref={listRef}
+        role="listbox"
+        aria-label="Reposiciones"
+        tabIndex={rows.length > 0 ? 0 : -1}
+        onKeyDown={handleKeyDown}
+        className="min-h-0 overflow-y-auto overflow-x-hidden outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
+      >
+        {rows.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
+            <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+            <p className="text-body-sm text-text-muted">Sin reposiciones registradas</p>
+          </div>
+        ) : (
+          rows.map((fila, ri) => {
+            const seleccionada = selectedIndex === ri;
+            const esUltima = ri === rows.length - 1;
+            return (
+              <div
+                key={ri}
+                role="option"
+                aria-selected={seleccionada}
+                data-fase-index={ri}
+                onClick={() => onSelect(seleccionada ? null : ri)}
+                onMouseEnter={() => setHovIndex(ri)}
+                onMouseLeave={() => setHovIndex(null)}
+                className={`flex items-center gap-4 px-(--card-px) transition-colors cursor-pointer ${esUltima ? "" : "border-b border-border-subtle"} ${seleccionada ? "inset-shadow-row-selected" : ""}`}
+                style={{ height: REPOSICIONES_ROW_H, backgroundColor: seleccionada ? "var(--color-primary-tint)" : hovIndex === ri ? "var(--color-fill-muted)" : undefined }}
               >
-                {c}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length === 0 ? (
-            <tr>
-              <td colSpan={cols.length}>
-                <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
-                  <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
-                  <p className="text-body-sm text-text-muted">Sin reposiciones registradas</p>
+                <div className="min-w-0 flex-1 flex items-baseline gap-2">
+                  <span className={`shrink-0 text-body whitespace-nowrap ${seleccionada ? "text-secondary font-medium" : "text-text"}`}>
+                    Reposición {fila.nro}
+                  </span>
+                  <span className="shrink-0 text-code font-mono text-text-muted">{fila.equipoCodigo}</span>
+                  <span className="min-w-0 truncate text-body-sm text-text-muted" title={fila.equipoDesc}>{fila.equipoDesc}</span>
                 </div>
-              </td>
-            </tr>
-          ) : (
-            rows.map((fila, ri) => {
-              const seleccionada = selectedIndex === ri;
-              const esUltima = ri === rows.length - 1;
-              const tdCls = `px-3 first:pl-4 last:pr-4 py-2 ${esUltima ? "" : "border-b border-border-subtle"}`;
-              const textCls = seleccionada ? "text-secondary font-medium" : "text-text";
-              return (
-                <tr
-                  key={ri}
-                  data-fase-index={ri}
-                  onClick={() => onSelect(seleccionada ? null : ri)}
-                  onMouseEnter={() => setHovIndex(ri)}
-                  onMouseLeave={() => setHovIndex(null)}
-                  className="transition-colors cursor-pointer"
-                  style={{ height: REPOSICIONES_ROW_H, backgroundColor: seleccionada ? "var(--color-primary-tint)" : hovIndex === ri ? "var(--color-fill-muted)" : undefined }}
-                >
-                  <td
-                    className={`${tdCls} text-body-sm tabular-nums whitespace-nowrap ${textCls} ${seleccionada ? "inset-shadow-row-selected" : ""}`}
-                  >
-                    {fila.nro}
-                  </td>
-                  <td className={`${tdCls} text-body-sm tabular-nums whitespace-nowrap ${textCls}`}>{fila.horaRep}</td>
-                  <td className={`${tdCls} text-code font-mono tabular-nums whitespace-nowrap ${textCls}`}>{fila.fase}</td>
-                  <td className={`${tdCls} max-w-[220px]`}>
-                    <div className={`text-code font-mono tabular-nums truncate ${seleccionada ? "text-secondary" : "text-text"}`}>
-                      {fila.equipoCodigo}
-                    </div>
-                    <div className={`text-caption truncate ${seleccionada ? "text-text-muted" : "text-text-muted"}`} title={fila.equipoDesc}>
-                      {fila.equipoDesc}
-                    </div>
-                  </td>
-                  <td className={`${tdCls} text-body-sm tabular-nums text-right whitespace-nowrap ${textCls}`}>{fila.usuariosBT}</td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
+                <div className="shrink-0 flex items-center justify-end gap-4">
+                  <FaseIndicador fase={fila.fase} />
+                  <span className="text-code font-mono tabular-nums text-text-muted">{fila.horaRep}</span>
+                  <span className="text-body-sm tabular-nums text-text-muted whitespace-nowrap">{fila.usuariosBT} usuarios BT</span>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
@@ -3785,7 +3756,7 @@ function ReposicionesTable({
 // ("SI"/"NO" para la booleana, conteo como string para el resto);
 // undefined = sin interrupción seleccionada ("—").
 // En reposo NUNCA lleva tint ni borde celeste: el azul relleno queda
-// reservado para la fila seleccionada de ReposicionesTable, justo arriba.
+// reservado para la fila seleccionada de ReposicionesLista, justo arriba.
 // Con contenido (conteo > 0 o "Sí"): <button> blanco + borde de card +
 // valor navy, abre el modal en ese tab; el azul aparece solo en hover
 // (tint + borde primary) y foco. Sin contenido (0, "No" o sin selección):
@@ -4267,6 +4238,7 @@ function ReclamosResumenCompacto({
       <CardHeader
         title="Reclamos durante la interrupción"
         level="section"
+        chrome
         reserveSubtitle
         subtitle={habilitada && referencia ? <>Interrupción <span className="text-code font-mono tabular-nums">{referencia}</span></> : undefined}
         actions={
@@ -4286,7 +4258,7 @@ function ReclamosResumenCompacto({
           si una etiqueta parte en dos líneas (card angosta), los valores
           siguen alineados. El divisor va en ambas celdas de cada columna,
           así la línea es continua. */}
-      <div className="grid grid-cols-4 px-4 pt-1 pb-3">
+      <div className="grid grid-cols-4 px-(--card-px) pt-1 pb-(--card-section-py)">
         {columnas.map((c, i) => (
           <span key={`l-${c.etiqueta}`} className={`min-w-0 self-end pb-1.5 ${i === 0 ? "pr-3" : "px-3 border-l border-border"}`}>
             <span className="block text-caption tracking-[0.05em] text-text-muted group-data-[habilitada]:group-hover:text-secondary">{c.etiqueta}</span>
@@ -4885,7 +4857,6 @@ function ModificarContent({
   // que mostrar. Con selección, se generan (seed = referencia) filas
   // propias de esa interrupción — cantidad y valores varían de una a otra,
   // pero siempre las mismas para la misma interrupción.
-  const tabla4Data = DRAWER_TABS.find(t => t.key === "tabla4")!;
   const tabla4Rows: FaseReposicion[] = selectedRecord ? generarFasesSinteticas(selectedRecord.referencia) : [];
 
   // Fila de Reposiciones seleccionada (tabla interactiva, igual que
@@ -5095,8 +5066,8 @@ function ModificarContent({
   );
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col p-5 relative overflow-hidden">
-    <div className="flex-1 min-h-0 flex flex-col gap-4">
+    <div className="flex-1 min-h-0 flex flex-col px-(--page-px) pt-(--page-pt) pb-(--page-pt) relative overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col gap-(--page-gap)">
 
         {/* Búsqueda — sin contenedor: la fila de filtros se apoya directo
             en el fondo de la página, debajo del título del encabezado. Una
@@ -5297,7 +5268,7 @@ function ModificarContent({
           si el contenido no entra, la tabla se achica y scrollea adentro,
           nunca la página. Las cards NO llevan overflow-hidden: recortaría
           el panel del filtro de Fecha y cualquier otro popover. ── */}
-      <div className={`flex-1 min-h-0 flex items-start gap-4 transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
+      <div className={`flex-1 min-h-0 flex items-start gap-(--cards-gap) transition-opacity duration-150 ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
 
       {/* ── Card Interrupciones — card con secciones (ver DESIGN_SYSTEM.md,
           "Card con secciones"): header con divisor → toolbar → tabla al ras
@@ -5310,67 +5281,64 @@ function ModificarContent({
         {/* Header — sin subtítulo (el contador va en el toolbar). Sin
             acciones: "Datos de la Interrupción" se abre desde la sección
             Reclamos. */}
-        <CardHeader title="Interrupciones" tag="CDS2" tagAlign="end" divider />
+        <CardHeader title="Interrupciones" tag="CDS2" divider chrome />
 
         {/* Toolbar de tabla — FUERA del contenedor de la tabla, sin fondo ni
             línea divisoria con la tabla (ver DESIGN_SYSTEM.md, "Patrones
             de contenedor y tabla"): buscador de Referencia → divisor → filtro de Fecha →
-            (derecha) Limpiar filtros + contador "N de M registros". Con
-            resultados vacíos no hay toolbar. "Limpiar filtros" quita el
-            filtro, no el texto del buscador. */}
-        {modShowData ? (
-          <div className="px-4 py-3 shrink-0 flex items-center flex-wrap gap-2">
-            <div className="w-60 shrink-0">
-              <TableToolbar search={modSearch} onSearchChange={setModSearch} searchPlaceholder="Buscar referencia…" hideExport bare />
-            </div>
-            <div className="w-px h-5 bg-border shrink-0" />
-            <FilterTrigger variant="date-range" label="Fecha" value={modFiltroFecha} onChange={setModFiltroFecha} />
-            <div className="ml-auto shrink-0 flex items-center gap-4">
-              {modFiltroFecha && (
-                <button
-                  type="button"
-                  onClick={() => setModFiltroFecha(null)}
-                  className="text-label text-secondary hover:underline"
-                >
-                  Limpiar filtros
-                </button>
-              )}
-              <TableCounter visibles={modVisibleIndices.length} total={SAMPLE_ROWS.length} />
-            </div>
+            (derecha) Limpiar filtros + contador. Se renderiza SIEMPRE: sin
+            resultados, buscador y filtro quedan deshabilitados y el contador
+            dice "0 registros" — así el divisor del header nunca queda pegado
+            al thead. "Limpiar filtros" quita el filtro, no el texto del
+            buscador. */}
+        <div className="px-(--card-px) py-3 shrink-0 flex items-center flex-wrap gap-2">
+          <div className="w-60 shrink-0">
+            <TableToolbar search={modSearch} onSearchChange={setModSearch} searchPlaceholder="Buscar referencia…" hideExport bare disabled={!modShowData} />
           </div>
-        ) : null}
+          <div className="w-px h-5 bg-border shrink-0" />
+          <FilterTrigger variant="date-range" label="Fecha" value={modFiltroFecha} onChange={setModFiltroFecha} disabled={!modShowData} />
+          <div className="ml-auto shrink-0 flex items-center gap-4">
+            {modShowData && modFiltroFecha && (
+              <button
+                type="button"
+                onClick={() => setModFiltroFecha(null)}
+                className="text-label text-secondary hover:underline"
+              >
+                Limpiar filtros
+              </button>
+            )}
+            {modShowData
+              ? <TableCounter visibles={modVisibleIndices.length} total={SAMPLE_ROWS.length} />
+              : <TableCounter visibles={0} />}
+          </div>
+        </div>
 
-        {/* Body — px-4 pb-4, alineado con el toolbar (con toolbar, el aire
-            de arriba lo da su py-3; sin datos no hay toolbar y el body suma
-            pt-3 para no quedar pegado al border-b del header). Tabla
-            Referencia / Fecha dentro del mismo contenedor con borde que
-            ReposicionesTable, y debajo el resumen de reclamos (antes en
-            Card B). */}
+        {/* Body — tabla Referencia / Fecha al ras de la card (el aire de
+            arriba lo da el py-3 del toolbar), y debajo el resumen de
+            reclamos. Los paddings horizontales de header, toolbar, celdas
+            extremas, paginador y secciones salen todos de --card-px para
+            quedar alineados. */}
         <div className="min-h-0 flex flex-col">
-          {/* Replica el estilo de ReposicionesTable (copia de clases, no usa
-              el componente): header bg-fill-subtle de alto REPOSICIONES_HEADER_H,
-              celdas px-3 py-2 text-body-sm, separador border-subtle, acento de
-              selección con sombra inset en la primera celda. Excepciones:
-              sin alto fijo de fila (acá las filas son de una línea, el 50px
-              de REPOSICIONES_ROW_H responde a la celda Equipo de dos) y la
-              paginación va como pie (fill-subtle). Con toolbar arriba, la
-              tabla lleva su propia línea superior; sin toolbar, esa línea
-              es el divisor del header de la card. */}
+          {/* Tabla: header bg-fill-subtle de alto fijo (32px), celdas
+              px-3 py-2 text-body-sm, separador border-subtle, acento de
+              selección con sombra inset en la primera celda, paginación como
+              pie (fill-subtle). El toolbar de arriba siempre está, así que
+              la tabla lleva su propia línea superior. */}
           <div className="min-h-0 flex flex-col">
-            <div className={`grid grid-cols-2 items-center shrink-0 bg-fill-subtle border-b border-border ${modShowData ? "border-t" : ""}`} style={{ height: REPOSICIONES_HEADER_H }}>
+            <div className="grid grid-cols-2 items-center shrink-0 bg-fill-subtle border-y border-border" style={{ height: 32 }}>
               <SortableHeaderCell
                 label="Referencia"
                 active={modSortIdx === 0}
                 dir={modSortDir}
                 onClick={() => modToggleSort(0)}
-                className="pl-4 pr-3"
+                className="pl-(--card-px) pr-3"
               />
               <SortableHeaderCell
                 label="Fecha"
                 active={modSortIdx === 1}
                 dir={modSortDir}
                 onClick={() => modToggleSort(1)}
-                className="pl-3 pr-4"
+                className="pl-3 pr-(--card-px)"
               />
             </div>
             {/* La card tiene altura fija (arriba) — esta lista ocupa todo el
@@ -5410,16 +5378,16 @@ function ModificarContent({
                     onClick={() => setModSelectedRow(selected ? null : i)}
                   >
                     <div
-                      className={`pl-4 pr-3 py-2 text-code tabular-nums whitespace-nowrap font-mono ${textCls} ${selected ? "inset-shadow-row-selected" : ""}`}
+                      className={`pl-(--card-px) pr-3 py-2 text-code tabular-nums whitespace-nowrap font-mono ${textCls} ${selected ? "inset-shadow-row-selected" : ""}`}
                     >
                       {row.referencia}
                     </div>
-                    <div className={`pl-3 pr-4 py-2 text-body-sm tabular-nums whitespace-nowrap ${textCls}`}>{row.fecha}</div>
+                    <div className={`pl-3 pr-(--card-px) py-2 text-body-sm tabular-nums whitespace-nowrap ${textCls}`}>{row.fecha}</div>
                   </div>
                 );
               })}
             </div>
-            <div className="shrink-0 border-t border-border bg-fill-subtle px-4 py-1.5 flex items-center justify-between">
+            <div className="shrink-0 border-t border-border bg-fill-subtle px-(--card-px) py-1.5 flex items-center justify-between">
               <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted disabled:opacity-40" disabled>Anterior</button>
               <span className="text-caption text-text-muted">Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">2.213</span></span>
               <button className="px-2 py-0.5 rounded-sm border border-border bg-surface text-caption text-text-muted hover:bg-fill-muted transition-colors">Siguiente</button>
@@ -5450,8 +5418,8 @@ function ModificarContent({
           <CardHeader
             title="Reposiciones"
             tag="CDS4"
-            tagAlign="end"
             divider
+            chrome
             reserveSubtitle
             subtitle={selectedRecord ? <SubtituloEtiquetado etiqueta="Interrupción seleccionada">{selectedRecord.referencia}</SubtituloEtiquetado> : undefined}
           />
@@ -5462,12 +5430,11 @@ function ModificarContent({
                 Vacía hasta que se selecciona una interrupción. Toma el alto
                 de su contenido (la card no se estira); si no entra en el
                 alto disponible se achica con scroll propio + header sticky,
-                ver ReposicionesTable. min-h-0 en este wrapper: sin él la
+                ver ReposicionesLista. min-h-0 en este wrapper: sin él la
                 tabla no puede achicarse y Tablas relacionadas quedaría
                 cortada. */}
             <div className="min-h-0 flex flex-col">
-              <ReposicionesTable
-                cols={tabla4Data.cols}
+              <ReposicionesLista
                 rows={tabla4Rows}
                 selectedIndex={modSelectedFase}
                 onSelect={setModSelectedFase}
@@ -5484,6 +5451,7 @@ function ModificarContent({
                 <CardHeader
                   title="Tablas relacionadas"
                   level="section"
+                  chrome
                   reserveSubtitle
                   subtitle={
                     filaFaseSeleccionada
@@ -5491,7 +5459,7 @@ function ModificarContent({
                       : undefined
                   }
                 />
-                <div className="flex flex-wrap gap-[6px] px-4 pt-1 pb-3">
+                <div className="flex flex-wrap gap-[6px] px-(--card-px) pt-1 pb-(--card-section-py)">
                   {STATUS_ITEMS.map((item) => (
                     <RelacionadaChip
                       key={item.tabKey}
@@ -5662,8 +5630,8 @@ function ModificarContent({
               border-separate y los separadores de fila se mueven de <tr>
               a <td>, porque bajo border-collapse un borde de fila se
               pinta en la capa de bordes de la tabla y puede quedar por
-              encima del <th> sticky al scrollear (mismo criterio que ya
-              usa ReposicionesTable). mx-5/mb-5 (antes mx-4/mb-4 dentro de
+              encima del <th> sticky al scrollear (mismo criterio que
+              usaba la tabla de Reposiciones). mx-5/mb-5 (antes mx-4/mb-4 dentro de
               la card, ya sin card) para alinear con el padding del resto
               del modal. */}
           <div className="flex-1 min-h-0 mx-5 mb-5 border border-border rounded-md overflow-auto">

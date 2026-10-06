@@ -306,7 +306,7 @@ contenido de trabajo — no en el header ni en una card.
   `border-spacing:0` con los separadores de fila en `<td>` en vez de `<tr>`:
   bajo `border-collapse`, un borde de fila se pinta en la capa de bordes de
   la tabla y puede quedar por encima del `<th>` sticky al scrollear (mismo
-  fix que ya usa `ReposicionesTable`).
+  fix que usaba la tabla de Reposiciones, hoy `ReposicionesLista`).
 - Estados especiales de esa zona (un resultado compacto tipo Sí/No, un vacío
   con ícono+texto+acción) van DENTRO del mismo contenedor con borde,
   centrados vertical y horizontalmente (`h-full flex items-center
@@ -391,6 +391,87 @@ tab con más contenido comprimía y recortaba una tabla vecina en vez de
 activar el scroll del contenedor. El que scrollea es siempre el contenedor
 exterior, nunca sus secciones.
 
+## Aire: chrome vs datos
+
+`--spacing` es la palanca de densidad de toda la app y achica todo por
+igual. Para dar más aire a las pantallas altas sin tocar las notebooks se
+separa el **chrome** de los **datos**:
+
+- **Chrome (estructura):** padding de página, gaps entre bloques de la
+  página (encabezado, filter bar, fila de cards), gap entre cards, y el
+  padding de las cards (header, toolbar, extremos de tabla, paginador,
+  secciones). Usa las variables de chrome.
+- **Datos:** filas de tabla, celdas, inputs, botones, filter bar. Siguen con
+  `--spacing`, sin variables de chrome.
+
+| Variable | Qué controla | > 900px de alto | ≤ 900px y ≤ 760px |
+|---|---|---|---|
+| `--card-px` | padding horizontal de card (header, toolbar, extremos de tabla, paginador, secciones) | 24px | `calc(var(--spacing) * 4)` |
+| `--card-header-py` | padding vertical del header con divisor | 16px | `calc(var(--spacing) * 3)` |
+| `--card-section-py` | aire superior de una sección y inferior de su cuerpo | 20px | `calc(var(--spacing) * 3)` |
+| `--page-px` | padding horizontal de la página | 32px | `calc(var(--spacing) * 5)` |
+| `--page-pt` | padding superior (e inferior) de la página | 24px | `calc(var(--spacing) * 5)` |
+| `--page-gap` | gap vertical entre encabezado, filter bar y fila de cards | 24px | `calc(var(--spacing) * 4)` |
+| `--cards-gap` | gap entre cards | 24px | `calc(var(--spacing) * 4)` |
+
+Se definen en `:root` de `src/index.css`: en px fijos por defecto y, en los
+dos tiers `max-height` (900px y 760px), en términos de `--spacing` para dar
+**exactamente** los valores de antes. Se usan con la sintaxis de Tailwind v4:
+`px-(--card-px)`, `gap-(--cards-gap)`.
+
+**Regla: el aire va en la estructura, nunca en las filas de datos.** Más
+espacio entre cards, headers y secciones; las filas, celdas y controles no
+crecen (más filas visibles por pantalla). Una columna que se alinea con el
+header (primera/última celda) usa `--card-px` solo en ese borde.
+
+Aplicado hoy en Consultas de interrupción. Otras pantallas migran de a una.
+
+## Orden de botones
+
+Aplica a header de página, header de card, filter bar, toolbar y pie de modal:
+
+1. **Secundarios** (outline) primero.
+2. **Primario** después — máximo uno por zona, siempre el último a la
+   derecha de los botones normales.
+3. **Overflow ⋯** (si existe) en el extremo derecho, después del primario.
+
+Las acciones de una zona se alinean a la derecha de esa zona (`ml-auto` /
+`justify-end`). Ejemplo: `[Limpiar] [Buscar] [⋯]`; pie de modal:
+`[Cancelar] [Guardar]`.
+
+## Lista de filas
+
+Alternativa a la tabla para registros con **pocos campos**, un
+**identificador principal** y metadatos secundarios (ej. Reposiciones en
+Consultas de interrupción). Si el usuario necesita comparar columnas u
+ordenarlas, va tabla.
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ Reposición 1  EQ-0042  Transformador 13,2/0,4 kV…  [RST] 14:50  32 usuarios BT │
+├──────────────────────────────────────────────────────────┤  border-b border-border-subtle
+│ Reposición 2  …                                           │  (la última, sin borde)
+└──────────────────────────────────────────────────────────┘
+```
+
+- **Sin `thead`.** Cada registro es una fila de **una línea**, de alto fijo
+  (44px, fuera de `--spacing`) y `px-(--card-px)`.
+- **Izquierda (identidad, `min-w-0 flex-1`, trunca):** identificador en
+  `text-body text-text` (seleccionada: `text-secondary font-medium`),
+  seguido de código en `text-code font-mono text-text-muted` y descripción
+  en `text-body-sm text-text-muted` truncada, con `title` del texto completo.
+- **Derecha (metadatos, `shrink-0`, `gap` fijo, alineada a la derecha):**
+  indicadores y datos en orden fijo — `FaseIndicador` → hora en `text-code
+  font-mono tabular-nums text-text-muted` → conteo en `text-body-sm
+  tabular-nums text-text-muted`.
+- **Comportamiento:** igual que una tabla seleccionable — hover
+  `fill-muted`, seleccionada `primary-tint` + `inset-shadow-row-selected`,
+  scroll propio (`min-h-0`), flechas arriba/abajo, foco visible inset.
+- **Semántica:** contenedor `role="listbox"` con `aria-label`, filas
+  `role="option"` con `aria-selected`.
+- **Sin acciones por fila** (ni menú ⋯): las acciones son de la card.
+- **Vacío:** el mismo estado de las tablas (Inbox + texto).
+
 ## Header de card
 
 Un solo componente, `CardHeader` (`src/App.tsx`), para toda card y toda
@@ -403,6 +484,15 @@ sección de card.
 └──────────────────────────────────────────────────────────┘
 ```
 
+Con `divider` (header de una card con secciones) se suma la línea inferior:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ Título [CDS4]                                   [acciones]│  py-(--card-header-py)
+│ subtítulo en gris, con el ID en mono                      │
+├──────────────────────────────────────────────────────────┤  divisor, siempre visible
+```
+
 | Slot | Prop | Tokens | Contenido |
 |---|---|---|---|
 | Título | `title` | `text-heading-md text-text` | Nombre de la card. Una línea, trunca |
@@ -412,14 +502,22 @@ sección de card.
 
 - **Sin fondo.** Por defecto tampoco lleva línea divisoria: la separación
   con el contenido la da el espaciado (`pt-3 pb-2`) y el alto sale del
-  contenido (no hay alto fijo). Excepción: el header de una **card con
-  secciones** (ver la sección siguiente) lleva divisor (`divider`, `py-3`)
-  y el badge a la derecha (`tagAlign="end"`).
-- **Mismo padding horizontal que el cuerpo de la card.** En la vista de
-  trabajo todo es `px-4` (header, toolbar, primera y última celda de la
-  tabla, secciones). Si el cuerpo de una card usa otro padding, el header lo
-  iguala con `padX` (`px-5` en los paneles del ABM y Notas, `px-6` en
-  Exportación, Consolidación y Filtros).
+  contenido (no hay alto fijo). El header de una **card con secciones**
+  (ver la sección siguiente) lleva siempre el divisor (`divider`), que
+  nunca queda pegado al `thead` (el toolbar va en el medio).
+- **Badge en línea, derecha solo para acciones.** El badge CDS va siempre
+  junto al título; el lado derecho del header queda reservado para
+  `actions`. No hay variante con el badge a la derecha.
+- **Mismo padding horizontal que el cuerpo de la card.** En las cards con
+  secciones de la vista de trabajo todo sale de `--card-px` (`chrome`, ver
+  "Aire: chrome vs datos"): header, toolbar, primera y última celda de la
+  tabla, paginador y secciones. En el resto, si el cuerpo de una card usa
+  otro padding, el header lo iguala con `padX` (`px-4` por defecto, `px-5`
+  en los paneles del ABM y Notas, `px-6` en Exportación, Consolidación y
+  Filtros).
+- **`chrome`:** el padding sale de las variables de chrome en vez de
+  `--spacing`: `px-(--card-px)` (pisa `padX`), `py-(--card-header-py)` con
+  `divider` y `pt-(--card-section-py)` en `level="section"`.
 - **Cuándo lleva subtítulo:** cuando los datos de la card dependen de algo
   que no está a la vista en la propia card —
   - el **registro padre** ("INTERRUPCIÓN SELECCIONADA `AFZ…`" en
@@ -441,7 +539,7 @@ sección de card.
   secciones, el registro padre va como etiqueta + valor: etiqueta en
   `text-heading-xs uppercase` y valor en `text-code font-mono`, los dos en
   el `text-muted` del subtítulo.
-- **Header de tabla (`thead`):** alto fijo de 32px (`REPOSICIONES_HEADER_H`),
+- **Header de tabla (`thead`):** alto fijo de 32px,
   borde incluido, con el texto centrado en vertical y sin padding vertical.
 
 ## Card con secciones
@@ -452,10 +550,10 @@ dividido en franjas por líneas `border-border` a todo el ancho.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Título (heading-md)                               [CDS4] │  header
+│ Título (heading-md) [CDS4]                   [acciones]  │  header
 │ ETIQUETA (heading-xs) valor-en-mono                      │
-├──────────────────────────────────────────────────────────┤  divisor del header
-│ [Buscar referencia…] | Fecha ▾              40 de 40 reg. │  toolbar (opcional)
+├──────────────────────────────────────────────────────────┤  divisor del header (siempre)
+│ [Buscar referencia…] | Fecha ▾              40 de 40 reg. │  toolbar (siempre; sin datos: deshabilitado, "0 registros")
 ├──────────────────────────────────────────────────────────┤  línea superior de la tabla
 │ COLUMNA           COLUMNA                    (fill-subtle)│  thead
 │ fila…                                                     │
@@ -467,9 +565,14 @@ dividido en franjas por líneas `border-border` a todo el ancho.
 └──────────────────────────────────────────────────────────┘
 ```
 
-- **Header de card:** `CardHeader` con `divider` y `tagAlign="end"` —
-  título `heading-md` a la izquierda, badge CDS a la derecha, línea
-  inferior `border-b border-border` a todo el ancho.
+- **Header de card:** `CardHeader` con `divider` y `chrome` — título
+  `heading-md` con el badge CDS en línea, acciones (si hay) a la derecha,
+  línea inferior `border-b border-border` a todo el ancho, siempre visible.
+- **Toolbar siempre presente:** se renderiza aunque no haya resultados.
+  Sin resultados, el buscador y el filtro quedan deshabilitados (estado
+  disabled del sistema: `fill-muted` + `text-faint`, sin hover) y el
+  contador dice "0 registros". Así el divisor del header nunca queda pegado
+  al `thead`.
 - **Tablas al ras:** sin margen lateral, sin borde ni radio propios. Llevan
   una línea superior `border-border` (si la tabla va justo debajo del
   header, esa línea es el divisor del header — nunca dos líneas juntas) y
@@ -530,7 +633,7 @@ dividido en franjas por líneas `border-border` a todo el ancho.
      `dd/mm hh:mm – dd/mm hh:mm`, `desde …` o `hasta …`.
 4. **Toolbar de tabla**: va **FUERA** del contenedor de la tabla, sin fondo
    propio y **sin línea divisoria** entre el toolbar y la tabla; se vincula
-   a la tabla por proximidad (toolbar `px-4 py-3`; en la vista de trabajo
+   a la tabla por proximidad (toolbar `px-(--card-px) py-3` en la vista de trabajo, `px-4 py-3` en el resto; en la vista de trabajo
    la tabla va apoyada en la card, sin contenedor propio — ver regla 8; en
    el modal "Tablas relacionadas", `px-5 pb-3` y contenedor `mx-5 mb-5`). Orden: buscador → divisor vertical (`w-px h-5
    bg-border`) → triggers de filtro → (derecha, `ml-auto`) "Limpiar
@@ -565,8 +668,8 @@ dividido en franjas por líneas `border-border` a todo el ancho.
    - **Tablas:** van apoyadas directamente en la card, de borde a borde; el
      `thead` (`fill-subtle`) es su único relleno. Si el scroll interno
      necesita un wrapper, no lleva borde ni fondo. La primera y la última
-     celda de cada fila usan el padding horizontal de la card (`pl-4` /
-     `pr-4`) para alinear con el header y el toolbar; el pie con paginador
+     celda de cada fila usan el padding horizontal de la card (`pl-(--card-px)` /
+     `pr-(--card-px)`) para alinear con el header y el toolbar; el pie con paginador
      va con `border-t` y fondo `fill-subtle`. Ver "Card con secciones".
    - **Bloques secundarios** (Reclamos durante la interrupción, Tablas
      relacionadas): son **secciones** de su card, separadas por `border-t
