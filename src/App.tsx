@@ -9,6 +9,10 @@ import {
   Filter, Inbox, User, Settings, LogOut, Plus, Download, ChevronsUp, ChevronsDown, Home,
   ChevronUp, Copy, Check, Clock, Users, ClipboardList, Loader2, Wrench,
 } from "lucide-react";
+
+// Tamaños de ícono (lucide) — ver DESIGN_SYSTEM.md, "Íconos". strokeWidth
+// 1.5 en todos, salvo xl (estado vacío), que usa 1.25.
+const ICON = { xs: 12, sm: 14, md: 16, xl: 40 } as const;
 import Logo from "@/imports/Logo/index";
 import imgLoginBg from "@/imports/Login/login-bg.png";
 
@@ -32,11 +36,11 @@ const ABM_ITEMS: { code: string; label: string; screen?: Screen; key?: string }[
 ];
 
 const OTROS_ITEMS: { label: string; icon: React.ReactNode; screen: Screen }[] = [
-  { label: "Generación de txt",    icon: <FileText size={15} strokeWidth={1.5} />,      screen: "generaciontxt" },
-  { label: "Planilla consolidada", icon: <Clipboard size={15} strokeWidth={1.5} />, screen: "planillaconsolidada" },
-  { label: "Gestor de notas",      icon: <Pencil size={15} strokeWidth={1.5} />,      screen: "gestornotas" },
-  { label: "Inserta clientes",     icon: <UserPlus size={15} strokeWidth={1.5} />,  screen: "insertaclientes" },
-  { label: "Auditoría",            icon: <Shield size={15} strokeWidth={1.5} />,    screen: "auditoria" },
+  { label: "Generación de txt",    icon: <FileText size={ICON.md} strokeWidth={1.5} />,      screen: "generaciontxt" },
+  { label: "Planilla consolidada", icon: <Clipboard size={ICON.md} strokeWidth={1.5} />, screen: "planillaconsolidada" },
+  { label: "Gestor de notas",      icon: <Pencil size={ICON.md} strokeWidth={1.5} />,      screen: "gestornotas" },
+  { label: "Inserta clientes",     icon: <UserPlus size={ICON.md} strokeWidth={1.5} />,  screen: "insertaclientes" },
+  { label: "Auditoría",            icon: <Shield size={ICON.md} strokeWidth={1.5} />,    screen: "auditoria" },
 ];
 
 // Grupo "Herramientas" del sidebar — las acciones que antes vivían en la
@@ -332,7 +336,7 @@ function SelectWrap({ children, className = "" }: { children: React.ReactNode; c
     <div className={`relative ${className}`}>
       {children}
       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-icon">
-        <ChevronDown size={16} strokeWidth={1.5} />
+        <ChevronDown size={ICON.md} strokeWidth={1.5} />
       </div>
     </div>
   );
@@ -452,10 +456,10 @@ function PeriodSelector() {
         className={`${BTN_MD} group flex items-center gap-1.5 border transition-all duration-150
           ${open ? "bg-primary-tint border-primary text-secondary" : "bg-surface border-border-strong text-text hover:border-primary hover:bg-primary-tint hover:text-secondary"}`}
       >
-        <span className={`transition-colors ${open ? "text-secondary" : "text-icon group-hover:text-secondary"}`}><Calendar size={15} strokeWidth={1.5} /></span>
+        <span className={`transition-colors ${open ? "text-secondary" : "text-icon group-hover:text-secondary"}`}><Calendar size={ICON.md} strokeWidth={1.5} /></span>
         <span>{selected}</span>
         <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
-          <ChevronDown size={16} strokeWidth={1.5} />
+          <ChevronDown size={ICON.md} strokeWidth={1.5} />
         </span>
       </button>
       {open && (
@@ -578,7 +582,7 @@ function FilterTriggerButton({
   onClear: () => void;
   disabled?: boolean;
 }) {
-  const chevron = open ? <ChevronUp size={12} strokeWidth={1.5} /> : <ChevronDown size={12} strokeWidth={1.5} />;
+  const chevron = open ? <ChevronUp size={ICON.xs} strokeWidth={1.5} /> : <ChevronDown size={ICON.xs} strokeWidth={1.5} />;
   if (aplicado === null) {
     return (
       <button
@@ -618,7 +622,7 @@ function FilterTriggerButton({
         onClick={onClear}
         className={`h-full px-1.5 rounded-sm inline-flex items-center disabled:cursor-not-allowed ${FOCUS_RING}`}
       >
-        <X size={12} strokeWidth={1.5} />
+        <X size={ICON.xs} strokeWidth={1.5} />
       </button>
     </div>
   );
@@ -838,7 +842,7 @@ function formatDateTimeStr(date: Date | undefined, time: string): string {
 }
 
 function DateTimeChevron({ orientation }: ChevronProps) {
-  return orientation === "right" ? <ChevronRight size={16} strokeWidth={1.5} /> : <ChevronLeft size={16} strokeWidth={1.5} />;
+  return orientation === "right" ? <ChevronRight size={ICON.md} strokeWidth={1.5} /> : <ChevronLeft size={ICON.md} strokeWidth={1.5} />;
 }
 
 const DAY_PICKER_CLASSNAMES = {
@@ -1008,7 +1012,7 @@ function DateTimeField({
         style={fullWidth ? undefined : { width: 170, flexShrink: 0 }}
       >
         {value ? <span className={muted ? "text-text-muted truncate" : "text-text truncate"}>{value}</span> : <span className="text-text-muted truncate">dd/mm/aaaa hh:mm</span>}
-        <span className="shrink-0 text-icon"><Calendar size={15} strokeWidth={1.5} /></span>
+        <span className="shrink-0 text-icon"><Calendar size={ICON.md} strokeWidth={1.5} /></span>
       </button>
       {!disabled && open && (
         <div
@@ -1085,7 +1089,7 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
               <p className="text-caption text-text-muted mt-0.5 truncate">Operador</p>
             </div>
             <span className={`text-icon transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
-              <ChevronDown size={16} strokeWidth={1.5} />
+              <ChevronDown size={ICON.md} strokeWidth={1.5} />
             </span>
           </>
         )}
@@ -1096,17 +1100,17 @@ function UserMenu({ collapsed, onLogout }: { collapsed: boolean; onLogout: () =>
           style={collapsed ? undefined : dropdownAnchorStyle(direction, 6)}
         >
           <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-text hover:bg-fill-muted transition-colors">
-            <User size={15} strokeWidth={1.5} /> Mi perfil
+            <User size={ICON.md} strokeWidth={1.5} /> Mi perfil
           </button>
           <button className="w-full flex items-center gap-2 px-3 py-2 text-body text-text hover:bg-fill-muted transition-colors">
-            <Settings size={15} strokeWidth={1.5} /> Configuración
+            <Settings size={ICON.md} strokeWidth={1.5} /> Configuración
           </button>
           <div className="my-1 border-t border-border" />
           <button
             onClick={() => { setOpen(false); onLogout(); }}
             className="w-full flex items-center gap-2 px-3 py-2 text-body text-error hover:text-error-text-strong hover:bg-red-50 transition-colors"
           >
-            <LogOut size={15} strokeWidth={1.5} /> Cerrar sesión
+            <LogOut size={ICON.md} strokeWidth={1.5} /> Cerrar sesión
           </button>
         </div>
       )}
@@ -1258,7 +1262,7 @@ function exportRowsToCsv(filename: string, headers: string[], rows: string[][]) 
 function SortIndicator({ dir }: { dir: SortDir }) {
   return (
     <span className="text-secondary inline-flex">
-      {dir === "asc" ? <ChevronUp size={10} strokeWidth={2.5} /> : <ChevronDown size={10} strokeWidth={2.5} />}
+      {dir === "asc" ? <ChevronUp size={ICON.xs} strokeWidth={1.5} /> : <ChevronDown size={ICON.xs} strokeWidth={1.5} />}
     </span>
   );
 }
@@ -1374,7 +1378,7 @@ function TableToolbar({
   const searchBox = (
     <div className="relative flex-1 max-w-[320px]">
       <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 text-icon">
-        <Search size={15} strokeWidth={1.5} />
+        <Search size={ICON.md} strokeWidth={1.5} />
       </span>
       <input
         value={search}
@@ -1542,7 +1546,7 @@ function Modal({
               onClick={onClose}
               className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all"
             >
-              <X size={14} strokeWidth={1.5} />
+              <X size={ICON.sm} strokeWidth={1.5} />
             </button>
           </div>
           {headerExtra}
@@ -2426,7 +2430,7 @@ function IntercambioModal({
                   <tr>
                     <td colSpan={4}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                        <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                        <span className="text-text-faint"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
                         <p className="text-heading-sm text-text-muted">No hay registros</p>
                       </div>
                     </td>
@@ -2498,7 +2502,7 @@ function IntercambioModal({
                   <tr>
                     <td colSpan={3}>
                       <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                        <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                        <span className="text-text-faint"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
                         <p className="text-heading-sm text-text-muted">No hay registros</p>
                       </div>
                     </td>
@@ -2523,7 +2527,7 @@ function IntercambioModal({
           <div className="relative">
             <input placeholder="Buscar destino" className={MOD_FIELD_CLS} style={{ paddingRight: 36 }} />
             <span className="absolute right-0 top-0 h-8 w-8 flex items-center justify-center text-icon">
-              <Search size={15} strokeWidth={1.5} />
+              <Search size={ICON.md} strokeWidth={1.5} />
             </span>
           </div>
         </div>
@@ -2610,7 +2614,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
                   paddingTop: "var(--login-button-py, 12px)", paddingBottom: "var(--login-button-py, 12px)", paddingLeft: 24, paddingRight: 24,
                 }}
               >
-                {loading && <Loader2 size={16} strokeWidth={2} className="animate-spin shrink-0" aria-hidden />}
+                {loading && <Loader2 size={ICON.md} strokeWidth={1.5} className="animate-spin shrink-0" aria-hidden />}
                 {loading ? "Ingresando…" : "Confirmar"}
               </button>
             </div>
@@ -2688,7 +2692,7 @@ function SelectScreen({ onSelect }: { onSelect: (v: "clasico" | "nuevo") => void
                       className="shrink-0 ml-4 text-icon group-enabled:group-hover:text-secondary transition-all duration-150"
                       style={{ transform: isHov ? "translateX(3px)" : "none" }}
                     >
-                      <ChevronRight size={16} strokeWidth={1.5} />
+                      <ChevronRight size={ICON.md} strokeWidth={1.5} />
                     </span>
                   )}
                 </div>
@@ -2729,7 +2733,7 @@ function DiaDelMesField({ value, onChange, anio, mes }: { value: number; onChang
         className="h-(--control-md) px-2.5 flex items-center gap-1.5 border border-border-strong rounded-sm bg-surface text-label text-text hover:border-primary hover:text-secondary transition-colors"
       >
         {value}
-        <span className="text-icon"><Calendar size={15} strokeWidth={1.5} /></span>
+        <span className="text-icon"><Calendar size={ICON.md} strokeWidth={1.5} /></span>
       </button>
       {open && (
         <div
@@ -2925,10 +2929,10 @@ function CronogramaEnre() {
 
 function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTableKey) => void }) {
   const quickLinks: { code: string; tableKey: AbmTableKey; label: string; desc: string; icon: React.ReactNode }[] = [
-    { code: "CDS2", tableKey: "cds2", label: "Interrupciones", desc: "Consulta y gestión de interrupciones computadas", icon: <Zap size={15} strokeWidth={1.5} /> },
-    { code: "CDS3", tableKey: "cds3", label: "Interrupciones no computables", desc: "Registro de interrupciones no imputables", icon: <Zap size={15} strokeWidth={1.5} /> },
-    { code: "CDS4", tableKey: "cds4", label: "Reposiciones", desc: "Seguimiento de reposiciones de servicio", icon: <Zap size={15} strokeWidth={1.5} /> },
-    { code: "CDS8", tableKey: "cds8", label: "Reclamos", desc: "Gestión de reclamos de calidad de servicio", icon: <Zap size={15} strokeWidth={1.5} /> },
+    { code: "CDS2", tableKey: "cds2", label: "Interrupciones", desc: "Consulta y gestión de interrupciones computadas", icon: <Zap size={ICON.md} strokeWidth={1.5} /> },
+    { code: "CDS3", tableKey: "cds3", label: "Interrupciones no computables", desc: "Registro de interrupciones no imputables", icon: <Zap size={ICON.md} strokeWidth={1.5} /> },
+    { code: "CDS4", tableKey: "cds4", label: "Reposiciones", desc: "Seguimiento de reposiciones de servicio", icon: <Zap size={ICON.md} strokeWidth={1.5} /> },
+    { code: "CDS8", tableKey: "cds8", label: "Reclamos", desc: "Gestión de reclamos de calidad de servicio", icon: <Zap size={ICON.md} strokeWidth={1.5} /> },
   ];
 
   return (
@@ -3725,7 +3729,7 @@ function ReposicionesLista({
       >
         {rows.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
-            <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+            <span className="text-text-faint"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
             <p className="text-body-sm text-text-muted">Sin reposiciones registradas</p>
           </div>
         ) : (
@@ -4265,7 +4269,7 @@ function ReclamosResumenCompacto({
             title={habilitada ? "Ver datos de la interrupción" : "Seleccioná una interrupción"}
             className="flex items-center text-icon cursor-pointer disabled:cursor-not-allowed focus-visible:outline-none after:absolute after:inset-0"
           >
-            <ChevronRight size={14} strokeWidth={1.5} aria-hidden />
+            <ChevronRight size={ICON.sm} strokeWidth={1.5} aria-hidden />
           </button>
         }
       />
@@ -4401,7 +4405,7 @@ function FaseReposicionFicha({
         <CodeBadge code="CDS4" />
         {sep}
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-          <span className="text-icon"><Clock size={14} strokeWidth={1.5} /></span>
+          <span className="text-icon"><Clock size={ICON.sm} strokeWidth={1.5} /></span>
           <span className="text-text tabular-nums">{fila.horaRep}</span>
         </span>
         {sep}
@@ -4418,7 +4422,7 @@ function FaseReposicionFicha({
         </span>
         {sep}
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-          <span className="text-icon"><Users size={14} strokeWidth={1.5} /></span>
+          <span className="text-icon"><Users size={ICON.sm} strokeWidth={1.5} /></span>
           <span className="text-text font-medium tabular-nums">{fila.usuariosBT}</span>
           <span className="text-text-muted">usuarios BT</span>
         </span>
@@ -4432,7 +4436,7 @@ function FaseReposicionFicha({
           title="Copiar datos de la reposición"
           className={`w-8 h-8 flex items-center justify-center rounded-sm border border-transparent text-icon hover:bg-primary-tint hover:border-primary hover:text-secondary ${FOCUS_RING} transition-all shrink-0`}
         >
-          <ClipboardList size={14} strokeWidth={1.5} />
+          <ClipboardList size={ICON.sm} strokeWidth={1.5} />
         </button>
       </div>
       {totalReposiciones > 1 && (
@@ -4447,7 +4451,7 @@ function FaseReposicionFicha({
             aria-label="Reposición anterior"
             className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
-            <ChevronLeft size={14} strokeWidth={1.5} />
+            <ChevronLeft size={ICON.sm} strokeWidth={1.5} />
           </button>
           <button
             type="button"
@@ -4456,7 +4460,7 @@ function FaseReposicionFicha({
             aria-label="Reposición siguiente"
             className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
-            <ChevronRight size={14} strokeWidth={1.5} />
+            <ChevronRight size={ICON.sm} strokeWidth={1.5} />
           </button>
         </div>
       )}
@@ -4585,7 +4589,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
         title={copied ? "Copiada" : `Copiar ${label}`}
         className="w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all shrink-0"
       >
-        {copied ? <Check size={14} strokeWidth={1.5} className="text-success-text-strong" /> : <Copy size={14} strokeWidth={1.5} />}
+        {copied ? <Check size={ICON.sm} strokeWidth={1.5} className="text-success-text-strong" /> : <Copy size={ICON.sm} strokeWidth={1.5} />}
       </button>
       <span className="sr-only" aria-live="polite">{copied ? `${labelCapitalizado} copiada` : ""}</span>
     </>
@@ -4723,7 +4727,7 @@ function PersistentActionsBar({
         className={actionBtnCls("neutral") + " inline-flex items-center gap-1.5"}
       >
         Acciones
-        <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}><ChevronDown size={16} strokeWidth={1.5} /></span>
+        <span className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}><ChevronDown size={ICON.md} strokeWidth={1.5} /></span>
       </button>
       {open && (
         <div
@@ -5045,7 +5049,7 @@ function ModificarContent({
           : "bg-surface border-border-strong text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
       }`}
     >
-      <Filter size={14} strokeWidth={1.5} />
+      <Filter size={ICON.sm} strokeWidth={1.5} />
       Más filtros
       {activeFlyoutFields.length > 0 && (
         <span className="w-4 h-4 rounded-full bg-primary-strong text-white text-caption flex items-center justify-center">
@@ -5205,7 +5209,7 @@ function ModificarContent({
                     onClick={() => setFlyoutOpen(false)}
                     className="w-6 h-6 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all"
                   >
-                    <X size={14} strokeWidth={1.5} />
+                    <X size={ICON.sm} strokeWidth={1.5} />
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-x-3.5 gap-y-3">
@@ -5369,14 +5373,14 @@ function ModificarContent({
             >
               {!modShowData ? (
                 <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-8">
-                  <span className="text-text-faint scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
+                  <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
                   <p className="text-label text-text-muted">Sin resultados</p>
                   <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
                 </div>
               ) : modFiltroFecha && modVisibleIndices.length === 0 ? (
                 /* El filtro dejó 0 filas — mismo empty state de arriba. */
                 <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-8">
-                  <span className="text-text-faint scale-90"><Inbox size={44} strokeWidth={1.2} /></span>
+                  <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
                   <p className="text-label text-text-muted">Sin resultados para los filtros aplicados</p>
                 </div>
               ) : modVisibleIndices.map((i, vi) => {
@@ -5686,7 +5690,7 @@ function ModificarContent({
               })() : relTabRows.length === 0 ? (
                 <div className="h-full min-h-[180px] flex items-center justify-center p-6">
                   <div className="flex flex-col items-center gap-3 text-center">
-                    <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                    <span className="text-text-faint"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
                     <p className="text-heading-sm text-text-muted">Sin registros</p>
                     <p className="text-body-sm text-text-muted">Sin registros para la reposición {filaFaseSeleccionada?.nro ?? "—"}</p>
                     {abmMapping && (
@@ -5716,7 +5720,7 @@ function ModificarContent({
                    que "Sin registros". */
                 <div className="h-full min-h-[180px] flex items-center justify-center p-6">
                   <div className="flex flex-col items-center gap-3 text-center">
-                    <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                    <span className="text-text-faint"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
                     <p className="text-heading-sm text-text-muted">Sin resultados para los filtros aplicados</p>
                   </div>
                 </div>
@@ -6522,7 +6526,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
         {/* Lápiz fijo — no el ícono por tabla: el masthead del panel de
             trabajo siempre representa "estás en la herramienta de ABM",
             no una tabla en particular (esa distinción vive en el badge). */}
-        <span className="shrink-0 text-icon group-hover:text-secondary transition-colors"><Pencil size={15} strokeWidth={1.5} /></span>
+        <span className="shrink-0 text-icon group-hover:text-secondary transition-colors"><Pencil size={ICON.md} strokeWidth={1.5} /></span>
         <span className="text-heading-md text-text truncate">{current.titulo}</span>
         <span
           className="px-1.5 py-0.5 text-caption font-mono rounded-xs border border-border-strong text-focus shrink-0"
@@ -6531,7 +6535,7 @@ function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (
           {current.code}
         </span>
         <span className={`shrink-0 text-icon transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
-          <ChevronDown size={16} strokeWidth={1.5} />
+          <ChevronDown size={ICON.md} strokeWidth={1.5} />
         </span>
       </button>
       {open && (
@@ -6890,7 +6894,7 @@ function ValuePicker({
           <span className="block truncate">{seleccionado?.label || currentValue || placeholder}</span>
         </button>
         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-icon">
-          <ChevronDown size={16} strokeWidth={1.5} />
+          <ChevronDown size={ICON.md} strokeWidth={1.5} />
         </div>
         {!modal && open && !isDisabled && (
           <div
@@ -6923,7 +6927,7 @@ function ValuePicker({
                 onClick={cerrar}
                 className="shrink-0 w-8 h-8 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-all"
               >
-                <X size={14} strokeWidth={1.5} />
+                <X size={ICON.sm} strokeWidth={1.5} />
               </button>
             </div>
             {buscador}
@@ -7485,7 +7489,7 @@ function AbmScreen({
                     atada a una selección (corrige un comportamiento heredado
                     del producto original que la ataba a un registro). */}
                 <button type="button" title="Auditoría" aria-label="Auditoría" className={actionBtnCls("neutral")}>
-                  <span className="inline-flex items-center gap-1.5"><Shield size={15} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Auditoría</span></span>
+                  <span className="inline-flex items-center gap-1.5"><Shield size={ICON.md} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Auditoría</span></span>
                 </button>
                 {showData && (
                   <button
@@ -7501,12 +7505,12 @@ function AbmScreen({
                     }
                     className={actionBtnCls("neutral")}
                   >
-                    <span className="inline-flex items-center gap-1.5"><Download size={15} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Exportar</span></span>
+                    <span className="inline-flex items-center gap-1.5"><Download size={ICON.md} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Exportar</span></span>
                   </button>
                 )}
                 {config.hasInsertar && (
                   <button type="button" title="Insertar" aria-label="Insertar" onClick={handleAbrirAlta} className={actionBtnCls("neutral")}>
-                    <span className="inline-flex items-center gap-1.5"><Plus size={13} strokeWidth={1.6} /> <span className="[@media(max-height:760px)]:hidden">Insertar</span></span>
+                    <span className="inline-flex items-center gap-1.5"><Plus size={ICON.sm} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Insertar</span></span>
                   </button>
                 )}
               </div>
@@ -7551,7 +7555,7 @@ function AbmScreen({
           >
             {!showData ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-text-faint">
-                <Inbox size={44} strokeWidth={1.2} />
+                <Inbox size={ICON.xl} strokeWidth={1.25} />
                 <p className="text-body-lg text-text-muted mt-1">
                   No hay resultados para los filtros aplicados
                 </p>
@@ -7946,7 +7950,7 @@ function GestorNotasContent() {
                 {visibles.length === 0 ? (
                   <tr><td colSpan={3}>
                     <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
-                      <span className="text-text-faint"><Inbox size={44} strokeWidth={1.2} /></span>
+                      <span className="text-text-faint"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
                       <p className="text-heading-sm text-text-muted">No hay notas</p>
                     </div>
                   </td></tr>
@@ -7965,7 +7969,7 @@ function GestorNotasContent() {
                         className="w-7 h-7 flex items-center justify-center rounded-sm text-icon hover:bg-primary-tint hover:text-secondary transition-colors"
                         title="Editar"
                       >
-                        <Pencil size={15} strokeWidth={1.5} />
+                        <Pencil size={ICON.md} strokeWidth={1.5} />
                       </button>
                     </td>
                   </tr>
@@ -7998,10 +8002,10 @@ function GestorNotasContent() {
         {/* Reordenar — actúa sobre la fila seleccionada de la tabla (click en la fila) */}
         <div className="flex flex-col gap-1.5 pt-14 shrink-0">
           {([
-            { dir: "top" as const, icon: <ChevronsUp size={13} strokeWidth={1.6} />, title: "Mover al principio" },
-            { dir: "up" as const, icon: <span className="inline-flex rotate-180"><ChevronDown size={16} strokeWidth={1.5} /></span>, title: "Subir" },
-            { dir: "down" as const, icon: <ChevronDown size={16} strokeWidth={1.5} />, title: "Bajar" },
-            { dir: "bottom" as const, icon: <ChevronsDown size={13} strokeWidth={1.6} />, title: "Mover al final" },
+            { dir: "top" as const, icon: <ChevronsUp size={ICON.sm} strokeWidth={1.5} />, title: "Mover al principio" },
+            { dir: "up" as const, icon: <span className="inline-flex rotate-180"><ChevronDown size={ICON.md} strokeWidth={1.5} /></span>, title: "Subir" },
+            { dir: "down" as const, icon: <ChevronDown size={ICON.md} strokeWidth={1.5} />, title: "Bajar" },
+            { dir: "bottom" as const, icon: <ChevronsDown size={ICON.sm} strokeWidth={1.5} />, title: "Mover al final" },
           ]).map((b) => (
             <button
               key={b.dir}
@@ -8377,7 +8381,7 @@ export default function App() {
                 className="shrink-0 w-7 h-7 flex items-center justify-center rounded-sm text-icon hover:text-text hover:bg-fill-muted transition-colors"
                 title="Colapsar"
               >
-                <ChevronLeft size={16} strokeWidth={1.5} />
+                <ChevronLeft size={ICON.md} strokeWidth={1.5} />
               </button>
             </>
           ) : (
@@ -8400,14 +8404,14 @@ export default function App() {
           <div className="flex flex-col gap-0.5">
             <NavItem
               label="Inicio"
-              icon={<Home size={15} strokeWidth={1.5} />}
+              icon={<Home size={ICON.md} strokeWidth={1.5} />}
               active={screen === "welcome"}
               collapsed={collapsed}
               onClick={irAInicio}
             />
             <NavItem
               label="Consultas de interrupción"
-              icon={<Search size={15} strokeWidth={1.5} />}
+              icon={<Search size={ICON.md} strokeWidth={1.5} />}
               active={screen === "modificar"}
               collapsed={collapsed}
               onClick={irAConsultas}
@@ -8434,12 +8438,12 @@ export default function App() {
                 : "border-transparent text-text hover:bg-fill-muted"
               }`}
           >
-            <span className="shrink-0"><Pencil size={15} strokeWidth={1.5} fill={isAbmTableKey(screen) ? "currentColor" : "none"} /></span>
+            <span className="shrink-0"><Pencil size={ICON.md} strokeWidth={1.5} fill={isAbmTableKey(screen) ? "currentColor" : "none"} /></span>
             {!collapsed && (
               <>
                 <span className="flex-1 min-w-0 truncate text-body text-left">Alta, Baja y Modificación</span>
                 <span className={`shrink-0 transition-transform duration-150 ${abmExpanded ? "" : "-rotate-90"}`}>
-                  <ChevronDown size={16} strokeWidth={1.5} />
+                  <ChevronDown size={ICON.md} strokeWidth={1.5} />
                 </span>
               </>
             )}
@@ -8476,12 +8480,12 @@ export default function App() {
               ${collapsed ? "justify-center py-[9px] mx-auto w-9" : "px-[9px] py-[6px]"}
               border-transparent text-text hover:bg-fill-muted`}
           >
-            <span className="shrink-0"><Wrench size={15} strokeWidth={1.5} /></span>
+            <span className="shrink-0"><Wrench size={ICON.md} strokeWidth={1.5} /></span>
             {!collapsed && (
               <>
                 <span className="flex-1 min-w-0 truncate text-body text-left">Herramientas</span>
                 <span className={`shrink-0 transition-transform duration-150 ${herramientasExpanded ? "" : "-rotate-90"}`}>
-                  <ChevronDown size={16} strokeWidth={1.5} />
+                  <ChevronDown size={ICON.md} strokeWidth={1.5} />
                 </span>
               </>
             )}
@@ -8521,7 +8525,7 @@ export default function App() {
             >
               <span className="flex-1 text-left">Otros</span>
               <span className={`shrink-0 transition-transform duration-150 ${otrosExpanded ? "" : "-rotate-90"}`}>
-                <ChevronDown size={16} strokeWidth={1.5} />
+                <ChevronDown size={ICON.md} strokeWidth={1.5} />
               </span>
             </button>
           ) : (
@@ -8577,9 +8581,9 @@ export default function App() {
                     title="Inicio"
                     className={`flex items-center rounded-xs text-text-muted hover:text-text transition-colors ${FOCUS_RING}`}
                   >
-                    <Home size={14} strokeWidth={1.5} aria-hidden />
+                    <Home size={ICON.sm} strokeWidth={1.5} aria-hidden />
                   </button>
-                  <ChevronRight size={12} strokeWidth={1.5} aria-hidden className="text-text-faint" />
+                  <ChevronRight size={ICON.xs} strokeWidth={1.5} aria-hidden className="text-text-faint" />
                   <span aria-current="page">Consultas de interrupción</span>
                 </nav>
                 <div className="mt-1 flex items-center gap-4">
