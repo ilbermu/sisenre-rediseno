@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, X } from "lucide-react";
 import FieldLabel from "@/components/ui/FieldLabel";
-import { dropdownAnchorStyle, useDropdownDirection } from "@/components/ui/dropdown";
+import FloatingPanel, { useDentroDeModal } from "@/components/ui/FloatingPanel";
+import { useDropdownDirection } from "@/components/ui/dropdown";
 import { ICON, ICON_BTN_SM, MOD_FIELD_CLS, MOD_SELECT_CLS } from "@/components/ui/tokens";
 import { CampoOpcion } from "@/data/types";
 
@@ -64,19 +66,34 @@ export default function ValuePicker({
   const isControlled = value !== undefined;
   const currentValue = isControlled ? value : internalValue;
   const ref = useRef<HTMLDivElement>(null);
+  // Panel inline: dentro de un Modal va en un portal (FloatingPanel), así
+  // que el clic afuera tiene que contar también el panel como "adentro".
+  const panelRef = useRef<HTMLDivElement>(null);
+  const enModal = useDentroDeModal();
 
   useEffect(() => {
     if (modal || !open) return;
-    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const fn = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (ref.current && !ref.current.contains(t) && !panelRef.current?.contains(t)) setOpen(false);
+    };
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, [modal, open]);
 
   useEffect(() => {
     if (!modal || !open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") cerrar(); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    // Captura + stopPropagation: si el ValuePicker vive dentro de un Modal,
+    // Escape cierra solo esta lista, no también el Modal (que escucha
+    // Escape en document, en fase de burbuja).
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        cerrar();
+      }
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
   }, [modal, open]);
 
   const direction = useDropdownDirection(ref, open && !modal, searchable ? 450 : 260);
@@ -101,6 +118,11 @@ export default function ValuePicker({
     setOpen(false);
     setFiltro("");
   }
+
+  // Variante `modal` (listas largas): dentro de un Modal, scrim y panel van
+  // en un portal a document.body (en --z-modal-popover), si no el transform
+  // y el overflow del Modal los recortan.
+  const enPortalSiModal = (nodo: React.ReactNode) => (enModal ? createPortal(nodo, document.body) : nodo);
 
   const buscador = searchable && (
     <div className="p-1.5 border-b border-border-subtle shrink-0">
@@ -158,21 +180,24 @@ export default function ValuePicker({
         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-icon">
           <ChevronDown size={ICON.md} strokeWidth={1.5} />
         </div>
-        {!modal && open && !isDisabled && (
-          <div
-            className="shadow-md absolute left-0 w-full bg-surface rounded-md border border-border z-(--z-dropdown) overflow-hidden"
-            style={{ ...dropdownAnchorStyle(direction, 5) }}
-          >
-            {buscador}
-            {lista}
-          </div>
-        )}
+        <FloatingPanel
+          anchorRef={ref}
+          panelRef={panelRef}
+          open={!modal && open && !isDisabled}
+          direction={direction}
+          gap={5}
+          matchWidth
+          className="shadow-md bg-surface rounded-md border border-border overflow-hidden"
+        >
+          {buscador}
+          {lista}
+        </FloatingPanel>
       </div>
-      {modal && open && !isDisabled && (
+      {modal && open && !isDisabled && enPortalSiModal(
         <>
-          <div className="fixed inset-0 z-(--z-overlay) bg-scrim" onClick={cerrar} />
+          <div className={`fixed inset-0 ${enModal ? "z-(--z-modal-popover)" : "z-(--z-overlay)"} bg-scrim`} onClick={cerrar} />
           <div
-            className="shadow-lg fixed z-(--z-modal) flex flex-col bg-surface rounded-xl overflow-hidden"
+            className={`shadow-lg fixed ${enModal ? "z-(--z-modal-popover)" : "z-(--z-modal)"} flex flex-col bg-surface rounded-xl overflow-hidden`}
             style={{
               top: "50%",
               left: "50%",

@@ -165,6 +165,7 @@
   --z-dropdown: 30; /* dropdowns, popovers, flyouts */
   --z-overlay: 40; /* scrim de modales */
   --z-modal: 50; /* paneles de modal */
+  --z-modal-popover: 55; /* dropdowns/popovers abiertos desde un modal (en portal a body) */
   --z-toast: 60; /* notificaciones (todavía sin uso) */
   --z-tooltip: 70; /* tooltips */
 

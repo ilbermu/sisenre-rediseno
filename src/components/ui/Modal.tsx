@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { X } from "lucide-react";
+import { DentroDeModalContext } from "@/components/ui/FloatingPanel";
 import { ICON, ICON_BTN_SM } from "@/components/ui/tokens";
 
 // ─── Modal estándar ─────────────────────────────────────────────────────────
@@ -19,7 +20,7 @@ export default function Modal({
   footer,
   children,
   headerExtra,
-  titleExtra,
+  label,
   bodyPadding = true,
   bodyOverflow = "auto",
   bodyClassName = "",
@@ -29,14 +30,16 @@ export default function Modal({
   subtitle?: string;
   open: boolean;
   onClose: () => void;
-  size?: "sm" | "lg" | "xl";
+  // sm 480 · form 640 (formularios de edición de registro) · lg 920 · xl 1120
+  size?: "sm" | "form" | "lg" | "xl";
   footer?: React.ReactNode;
   children: React.ReactNode;
-  // Slot en la MISMA línea del título, a su derecha (ej. CopyChip con el
-  // identificador del registro, ver "Modal de edición de registro"). No se
-  // achica: si no entra, trunca el título. Sin esto, la línea del título
-  // es la de siempre.
-  titleExtra?: React.ReactNode;
+  // Label de contexto ARRIBA del título (Carbon "modal label"): el registro
+  // sobre el que actúa el modal (ej. la referencia + CopyButton xs), ver
+  // "Modal de edición de registro". Con label, el header pasa a dos líneas
+  // (label + título) con ✕ centrado en el bloque — la excepción documentada
+  // a la regla de header de una línea. Sin label, el header es el de siempre.
+  label?: React.ReactNode;
   // Slot propio para una segunda línea de header, debajo de título/cerrar
   // pero todavía dentro del bloque con borde inferior del header — ej.
   // contexto adicional con un CopyButton. Ningún modal existente lo pasa,
@@ -105,7 +108,7 @@ export default function Modal({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: size === "sm" ? 480 : size === "xl" ? 1120 : 920,
+          width: size === "sm" ? 480 : size === "form" ? 640 : size === "xl" ? 1120 : 920,
           maxWidth: "calc(100vw - 40px)",
           maxHeight: "calc(100vh - 40px)",
           height,
@@ -122,12 +125,13 @@ export default function Modal({
             padding inferior del bloque entero lo aporta headerExtra (su
             propio pb-3.5, ver call site), con solo mt-0.5 de gap interno
             entre las dos líneas. */}
+        <DentroDeModalContext.Provider value={true}>
         <div className="border-b border-border shrink-0">
-          <div className={`flex items-center justify-between gap-3 ${headerExtra ? "px-5 pt-3.5 pb-0" : "h-(--card-header-h) px-(--card-px)"}`}>
-            {titleExtra ? (
-              <div className="min-w-0 flex-1 flex items-center gap-2">
+          <div className={`flex items-center justify-between gap-3 ${headerExtra ? "px-5 pt-3.5 pb-0" : label ? "px-(--card-px) py-3" : "h-(--card-header-h) px-(--card-px)"}`}>
+            {label ? (
+              <div className="min-w-0 flex-1 flex flex-col">
+                <div className="min-w-0 flex items-center gap-1">{label}</div>
                 <p className="min-w-0 truncate text-heading-md text-text">{title}</p>
-                <div className="shrink-0 flex items-center">{titleExtra}</div>
               </div>
             ) : (
             <p className={`min-w-0 truncate text-heading-md text-text`}>
@@ -165,6 +169,7 @@ export default function Modal({
             {footer}
           </div>
         )}
+        </DentroDeModalContext.Provider>
       </div>
     </>
   );

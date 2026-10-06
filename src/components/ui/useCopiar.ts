@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 
-// Copia un valor al portapapeles con feedback real — la lógica compartida de
-// CopyButton y CopyChip. navigator.clipboard es la vía principal; si la
+// Copia un valor al portapapeles con feedback real — la lógica de
+// CopyButton, separada para poder reusarla. navigator.clipboard es la vía principal; si la
 // Clipboard API no existe o falla (contexto no seguro, permiso denegado,
 // etc.) cae a un <textarea> temporal fuera de pantalla +
 // document.execCommand("copy"). `copied` pasa a true ~1.5s SOLO si la copia

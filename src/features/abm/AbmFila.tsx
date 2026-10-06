@@ -9,7 +9,6 @@ export default function AbmFila({
   camposLocked,
   consultando,
   columnasCompartidas,
-  camposSoloLectura = [],
 }: {
   fila: CampoBusqueda[];
   mode: AbmMode;
@@ -25,9 +24,6 @@ export default function AbmFila({
   // toggle angosto. Solo una fila que es la única de su longitud en la
   // sección puede darse el lujo de ajustar sus columnas por tipo de campo.
   columnasCompartidas?: boolean;
-  // Campos que se muestran como dato fijo (AbmCampo `soloLectura`) — ver
-  // el modal de edición de registro. Default: ninguno.
-  camposSoloLectura?: string[];
 }) {
   const isMulti = fila.length > 1;
   // Fila de un solo campo: por default el campo define su propio ancho
@@ -83,7 +79,6 @@ export default function AbmFila({
           lockedEnModificar={camposLocked.includes(campo.nombre)}
           consultando={consultando}
           valoresFormulario={valores}
-          soloLectura={camposSoloLectura.includes(campo.nombre)}
         />
       ))}
     </div>

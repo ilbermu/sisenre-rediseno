@@ -183,6 +183,23 @@ Decimonovena pasada (también 06/10/2026):
   contexto en `headerExtra` por un header de una línea con la referencia
   como `CopyChip`; Origen y Tipo vuelven a "Clasificación" como dato fijo.
 
+Vigésima pasada (también 06/10/2026):
+
+- **Modal de edición de registro** (ABM Tabla 2): reemplaza el `CopyChip`
+  junto al título, Origen/Tipo como texto plano y la grilla de `AbmFila`.
+  Header con label de contexto arriba del título (`label` de `Modal`,
+  referencia + `CopyButton` `xs`), `size="form"` (640px), grilla única de 2
+  columnas con `col-span-2` para combobox de lista larga y flujo denso;
+  Origen y Tipo como toggles read-only.
+- **Estados disabled vs read-only:** nuevo estado `readOnly` en
+  `ButtonSelectGroup` y en el toggle de `AbmCampo`, documentado en
+  Fundamentos.
+- **`FloatingPanel` + `--z-modal-popover` (55):** dentro de un `Modal`, los
+  paneles de `ValuePicker` y `DateTimeField` (y la variante `modal` de
+  `ValuePicker`) van en un portal a `document.body`.
+- **Limpieza:** se eliminan `CopyChip` y la prop `titleExtra` de `Modal`;
+  `CopyButton` suma `size="xs"`.
+
 ## Índice
 
 **1. Fundamentos**
@@ -195,7 +212,8 @@ Decimonovena pasada (también 06/10/2026):
 [Íconos](#íconos) ·
 [Capas](#capas) ·
 [Movimiento](#movimiento) ·
-[Foco](#foco)
+[Foco](#foco) ·
+[Estados: disabled vs read-only](#estados-disabled-vs-read-only)
 
 **2. Componentes** (`src/components/ui/`)
 [tokens.ts](#tokensts) ·
@@ -204,11 +222,11 @@ Decimonovena pasada (también 06/10/2026):
 [CardHeader](#cardheader) ·
 [CodeBadge](#codebadge) ·
 [CopyButton](#copybutton) ·
-[CopyChip](#copychip) ·
 [DateTimeField](#datetimefield) ·
 [Dropdowns flotantes](#dropdowns-flotantes-dropdownts) ·
 [FaseIndicador](#faseindicador) ·
 [FieldLabel](#fieldlabel) ·
+[FloatingPanel](#floatingpanel) ·
 [FilterTrigger](#filtertrigger) ·
 [ListBox](#listbox) ·
 [Modal](#modal) ·
@@ -604,6 +622,7 @@ Tokens de z-index por rol, `z-(--z-…)`:
 | `--z-dropdown` | 30 | dropdowns, popovers, flyouts (el menú del sidebar colapsado queda siempre sobre el filter bar) |
 | `--z-overlay` | 40 | scrim de modales |
 | `--z-modal` | 50 | panel de modal |
+| `--z-modal-popover` | 55 | dropdowns y popovers abiertos desde un modal (en portal a `document.body`, ver `FloatingPanel`) |
 | `--z-toast` | 60 | notificaciones (sin uso todavía) |
 | `--z-tooltip` | 70 | tooltip del sidebar |
 
@@ -660,6 +679,23 @@ Un solo color de foco, `--color-focus` = `#076AEE` (mismo valor que
   visible.** Una sección con stretched button (`has-[:focus-visible]`) pinta
   el mismo anillo inset en la sección entera; el panel de un modal
   (`tabIndex=-1`, foco programático, no interactivo) es la única excepción.
+
+## Estados: disabled vs read-only
+
+Dos estados distintos de un control que no se puede cambiar:
+
+| | Disabled | Read-only |
+|---|---|---|
+| Significa | El control **no está disponible todavía** (falta completar algo, depende de otra acción) | El valor es un **dato fijo** del registro: se lee completo, no se edita |
+| Aspecto | Atenuado (`opacity-40`, o `fill-muted` + `text-faint` en campos) | **Contraste completo**: el seleccionado con su aspecto de siempre (`bg-primary-tint` + `border-primary` + `text-secondary`), los no seleccionados en reposo (`bg-surface` + `border-border-strong` + `text-text`) |
+| Interacción | Sin eventos, `cursor-not-allowed` | Sin hover, `cursor-default`, no responde a clic ni a teclado para cambiar el valor |
+| Señal | — | Ícono `Lock` (`ICON.xs`, `text-icon`, "No editable") junto al label |
+| Accesibilidad | `disabled` | Grupo `role="radiogroup"` con `aria-readonly="true"`, enfocable una vez; opciones no tabulables |
+
+- Read-only **aplica a toggles** (`ButtonSelectGroup` y el toggle de
+  `AbmCampo`, prop `readOnly`). Un input, select o fecha read-only se
+  muestra con `ReadOnlyField` (variante `plain` dentro de un formulario).
+- Un dato fijo **nunca** se muestra como control deshabilitado.
 
 ---
 
@@ -750,13 +786,17 @@ filter bar de Consultas de interrupción, opciones de confirmación del ABM).
 patrón tint (`bg-primary-tint border-primary text-secondary`).
 
 **Props:** `options: string[]`, `selected: string[]`, `onToggle(opt)`,
-`disabled?`, `sizeCls?` (default `BTN_SM`; `BTN_SEG_MD` en filas de campos).
+`disabled?`, `sizeCls?` (default `BTN_SM`; `BTN_SEG_MD` en filas de campos),
+`readOnly?`, `ariaLabel?`.
 
 **Estados:** reposo, hover (tint), seleccionado (tint persistente),
 deshabilitado (`fill-muted` + `text-faint`; si estaba seleccionado,
-tint atenuado).
+tint atenuado), **read-only** (ver [Estados: disabled vs
+read-only](#estados-disabled-vs-read-only)).
 
-**Accesibilidad:** cada opción es un `<button>` con `aria-pressed`.
+**Accesibilidad:** cada opción es un `<button>` con `aria-pressed`. En
+read-only, el grupo es `role="radiogroup"` con `aria-readonly="true"` y
+`aria-label`, enfocable una sola vez; las opciones no son tabulables.
 
 **Qué no hacer:** marcar el seleccionado con relleno `primary-strong` (es
 el lenguaje de la acción primaria).
@@ -848,7 +888,10 @@ Interrupción en el header del modal "Tablas relacionadas").
 `bg-fill-muted` + `text-text`; ícono `Copy` (`ICON.sm`).
 
 **Props:** `value: string`, `label: string` (qué se copia, en minúscula y
-sin artículo: arma "Copiar interrupción" / "Interrupción copiada").
+sin artículo: arma "Copiar interrupción" / "Interrupción copiada"),
+`size?` (`"sm"` default, `ICON_BTN_SM` + `ICON.sm`; `"xs"`, `ICON_BTN_XS` +
+`ICON.xs`, para ir junto a un texto chico como el label de contexto de un
+modal).
 
 **Estados:** reposo; copiado — **solo si la copia realmente ocurrió**, el
 ícono pasa a `Check` (`text-success-text-strong`) por 1.5s. Usa
@@ -864,34 +907,7 @@ está implementada. Por eso el botón "Copiar datos de la reposición" (ícono
 componente ni su feedback.
 
 **Archivo:** `src/components/ui/CopyButton.tsx`. La copia y el estado
-`copied` salen de `useCopiar` (`src/components/ui/useCopiar.ts`), compartido
-con `CopyChip`.
-
-## CopyChip
-
-**Para qué:** mostrar el identificador de un registro (ej. la referencia de
-una interrupción) y copiarlo con un clic — en la línea del título de un
-[modal de edición de registro](#modal-de-edición-de-registro).
-
-**Anatomía:** botón-chip `h-(--control-xs) px-2 rounded-sm border
-border-border bg-fill-muted`, valor en `text-code font-mono text-text` e
-ícono `Copy` (`ICON.xs`, `text-icon`) a la derecha. No se achica
-(`shrink-0`): si no entra junto al título, trunca el título.
-
-**Props:** `value`, `label` (qué se copia, en minúscula y sin artículo).
-
-**Estados:** reposo; hover = hover secundario del sistema (`border-primary`
-+ `bg-primary-tint` + `text-secondary`); copiado — **solo si la copia
-ocurrió** (`useCopiar`, misma lógica que `CopyButton`), el ícono pasa a
-`Check` (`text-success-text-strong`) por 1.5s; foco `FOCUS_RING`.
-
-**Accesibilidad:** `aria-label` "Copiar \<label\> \<valor\>"; anuncio
-"\<Label\> copiada" en un `sr-only aria-live="polite"`.
-
-**Qué no hacer:** usarlo como chip de filtro o de estado; simular el éxito
-de la copia.
-
-**Archivo:** `src/components/ui/CopyChip.tsx`.
+`copied` salen de `useCopiar` (`src/components/ui/useCopiar.ts`).
 
 ## DateTimeField
 
@@ -975,6 +991,33 @@ cuando el campo es nativo.
 
 **Archivo:** `src/components/ui/FieldLabel.tsx`.
 
+## FloatingPanel
+
+**Para qué:** el panel de un dropdown o popover (`ValuePicker`,
+`DateTimeField`), para que nunca lo recorte el contenedor donde vive.
+
+**Anatomía y comportamiento:**
+- **Fuera de un modal:** como siempre — `absolute` junto al trigger, en
+  `--z-dropdown`, con la dirección de `useDropdownDirection`.
+- **Dentro de un `Modal`** (lo sabe por `DentroDeModalContext`, que provee
+  `Modal`): en un portal a `document.body`, `position: fixed` calculada
+  desde el rect del trigger (abre arriba o abajo según el espacio), en
+  `--z-modal-popover`. Se recalcula con scroll y resize.
+
+**Props:** `anchorRef`, `panelRef?`, `open`, `direction`, `gap`, `align?`
+(`"left"` | `"right"`), `matchWidth?`, `className` (solo aspecto, nunca
+posición), `style?`.
+
+**Accesibilidad / cierre:** quien lo usa cuenta `panelRef` como "adentro"
+en su cierre por clic afuera (con el portal el panel ya no es descendiente
+del trigger). La variante `modal` de `ValuePicker` (listas largas) también
+va en un portal dentro de un `Modal`, y su Escape cierra solo la lista.
+
+**Qué no hacer:** posicionar el panel con clases (`left-0`, `w-full`) en
+`className`; abrir un popover dentro de un modal sin `FloatingPanel`.
+
+**Archivo:** `src/components/ui/FloatingPanel.tsx`.
+
 ## FilterTrigger
 
 **Para qué:** filtro por columna en el toolbar de una tabla
@@ -1044,11 +1087,13 @@ con el contenido y scrollea hasta el tope de alto. Footer con botones a la
 derecha (`modalNeutralBtnCls` + `modalPrimaryBtnCls`).
 
 **Props:** `title`, `subtitle?`, `open`, `onClose`, `size?` (`"sm"` 480 /
-`"lg"` 920 / `"xl"` 1120), `footer?`, `children`, y para extenderlo sin
-tocar a los demás:
-- **`titleExtra`**: contenido en la MISMA línea del título, a su derecha
-  (ej. `CopyChip` con el identificador del registro); no se achica, trunca
-  el título.
+`"form"` 640 / `"lg"` 920 / `"xl"` 1120), `footer?`, `children`, y para
+extenderlo sin tocar a los demás:
+- **`label`**: label de contexto ARRIBA del título (Carbon "modal label"):
+  el registro sobre el que actúa el modal (ej. la referencia en
+  `text-code font-mono text-text-muted` + `CopyButton` `xs`). El header
+  pasa a dos líneas (`px-(--card-px) py-3`), con ✕ centrado en el bloque.
+  Es la excepción documentada a la regla de header de una línea.
 - **`headerExtra`**: segunda línea dentro del bloque del header (ej.
   "Interrupción `<ref>`" + `CopyButton`). Con ella, la línea del título
   no usa el alto fijo: va `px-5 pt-3.5 pb-0` y `headerExtra` aporta
@@ -1066,6 +1111,10 @@ tocar a los demás:
 **Accesibilidad:** `role="dialog"`, `aria-modal="true"`, `aria-label` con
 el título; al abrir enfoca el panel (`tabIndex=-1`) y al cerrar devuelve el
 foco al elemento previo; cierra con X, clic en el scrim o Escape.
+
+Los dropdowns y popovers que se abren dentro de un `Modal` salen en un
+portal (ver [FloatingPanel](#floatingpanel)): el overflow del body no los
+recorta.
 
 **Qué no hacer:** cambiar el tamaño del título (es fijo en todos los
 modales; un dato propio en `headerExtra` va en un token más liviano,
@@ -1148,7 +1197,8 @@ seleccionada (tint).
 - **`plain`** — dato fijo dentro de un formulario: `FieldLabel` (igual que
   los campos vecinos) + valor en `text-body text-text`, sin caja ni borde,
   centrado en `h-(--control-md)` para que la fila quede alineada con los
-  controles. En el ABM lo arma `AbmCampo` con `soloLectura`.
+  controles. En el ABM lo arma `AbmCampo` con `readOnly` para un campo
+  que no es toggle.
 
 **Props:** `label`, `value`, `variant?` (`"box"` | `"plain"`).
 
@@ -1653,27 +1703,37 @@ período) es el mismo en los dos.
 Para editar un registro desde una tabla cuando el formulario no está a la
 vista (ej. Modificar en el layout barra del ABM).
 
-- **Ancho `sm`** (480px): con el `p-5` del body da el mismo ancho útil
-  (~440px) que el panel de Búsqueda del ABM split.
-- **Header de una línea:** título + identificador del registro como
-  [`CopyChip`](#copychip) (prop `titleExtra` de `Modal`) + ✕. Sin
-  `headerExtra`. Si no entra, trunca el título, nunca el chip.
-- **Mismos campos y grilla que el formulario de búsqueda de esa tabla:**
-  secciones con `SectionDivider`, `gap-5` entre secciones, filas con
-  `AbmFila` / `AbmCampo` y las mismas reglas de grilla (columnas
-  compartidas, campos compactos, ancho de campo solo, grilla plana en el
-  tier de 760px). Sin anchos propios. El identificador no aparece en el
-  body (ya está en el chip); una sección que queda con un solo campo se
-  mantiene.
-- **Los campos no editables quedan en su sección, como dato fijo**
-  (`ReadOnlyField` `plain`: `FieldLabel` + valor legible, ej. "Externo",
-  sin caja), en su posición de la config — **nunca como controles
-  deshabilitados**.
+- **Tamaño `form`** (640px).
+- **Label de contexto arriba del título** (Carbon "modal label", prop
+  `label` de `Modal`): el registro sobre el que actúa el modal — la
+  referencia en `text-code font-mono text-text-muted` + `CopyButton` `xs`.
+  Debajo, el título (`text-heading-md`); ✕ a la derecha, centrado en el
+  bloque de dos líneas. Los headers de modal con label son la excepción
+  documentada a la regla de header de una línea. El identificador no
+  aparece en el body.
+- **Grilla única de 2 columnas** para todo el formulario (`grid-cols-2
+  gap-x-4 gap-y-4`, `grid-auto-flow: dense`), no las filas del panel de
+  Búsqueda:
+  - campos en el orden de la config, **1 columna cada uno**; los combobox
+    con lista larga ocupan las 2 (`col-span-2`) y el flujo denso sube el
+    campo siguiente al hueco que queda (ej. División red normal al lado de
+    Código de equipo operado);
+  - inputs, selects, fecha y combobox a ancho completo de **su** columna;
+    toggles a su ancho intrínseco, alineados a la izquierda;
+  - el mismo `FieldLabel` (y margen) que el resto de la app;
+  - títulos de sección (`SectionDivider`) en las 2 columnas, 24px entre
+    secciones; una sección que queda con un solo campo se mantiene;
+  - en los tiers bajos sigue en 2 columnas; el body scrollea si no entra.
+- **Los campos no editables quedan en su sección en estado read-only**
+  (ver [Estados: disabled vs read-only](#estados-disabled-vs-read-only)):
+  el toggle con su valor marcado a contraste completo y un candado junto al
+  label — **nunca como controles deshabilitados**.
 - **Guardar habilitado solo con cambios** respecto del registro original
   (estado disabled estándar); si se vuelve al valor original, se deshabilita
   de nuevo. Escape, ✕ y Cancelar cierran sin guardar.
-- El body scrollea solo si el contenido supera el alto disponible
-  (comportamiento estándar de `Modal`).
+- Los dropdowns del formulario se abren en un portal
+  ([FloatingPanel](#floatingpanel)): la lista completa de un combobox nunca
+  queda recortada por el body.
 
 ## Barra de contexto de registro
 

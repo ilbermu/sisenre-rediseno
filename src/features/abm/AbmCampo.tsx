@@ -1,9 +1,12 @@
+import { Lock } from "lucide-react";
 import {
   BTN_SEG_MD,
   CampoEstado,
   DateTimeField,
   ESTADO_CLASES,
   FieldLabel,
+  FOCUS_RING,
+  ICON,
   MOD_FIELD_CLS,
   ReadOnlyField,
   ValuePicker,
@@ -31,7 +34,8 @@ export default function AbmCampo({
   consultando,
   valoresFormulario,
   controlado = false,
-  soloLectura = false,
+  readOnly = false,
+  intrinseco = false,
 }: {
   campo: CampoBusqueda;
   mode: AbmMode;
@@ -56,13 +60,18 @@ export default function AbmCampo({
   // con valor (badge de "Más filtros", chips) y para que Limpiar los vacíe.
   // Default false: el panel de Búsqueda del layout "split" no cambia.
   controlado?: boolean;
-  // Dato fijo (no editable) dentro del formulario: ReadOnlyField "plain" —
-  // FieldLabel + valor legible (etiqueta de la opción), sin caja ni
-  // controles deshabilitados. Lo usa el modal de edición de registro para
-  // los campos no editables. Default false: nada cambia en el resto.
-  soloLectura?: boolean;
+  // Dato fijo (read-only), distinto de disabled (ver DESIGN_SYSTEM.md,
+  // "Estados: disabled vs read-only"): un toggle se muestra con su valor
+  // marcado, a contraste completo, sin hover y sin responder a clic ni
+  // teclado, con un candado junto al label; cualquier otro tipo de campo,
+  // como ReadOnlyField "plain". Lo usa el modal de edición de registro.
+  readOnly?: boolean;
+  // Toggle a su ancho intrínseco en cualquier tier (sin el estiramiento del
+  // tier 760px que necesita la grilla plana del panel de Búsqueda) — para
+  // la grilla del modal de edición de registro.
+  intrinseco?: boolean;
 }) {
-  if (soloLectura) {
+  if (readOnly && campo.tipo !== "toggle") {
     return <ReadOnlyField variant="plain" label={campo.label} value={labelDeValor(campo, value ?? "", valoresFormulario ?? {})} />;
   }
   const estado = estadoDeCampo(campo, mode, !!consultando, !!lockedEnModificar);
@@ -81,10 +90,50 @@ export default function AbmCampo({
     // el botón muestra `label`.
     const toggleOpts = opts.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
     const v = value ?? "";
+    if (readOnly) {
+      // Read-only: grupo enfocable una sola vez (lector de pantalla lee el
+      // valor), opciones no tabulables ni clickeables.
+      const seleccionada = toggleOpts.find((o) => o.value === v);
+      return (
+        <div>
+          <FieldLabel>
+            <span className="inline-flex items-center gap-1">
+              {campo.label}
+              <span title="No editable" aria-label="No editable" role="img" className="text-icon inline-flex">
+                <Lock size={ICON.xs} strokeWidth={1.5} aria-hidden />
+              </span>
+            </span>
+          </FieldLabel>
+          <div
+            role="radiogroup"
+            aria-readonly="true"
+            aria-label={`${campo.label}: ${seleccionada?.label ?? "sin valor"}`}
+            tabIndex={0}
+            className={`flex gap-2 mt-0.5 w-fit rounded-sm ${FOCUS_RING}`}
+          >
+            {toggleOpts.map((opt) => {
+              const active = v === opt.value;
+              return (
+                <span
+                  key={opt.value}
+                  role="radio"
+                  aria-checked={active}
+                  className={`${BTN_SEG_MD} flex items-center justify-center border select-none cursor-default ${
+                    active ? "border-primary bg-primary-tint text-secondary" : "border-border-strong bg-surface text-text"
+                  }`}
+                >
+                  {opt.label}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
     return (
       <div>
         <FieldLabel>{campo.label}</FieldLabel>
-        <div className="flex gap-2 mt-0.5 [@media(max-height:760px)]:w-full">
+        <div className={`flex gap-2 mt-0.5 ${intrinseco ? "" : "[@media(max-height:760px)]:w-full"}`}>
           {toggleOpts.map((opt) => {
             const active = v === opt.value;
             return (
@@ -98,7 +147,7 @@ export default function AbmCampo({
                 // flex-1 incondicional en ese breakpoint (en tamaño normal
                 // sigue siendo shrink-to-fit salvo que expandirBotones lo
                 // pida explícitamente).
-                className={`${BTN_SEG_MD} ${campo.expandirBotones ? "flex-1" : ""} [@media(max-height:760px)]:flex-1 flex items-center justify-center border select-none transition-colors duration-(--duration-base) ${
+                className={`${BTN_SEG_MD} ${campo.expandirBotones && !intrinseco ? "flex-1" : ""} ${intrinseco ? "" : "[@media(max-height:760px)]:flex-1"} flex items-center justify-center border select-none transition-colors duration-(--duration-base) ${
                   estado === "disabled" ? "cursor-not-allowed opacity-60" : isDisabled ? "cursor-default" : "cursor-pointer"
                 } ${
                   active

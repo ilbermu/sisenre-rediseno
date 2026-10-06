@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { Fragment, useState, useRef, useEffect } from "react";
 import { Shield, Inbox, Plus, Download, X } from "lucide-react";
 import {
   actionBtnCls,
   BTN_SM,
   CardHeader,
-  CopyChip,
+  CopyButton,
   FOCUS_RING_INSET,
   ghostBtnCls,
   ICON,
@@ -190,13 +190,9 @@ export default function AbmScreen({
     });
   }
 
-  // Secciones del formulario (separador + filas de AbmFila; en tier 760px,
-  // grilla plana) — las mismas reglas para el panel de Búsqueda del layout
-  // "split" y para el modal de Modificar del layout "barra", así los campos
-  // se acomodan exactamente igual en los dos.
-  // `camposSoloLectura`: campos que se muestran como dato fijo (modal de
-  // edición de registro); el panel del split no pasa ninguno.
-  const renderSecciones = (secciones: typeof config.secciones, camposSoloLectura: string[] = []) =>
+  // Secciones del formulario del panel de Búsqueda del layout "split"
+  // (separador + filas de AbmFila; en tier 760px, grilla plana).
+  const renderSecciones = (secciones: typeof config.secciones) =>
     secciones.map((sec) => {
               const conteoPorLongitud = new Map<number, number>();
               for (const fila of sec.filas) conteoPorLongitud.set(fila.length, (conteoPorLongitud.get(fila.length) ?? 0) + 1);
@@ -223,7 +219,6 @@ export default function AbmScreen({
                         camposLocked={camposLocked}
                         consultando={consultando}
                         columnasCompartidas={(conteoPorLongitud.get(fila.length) ?? 0) > 1}
-                        camposSoloLectura={camposSoloLectura}
                       />
                     ))}
                   </div>
@@ -251,7 +246,6 @@ export default function AbmScreen({
                           lockedEnModificar={camposLocked.includes(campo.nombre)}
                           consultando={consultando}
                           valoresFormulario={valores}
-                          soloLectura={camposSoloLectura.includes(campo.nombre)}
                         />
                       </div>
                     ))}
@@ -836,16 +830,15 @@ export default function AbmScreen({
   );
 
   // Modal de edición (layout "barra"): el identificador del registro (el
-  // campo de la primera columna de Resultados) va como CopyChip en la línea
-  // del título y no aparece en el body; los demás campos no editables
-  // (camposReadonlyEnModificar y tipo "readonly") quedan en su sección como
-  // dato fijo (AbmCampo `soloLectura`), nunca como controles deshabilitados.
+  // campo de la primera columna de Resultados) va como label de contexto
+  // arriba del título y no aparece en el body; los demás campos no
+  // editables (camposReadonlyEnModificar y tipo "readonly") quedan en su
+  // sección en estado read-only (AbmCampo `readOnly`), nunca disabled.
   const campoReferencia = config.mapeoFilaACampos[columnKeys[0]];
   const esNoEditable = (c: (typeof camposTabla)[number]) => c.tipo === "readonly" || camposLocked.includes(c.nombre);
   const seccionesModificar = config.secciones
-    .map((sec) => ({ ...sec, filas: sec.filas.map((fila) => fila.filter((c) => c.nombre !== campoReferencia)).filter((fila) => fila.length > 0) }))
-    .filter((sec) => sec.filas.length > 0);
-  const camposSoloLecturaModificar = camposTabla.filter((c) => esNoEditable(c) && c.nombre !== campoReferencia).map((c) => c.nombre);
+    .map((sec) => ({ ...sec, campos: sec.filas.flat().filter((c) => c.nombre !== campoReferencia) }))
+    .filter((sec) => sec.campos.length > 0);
   const referenciaModificar = selectedRow !== null ? config.rows[selectedRow][columnKeys[0]] : "";
 
   return (
@@ -965,24 +958,33 @@ export default function AbmScreen({
 
       {/* Layout "barra": Modificar en un modal de edición de registro (ver
           DESIGN_SYSTEM.md, "Modal de edición de registro"):
-            - ancho sm (480px): con el p-5 del body da el mismo ancho útil
-              (~440px) que el panel de Búsqueda del layout split;
-            - header de una línea: título + CopyChip con la referencia (el
-              chip no se corta; trunca el título) + ✕;
-            - el body usa renderSecciones (mismas reglas de grilla que ese
-              panel) sin la referencia; los demás no editables (Origen,
-              Tipo) quedan en su sección como dato fijo;
-            - Guardar se habilita solo con cambios respecto del registro
+            - size "form" (640px);
+            - header con label de contexto arriba del título (Carbon "modal
+              label"): la referencia en mono + CopyButton xs;
+            - body con una grilla única de 2 columnas (no AbmFila): cada
+              campo ocupa 1 columna, salvo los combobox con lista larga (2);
+              grid-auto-flow dense sube el campo siguiente al hueco que deja
+              uno de ancho completo. Títulos de sección en las 2 columnas,
+              gap-6 entre secciones (gap-y-4 + mt-2). Inputs, selects, fecha
+              y combobox a ancho completo de SU columna; toggles a su ancho
+              intrínseco;
+            - los no editables (Origen, Tipo) en read-only;
+            - Guardar habilitado solo con cambios respecto del registro
               original. Guardar dispara el mismo ConfirmarModificarModal y
               flujo que el layout split; Escape, ✕ y Cancelar cierran sin
               guardar. */}
       {esBarra && (
         <Modal
           title={config.barraBusqueda?.tituloModificar ?? "Modificar"}
-          size="sm"
+          size="form"
           open={mode === "modificar"}
           onClose={handleCancelarModificar}
-          titleExtra={<CopyChip value={referenciaModificar} label={columnas[0].label.toLowerCase()} />}
+          label={
+            <>
+              <span className="min-w-0 truncate text-code font-mono tabular-nums text-text-muted">{referenciaModificar}</span>
+              <CopyButton value={referenciaModificar} label={columnas[0].label.toLowerCase()} size="xs" />
+            </>
+          }
           footer={
             <>
               <button type="button" onClick={handleCancelarModificar} className={modalNeutralBtnCls}>Cancelar</button>
@@ -990,8 +992,30 @@ export default function AbmScreen({
             </>
           }
         >
-          <div className="flex flex-col gap-5">
-            {renderSecciones(seccionesModificar, camposSoloLecturaModificar)}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-4 grid-flow-row-dense">
+            {seccionesModificar.map((sec, si) => (
+              <Fragment key={sec.titulo}>
+                {/* El separador sin sus márgenes propios: el espaciado lo da
+                    la grilla (mt-2 extra arriba de cada sección salvo la
+                    primera → 24px entre secciones). */}
+                <div className={`col-span-2 [&>div]:mt-0 [&>div]:mb-0 ${si > 0 ? "mt-2" : ""}`}>
+                  <SectionDivider title={sec.titulo} />
+                </div>
+                {sec.campos.map((c) => (
+                  <div key={c.nombre} className={c.tipo === "combobox" && c.listaLarga ? "col-span-2" : ""}>
+                    <AbmCampo
+                      campo={c}
+                      mode={mode}
+                      value={valores[c.nombre]}
+                      onChange={(v) => setValor(c.nombre, v)}
+                      valoresFormulario={valores}
+                      readOnly={esNoEditable(c)}
+                      intrinseco
+                    />
+                  </div>
+                ))}
+              </Fragment>
+            ))}
           </div>
         </Modal>
       )}

@@ -3,6 +3,7 @@ import { DayPicker, useDayPicker, type ChevronProps } from "react-day-picker";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import FieldLabel from "@/components/ui/FieldLabel";
+import FloatingPanel from "@/components/ui/FloatingPanel";
 import { dropdownAnchorStyle, useDropdownDirection } from "@/components/ui/dropdown";
 import { BTN_MD, ICON, ICON_BTN_XS, MOD_FIELD_CLS, MOD_SELECT_CLS } from "@/components/ui/tokens";
 import { formatFecha } from "@/lib/format";
@@ -154,9 +155,15 @@ export default function DateTimeField({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [hora, setHora] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  // Dentro de un Modal el popover va en un portal (FloatingPanel): el clic
+  // afuera cuenta también el panel como "adentro".
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const fn = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (ref.current && !ref.current.contains(t) && !panelRef.current?.contains(t)) setOpen(false);
+    };
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
@@ -198,11 +205,15 @@ export default function DateTimeField({
         {value ? <span className={muted ? "text-text-muted truncate" : "text-text truncate"}>{value}</span> : <span className="text-text-muted truncate">dd/mm/aaaa hh:mm</span>}
         <span className="shrink-0 text-icon"><Calendar size={ICON.md} strokeWidth={1.5} /></span>
       </button>
-      {!disabled && open && (
-        <div
-          className="shadow-md absolute z-(--z-dropdown) bg-surface border border-border rounded-md p-4"
-          style={{ ...dropdownAnchorStyle(direction, 6), width: "max-content" }}
-        >
+      <FloatingPanel
+        anchorRef={ref}
+        panelRef={panelRef}
+        open={!disabled && open}
+        direction={direction}
+        gap={6}
+        className="shadow-md bg-surface border border-border rounded-md p-4"
+        style={{ width: "max-content" }}
+      >
           <DayPicker
             mode="single"
             navLayout="around"
@@ -234,8 +245,7 @@ export default function DateTimeField({
               Aplicar
             </button>
           </div>
-        </div>
-      )}
+      </FloatingPanel>
     </div>
   );
 }
