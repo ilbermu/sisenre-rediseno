@@ -646,10 +646,14 @@ export default function AbmScreen({
           // queda vacío (se resetea al cambiar de tabla), así que no filtra
           // filas: las visibles salen solo de Buscar. El orden por columna
           // se mantiene.
+          // Antes de la primera búsqueda (y después de Limpiar) la barra queda
+          // vacía, con su alto fijo; después de Buscar, "N de M registros", o
+          // "0 registros" si la búsqueda no trajo resultados.
           <div className="shrink-0">
-            {showData
-              ? <TableCounter visibles={visibleIndices.length} total={registrosVisibles} />
-              : <TableCounter visibles={0} />}
+            {showData &&
+              (visibleIndices.length > 0
+                ? <TableCounter visibles={visibleIndices.length} total={registrosVisibles} />
+                : <TableCounter visibles={0} />)}
           </div>
         )}
       </div>

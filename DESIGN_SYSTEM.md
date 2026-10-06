@@ -150,6 +150,13 @@ Decimoquinta pasada (también 06/10/2026):
 - **Mayúsculas:** el overline del saludo del Inicio (`WelcomeContent`) pierde
   `tracking-widest`; el tracking viene del token `heading-xs`.
 
+Decimosexta pasada (también 06/10/2026):
+
+- **ABM, variante barra — contador:** antes de la primera búsqueda (y
+  después de Limpiar) la barra de herramientas de la tabla queda vacía, con
+  su alto fijo; después de Buscar muestra "N de M registros" o "0
+  registros".
+
 ## Índice
 
 **1. Fundamentos**
@@ -1536,7 +1543,9 @@ período) es el mismo en los dos.
   - **Barra de herramientas de la tabla**, afuera de la caja, apoyada sobre
     el fondo, sin fondo ni borde propios, de alto fijo (`--control-md`) con
     dos modos que no cambian su alto: sin selección, solo `TableCounter`
-    ("N de M registros", a la izquierda); con un registro seleccionado, `SelectionActionBar`
+    a la izquierda — vacío antes de la primera búsqueda (y después de
+    Limpiar), "N de M registros" después de Buscar, "0 registros" si la
+    búsqueda no trajo resultados; con un registro seleccionado, `SelectionActionBar`
     (`bare`) con Modificar y Borrar (`ghostBtnCls` neutral y destructivo,
     `sm`), un separador vertical y un botón de ícono ✕ (`ICON_BTN_SM`,
     "Deseleccionar"). Son acciones de registro: no compiten con Más filtros
