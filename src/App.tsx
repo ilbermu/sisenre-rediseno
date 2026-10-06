@@ -4,36 +4,69 @@ import { DayPicker, useDayPicker, type ChevronProps } from "react-day-picker";
 import { es } from "date-fns/locale";
 import { motion } from "motion/react";
 import {
-  ChevronLeft, ChevronRight, ChevronDown,
-  Zap, FileText, Pencil, Clipboard, UserPlus, Shield, Calendar, Search, X,
-  Filter, Inbox, User, Settings, LogOut, Plus, Download, ChevronsUp, ChevronsDown, Home,
-  ChevronUp, Copy, Check, Clock, Users, ClipboardList, Loader2, Wrench,
+  ChevronLeft, ChevronRight, ChevronDown, Zap, FileText, Pencil, Clipboard, UserPlus, Shield,
+  Calendar, Search, X, Filter, Inbox, User, Settings, LogOut, Plus, Download, ChevronsUp,
+  ChevronsDown, Home, ChevronUp, Copy, Check, Clock, Users, ClipboardList, Loader2, Wrench,
 } from "lucide-react";
+import imgLoginBg from "@/imports/Login/login-bg.png";
+import Logo from "@/imports/Logo/index";
+import { ABM_TABLE_CONFIGS, ABM_TABLE_ORDER, isAbmTableKey } from "@/data/abmTables";
+import {
+  ABM_ITEMS,
+  DRAWER_TAB_TO_ABM,
+  DRAWER_TABS,
+  NOTA_OPCIONES,
+  PERIODS,
+  STATUS_ITEMS,
+} from "@/data/dominio";
+import {
+  ALTA_CLIENTES_ROWS,
+  CAMBIA_FASES_ROWS_INIT,
+  NOTAS_INICIALES,
+  USUARIOS_SISENRE_DEMO,
+} from "@/data/mocks";
+import { crearRng, hashSemilla } from "@/data/rng";
+import {
+  generarConsolidacionSintetica,
+  generarFasesSinteticas,
+  generarFilasTabla5,
+  generarFilasTabla6,
+  generarFilasTabla8,
+  generarFilasTabla9,
+  generarReclamosSinteticos,
+  generarTablasRelacionadas,
+  RECORD,
+  SAMPLE_ROWS,
+} from "@/data/sinteticos";
+import {
+  AbmDeepLink,
+  AbmMode,
+  AbmTableKey,
+  CampoBusqueda,
+  CampoOpcion,
+  CampoTipo,
+  FaseReposicion,
+  ReclamosInterrupcion,
+  Screen,
+} from "@/data/types";
+import {
+  ceros,
+  fmtDelta,
+  fmtDiaHora,
+  fmtDuracion,
+  fmtHoraCorta,
+  formatFecha,
+  formatFechaHora,
+  formatHora,
+  formatNumero,
+  partesDuracion,
+  VALOR_VACIO,
+} from "@/lib/format";
+import { useMatchMedia } from "@/lib/useMatchMedia";
 
 // Tamaños de ícono (lucide) — ver DESIGN_SYSTEM.md, "Íconos". strokeWidth
 // 1.5 en todos, salvo xl (estado vacío), que usa 1.25.
 const ICON = { xs: 12, sm: 14, md: 16, xl: 40 } as const;
-import Logo from "@/imports/Logo/index";
-import imgLoginBg from "@/imports/Login/login-bg.png";
-
-// ─── Data ────────────────────────────────────────────────────────────────────
-
-// Los 9 hijos de ABM no llevan ícono propio en el sidebar — el lápiz queda
-// solo en la fila padre "Alta, Baja y Modificación". Etiqueta simplificada
-// a "Tabla N" (sin badge de código) en vez del nombre descriptivo + CDS. El
-// nombre completo + badge siguen intactos en el masthead del panel al
-// entrar (ver AbmScreen/AbmTableSelector).
-const ABM_ITEMS: { code: string; label: string; screen?: Screen; key?: string }[] = [
-  { code: "CDS2",  label: "Tabla 2",    screen: "cds2" },
-  { code: "CDS3",  label: "Tabla 3",    screen: "cds3" },
-  { code: "CDS4",  label: "Tabla 4",    screen: "cds4" },
-  { code: "CDS5",  label: "Tabla 5",    screen: "cds5" },
-  { code: "CDS6",  label: "Tabla 6",    screen: "cds6" },
-  { code: "CDS7",  label: "Tabla 7",    screen: "cds7" },
-  { code: "CDS8",  label: "Tabla 8",    screen: "cds8" },
-  { code: "CDS9",  label: "Tabla 9",    screen: "cds9" },
-  { code: "CDS9",  label: "Tabla 9 NM", screen: "cds9nm", key: "CDS9b" },
-];
 
 const OTROS_ITEMS: { label: string; icon: React.ReactNode; screen: Screen }[] = [
   { label: "Generación de txt",    icon: <FileText size={ICON.md} strokeWidth={1.5} />,      screen: "generaciontxt" },
@@ -60,264 +93,6 @@ const HERRAMIENTAS_ITEMS: { key: HerramientaKey; label: string; pendiente?: bool
   { key: "altaclientes", label: "Alta clientes", pendiente: true },
   { key: "intercambio",  label: "Intercambio",   pendiente: true },
 ];
-
-const PERIODS = ["Agosto 2026","Julio 2026","Junio 2026","Mayo 2026","Abril 2026"];
-
-// ─── Generador de datos sintéticos (semilla fija) ──────────────────────────
-// Reemplaza los arrays hardcodeados de 1-5 filas por ~40 filas por tabla,
-// con forma realista por tipo de campo (códigos de interrupción, fases,
-// tarifas, zonas, fechas, etc.), reusando los mismos valores/patrones ya
-// vistos en las capturas de producción relevadas (OLIVOS/MORON, prefijos
-// BFZ/AFZ/BPR/MFZ/MPR, cadenas "NNNNN#B1#NNNNN-TR1", etc.). El PRNG
-// (mulberry32) es determinístico dada una semilla fija — el contenido no
-// cambia entre cargas de la página. Sin sentido relacional entre tablas:
-// alcanza con que cada una se vea creíble individualmente.
-
-function crearRng(semilla: number) {
-  let s = semilla >>> 0;
-  return function rng() {
-    s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-// Hash determinístico (FNV-1a) de un string a un entero de 32 bits — para
-// poder usar un texto (ej. la referencia de una interrupción) como semilla
-// de crearRng. Mismo texto → mismo entero, siempre.
-function hashSemilla(texto: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < texto.length; i++) {
-    h ^= texto.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-function elegir<T>(rng: () => number, opciones: T[]): T {
-  return opciones[Math.floor(rng() * opciones.length)];
-}
-function enteroEntre(rng: () => number, min: number, max: number): number {
-  return min + Math.floor(rng() * (max - min + 1));
-}
-function ceros(n: number, ancho: number): string {
-  return String(n).padStart(ancho, "0");
-}
-
-// Formatos de la app (ver DESIGN_SYSTEM.md, "Voz y formatos"): un helper por
-// formato, nada de toLocaleString / armado a mano por pantalla.
-// Valor ausente o no aplicable: siempre el mismo guion largo.
-const VALOR_VACIO = "—";
-const NUMERO_ES_AR = new Intl.NumberFormat("es-AR", { useGrouping: "always" } as unknown as Intl.NumberFormatOptions);
-// 1234567 → "1.234.567" (con punto desde los miles, también 1.234)
-function formatNumero(n: number): string {
-  return NUMERO_ES_AR.format(n);
-}
-// dd/mm/aaaa
-function formatFecha(d: Date): string {
-  return `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)}/${d.getFullYear()}`;
-}
-// hh:mm, 24 h
-function formatHora(d: Date): string {
-  return `${ceros(d.getHours(), 2)}:${ceros(d.getMinutes(), 2)}`;
-}
-// dd/mm/aaaa hh:mm, 24 h
-function formatFechaHora(d: Date): string {
-  return `${formatFecha(d)} ${formatHora(d)}`;
-}
-function filasSinteticas<T>(n: number, gen: () => T): T[] {
-  return Array.from({ length: n }, gen);
-}
-
-const N_FILAS_SINTETICAS = 40;
-// Zonas reales de Instalaciones MT (CDS7) — 4 valores, no confundir con los
-// 25 partidos que usa CDS8 (Reclamos de clientes).
-const ZONAS_CDS7 = ["NORTE", "MORON", "OLIVOS", "PILAR"];
-
-// Código de interrupción con el patrón real (ej. BFZ202607056849,
-// AFZ202401000404) — `anio` elige el estilo "2026" (CDS2/3/4/9-NM, como en
-// las capturas originales) o "2024" (CDS5/6/8/9, como en las capturas de
-// producción relevadas para esas tablas).
-function refInterrupcionSintetica(rng: () => number, anio: "2026" | "2024"): string {
-  const prefijo = elegir(rng, ["BFZ", "AFZ", "BPR", "MFZ", "MPR"]);
-  const yyyymm = anio === "2026" ? "202607" : "202401";
-  return `${prefijo}${yyyymm}${ceros(enteroEntre(rng, 0, 999999), 6)}`;
-}
-function fechaSintetica(rng: () => number, mes: number, anio: number): string {
-  const dia = ceros(enteroEntre(rng, 1, 28), 2);
-  const hh = ceros(enteroEntre(rng, 0, 23), 2);
-  const mm = ceros(elegir(rng, [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]), 2);
-  return `${dia}/${ceros(mes, 2)}/${anio} ${hh}:${mm}`;
-}
-function clienteIdSintetico(rng: () => number): string {
-  return String(enteroEntre(rng, 1000000000, 9999999999));
-}
-function cadenaCodeSintetica(rng: () => number): string {
-  const n = enteroEntre(rng, 50000, 50999);
-  return `${n}#B1#${n}-TR1`;
-}
-function recCodeSintetico(rng: () => number): string {
-  return `R-2024-${ceros(enteroEntre(rng, 1, 12), 2)}-${ceros(enteroEntre(rng, 10000, 99999), 5)}`;
-}
-// Código de equipo (ej. "@27947890") — CDS2/CDS4, equipo operado/maniobrado.
-function equipoCodeSintetico(rng: () => number): string {
-  return `@${enteroEntre(rng, 10000000, 99999999)}`;
-}
-
-// Valores reales de "Descripción equipo operado" / "Descripción equipo
-// maniobrado" (CDS2/CDS4), tal cual la base — no normalizados salvo
-// mayúsculas/espacios (dos entradas que difieren en una letra real,
-// SECCIONAALIZADOR vs SECCIONALIZADOR, se mantienen separadas a propósito).
-const DESCRIPCIONES_EQUIPO_OPERADO: string[] = [
-  "CABLE - SIN DATOS", "CAJA CARENCIADA MONOFÁSICA", "CAJA CARENCIADA TRIFÁSICA",
-  "CAJA DE FUSIBLES APR", "CONCÉNTRICO", "FUSIBLE LIRA C/SECCION",
-  "INTERRUPTOR DE GENERADOR", "LAC", "LAPE", "LLAVE SECC. C/F.C/FRONT.ANILLO",
-  "LLAVE SECCIONADORA C/ FUSIBLES", "LÍNEA - SIN DATOS", "MD CLIENTE MT",
-  "MD SECC BAJO CARGA C/FUSIBLE", "MD SECCIONADOR BAJO CARGA",
-  "MONOPOSTE CARENCIADO", "NODO DE CAJA DE DISTRIBUCION", "PILAR",
-  "PILAR DOBLE", "PROTECCION DE SUMINISTRO", "PROTECCION DE TOMA/ACOMETIDA",
-  "PUENTE", "SALIDA BT DE CT", "SECC. AUTODESC. B/C UNIPOLAR",
-  "SECC. PUENTE B/CARGA UNIPOLAR", "SECCIONALIZADOR UNIPOLAR", "SECO",
-  "SUMINISTRO", "TIPO_ELE", "TOMA I DOBLE", "TOMA I HASTA 60 A.",
-  "TOMA II HASTA 200 A.", "TOMA III", "UNI AT INTERRUPTOR",
-  "UNI AT SECCIONADOR", "UNI MT CARRO", "UNI MT INT. C/PROT TEMPORAL",
-  "UNI MT INT. C/PROTECCIÓN", "UNI MT INTERRUPTOR", "UNI MT RECONECTADOR",
-  "UNI MT RECONECTADOR UNIPOLAR", "UNI MT SECC. AUTODESCONECTADOR",
-  "UNI MT SECC. BAJO CARGA", "UNI MT SECC. BAJO CARGA C/FUS.",
-  "UNI MT SECCIONAALIZADOR", "UNI MT SECCIONADOR",
-  "UNI MT SECCIONADOR BAJO CARGA", "UNI MT SECCIONALIZADOR",
-];
-const NOMBRES_SINTETICOS = [
-  "MENDEZ MONICA ISABEL",
-  "GONZALEZ RAUL ALBERTO",
-  "FERNANDEZ LAURA BEATRIZ",
-  "RODRIGUEZ JORGE OMAR",
-  "MARTINEZ ANA PAULA",
-  "LOPEZ CARLOS ALBERTO",
-  "PEREZ SILVIA GRACIELA",
-  "GOMEZ DIEGO HERNAN",
-  "SANCHEZ MARIA EUGENIA",
-  "ROMERO WALTER DANIEL",
-];
-const CALLES_SINTETICAS = [
-  "SALTA", "MITRE", "SAN MARTIN", "BELGRANO", "RIVADAVIA",
-  "SARMIENTO", "MORENO", "AVELLANEDA", "9 DE JULIO", "LAS HERAS",
-];
-const PARTIDOS_LOCALIDADES_SINTETICOS = [
-  { partido: "LA MATANZA", localidad: "LOMAS DEL MIRADOR" },
-  { partido: "MORON", localidad: "CASTELAR" },
-  { partido: "SAN ISIDRO", localidad: "BOULOGNE" },
-  { partido: "TIGRE", localidad: "DON TORCUATO" },
-  { partido: "VICENTE LOPEZ", localidad: "OLIVOS" },
-  // "GRAL SAN MARTIN" (no "SAN MARTIN" a secas) — así coincide con la key
-  // real de PARTIDO_LOCALIDAD que alimenta el select de Partido en CDS8.
-  { partido: "GRAL SAN MARTIN", localidad: "VILLA BALLESTER" },
-];
-// Mapeo Partido -> Localidad (datos reales NEXUS_GIS). Cada Localidad
-// pertenece a un unico Partido segun este mapeo; alimenta el combobox en
-// cascada Partido -> Localidad de CDS8. No mergear ni excluir partidos:
-// son categorias reales de Edenor (incluye NORTE y las 3 variantes de
-// Capital Federal como entradas separadas, tal cual la base).
-const PARTIDO_LOCALIDAD: Record<string, string[]> = {
-  "3 DE FEBRERO": ["11 DE SEPTIEMBRE", "C J LOMAS DEL PALOMAR", "CASEROS", "CHURRUCA", "CIUDADELA", "COLEGIO MILITAR", "EJCTO MILITAR (TF)", "EL LIBERTADOR", "JOSE INGENIEROS", "LOMA HERMOSA", "MARTIN CORONADO", "PABLO PODESTA", "REMEDIOS DE ESCALADA", "SAENZ PEÑA", "SANTOS LUGARES", "VILLA BOSCH", "VILLA RAFFO"],
-  "CAPITAL FEDERAL": ["11 DE SEPTIEMBRE", "AGRONOMIA", "AYACUCHO", "BELGRANO", "BERNARDO MONTEAGUDO", "C J LOMAS DEL PALOMAR", "C JARDIN EL LIBERTADOR", "C LIBERTADOR SAN MARTÍN", "CASEROS", "CHACABUCO", "CHACARITA", "CIUDADELA", "CNEL JOSE ZAPIOLA", "COGHLAN", "COLEGIALES", "COLEGIO MILITAR", "EJCTO MILITAR (TF)", "EL LIBERTADOR", "GDEROS DE SAN MARTÍN", "GRAL EUGENIO NECOCHEA", "GRAL JOSE DE SUCRE", "GRAL JOSE TOMAS GUIDO", "GREGORIA MATORRAS", "JOSE INGENIEROS", "JOSE LEON SUAREZ", "JUAN GREGORIO LAS HERAS", "JUAN M DE PUEYRREDON", "LA PATERNAL", "LOMA HERMOSA", "MARTIN CORONADO", "NUÑEZ", "PABLO PODESTA", "PALERMO", "PARQUE SAN LORENZO", "PTE F ALCORTA", "RECOLETA", "REMEDIOS DE ESCALADA", "SAAVEDRA", "SAENZ PEÑA", "SAN ANDRES", "SANTOS LUGARES", "VILLA BALLESTER", "VILLA BOSCH", "VILLA CRESPO", "VILLA DEVOTO", "VILLA LIBERTAD", "VILLA LYNCH", "VILLA MAIPU", "VILLA ORTUZAR", "VILLA PUEYRREDON", "VILLA PUEYRREDÓN", "VILLA RAFFO", "VILLA URQUIZA", "YAPEYU"],
-  "CIUDAD AUTONOMA DE BS": ["AGRONOMIA", "BELGRANO", "CHACARITA", "COGHLAN", "COLEGIALES", "LA PATERNAL", "NUÑEZ", "PALERMO", "RECOLETA", "SAAVEDRA", "VILLA CRESPO", "VILLA ORTUZAR", "VILLA PUEYRREDON", "VILLA URQUIZA"],
-  "CIUDAD AUTONOMA DE BS AS": ["AGRONOMIA", "BELGRANO", "CHACARITA", "COGHLAN", "COLEGIALES", "LA PATERNAL", "NUÑEZ", "PALERMO", "RECOLETA", "SAAVEDRA", "VILLA CRESPO", "VILLA DEVOTO", "VILLA ORTUZAR", "VILLA PUEYRREDON", "VILLA URQUIZA"],
-  "ESCOBAR": ["BENAVIDEZ", "DELTA 1RA SECCION (ES)", "ESCOBAR", "GARIN", "INGENIERO MASCHWITZ", "LOMA VERDE", "MAQUINISTA SAVIO", "MATHEU"],
-  "GRAL LAS HERAS": ["GRAL LAS HERAS"],
-  "GRAL RODRIGUEZ": ["GRAL RODRIGUEZ"],
-  "GRAL SAN MARTIN": ["AYACUCHO", "BERNARDO MONTEAGUDO", "BILLINGHURST", "BO PARQUE SAN MARTIN", "C JARDIN EL LIBERTADOR", "C LIBERTADOR SAN MARTIN", "C LIBERTADOR SAN MARTÍN", "CHACABUCO", "CNEL JOSE ZAPIOLA", "GDEROS DE SAN MARTIN", "GDEROS DE SAN MARTÍN", "GODOY CRUZ", "GRAL EUGENIO NECOCHEA", "GRAL JOSE DE SUCRE", "GRAL JOSE TOMAS GUIDO", "GREGORIA MATORRAS", "JOSE LEON SUAREZ", "JUAN GREGORIO LAS HERAS", "JUAN M DE PUEYRREDON", "M REMEDIOS DE ESCALADA", "MARQUES A DE AGUADO", "PARQUE SAN LORENZO", "PTE F ALCORTA", "SAN ANDRES", "SAN MARTIN", "VILLA BALLESTER", "VILLA LIBERTAD", "VILLA LYNCH", "VILLA MAIPU", "YAPEYU"],
-  "HURLINGHAM": ["HURLINGHAM", "VILLA TESEI", "WILLIAM MORRIS"],
-  "ITUZAINGO": ["ITUZAINGO", "VILLA UDAONDO"],
-  "JOSE C PAZ": ["JOSE C PAZ"],
-  "LA MATANZA": ["20 DE JUNIO", "ALDO BONZI", "CIUDAD EVITA", "GONZALEZ CATAN", "GREGORIO DE LAFERRERE", "ISIDRO CASANOVA", "LA TABLADA", "LOMAS DEL MIRADOR", "RAFAEL CASTILLO", "RAMOS MEJIA", "SAN JUSTO", "TAPIALES", "VILLA LUZURIAGA", "VILLA MADERO", "VIRREY DEL PINO"],
-  "MALVINAS ARGENTINAS": ["ADOLFO SOURDEAUX", "EL TRIANGULO", "GRAND BOURG", "LOS POLVORINES", "MALVINAS ARGENTINAS", "PABLO NOGUES", "TIERRAS ALTAS", "TORTUGUITAS", "VILLA DE MAYO"],
-  "MARCOS PAZ": ["MARCOS PAZ"],
-  "MERLO": ["LIBERTAD", "MARIANO ACOSTA", "MERLO", "PONTEVEDRA", "SAN ANTONIO DE PADUA"],
-  "MORENO": ["CUARTEL V", "FRANCISCO ALVAREZ", "LA REJA", "MORENO", "PASO DEL REY", "TRUJUI"],
-  "MORON": ["20 DE JUNIO", "ALDO BONZI", "CASTELAR", "CIUDAD EVITA", "EL PALOMAR", "GONZALEZ CATAN", "GRAL LAS HERAS", "GREGORIO DE LAFERRERE", "HAEDO", "HURLINGHAM", "ISIDRO CASANOVA", "ITUZAINGO", "LA TABLADA", "LIBERTAD", "LOMAS DEL MIRADOR", "MARCOS PAZ", "MARIANO ACOSTA", "MERLO", "MORON", "PONTEVEDRA", "RAFAEL CASTILLO", "RAMOS MEJIA", "SAN ANTONIO DE PADUA", "SAN JUSTO", "TAPIALES", "VILLA LUZURIAGA", "VILLA MADERO", "VILLA SARMIENTO", "VILLA TESEI", "VILLA UDAONDO", "VIRREY DEL PINO", "WILLIAM MORRIS"],
-  "NORTE": ["11 DE SEPTIEMBRE", "AGRONOMIA", "AYACUCHO", "BELGRANO", "BERNARDO MONTEAGUDO", "BILLINGHURST", "BO PARQUE SAN MARTIN", "C J LOMAS DEL PALOMAR", "C JARDIN EL LIBERTADOR", "C LIBERTADOR SAN MARTÍN", "CASEROS", "CHACABUCO", "CHACARITA", "CHURRUCA", "CIUDADELA", "CNEL JOSE ZAPIOLA", "COGHLAN", "COLEGIALES", "COLEGIO MILITAR", "EJCTO MILITAR (TF)", "EL LIBERTADOR", "GDEROS DE SAN MARTÍN", "GODOY CRUZ", "GRAL EUGENIO NECOCHEA", "GRAL JOSE DE SUCRE", "GRAL JOSE TOMAS GUIDO", "GREGORIA MATORRAS", "JOSE INGENIEROS", "JOSE LEON SUAREZ", "JUAN GREGORIO LAS HERAS", "JUAN M DE PUEYRREDON", "LA PATERNAL", "LOMA HERMOSA", "M REMEDIOS DE ESCALADA", "MARQUES A DE AGUADO", "MARTIN CORONADO", "NUÑEZ", "PABLO PODESTA", "PALERMO", "PARQUE SAN LORENZO", "PTE F ALCORTA", "RECOLETA", "REMEDIOS DE ESCALADA", "SAAVEDRA", "SAENZ PEÑA", "SAN ANDRES", "SANTOS LUGARES", "VILLA BALLESTER", "VILLA BOSCH", "VILLA CRESPO", "VILLA DEVOTO", "VILLA LIBERTAD", "VILLA LYNCH", "VILLA MAIPU", "VILLA ORTUZAR", "VILLA PUEYRREDÓN", "VILLA RAFFO", "VILLA URQUIZA", "YAPEYU"],
-  "OLIVOS": ["ACASSUSO", "BECCAR", "BENAVIDEZ", "BOULOGNE", "CARAPACHAY", "CIUDAD DE TIGRE", "DELTA 1RA SECCION (ES)", "DELTA 1RA SECCION (TI)", "DELTA 2DA SECCION (SF)", "DELTA 3RA SECCION (SF)", "DIQUE LUJAN", "DON TORCUATO", "EL TALAR", "ESCOBAR", "FLORIDA", "FLORIDA (OESTE)", "GARIN", "GENERAL PACHECO", "INGENIERO MASCHWITZ", "LA LUCILA", "LOMA VERDE", "MAQUINISTA SAVIO", "MARTINEZ", "MATHEU", "MUNRO", "NORDELTA", "OLIVOS", "RICARDO ROJAS", "RINCON DE MILBERG", "SAN FERNANDO", "SAN ISIDRO", "TRONCOS DEL TALAR", "VICENTE LOPEZ", "VICTORIA", "VILLA ADELINA (SI)", "VILLA ADELINA (VL)", "VILLA MARTELLI", "VIRREYES"],
-  "PILAR": ["ADOLFO SOURDEAUX", "BELLA VISTA", "CAMPO DE MAYO", "CUARTEL V", "DEL VISO", "EL TRIANGULO", "FATIMA", "FRANCISCO ALVAREZ", "GRAL RODRIGUEZ", "GRAND BOURG", "JOSE C PAZ", "LA LONJA", "LA REJA", "LOS POLVORINES", "LUIS LAGOMARSINO", "MALVINAS ARGENTINAS", "MANUEL ALBERTI", "MANZANARES", "MORENO", "MUÑIZ", "PABLO NOGUES", "PASO DEL REY", "PILAR", "PTE DERQUI", "SAN MIGUEL", "TIERRAS ALTAS", "TORTUGUITAS", "TRUJUI", "VILLA ASTOLFI", "VILLA DE MAYO", "VILLA ROSA", "ZELAYA"],
-  "SAN FERNANDO": ["CIUDAD DE TIGRE", "DELTA 2DA SECCION (SF)", "DELTA 3RA SECCION (SF)", "SAN FERNANDO", "VICTORIA", "VIRREYES"],
-  "SAN ISIDRO": ["ACASSUSO", "BECCAR", "BOULOGNE", "FATIMA", "MARTINEZ", "SAN ISIDRO", "VILLA ADELINA (SI)", "VILLA TESEI"],
-  "SAN MIGUEL": ["BELLA VISTA", "CAMPO DE MAYO", "MUÑIZ", "SAN MIGUEL"],
-  "TIGRE": ["BENAVIDEZ", "CIUDAD DE TIGRE", "DELTA 1RA SECCION (TI)", "DIQUE LUJAN", "DON TORCUATO", "EL TALAR", "GENERAL PACHECO", "NORDELTA", "RICARDO ROJAS", "RINCON DE MILBERG", "SAN FERNANDO", "TRONCOS DEL TALAR"],
-  "VICENTE LOPEZ": ["CARAPACHAY", "FATIMA", "FLORIDA", "FLORIDA (OESTE)", "LA LUCILA", "MUNRO", "OLIVOS", "VICENTE LOPEZ", "VILLA ADELINA (VL)", "VILLA MARTELLI"],
-};
-const PARTIDOS: string[] = Object.keys(PARTIDO_LOCALIDAD);
-const CODIGOS_FALLA_SINTETICOS = [
-  "Otros", "Rotura de conductor", "Falla en transformador",
-  "Descarga atmosférica", "Vandalismo", "Sobrecarga",
-];
-
-// Sample rows — CDS2
-// fase/origen/tipo/nivel — no son columnas de la tabla CDS2 (que solo
-// muestra Referencia/Fecha), pero viven en cada fila para poder
-// autocompletar el formulario de Búsqueda al seleccionar una interrupción
-// en la tabla (ver ModificarContent). Los valores coinciden con las
-// opciones reales de cada campo del formulario (R/S/T.../Interno-Externo/
-// Forzado-Programado/BT-MT-AT).
-// El resto de los campos (faseElectrica en adelante) no los usa
-// ModificarContent — solo existen para poder autocompletar el resto del
-// formulario de Búsqueda del motor ABM (CDS2) al seleccionar una fila (ver
-// ABM_TABLE_CONFIGS.cds2.mapeoFilaACampos).
-const SAMPLE_ROWS = (() => {
-  const rng = crearRng(20260702);
-  return filasSinteticas(N_FILAS_SINTETICAS, () => ({
-    referencia: refInterrupcionSintetica(rng, "2026"),
-    fecha: fechaSintetica(rng, 7, 2026),
-    fase: elegir(rng, ["R", "S", "T", "RS", "RT", "ST", "RST"]),
-    origen: elegir(rng, ["Interno", "Externo"]),
-    tipo: elegir(rng, ["Forzado", "Programado"]),
-    nivel: elegir(rng, ["BT", "MT", "AT"]),
-    faseElectrica: elegir(rng, ["R", "S", "T", "RST"]),
-    codigoEquipoOperado: equipoCodeSintetico(rng),
-    descEquipoOperado: elegir(rng, DESCRIPCIONES_EQUIPO_OPERADO),
-    divisionRedNormal: elegir(rng, ["Sí", "No"]),
-    cadenaElectricaAguasArriba: cadenaCodeSintetica(rng),
-    alimentadorMT: String(enteroEntre(rng, 5000, 5999)),
-    ctMtBtEquipoOperado: cadenaCodeSintetica(rng),
-  }));
-})();
-const TOTAL_REGISTROS = 57098;
-
-// ─── CDS3 data ────────────────────────────────────────────────────────────────
-
-const CAUSAS_NC = [
-  "<= A 3 MINUTOS",
-  "INSTALACION CLIENTE",
-];
-const CDS3_ROWS = (() => {
-  const rng = crearRng(20260703);
-  return filasSinteticas(N_FILAS_SINTETICAS, () => ({
-    referencia: refInterrupcionSintetica(rng, "2026"),
-    fase: String(enteroEntre(rng, 1, 5)),
-    causa: elegir(rng, CAUSAS_NC),
-  }));
-})();
-const CDS3_TOTAL = 2501;
-
-// ─── CDS4 data ────────────────────────────────────────────────────────────────
-
-const CDS4_ROWS = (() => {
-  const rng = crearRng(20260704);
-  return filasSinteticas(N_FILAS_SINTETICAS, () => ({
-    referencia: refInterrupcionSintetica(rng, "2026"),
-    fase: String(enteroEntre(rng, 1, 5)),
-    fecha: fechaSintetica(rng, 7, 2026),
-    faseElectrica: elegir(rng, ["R", "S", "T", "RS", "RT", "ST", "RST"]),
-    codigoEquipoManiobrado: equipoCodeSintetico(rng),
-    descEquipoManiobrado: elegir(rng, DESCRIPCIONES_EQUIPO_OPERADO),
-    cadenaElectricaAguasArriba: cadenaCodeSintetica(rng),
-    alimentadorMT: String(enteroEntre(rng, 5000, 5999)),
-    cantidadClientesBt: String(enteroEntre(rng, 1, 40)),
-    ctMtBtManiobrado: cadenaCodeSintetica(rng),
-  }));
-})();
-// Total ajustado — el "1" original era una reproducción pixel-exacta de una
-// captura real de producción, pero ya no tiene sentido junto a ~40 filas
-// generadas para la vista de muestra.
-const CDS4_TOTAL = 48213;
 
 // ─── Dropdown/popover "smart" direction ────────────────────────────────────────
 // Mecanismo único reusado por TODO panel flotante de la app (ValuePicker,
@@ -542,11 +317,6 @@ type FilterTriggerProps =
   // Estado deshabilitado: sin hover ni apertura (ej. toolbar sin resultados).
   disabled?: boolean;
 };
-
-// "dd/mm hh:mm" — texto del trigger con un rango aplicado.
-function fmtDiaHora(d: Date): string {
-  return `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)} ${formatHora(d)}`;
-}
 
 function textoRangoFecha(r: RangoFecha): string {
   if (r.desde && r.hasta) return `${fmtDiaHora(r.desde)} – ${fmtDiaHora(r.hasta)}`;
@@ -1873,15 +1643,6 @@ function ReplicarModal({
   );
 }
 
-// ─── Modal: Cambia fases ────────────────────────────────────────────────────
-type FaseRow = { fase: number; fecha: string; idElemento: string; tipoElemento: string; cadena: string; cliente: number };
-
-const CAMBIA_FASES_ROWS_INIT: FaseRow[] = [
-  { fase: 1, fecha: "01/07/2026 00:43", idElemento: "@27947890", tipoElemento: "Proteccion de Toma/Acometida", cadena: "52705#B1#52705-TR1#1#3", cliente: 1 },
-  { fase: 2, fecha: "01/07/2026 00:52", idElemento: "@27947891", tipoElemento: "Proteccion de Suministro", cadena: "52705#B1#52705-TR1#1#4", cliente: 3 },
-  { fase: 1, fecha: "01/07/2026 01:10", idElemento: "@27947892", tipoElemento: "Proteccion de Toma/Acometida", cadena: "52705#B1#52705-TR1#1#5", cliente: 2 },
-];
-
 function CambiaFasesModal({
   open,
   onClose,
@@ -1972,11 +1733,6 @@ function CambiaFasesModal({
     </Modal>
   );
 }
-
-// ─── Modal: Alta de clientes ────────────────────────────────────────────────
-const ALTA_CLIENTES_ROWS = [
-  { interrupcion: "BFZ202607056849", repo: 1, cadenaCuenta: "52705#B1#52705-TR1#1#3", t4: 1, t6: 0, t9: 1, t10: 107 },
-];
 
 function AltaClientesModal({
   open,
@@ -3199,10 +2955,6 @@ function ConfirmarBorrarModal({
   );
 }
 
-// ─── Modal: Confirmar modificación ─────────────────────────────────────────
-const NOTA_PRESETS = ["Procesar Lotes", "Test 2", "Test 3", "Alta manual / Modifico", "2da Alta Manual"];
-const NOTA_OPCIONES = [...NOTA_PRESETS, "Otra (especificar)"];
-
 function ConfirmarModificarModal({
   open,
   cambios,
@@ -3290,10 +3042,6 @@ function ConfirmarModificarModal({
   );
 }
 
-// ─── Modificar content ────────────────────────────────────────────────────────
-
-const RECORD = SAMPLE_ROWS[0]; // BFZ202607056849
-
 // Clases únicas para todo <input>/<select> de texto simple de la app —
 // Modificar, Alta/Búsqueda ABM y ValuePicker comparten estas dos (antes
 // existían por separado como inputCls/selectCls, ya unificadas acá).
@@ -3330,273 +3078,6 @@ const FLYOUT_FIELDS: { key: keyof FlyoutFilters; label: string; placeholder: str
   { key: "descEquipo", label: "Descripción equipo operado", placeholder: "PROTECCION DE SUMINISTRO" },
   { key: "divisionRed", label: "División red normal", placeholder: "S" },
 ];
-
-// Solo label/alert/tabKey son estáticos — el "value" que se muestra en
-// cada tarjeta se recalcula por interrupción seleccionada (ver
-// generarTablasRelacionadas más abajo), no es un dato fijo del ítem.
-const STATUS_ITEMS = [
-  { label: "TABLA 3", alert: false, tabKey: "tabla3" },
-  { label: "TABLA 5", alert: false, tabKey: "tabla5" },
-  { label: "TABLA 6", alert: false, tabKey: "tabla6" },
-  { label: "TABLA 8", alert: false, tabKey: "tabla8" },
-  { label: "TABLA 9", alert: false, tabKey: "tabla9" },
-];
-
-// Fila de la lista de Reposiciones (Tabla 4/CDS4) — campos con nombre en vez
-// de string[][], para que ReposicionesLista pueda renderizar código y
-// descripción del equipo por separado sin depender de posiciones de array.
-type FaseReposicion = {
-  nro: number;
-  horaRep: string;
-  fase: string;
-  equipoCodigo: string;
-  equipoDesc: string;
-  usuariosBT: number;
-};
-
-// Fase eléctrica de la reposición — sesgada hacia monofásicas (R/S/T) y RST
-// (el caso más común en la base real), con las combinaciones bifásicas
-// (RS/RT/ST) como minoría.
-function faseElectricaReposicionSintetica(rng: () => number): string {
-  const dado = rng();
-  if (dado < 0.55) return elegir(rng, ["R", "S", "T"]);
-  if (dado < 0.85) return "RST";
-  return elegir(rng, ["RS", "RT", "ST"]);
-}
-
-// Fases de reposición de la interrupción seleccionada — mostrada siempre
-// visible en la Card B de Consultas de interrupción (ya no detrás de un
-// tab del drawer). Varía por interrupción: la semilla es la referencia
-// seleccionada, así que la misma interrupción siempre muestra las mismas
-// fases pero cada interrupción tiene las suyas. La cantidad de filas está
-// sesgada hacia pocas (1-3 el caso típico, 4-6 menos común, 7-10 raro).
-function generarFasesSinteticas(referencia: string): FaseReposicion[] {
-  const rng = crearRng(hashSemilla(referencia + ":fases"));
-  const dado = rng();
-  const cantidad = dado < 0.65 ? enteroEntre(rng, 1, 3) : dado < 0.9 ? enteroEntre(rng, 4, 6) : enteroEntre(rng, 7, 10);
-  return Array.from({ length: cantidad }, (_, i) => ({
-    nro: i + 1,
-    horaRep: fechaSintetica(rng, 7, 2026),
-    fase: faseElectricaReposicionSintetica(rng),
-    equipoCodigo: equipoCodeSintetico(rng),
-    equipoDesc: elegir(rng, DESCRIPCIONES_EQUIPO_OPERADO),
-    usuariosBT: enteroEntre(rng, 1, 60),
-  }));
-}
-
-// Valores de "Tablas relacionadas" (indicadores TABLA 3/5/6/8/9) para la
-// interrupción seleccionada — mismo criterio: semilla = referencia, así
-// que varían de forma determinística por interrupción. Tabla 3 es SI/NO;
-// el resto son cantidades sesgadas hacia números bajos, con valores más
-// altos ocasionales.
-function generarTablasRelacionadas(referencia: string): Record<string, string> {
-  const rng = crearRng(hashSemilla(referencia + ":relacionadas"));
-  function cantidadBaja(): string {
-    const dado = rng();
-    const n = dado < 0.7 ? enteroEntre(rng, 0, 3) : dado < 0.92 ? enteroEntre(rng, 4, 10) : enteroEntre(rng, 11, 30);
-    return String(n);
-  }
-  const tabla3 = rng() < 0.5 ? "SI" : "NO";
-  return {
-    tabla3,
-    tabla5: cantidadBaja(),
-    tabla6: cantidadBaja(),
-    tabla8: cantidadBaja(),
-    tabla9: cantidadBaja(),
-  };
-}
-
-// Reclamos recibidos durante la interrupción seleccionada — mismo criterio
-// de semilla = referencia. Devuelve inicio/fin de la interrupción y el
-// instante de cada reclamo, en minutos desde el inicio (ver
-// ReclamosTimeline). Duración sesgada a pocas horas, con cortes largos
-// (días) ocasionales. Cantidad según la distribución real (agosto 2026:
-// 54% 1 reclamo, 40% 2, 4,8% 3-15, 1,5% 16-337), con las colas un poco
-// infladas para que las 40 filas de muestra cubran los cuatro casos del
-// gráfico: ~10% sin reclamos; del resto 50% 1, 35% 2, 10% 3-15, 5% 16-400.
-// La curva típica: arranca rápido, pica al rato y decae.
-type ReclamosInterrupcion = { inicio: Date; fin: Date; minutos: number[] };
-
-function parseFechaHora(texto: string): Date {
-  const [fecha, hora = "00:00"] = texto.split(" ");
-  const [d, m, a] = fecha.split("/").map(Number);
-  const [hh, mm] = hora.split(":").map(Number);
-  return new Date(a, m - 1, d, hh, mm);
-}
-
-function generarReclamosSinteticos(referencia: string, fechaInicio: string): ReclamosInterrupcion {
-  const rng = crearRng(hashSemilla(referencia + ":reclamos"));
-  const dado = rng();
-  const duracionMin =
-    dado < 0.6 ? enteroEntre(rng, 40, 240)
-    : dado < 0.85 ? enteroEntre(rng, 241, 720)
-    : dado < 0.96 ? enteroEntre(rng, 721, 2880)
-    : enteroEntre(rng, 2881, 7200);
-  const inicio = parseFechaHora(fechaInicio);
-  const fin = new Date(inicio.getTime() + duracionMin * 60000);
-  const dadoCantidad = rng();
-  const cantidad =
-    dadoCantidad < 0.1 ? 0
-    : dadoCantidad < 0.55 ? 1
-    : dadoCantidad < 0.865 ? 2
-    : dadoCantidad < 0.955 ? enteroEntre(rng, 3, 15)
-    : enteroEntre(rng, 16, 400);
-  const minutos = Array.from({ length: cantidad }, () =>
-    Math.min(duracionMin - 1, Math.floor(duracionMin * (0.02 + rng() * 0.12 + Math.pow(rng(), 2.2) * 0.86))),
-  );
-  return { inicio, fin, minutos };
-}
-
-// Filas de cada tab del drawer "Tablas relacionadas" (5/6/8/9) — misma
-// semilla que los tiles (referencia + reposición seleccionada, ver
-// generarTablasRelacionadas): la cantidad SIEMPRE coincide con el valor
-// del tile correspondiente (valoresRelacionadas), y en las tablas con
-// columnas "Interrupción"/"Fase" (5, 6, 9) esas dos columnas quedan fijas
-// en la referencia y el número de reposición seleccionados — el tab
-// muestra solo las filas de esa reposición puntual.
-//
-// ⚠ Antes tabla6/tabla9 tenían UNA fila hardcodeada (misma referencia que
-// una fila igualmente hardcodeada en ABM_TABLE_CONFIGS.cds6/cds9.rows)
-// para que el deep-link "Ir a ABM" siempre encontrara y seleccionara esa
-// fila en destino. Con filas generadas por reposición, ese match dejó de
-// estar garantizado (las referencias sintéticas no van a coincidir con
-// las de cds5/6/8/9, que usan semillas fijas propias) — mismo
-// comportamiento de soft-fail que ya tenía tabla8 (ver
-// AbmScreen: `config.rows.findIndex` sin match → sin crash, sin fila
-// preseleccionada, el buscador queda con el valor precargado nomás).
-// Decisión conversada con el usuario: aceptar ese soft-fail en vez de
-// tocar ABM_TABLE_CONFIGS para forzar un match real.
-function generarFilasTabla5(seed: string, referencia: string, nroReposicion: number, cantidad: number): string[][] {
-  const rng = crearRng(hashSemilla(seed + ":tabla5"));
-  return filasSinteticas(cantidad, () => [
-    referencia,
-    String(nroReposicion),
-    cadenaCodeSintetica(rng),
-    String(enteroEntre(rng, 100, 2000)),
-    elegir(rng, ["R", "S", "T", "RS", "RT", "ST", "RST"]),
-    String(enteroEntre(rng, 1, 900)),
-  ]);
-}
-function generarFilasTabla6(seed: string, referencia: string, nroReposicion: number, cantidad: number): string[][] {
-  const rng = crearRng(hashSemilla(seed + ":tabla6"));
-  return filasSinteticas(cantidad, () => [
-    referencia,
-    String(nroReposicion),
-    clienteIdSintetico(rng),
-    String(enteroEntre(rng, 50, 5000)),
-    cadenaCodeSintetica(rng),
-    cadenaCodeSintetica(rng),
-    elegir(rng, ["1MT", "2MT", "3MT", "4MT"]),
-    String(enteroEntre(rng, 50, 900)),
-    elegir(rng, ["MT", "AT"]),
-  ]);
-}
-function generarFilasTabla8(seed: string, cantidad: number): string[][] {
-  const rng = crearRng(hashSemilla(seed + ":tabla8"));
-  return filasSinteticas(cantidad, () => {
-    const domicilio = elegir(rng, PARTIDOS_LOCALIDADES_SINTETICOS);
-    return [
-      recCodeSintetico(rng),
-      fechaSintetica(rng, 1, 2024),
-      clienteIdSintetico(rng),
-      elegir(rng, NOMBRES_SINTETICOS),
-      elegir(rng, ["1R", "1G", "2", "3"]),
-      elegir(rng, CODIGOS_FALLA_SINTETICOS),
-      elegir(rng, ["", "1", "2", "3", "PB"]),
-      elegir(rng, ["", "A", "B", "C"]),
-      domicilio.partido,
-    ];
-  });
-}
-function generarFilasTabla9(seed: string, referencia: string, nroReposicion: number, cantidad: number): string[][] {
-  const rng = crearRng(hashSemilla(seed + ":tabla9"));
-  return filasSinteticas(cantidad, () => [
-    referencia,
-    String(nroReposicion),
-    clienteIdSintetico(rng),
-    elegir(rng, ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"]),
-    cadenaCodeSintetica(rng),
-    cadenaCodeSintetica(rng),
-  ]);
-}
-
-const DRAWER_TABS = [
-  {
-    key: "tabla4", label: "Tabla 4",
-    subtitle: "Reposiciones",
-    // ⚠ "Fase" acá es la fase ELÉCTRICA de la reposición (R/S/T/RS/RT/ST/
-    // RST) — no confundir con la columna "Fase" de Tabla 5/6/9 (más abajo
-    // en este mismo array), que guarda el NÚMERO de reposición. Mismo
-    // nombre, dos significados distintos dentro del drawer — reportado,
-    // sin resolver a propósito (ver mensaje de entrega).
-    cols: ["Reposición", "Hora reposición", "Fase", "Equipo", "Usuarios BT"],
-    filtrables: [] as string[],
-    // Sin uso — Card B arma sus propias filas via generarFasesSinteticas,
-    // acá solo quedan cols/subtitle/key/label.
-    rows: [] as string[][],
-  },
-  {
-    key: "tabla3", label: "Tabla 3",
-    subtitle: "Existencia en tabla",
-    cols: ["Existencia"],
-    filtrables: [] as string[],
-    rows: [] as string[][],
-  },
-  {
-    key: "tabla5", label: "Tabla 5",
-    subtitle: "Transformadores MT/BT repuestos en interrupciones AT/MT (CDS5)",
-    cols: ["Interrupción", "Fase", "Cadena eléctrica", "Potencia (Kva)", "Fase eléctrica", "Cant. clientes BT"],
-    // Columnas con FilterTrigger en el toolbar del modal (por nombre de `cols`).
-    filtrables: ["Fase eléctrica"],
-    // Buscador = columnas de `cols` que NO están en `filtrables`. Con 3+
-    // columnas buscables el placeholder es obligatorio (si no, se arma solo:
-    // "Buscar {col}…" / "Buscar {col1} o {col2}…").
-    searchPlaceholder: "Buscar interrupción o cadena…",
-    // Sin uso — ModificarContent arma las filas via generarFilasTabla5,
-    // acá solo quedan cols/subtitle/key/label.
-    rows: [] as string[][],
-  },
-  {
-    key: "tabla6", label: "Tabla 6",
-    subtitle: "Clientes AT/MT afectados en interrupciones AT/MT (CDS6)",
-    cols: ["Interrupción", "Fase", "Cliente", "Consumo", "CT T9", "CT T10", "Tarifa", "Demanda media", "Tensión"],
-    filtrables: ["Tarifa", "Tensión", "CT T9", "CT T10"],
-    searchPlaceholder: "Buscar interrupción o cliente…",
-    // Sin uso — ModificarContent arma las filas via generarFilasTabla6.
-    rows: [] as string[][],
-  },
-  {
-    key: "tabla8", label: "Tabla 8",
-    subtitle: "Reclamos de clientes (CDS8)",
-    cols: ["Reclamo", "Fecha", "Cliente", "Nombre", "Tarifa", "Causa", "Piso", "Dpto", "Partido"],
-    filtrables: ["Tarifa", "Causa", "Partido"],
-    searchPlaceholder: "Buscar reclamo, cliente o nombre…",
-    // Sin uso — ModificarContent arma las filas via generarFilasTabla8.
-    rows: [] as string[][],
-  },
-  {
-    key: "tabla9", label: "Tabla 9",
-    subtitle: "Interrupciones por cliente (CDS9)",
-    cols: ["Interrupción", "Fase", "Cliente", "Tarifa", "CT T9", "CT T10"],
-    filtrables: ["Tarifa", "CT T9", "CT T10"],
-    searchPlaceholder: "Buscar interrupción o cliente…",
-    // Sin uso — ModificarContent arma las filas via generarFilasTabla9.
-    rows: [] as string[][],
-  },
-];
-
-// Mapeo de tabs del drawer "Tablas relacionadas" a su tabla ABM equivalente
-// — solo los 4 tabs acotados a la interrupción actual (CDS5/6/8/9); tabla3
-// y tabla4 no tienen equivalente en el motor ABM y quedan sin mapeo.
-// `campoCodigoInterrupcion` es el `nombre` del campo de búsqueda a precargar
-// en destino; `columnaCodigoInterrupcion` es la key de columnasResultado
-// usada para encontrar y seleccionar la fila correspondiente.
-const DRAWER_TAB_TO_ABM: Partial<Record<string, { tableKey: AbmTableKey; campoCodigoInterrupcion: string; columnaCodigoInterrupcion: string }>> = {
-  tabla5: { tableKey: "cds5", campoCodigoInterrupcion: "codigoInterrupcion", columnaCodigoInterrupcion: "ref" },
-  tabla6: { tableKey: "cds6", campoCodigoInterrupcion: "codigoInterrupcion", columnaCodigoInterrupcion: "ref" },
-  tabla8: { tableKey: "cds8", campoCodigoInterrupcion: "interrupcion", columnaCodigoInterrupcion: "ref" },
-  tabla9: { tableKey: "cds9", campoCodigoInterrupcion: "codigoInterrupcion", columnaCodigoInterrupcion: "ref" },
-};
 
 // Badge de código de tabla (ej. "CDS2", "CDS6") — mismo componente en todo
 // lugar donde haga falta dejar explícito sobre qué tabla ABM se trabaja:
@@ -3932,34 +3413,6 @@ const TIMELINE_MODAL: GeometriaTimeline = {
 const TIMELINE_X0 = 8;
 const TIMELINE_SEP_MIN = 5; // px mínimos entre hitos consecutivos
 const TIMELINE_CADENA_SATURADA = 3; // desplazamientos seguidos → modo saturado
-
-// "3 h 8 min", "1 d 23 h".
-function fmtDuracion(min: number): string {
-  const d = Math.floor(min / 1440);
-  const h = Math.floor((min % 1440) / 60);
-  const m = min % 60;
-  if (d > 0) return h > 0 ? `${d} d ${h} h` : `${d} d`;
-  if (h > 0) return m > 0 ? `${h} h ${m} min` : `${h} h`;
-  return `${m} min`;
-}
-
-// Delta desde el inicio: "+8 min", "+1 h 14 min".
-function fmtDelta(min: number): string {
-  return `+${fmtDuracion(min)}`;
-}
-
-// "80% llegó en": número grande + última unidad en chico ("1 h 14" + "min").
-function partesDuracion(min: number): [string, string] {
-  const txt = fmtDuracion(min);
-  const i = txt.lastIndexOf(" ");
-  return [txt.slice(0, i), txt.slice(i + 1)];
-}
-
-// "HH:mm", o "dd/mm HH:mm" cuando la interrupción dura más de un día.
-function fmtHoraCorta(d: Date, conDia: boolean): string {
-  const hora = formatHora(d);
-  return conDia ? `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)} ${hora}` : hora;
-}
 
 // Ancho en px de un elemento, en vivo (ResizeObserver).
 function useAncho<T extends HTMLElement>() {
@@ -5820,707 +5273,6 @@ function ModificarContent({
   );
 }
 
-// ─── ABM engine (config-driven) ────────────────────────────────────────────
-// Motor generico para las 9 tablas ABM (CDS2..CDS9-NM). En vez de un
-// componente por tabla, cada tabla es una entrada de ABM_TABLE_CONFIGS y
-// AbmScreen renderiza formulario de busqueda + tabla de resultados + action
-// bar contextual a partir de esa config. CDS2/CDS3/CDS4 quedan migradas a
-// este motor reproduciendo exactamente su comportamiento actual; CDS5..CDS9NM
-// son tablas nuevas relevadas de capturas de produccion.
-
-type AbmTableKey = "cds2" | "cds3" | "cds4" | "cds5" | "cds6" | "cds7" | "cds8" | "cds9" | "cds9nm";
-
-const ABM_TABLE_ORDER: AbmTableKey[] = ["cds2", "cds3", "cds4", "cds5", "cds6", "cds7", "cds8", "cds9", "cds9nm"];
-
-function isAbmTableKey(s: string): s is AbmTableKey {
-  return (ABM_TABLE_ORDER as string[]).includes(s);
-}
-
-// Modo del panel: "buscar" (default), "alta" (formulario de Insertar) o
-// "modificar" (formulario de Modificar, disparado desde la action bar de
-// selección). Alta y modificar comparten el mismo tratamiento visual del
-// panel de resultados (atenuado/deshabilitado).
-type AbmMode = "buscar" | "alta" | "modificar";
-
-// Deep-link hacia una tabla ABM con un campo precargado — usado por el
-// modal "Tablas relacionadas" de Modificar interrupción para saltar
-// directo a CDS5/6/8/9 con la interrupción actual ya cargada. `modo:
-// "buscar"` precarga el campo, ejecuta la búsqueda y selecciona la fila que
-// matchea `columna`/`valor` en los resultados; `modo: "alta"` precarga el
-// campo y entra directo en modo Insertar.
-type AbmDeepLink = {
-  tableKey: AbmTableKey;
-  campo: string; // nombre del campo de camposBusqueda a precargar
-  columna: string; // key de columnasResultado usada para encontrar la fila a seleccionar
-  valor: string;
-  modo: "buscar" | "alta";
-  // Tab del modal "Tablas relacionadas" desde el que se disparó el
-  // deep-link — usado solo para reabrirlo al volver a Consultas.
-  relTabOrigen?: string;
-  // Referencia (SAMPLE_ROWS) de la interrupción que se estaba mirando en
-  // Consultas al disparar el deep-link — usada por "Volver" para
-  // restaurar exactamente esa selección, no solo la pantalla.
-  referenciaOrigen?: string;
-  // Número de reposición (.nro) seleccionado en Consultas al disparar el
-  // deep-link — usado junto con referenciaOrigen para que "Volver"
-  // restaure la reposición exacta, no siempre la primera.
-  reposicionOrigen?: number;
-};
-
-type CampoOpcion = string | { value: string; label: string };
-type CampoTipo = "texto" | "select" | "fecha" | "readonly" | "toggle" | "combobox";
-
-type CampoBusqueda = {
-  nombre: string;
-  label: string;
-  tipo: CampoTipo;
-  // Función en vez de array fijo: opciones en cascada que dependen de otro
-  // campo del mismo formulario (ver AbmCampo, que la resuelve pasándole
-  // `valoresFormulario`) — sin acoplar el nombre del campo del que depende
-  // ni la tabla a este tipo.
-  opciones?: CampoOpcion[] | ((valores: Record<string, string>) => CampoOpcion[]);
-  placeholder?: string;
-  // Ancho solo se aplica cuando el campo va solo en su fila (fila de 1).
-  ancho?: string;
-  // Nombres de otros campos que se vacían cuando este campo cambia de
-  // valor — típicamente el campo dependiente de una cascada (ver
-  // `opciones` función), para que no quede un valor huérfano que ya no es
-  // una opción válida del campo dependiente.
-  limpiaAlCambiar?: string[];
-  // Solo aplica a tipo "toggle", en una fila donde es el único campo (sin
-  // nada más para acompañarlo, ver Causa en CDS3): en vez del criterio
-  // default (shrink-to-fit + espacio en blanco aceptado a la derecha), los
-  // botones se reparten el 100% del ancho de la fila entre los dos, como
-  // si fueran un input.
-  expandirBotones?: boolean;
-  // "select"/"combobox" con ~20+ opciones (Partido, Localidad, Descripción
-  // equipo operado): el panel inline deja de ser usable, así que ValuePicker
-  // lo abre como modal centrado con buscador en vez de panel junto al
-  // trigger — el resto del chrome (trigger, fila de opción, hover/selected)
-  // es el mismo panel inline que cualquier select/combobox corto.
-  listaLarga?: boolean;
-  // Mensaje de "sin opciones" a medida (ej. Localidad antes de elegir
-  // Partido) — default genérico si no se especifica.
-  emptyMessage?: string;
-};
-
-type SeccionBusqueda = {
-  titulo: string;
-  // Cada fila tiene 1 o 2 campos — 2 campos se renderizan en grid-cols-2,
-  // 1 campo ocupa el ancho completo (o `ancho` si se especifica).
-  filas: CampoBusqueda[][];
-};
-
-type ColumnaResultado = {
-  key: string;
-  label: string;
-  // Sin width/align: la tabla de Resultados es un <table> real donde cada
-  // columna siempre se ajusta a su propio contenido (shrink-to-fit,
-  // alineada a la izquierda) — ver AbmScreen.
-  mono?: boolean;
-};
-
-type AbmTableConfig = {
-  key: AbmTableKey;
-  code: string;
-  titulo: string;
-  hasInsertar: boolean;
-  secciones: SeccionBusqueda[];
-  columnasResultado: ColumnaResultado[];
-  rows: Record<string, string>[];
-  totalRegistros: number;
-  exportFilename: string;
-  // Nombres de campo (los mismos `nombre` de camposBusqueda) que quedan no
-  // editables en modo Modificar. Reusa el mismo tratamiento visual de
-  // "readonly" ya usado en el formulario de búsqueda — independiente del
-  // `tipo` que ese campo tenga en modo búsqueda/alta (p. ej. en CDS2 el
-  // código de interrupción es editable al buscar pero se bloquea al
-  // modificar).
-  camposReadonlyEnModificar?: string[];
-  // Mapeo de key de columnasResultado → nombre de campo de camposBusqueda,
-  // usado por el estado "consultando" (fila seleccionada en Resultados
-  // mientras se sigue en modo buscar): al seleccionar una fila, sus
-  // valores se vuelcan en los campos mapeados y el formulario entero pasa
-  // a solo-lectura. Los campos sin mapeo (la fila no trae ese dato) quedan
-  // igual de no-editables, solo que en blanco.
-  mapeoFilaACampos: Record<string, string>;
-};
-
-const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
-  cds2: {
-    key: "cds2",
-    code: "CDS2",
-    titulo: "Interrupciones",
-    hasInsertar: false,
-    secciones: [
-      {
-        titulo: "Identificación",
-        filas: [
-          [
-            { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BFZ202607056849" },
-            { nombre: "fecha", label: "Fecha", tipo: "fecha" },
-          ],
-        ],
-      },
-      {
-        titulo: "Clasificación",
-        // Orden Nivel, Fase, Origen, Tipo (no el orden "de lectura" Nivel/
-        // Origen/Tipo/Fase) — en tamaño normal esta fila de 4 sigue en una
-        // sola línea (gridTemplateColumns propio de AbmFila, no le importa
-        // el orden), pero en tier 760px (grilla plana de 2 columnas, ver
-        // AbmScreen) el wrap natural empareja de a 2 en el orden del
-        // array: así entran (Nivel+Fase) y (Origen+Tipo), no (Nivel+Origen)
-        // y (Tipo+Fase).
-        filas: [
-          [
-            { nombre: "nivelTension", label: "Nivel de tensión", tipo: "toggle", opciones: ["BT", "MT", "AT"] },
-            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "select", opciones: ["R", "S", "T", "RST"] },
-            { nombre: "origen", label: "Origen", tipo: "toggle", opciones: [{ value: "I", label: "Interno" }, { value: "E", label: "Externo" }] },
-            { nombre: "tipo", label: "Tipo", tipo: "toggle", opciones: [{ value: "F", label: "Forzado" }, { value: "P", label: "Programado" }] },
-          ],
-        ],
-      },
-      {
-        titulo: "Datos de red",
-        filas: [
-          [
-            { nombre: "codigoEquipoOperado", label: "Código de equipo operado", tipo: "texto" },
-            { nombre: "descEquipoOperado", label: "Descripción equipo operado", tipo: "combobox", opciones: DESCRIPCIONES_EQUIPO_OPERADO, listaLarga: true },
-          ],
-          [
-            { nombre: "divisionRedNormal", label: "División red normal?", tipo: "toggle", opciones: ["Sí", "No"] },
-            { nombre: "cadenaElectricaAguasArriba", label: "Cadena eléctrica aguas arriba", tipo: "texto" },
-          ],
-          [
-            { nombre: "alimentadorMT", label: "Alimentador MT", tipo: "texto" },
-            { nombre: "ctMtBtEquipoOperado", label: "CT MT/BT del equipo operado", tipo: "texto" },
-          ],
-        ],
-      },
-    ],
-    columnasResultado: [
-      { key: "referencia", label: "Referencia", mono: true },
-      { key: "fecha", label: "Fecha" },
-    ],
-    mapeoFilaACampos: {
-      referencia: "codigoInterrupcion",
-      fecha: "fecha",
-      nivel: "nivelTension",
-      origen: "origen",
-      tipo: "tipo",
-      faseElectrica: "faseElectrica",
-      codigoEquipoOperado: "codigoEquipoOperado",
-      descEquipoOperado: "descEquipoOperado",
-      divisionRedNormal: "divisionRedNormal",
-      cadenaElectricaAguasArriba: "cadenaElectricaAguasArriba",
-      alimentadorMT: "alimentadorMT",
-      ctMtBtEquipoOperado: "ctMtBtEquipoOperado",
-    },
-    // origen/tipo se traducen de la etiqueta que usa SAMPLE_ROWS (compartida
-    // con ModificarContent, que sí necesita "Interno"/"Forzado" tal cual)
-    // al value de las opciones de este formulario ("I"/"E", "F"/"P").
-    rows: SAMPLE_ROWS.map((r) => ({
-      referencia: r.referencia,
-      fecha: r.fecha,
-      nivel: r.nivel,
-      origen: r.origen === "Interno" ? "I" : "E",
-      tipo: r.tipo === "Forzado" ? "F" : "P",
-      faseElectrica: r.faseElectrica,
-      codigoEquipoOperado: r.codigoEquipoOperado,
-      descEquipoOperado: r.descEquipoOperado,
-      divisionRedNormal: r.divisionRedNormal,
-      cadenaElectricaAguasArriba: r.cadenaElectricaAguasArriba,
-      alimentadorMT: r.alimentadorMT,
-      ctMtBtEquipoOperado: r.ctMtBtEquipoOperado,
-    })),
-    totalRegistros: TOTAL_REGISTROS,
-    exportFilename: "interrupciones",
-    camposReadonlyEnModificar: ["codigoInterrupcion", "origen", "tipo"],
-  },
-
-  cds3: {
-    key: "cds3",
-    code: "CDS3",
-    titulo: "Interrupciones no computables",
-    hasInsertar: true,
-    secciones: [
-      {
-        titulo: "Identificación",
-        filas: [
-          [
-            { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BPR202607059383" },
-            { nombre: "faseReposicion", label: "Fase de reposición", tipo: "texto", placeholder: "1" },
-          ],
-        ],
-      },
-      {
-        titulo: "Clasificación",
-        filas: [[{ nombre: "causa", label: "Causa", tipo: "toggle", opciones: CAUSAS_NC, expandirBotones: true }]],
-      },
-    ],
-    columnasResultado: [
-      { key: "referencia", label: "Referencia", mono: true },
-      { key: "fase", label: "Fase" },
-    ],
-    mapeoFilaACampos: { referencia: "codigoInterrupcion", fase: "faseReposicion", causa: "causa" },
-    rows: CDS3_ROWS.map((r) => ({ referencia: r.referencia, fase: r.fase, causa: r.causa })),
-    totalRegistros: CDS3_TOTAL,
-    exportFilename: "interrupciones_no_computables",
-    camposReadonlyEnModificar: ["codigoInterrupcion", "faseReposicion"],
-  },
-
-  cds4: {
-    key: "cds4",
-    code: "CDS4",
-    titulo: "Reposiciones",
-    hasInsertar: true,
-    secciones: [
-      {
-        titulo: "Identificación",
-        filas: [
-          [
-            { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BPR202607059383" },
-            { nombre: "faseReposicion", label: "Fase de reposición", tipo: "texto", placeholder: "1" },
-          ],
-          [
-            { nombre: "fecha", label: "Fecha", tipo: "fecha" },
-            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "texto", placeholder: "RST" },
-          ],
-        ],
-      },
-      {
-        titulo: "Datos de red",
-        filas: [
-          [{ nombre: "codigoEquipoManiobrado", label: "Código del equipo maniobrado", tipo: "texto", placeholder: "@47309278" }],
-          [{ nombre: "descEquipoManiobrado", label: "Descripción del equipo maniobrado", tipo: "texto", placeholder: "PROTECCION DE TOMA/ACOMETIDA" }],
-          [
-            { nombre: "cadenaElectricaAguasArriba", label: "Cadena eléctrica aguas arriba", tipo: "texto", placeholder: "NCBT" },
-            { nombre: "alimentadorMT", label: "Alimentador MT", tipo: "texto", placeholder: "NCBT" },
-          ],
-          [
-            { nombre: "cantidadClientesBt", label: "Cantidad de clientes BT repuestos", tipo: "texto", placeholder: "1" },
-            { nombre: "ctMtBtManiobrado", label: "CT MT/BT maniobrado", tipo: "texto", placeholder: "NCBT" },
-          ],
-        ],
-      },
-    ],
-    columnasResultado: [
-      { key: "referencia", label: "Referencia", mono: true },
-      { key: "fase", label: "Fase" },
-      { key: "fecha", label: "Fecha" },
-    ],
-    mapeoFilaACampos: {
-      referencia: "codigoInterrupcion",
-      fase: "faseReposicion",
-      fecha: "fecha",
-      faseElectrica: "faseElectrica",
-      codigoEquipoManiobrado: "codigoEquipoManiobrado",
-      descEquipoManiobrado: "descEquipoManiobrado",
-      cadenaElectricaAguasArriba: "cadenaElectricaAguasArriba",
-      alimentadorMT: "alimentadorMT",
-      cantidadClientesBt: "cantidadClientesBt",
-      ctMtBtManiobrado: "ctMtBtManiobrado",
-    },
-    rows: CDS4_ROWS.map((r) => ({
-      referencia: r.referencia,
-      fase: r.fase,
-      fecha: r.fecha,
-      faseElectrica: r.faseElectrica,
-      codigoEquipoManiobrado: r.codigoEquipoManiobrado,
-      descEquipoManiobrado: r.descEquipoManiobrado,
-      cadenaElectricaAguasArriba: r.cadenaElectricaAguasArriba,
-      alimentadorMT: r.alimentadorMT,
-      cantidadClientesBt: r.cantidadClientesBt,
-      ctMtBtManiobrado: r.ctMtBtManiobrado,
-    })),
-    totalRegistros: CDS4_TOTAL,
-    exportFilename: "reposiciones",
-    camposReadonlyEnModificar: ["codigoInterrupcion", "faseReposicion"],
-  },
-
-  cds5: {
-    key: "cds5",
-    code: "CDS5",
-    titulo: "Trafos MT/BT repuestos en interrupciones MT y AT",
-    hasInsertar: true,
-    secciones: [
-      {
-        titulo: "Identificación",
-        filas: [[
-          { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MFZ202401001157" },
-          { nombre: "faseReposicion", label: "Fase de reposición", tipo: "readonly", placeholder: "1" },
-        ]],
-      },
-      {
-        titulo: "Datos del trafo",
-        filas: [
-          [
-            { nombre: "cadenaElectrica", label: "Cadena eléctrica del trafo repuesto", tipo: "texto", placeholder: "50006#B1#50006-TR1" },
-            { nombre: "potenciaKva", label: "Potencia en KVA del trafo", tipo: "texto", placeholder: "800" },
-          ],
-          [
-            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "texto", placeholder: "RST" },
-            { nombre: "cantidadClientesBt", label: "Cantidad de clientes BT repuestos", tipo: "texto", placeholder: "753" },
-          ],
-        ],
-      },
-    ],
-    columnasResultado: [
-      { key: "ref", label: "Ref", mono: true },
-      { key: "f", label: "F" },
-      { key: "cadena", label: "Cadena" },
-    ],
-    mapeoFilaACampos: {
-      ref: "codigoInterrupcion",
-      f: "faseReposicion",
-      cadena: "cadenaElectrica",
-      potenciaKva: "potenciaKva",
-      faseElectrica: "faseElectrica",
-      cantidadClientesBt: "cantidadClientesBt",
-    },
-    rows: (() => {
-      const rng = crearRng(20250105);
-      return filasSinteticas(N_FILAS_SINTETICAS, () => ({
-        ref: refInterrupcionSintetica(rng, "2024"),
-        f: String(enteroEntre(rng, 1, 5)),
-        cadena: cadenaCodeSintetica(rng),
-        potenciaKva: String(enteroEntre(rng, 100, 2000)),
-        faseElectrica: elegir(rng, ["R", "S", "T", "RS", "RT", "ST", "RST"]),
-        cantidadClientesBt: String(enteroEntre(rng, 1, 900)),
-      }));
-    })(),
-    totalRegistros: 18942,
-    exportFilename: "trafos_repuestos",
-    camposReadonlyEnModificar: ["codigoInterrupcion", "faseReposicion"],
-  },
-
-  cds6: {
-    key: "cds6",
-    code: "CDS6",
-    titulo: "Clientes AT/MT afectados en interrupciones MT/AT",
-    hasInsertar: true,
-    secciones: [
-      {
-        titulo: "Identificación",
-        filas: [[
-          { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MPR202401004095" },
-          { nombre: "fase", label: "Fase", tipo: "readonly", placeholder: "1" },
-        ]],
-      },
-      {
-        titulo: "Cliente",
-        filas: [
-          [
-            { nombre: "idComercialCliente", label: "Id. comercial del cliente", tipo: "texto", placeholder: "9933000000" },
-            { nombre: "consumo", label: "Consumo", tipo: "readonly", placeholder: "1240" },
-            { nombre: "ctTabla9", label: "CT (Tabla 9)", tipo: "readonly", placeholder: "50006#B1#50006-TR1" },
-            { nombre: "ctTabla10", label: "CT (Tabla 10)", tipo: "readonly", placeholder: "50006#B1#50006-TR1" },
-          ],
-          [
-            { nombre: "demandaMedia", label: "Demanda media del cliente (KW)", tipo: "texto", placeholder: "290" },
-            { nombre: "tarifa", label: "Tarifa", tipo: "texto", placeholder: "3MT" },
-            { nombre: "nivelTension", label: "Nivel de tensión", tipo: "texto", placeholder: "MT" },
-          ],
-        ],
-      },
-    ],
-    columnasResultado: [
-      { key: "ref", label: "Ref", mono: true },
-      { key: "fase", label: "Fase" },
-      { key: "cliente", label: "Cliente", mono: true },
-    ],
-    mapeoFilaACampos: {
-      ref: "codigoInterrupcion",
-      fase: "fase",
-      cliente: "idComercialCliente",
-      consumo: "consumo",
-      ctTabla9: "ctTabla9",
-      ctTabla10: "ctTabla10",
-      demandaMedia: "demandaMedia",
-      tarifa: "tarifa",
-      nivelTension: "nivelTension",
-    },
-    rows: (() => {
-      const rng = crearRng(20250106);
-      const generadas = filasSinteticas(N_FILAS_SINTETICAS - 1, () => ({
-        ref: refInterrupcionSintetica(rng, "2024"),
-        fase: String(enteroEntre(rng, 1, 5)),
-        cliente: clienteIdSintetico(rng),
-        consumo: String(enteroEntre(rng, 50, 5000)),
-        ctTabla9: cadenaCodeSintetica(rng),
-        ctTabla10: cadenaCodeSintetica(rng),
-        demandaMedia: String(enteroEntre(rng, 50, 900)),
-        tarifa: elegir(rng, ["1MT", "2MT", "3MT", "4MT"]),
-        nivelTension: elegir(rng, ["MT", "AT"]),
-      }));
-      // Fila fija — misma interrupción que usa DRAWER_TABS.tabla6 en el
-      // drawer de Consultas de interrupción, para que el deep-link a
-      // ABM/CDS6 encuentre y seleccione esta fila en destino.
-      return [{
-        ref: "MPR202401004095", fase: "1", cliente: "9933000000",
-        consumo: "1240", ctTabla9: "50412#B1#50412-TR1", ctTabla10: "50413#B1#50413-TR1",
-        demandaMedia: "310", tarifa: "3MT", nivelTension: "MT",
-      }, ...generadas];
-    })(),
-    totalRegistros: 777,
-    exportFilename: "clientes_mt_afectados",
-    camposReadonlyEnModificar: ["codigoInterrupcion", "fase", "consumo", "ctTabla9", "ctTabla10"],
-  },
-
-  cds7: {
-    key: "cds7",
-    code: "CDS7",
-    titulo: "Instalaciones MT",
-    hasInsertar: true,
-    secciones: [
-      {
-        titulo: "Identificación",
-        filas: [
-          [
-            { nombre: "alimentadorMT", label: "Alimentador MT", tipo: "texto", placeholder: "NCBT" },
-            { nombre: "subestacion", label: "Subestación", tipo: "texto", placeholder: "SE NORTE" },
-          ],
-          [{ nombre: "zona", label: "Zona", tipo: "toggle", opciones: ZONAS_CDS7, expandirBotones: true }],
-        ],
-      },
-      {
-        titulo: "Datos del alimentador",
-        filas: [
-          [
-            { nombre: "cantClientes", label: "Cantidad de clientes del alimentador", tipo: "texto", placeholder: "1250" },
-            { nombre: "cantTrafos", label: "Cantidad de trafos MT/BT del alimentador", tipo: "texto", placeholder: "48" },
-          ],
-          [
-            { nombre: "sumaPotenciaTrafos", label: "Suma potencia media trafos MT/BT del alimentador", tipo: "texto", placeholder: "3200" },
-            { nombre: "demandaMaxima", label: "Demanda máxima", tipo: "texto", placeholder: "2800" },
-          ],
-          [
-            { nombre: "sumaPotenciaClientesMT", label: "Suma potencia media clientes MT del alimentador", tipo: "texto", placeholder: "450" },
-            { nombre: "capacidadAlimentador", label: "Capacidad del alimentador", tipo: "texto", placeholder: "4000" },
-          ],
-          [
-            { nombre: "tensionAlimentador", label: "Tensión del alimentador", tipo: "texto", placeholder: "13.2" },
-            { nombre: "longitudAlimentador", label: "Longitud del alimentador", tipo: "texto", placeholder: "28.4" },
-          ],
-        ],
-      },
-    ],
-    columnasResultado: [
-      { key: "alim", label: "Alim", mono: true },
-      { key: "zona", label: "Zona" },
-      { key: "ssee", label: "SSEE" },
-    ],
-    mapeoFilaACampos: {
-      alim: "alimentadorMT",
-      zona: "zona",
-      ssee: "subestacion",
-      cantClientes: "cantClientes",
-      cantTrafos: "cantTrafos",
-      sumaPotenciaTrafos: "sumaPotenciaTrafos",
-      demandaMaxima: "demandaMaxima",
-      sumaPotenciaClientesMT: "sumaPotenciaClientesMT",
-      capacidadAlimentador: "capacidadAlimentador",
-      tensionAlimentador: "tensionAlimentador",
-      longitudAlimentador: "longitudAlimentador",
-    },
-    rows: (() => {
-      const rng = crearRng(20250107);
-      return filasSinteticas(N_FILAS_SINTETICAS, () => ({
-        alim: String(enteroEntre(rng, 5000, 5999)),
-        zona: elegir(rng, ZONAS_CDS7),
-        ssee: String(enteroEntre(rng, 100, 299)),
-        cantClientes: String(enteroEntre(rng, 200, 3000)),
-        cantTrafos: String(enteroEntre(rng, 5, 120)),
-        sumaPotenciaTrafos: String(enteroEntre(rng, 500, 6000)),
-        demandaMaxima: String(enteroEntre(rng, 400, 5000)),
-        sumaPotenciaClientesMT: String(enteroEntre(rng, 50, 900)),
-        capacidadAlimentador: String(enteroEntre(rng, 2000, 8000)),
-        tensionAlimentador: elegir(rng, ["13.2", "33"]),
-        longitudAlimentador: (enteroEntre(rng, 50, 600) / 10).toFixed(1),
-      }));
-    })(),
-    totalRegistros: 2034,
-    exportFilename: "instalaciones_mt",
-  },
-
-  cds8: {
-    key: "cds8",
-    code: "CDS8",
-    titulo: "Reclamos de clientes",
-    hasInsertar: false,
-    secciones: [
-      {
-        titulo: "Reclamo",
-        filas: [
-          [
-            { nombre: "idReclamo", label: "Identificador del reclamo", tipo: "readonly", placeholder: "R-2024-01-00001" },
-            { nombre: "interrupcion", label: "Interrupción", tipo: "texto", placeholder: "MFZ202401001496" },
-            { nombre: "reclamos", label: "Reclamos", tipo: "readonly", placeholder: "3" },
-          ],
-          [
-            { nombre: "fechaReclamo", label: "Fecha reclamo", tipo: "fecha" },
-            { nombre: "codigoFalla", label: "Código falla", tipo: "texto", placeholder: "Otros" },
-          ],
-        ],
-      },
-      {
-        titulo: "Cliente",
-        filas: [
-          [
-            { nombre: "nroPoliza", label: "Nro póliza", tipo: "readonly", placeholder: "123456" },
-            { nombre: "nombre", label: "Nombre", tipo: "texto", placeholder: "MENDEZ MONICA ISABEL" },
-            { nombre: "tarifa", label: "Tarifa", tipo: "texto", placeholder: "1R" },
-          ],
-          [
-            { nombre: "calle", label: "Calle", tipo: "texto", placeholder: "SALTA" },
-            { nombre: "nro", label: "Nro", tipo: "texto", placeholder: "666" },
-            { nombre: "piso", label: "Piso", tipo: "texto", placeholder: "1" },
-            { nombre: "depto", label: "Depto.", tipo: "texto", placeholder: "A" },
-          ],
-          [
-            { nombre: "partido", label: "Partido", tipo: "select", opciones: PARTIDOS, limpiaAlCambiar: ["localidad"], listaLarga: true },
-            { nombre: "localidad", label: "Localidad", tipo: "combobox", opciones: (valores: Record<string, string>) => PARTIDO_LOCALIDAD[valores.partido] ?? [], listaLarga: true, emptyMessage: "Sin opciones — seleccioná Partido primero" },
-          ],
-        ],
-      },
-    ],
-    columnasResultado: [
-      { key: "rec", label: "Rec", mono: true },
-      { key: "ref", label: "Ref", mono: true },
-    ],
-    mapeoFilaACampos: {
-      rec: "idReclamo",
-      ref: "interrupcion",
-      reclamos: "reclamos",
-      fechaReclamo: "fechaReclamo",
-      codigoFalla: "codigoFalla",
-      nroPoliza: "nroPoliza",
-      nombre: "nombre",
-      tarifa: "tarifa",
-      calle: "calle",
-      nro: "nro",
-      piso: "piso",
-      depto: "depto",
-      partido: "partido",
-      localidad: "localidad",
-    },
-    rows: (() => {
-      const rng = crearRng(20250108);
-      return filasSinteticas(N_FILAS_SINTETICAS, () => {
-        const domicilio = elegir(rng, PARTIDOS_LOCALIDADES_SINTETICOS);
-        return {
-          rec: recCodeSintetico(rng),
-          ref: refInterrupcionSintetica(rng, "2024"),
-          reclamos: String(enteroEntre(rng, 1, 9)),
-          fechaReclamo: fechaSintetica(rng, 1, 2024),
-          codigoFalla: elegir(rng, CODIGOS_FALLA_SINTETICOS),
-          nroPoliza: String(enteroEntre(rng, 100000, 999999)),
-          nombre: elegir(rng, NOMBRES_SINTETICOS),
-          tarifa: elegir(rng, ["1R", "1G", "2", "3"]),
-          calle: elegir(rng, CALLES_SINTETICAS),
-          nro: String(enteroEntre(rng, 100, 4999)),
-          piso: elegir(rng, ["", "1", "2", "3", "PB"]),
-          depto: elegir(rng, ["", "A", "B", "C"]),
-          partido: domicilio.partido,
-          localidad: domicilio.localidad,
-        };
-      });
-    })(),
-    totalRegistros: 104681,
-    exportFilename: "reclamos",
-    camposReadonlyEnModificar: ["idReclamo", "reclamos", "nroPoliza"],
-  },
-
-  cds9: {
-    key: "cds9",
-    code: "CDS9",
-    titulo: "Interrupciones por cliente",
-    hasInsertar: true,
-    secciones: [
-      {
-        titulo: "Identificación",
-        filas: [
-          [
-            { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MFZ202401001157" },
-            { nombre: "fase", label: "Fase", tipo: "readonly", placeholder: "1" },
-          ],
-          [
-            { nombre: "cliente", label: "Cliente", tipo: "readonly", placeholder: "3190897997" },
-            { nombre: "tarifa", label: "Tarifa", tipo: "select", opciones: ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"] },
-          ],
-          [{ nombre: "ct", label: "CT", tipo: "texto", placeholder: "19649#B1#19649-TR1" }],
-        ],
-      },
-    ],
-    columnasResultado: [
-      { key: "ref", label: "Ref", mono: true },
-      { key: "f", label: "F" },
-      { key: "cliente", label: "Cliente", mono: true },
-    ],
-    mapeoFilaACampos: { ref: "codigoInterrupcion", f: "fase", cliente: "cliente", tarifa: "tarifa", ct: "ct" },
-    rows: (() => {
-      const rng = crearRng(20250109);
-      const generadas = filasSinteticas(N_FILAS_SINTETICAS - 1, () => ({
-        ref: refInterrupcionSintetica(rng, "2024"),
-        f: String(enteroEntre(rng, 1, 5)),
-        cliente: clienteIdSintetico(rng),
-        tarifa: elegir(rng, ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"]),
-        ct: cadenaCodeSintetica(rng),
-      }));
-      // Fila fija — misma interrupción que usa DRAWER_TABS.tabla9 en el
-      // drawer de Consultas de interrupción, para que el deep-link a
-      // ABM/CDS9 encuentre y seleccione esta fila en destino.
-      return [{
-        ref: "MFZ202401001157", f: "4", cliente: "3190897997",
-        tarifa: "1R", ct: "19649#B1#19649-TR1",
-      }, ...generadas];
-    })(),
-    totalRegistros: 2318952,
-    exportFilename: "interrupciones_por_cliente",
-    camposReadonlyEnModificar: ["codigoInterrupcion", "fase", "cliente"],
-  },
-
-  cds9nm: {
-    key: "cds9nm",
-    code: "CDS9-NM",
-    titulo: "Interrupciones por cliente NM",
-    hasInsertar: true,
-    secciones: [
-      {
-        titulo: "Identificación",
-        filas: [
-          [
-            { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BFZ202607056849" },
-            { nombre: "fase", label: "Fase", tipo: "texto", placeholder: "1" },
-          ],
-          [
-            { nombre: "cliente", label: "Cliente", tipo: "texto", placeholder: "0932073585" },
-            { nombre: "tarifa", label: "Tarifa", tipo: "select", opciones: ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"] },
-          ],
-        ],
-      },
-    ],
-    columnasResultado: [
-      { key: "ref", label: "Ref", mono: true },
-      { key: "f", label: "F" },
-      { key: "cliente", label: "Cliente", mono: true },
-    ],
-    mapeoFilaACampos: { ref: "codigoInterrupcion", f: "fase", cliente: "cliente", tarifa: "tarifa" },
-    rows: (() => {
-      const rng = crearRng(20250110);
-      return filasSinteticas(N_FILAS_SINTETICAS, () => ({
-        ref: refInterrupcionSintetica(rng, "2026"),
-        f: String(enteroEntre(rng, 1, 5)),
-        cliente: clienteIdSintetico(rng),
-        tarifa: elegir(rng, ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"]),
-      }));
-    })(),
-    totalRegistros: 58,
-    exportFilename: "interrupciones_por_cliente_nm",
-    camposReadonlyEnModificar: ["codigoInterrupcion", "fase", "cliente"],
-  },
-};
-
 // ─── ABM engine: componentes de UI ─────────────────────────────────────────
 
 // Selector de tabla ABM — trigger + panel flotante tokenizado (mismo
@@ -7728,10 +6480,6 @@ function AbmScreen({
   );
 }
 
-// screens: login → select → welcome → (tabla ABM) → modificar
-type Screen = "login" | "select" | "welcome" | "modificar" | AbmTableKey
-  | "generaciontxt" | "planillaconsolidada" | "gestornotas" | "insertaclientes" | "auditoria";
-
 // ─── Generación de txt ──────────────────────────────────────────────────────
 
 function GeneracionTxtContent() {
@@ -7762,21 +6510,6 @@ function GeneracionTxtContent() {
       </div>
     </div>
   );
-}
-
-// ─── Planilla consolidada ───────────────────────────────────────────────────
-
-function generarConsolidacionSintetica(rng: () => number) {
-  return {
-    reclamos: enteroEntre(rng, 70000, 95000),
-    reiteraciones: enteroEntre(rng, 45000, 65000),
-    saidi: (rng() * 0.6).toFixed(9),
-    saifi: (rng() * 0.3).toFixed(9),
-    maxDuracionRef: refInterrupcionSintetica(rng, "2026"),
-    maxDuracionValor: enteroEntre(rng, 10000, 30000),
-    maxMarginalRef: refInterrupcionSintetica(rng, "2026"),
-    maxMarginalValor: (rng() * 300000000).toFixed(7),
-  };
 }
 
 function PlanillaConsolidadaContent() {
@@ -7883,20 +6616,6 @@ function PlanillaConsolidadaContent() {
     </div>
   );
 }
-
-// ─── Gestor de notas ────────────────────────────────────────────────────────
-
-const NOTAS_INICIALES = [
-  "INCONSISTENCIA DE AFECTACION",
-  "SUPERPOSICION CON OTRA INTERRUPCION",
-  "NO CORRESPONDE INTERRUPCION/ AFECTACION",
-  "INTERRUPCION NO CREADA POR CALCULO",
-  "CORRESPONDE A INSTALACION CLIENTE/ MENOR A 3 MINUTOS",
-  "INTERRUPCION CREADA A PARTIR DE RECLAMO",
-  "INTERRUPCION POR OM EC O FM",
-  "DATOS INCOMPLETOS/ INCORRECTOS",
-  "TIPO O NIVEL DE TENSION DE LA INTERRUPCION INCORRECTOS",
-].map((texto, i) => ({ id: `n${i + 1}`, texto, posicion: i + 1 }));
 
 function GestorNotasContent() {
   const [notas, setNotas] = useState(NOTAS_INICIALES);
@@ -8108,14 +6827,6 @@ function InsertaClientesContent() {
   );
 }
 
-// ─── Reporte de auditoría ───────────────────────────────────────────────────
-
-const USUARIOS_SISENRE_DEMO = [
-  "ALEGHISSA", "APOZZER", "BLOPONTE", "BMABDALLAH", "CGLOAZZO", "CONSULTA_SISENRE",
-  "DJAHNEL", "DLAZZARI", "EROMANELLO", "EVINTRIAGO", "FSCANDIZZO", "ICALVET",
-  "LALVANO", "LCALABRESE", "LGUERINI", "LORIVAS", "LRICLE", "LSTIVANELLO",
-]; // lista de ejemplo — reemplazar por el listado real de usuarios SISENRE cuando lo tengamos
-
 function AuditoriaContent() {
   const [usuario, setUsuario] = useState("");
   const [tablasSel, setTablasSel] = useState<Set<AbmTableKey>>(new Set());
@@ -8173,23 +6884,6 @@ function AuditoriaContent() {
       </div>
     </div>
   );
-}
-
-// Sigue una media query en vivo (matchMedia + listener de "change") — usado
-// para el acordeón del sidebar en tier 760px (ver App): a diferencia de una
-// clase Tailwind condicionada por CSS, acá el breakpoint tiene que cambiar
-// comportamiento real (qué grupo se auto-expande, qué handler navega vs.
-// solo despliega), no nada más apariencia.
-function useMatchMedia(query: string): boolean {
-  const [matches, setMatches] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);
-  useEffect(() => {
-    const mql = window.matchMedia(query);
-    const onChange = () => setMatches(mql.matches);
-    onChange();
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, [query]);
-  return matches;
 }
 
 export default function App() {
