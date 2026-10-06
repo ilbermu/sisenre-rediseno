@@ -10,7 +10,7 @@ import {
   ChevronUp, Copy, Check, Clock, Users, ClipboardList, Loader2, Wrench,
 } from "lucide-react";
 import Logo from "@/imports/Logo/index";
-import imgLoginBg from "@/imports/Login/032e40ba72541a29aef64c7150d660b7f04d7948.png";
+import imgLoginBg from "@/imports/Login/login-bg.png";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
