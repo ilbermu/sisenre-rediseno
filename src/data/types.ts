@@ -107,6 +107,33 @@ type ColumnaResultado = {
   // columna siempre se ajusta a su propio contenido (shrink-to-fit,
   // alineada a la izquierda) — ver AbmScreen.
   mono?: boolean;
+  // Nombre de un campo del formulario cuyas `opciones` traducen el value
+  // crudo de la fila a su etiqueta (ej. origen "I" → "Interno"). Sin esto,
+  // la celda muestra el value tal cual.
+  campo?: string;
+};
+
+// Layout del ABM:
+//   "split" (default) → panel de Búsqueda/formulario a la izquierda +
+//                       panel de Resultados a la derecha.
+//   "barra" (en prueba, solo CDS2) → barra de búsqueda apoyada en el fondo
+//                       (copia del filter bar de Consultas de interrupción)
+//                       + una sola card de Resultados a ancho completo;
+//                       Modificar se abre en un modal.
+export type AbmLayout = "split" | "barra";
+
+// Campos de la barra de búsqueda del layout "barra" — todos son `nombre` de
+// campos ya definidos en `secciones` (tipo, opciones y labels salen de ahí).
+export type AbmBarraBusqueda = {
+  // Fila principal, en orden: campo + placeholder corto + ancho fijo (px).
+  principales: { nombre: string; placeholder?: string; ancho: number }[];
+  // Después del divisor: toggles como ButtonSelectGroup con su etiqueta
+  // (heading-xs); en tier 760px pasan a ValuePicker de `anchoTier760` px.
+  segmentados: { nombre: string; etiqueta: string; anchoTier760: number }[];
+  // Campos del flyout "Más filtros", renderizados con AbmCampo.
+  masFiltros: string[];
+  // Título del modal de Modificar (en este layout, Modificar es un modal).
+  tituloModificar: string;
 };
 
 export type AbmTableConfig = {
@@ -114,8 +141,15 @@ export type AbmTableConfig = {
   code: string;
   titulo: string;
   hasInsertar: boolean;
+  // Default "split". Ver AbmLayout.
+  layout?: AbmLayout;
+  // Solo layout "barra".
+  barraBusqueda?: AbmBarraBusqueda;
   secciones: SeccionBusqueda[];
   columnasResultado: ColumnaResultado[];
+  // Columnas de Resultados en layout "barra" (card a ancho completo, entran
+  // más columnas). Sin esto se usan las de columnasResultado.
+  columnasResultadoBarra?: ColumnaResultado[];
   rows: Record<string, string>[];
   totalRegistros: number;
   exportFilename: string;

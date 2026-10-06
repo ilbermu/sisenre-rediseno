@@ -7,6 +7,9 @@ import {
   FOCUS_RING_INSET,
   ICON,
   ICON_BTN_SM,
+  Modal,
+  modalNeutralBtnCls,
+  modalPrimaryBtnCls,
   PeriodSelector,
   rowActionBtnCls,
   SectionDivider,
@@ -17,12 +20,14 @@ import {
 } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { ABM_ITEMS } from "@/data/dominio";
-import { AbmDeepLink, AbmMode, AbmTableKey, CampoBusqueda } from "@/data/types";
+import { AbmDeepLink, AbmMode, AbmTableKey } from "@/data/types";
+import AbmBarraBusqueda from "@/features/abm/AbmBarraBusqueda";
 import AbmCampo from "@/features/abm/AbmCampo";
 import AbmFila from "@/features/abm/AbmFila";
 import AbmTableSelector from "@/features/abm/AbmTableSelector";
 import ConfirmarBorrarModal from "@/features/abm/ConfirmarBorrarModal";
 import ConfirmarModificarModal from "@/features/abm/ConfirmarModificarModal";
+import { labelDeValor } from "@/features/abm/labelDeValor";
 import { formatNumero } from "@/lib/format";
 
 function exportRowsToCsv(filename: string, headers: string[], rows: string[][]) {
@@ -52,19 +57,6 @@ function mapearFilaAValores(mapeo: Record<string, string>, fila: Record<string, 
     if (fila[columna] !== undefined) nuevos[campoNombre] = fila[columna];
   }
   return nuevos;
-}
-
-// Resuelve el value crudo de un campo (toggle/select/combobox) a su label
-// legible, usando las mismas `opciones` que ya usa AbmCampo — incluyendo el
-// caso de opciones en función/cascada (ej. Localidad depende de Partido).
-function labelDeValor(campo: CampoBusqueda, valor: string, contexto: Record<string, string>): string {
-  if (!valor) return "";
-  if (campo.tipo === "toggle" || campo.tipo === "select" || campo.tipo === "combobox") {
-    const opciones = typeof campo.opciones === "function" ? campo.opciones(contexto) : campo.opciones;
-    const opcion = opciones?.find((o) => (typeof o === "string" ? o === valor : o.value === valor));
-    if (opcion) return typeof opcion === "string" ? opcion : opcion.label;
-  }
-  return valor;
 }
 
 // Componente unico que renderiza cualquiera de las 9 tablas ABM a partir de
@@ -124,6 +116,12 @@ export default function AbmScreen({
   // que siguen usándose como identidad en selectedRow/mapeoFilaACampos/etc.
   const [filasBorradas, setFilasBorradas] = useState<Set<number>>(new Set());
   const camposLocked = config.camposReadonlyEnModificar ?? [];
+  // Layout "barra" (PRUEBA, solo CDS2 — ver AbmLayout): la búsqueda vive en
+  // su propia barra con sus propios valores (`valoresBusqueda`), así abrir
+  // Modificar (que carga el registro en `valores`) no pisa los filtros.
+  const esBarra = config.layout === "barra";
+  const [valoresBusqueda, setValoresBusqueda] = useState<Record<string, string>>({});
+  const [flyoutOpen, setFlyoutOpen] = useState(false);
 
   // Reset al cambiar de tabla — corre primero.
   useEffect(() => {
@@ -133,6 +131,8 @@ export default function AbmScreen({
     setValores({});
     setValoresOriginales({});
     setFilasBorradas(new Set());
+    setValoresBusqueda({});
+    setFlyoutOpen(false);
   }, [tableKey]);
 
   // Aplica un deep-link pendiente para ESTA tabla — corre después del
@@ -165,8 +165,10 @@ export default function AbmScreen({
   // llega acá con una fila ya preseleccionada, esta pasada completa el
   // formulario con TODOS los campos mapeados (el deep-link por sí solo
   // precarga uno nada más).
+  // En layout "barra" no aplica: seleccionar una fila no toca la barra de
+  // búsqueda (ni la deshabilita ni le vuelca datos).
   useEffect(() => {
-    if (mode !== "buscar") return;
+    if (mode !== "buscar" || esBarra) return;
     if (selectedRow === null) {
       setValores({});
       return;
@@ -190,8 +192,19 @@ export default function AbmScreen({
 
   const hasSelection = selectedRow !== null;
   const consultando = mode === "buscar" && hasSelection;
-  const columnKeys = config.columnasResultado.map((c) => c.key);
-  const getCells = (row: Record<string, string>) => columnKeys.map((k) => row[k] ?? "");
+  // Columnas de Resultados: en layout "barra" la card es de ancho completo y
+  // entran más (config.columnasResultadoBarra). Una columna con `campo`
+  // muestra la etiqueta de la opción ("Interno") en vez del value ("I") —
+  // también para buscar, ordenar y exportar.
+  const columnas = esBarra && config.columnasResultadoBarra ? config.columnasResultadoBarra : config.columnasResultado;
+  const camposTabla = config.secciones.flatMap((sec) => sec.filas.flat());
+  const celda = (row: Record<string, string>, c: (typeof columnas)[number]) => {
+    const valor = row[c.key] ?? "";
+    const campoDef = c.campo ? camposTabla.find((x) => x.nombre === c.campo) : undefined;
+    return campoDef ? labelDeValor(campoDef, valor, row) : valor;
+  };
+  const columnKeys = columnas.map((c) => c.key);
+  const getCells = (row: Record<string, string>) => columnas.map((c) => celda(row, c));
   const { search, setSearch, sortIdx, sortDir, toggleSort, visibleIndices: visibleIndicesConBorradas } =
     useTableToolbar(config.rows, getCells, tableKey);
   // Excluye las filas "borradas" de Resultados (navegación por teclado,
@@ -233,6 +246,7 @@ export default function AbmScreen({
     setShowData(false);
     setSelectedRow(null);
     setValores({});
+    setValoresBusqueda({});
   }
   function handleBuscar() {
     setShowData(true);
@@ -336,6 +350,237 @@ export default function AbmScreen({
       nuevo: labelDeValor(c, valores[c.nombre] ?? "", valores),
     }));
 
+  // Split: Resultados se atenúa en Insertar/Modificar (el foco queda en el
+  // panel de la izquierda). Barra: Modificar es un modal (el scrim ya tapa
+  // la pantalla); se atenúa con el flyout "Más filtros" abierto, como las
+  // cards de Consultas de interrupción.
+  const atenuarResultados = esBarra ? flyoutOpen : mode !== "buscar";
+  const resultadosCard = (
+        /* ── Right column: results — se atenua y deshabilita en modo alta
+            y en modo modificar, para que el foco visual quede en el panel
+            Búsqueda (en layout "barra", ver atenuarResultados) ── */
+        <div
+          className={`shadow-sm flex-1 flex flex-col border border-border rounded-md bg-surface overflow-hidden transition-opacity duration-(--duration-base) ${
+            atenuarResultados ? "opacity-50 pointer-events-none" : ""
+          }`}
+        >
+          <CardHeader
+            title="Resultados"
+            tag={config.code}
+            actions={
+              <div className="flex items-center gap-2">
+                {/* Auditoría es una acción de panel, no de registro: genera
+                    una auditoría de todos los campos modificados en el
+                    conjunto de resultados, no de una fila puntual — por eso
+                    vive acá siempre visible/habilitada, no en la fila ni
+                    atada a una selección (corrige un comportamiento heredado
+                    del producto original que la ataba a un registro). */}
+                <button type="button" title="Auditoría" aria-label="Auditoría" className={actionBtnCls("neutral")}>
+                  <span className="inline-flex items-center gap-1.5"><Shield size={ICON.md} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Auditoría</span></span>
+                </button>
+                {showData && (
+                  <button
+                    type="button"
+                    title="Exportar"
+                    aria-label="Exportar"
+                    onClick={() =>
+                      exportRowsToCsv(
+                        config.exportFilename,
+                        columnas.map((c) => c.label),
+                        visibleIndices.map((i) => getCells(config.rows[i]))
+                      )
+                    }
+                    className={actionBtnCls("neutral")}
+                  >
+                    <span className="inline-flex items-center gap-1.5"><Download size={ICON.md} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Exportar</span></span>
+                  </button>
+                )}
+                {config.hasInsertar && (
+                  <button type="button" title="Insertar" aria-label="Insertar" onClick={handleAbrirAlta} className={actionBtnCls("neutral")}>
+                    <span className="inline-flex items-center gap-1.5"><Plus size={ICON.sm} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Insertar</span></span>
+                  </button>
+                )}
+              </div>
+            }
+          />
+          {showData && (
+            <TableToolbar search={search} onSearchChange={setSearch} hideExport />
+          )}
+
+          {/* Contenedor de la tabla — mx-(--card-px) mb-4 con borde propio, sin línea
+              entre él y el toolbar (proximidad, ver TableToolbar); sin datos
+              no hay toolbar y suma mt-3 para no quedar pegado al header.
+              Adentro: la línea de registro seleccionado, la tabla con
+              scroll propio y el pie de paginación. */}
+          <div className={`flex-1 min-h-0 mx-(--card-px) mb-4 flex flex-col border border-border rounded-sm overflow-hidden ${showData ? "" : "mt-3"}`}>
+          {hasSelection && (
+            <SelectionActionBar recordLabel={config.rows[selectedRow!][columnKeys[0]]} />
+          )}
+
+          {/* Header + Body — un solo <table> (thead+tbody), no dos divs
+              flex separados: así el navegador mide el ancho de cada
+              columna teniendo en cuenta header + TODAS las filas juntas
+              (mismo criterio que la Tabla 4 de Consultas de interrupción),
+              lo que además es la única forma de garantizar que header y
+              filas queden alineados en columnas shrink-to-fit — con divs
+              independientes por fila cada una mide su propio ancho por su
+              cuenta y se desalinean entre sí.
+              Cada columna de datos usa w-[1%] + whitespace-nowrap — el
+              truco estándar de CSS para "esta columna no debe crecer, se
+              achica a su contenido" en table-layout:auto (que además evita
+              el wrap a dos líneas, ej. "SAN FERNANDO" en CDS7/Zona). La
+              única columna SIN ese freno es el spacer vacío entre la
+              última columna de datos y Acciones: al ser la única sin
+              límite de ancho, absorbe ella sola todo el espacio sobrante
+              de la fila. Acciones mantiene su ancho fijo (w-40), pegada a
+              la derecha. */}
+          <div
+            ref={resultadosListRef}
+            tabIndex={showData ? 0 : -1}
+            onKeyDown={handleResultadosKeyDown}
+            className={`flex-1 min-h-0 overflow-y-auto ${FOCUS_RING_INSET}`}
+          >
+            {!showData && esBarra ? (
+              // Layout "barra": el mismo estado vacío que la tabla de
+              // Interrupciones en Consultas de interrupción.
+              <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-8">
+                <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
+                <p className="text-label text-text-muted">Sin resultados</p>
+                <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
+              </div>
+            ) : !showData ? (
+              <div className="flex flex-col items-center justify-center h-full gap-3 text-text-faint">
+                <Inbox size={ICON.xl} strokeWidth={1.25} />
+                <p className="text-body-lg text-text-muted mt-1">
+                  No hay resultados para los filtros aplicados
+                </p>
+                <p className="text-body-sm text-text-muted">
+                  Completá los filtros y presioná{" "}
+                  <span className="font-semibold text-secondary">Buscar</span>
+                </p>
+              </div>
+            ) : (
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-border">
+                    {columnas.map((c, ci) => (
+                      <th key={c.key} className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left">
+                        <SortableHeaderCell
+                          label={c.label}
+                          active={sortIdx === ci}
+                          dir={sortDir}
+                          onClick={() => toggleSort(ci)}
+                        />
+                      </th>
+                    ))}
+                    <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid" />
+                    <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase text-text-muted">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleIndices.map((i) => {
+                    const row = config.rows[i];
+                    const isSelected = selectedRow === i;
+                    const isHovered = hoveredRow === i;
+                    return (
+                      <tr
+                        key={i}
+                        data-row-index={i}
+                        onClick={() => setSelectedRow(isSelected ? null : i)}
+                        onMouseEnter={() => setHoveredRow(i)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        className="border-b border-border-subtle cursor-pointer transition-colors duration-(--duration-fast)"
+                        style={{ backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined }}
+                      >
+                        {columnas.map((c, ci) => (
+                          <td
+                            key={c.key}
+                            className={`w-[1%] whitespace-nowrap px-4 py-2.5 ${
+                              c.mono ? "text-code font-mono tabular-nums" : isSelected ? "text-body text-secondary font-medium" : "text-body text-text"
+                            }`}
+                            style={{
+                              ...(c.mono
+                                ? {
+                                    color: isSelected ? "var(--color-secondary)" : "var(--color-text)",
+                                    fontWeight: isSelected ? 600 : 400,
+                                  }
+                                : undefined),
+                              // Acento de selección en la primera celda, no
+                              // en el <tr>: con border-collapse un borde
+                              // puesto directo en la fila no renderiza de
+                              // forma confiable en todos los navegadores.
+                              borderLeft: ci === 0 ? (isSelected ? "3px solid var(--color-primary)" : "3px solid transparent") : undefined,
+                            }}
+                          >
+                            {celda(row, c)}
+                          </td>
+                        ))}
+                        {/* Spacer — celda vacía, sin ancho fijo: absorbe
+                            sola todo el sobrante de la fila. */}
+                        <td />
+                        {/* Modificar/Borrar — con texto (no solo ícono,
+                            ambiguo) siempre visibles por fila, ya no atados
+                            a tener la fila seleccionada. stopPropagation:
+                            no deben togglear la selección de la fila (eso
+                            lo maneja el onClick del <tr>). */}
+                        <td className="w-40 px-4 py-2.5">
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); handleAbrirModificar(i); }}
+                              className={rowActionBtnCls("neutral")}
+                            >
+                              Modificar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); handleAbrirBorrar(i); }}
+                              className={rowActionBtnCls("destructive")}
+                            >
+                              Borrar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Footer */}
+          {showData && (
+            <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-md shrink-0 flex items-center justify-between">
+              <span className="text-body-sm text-text">
+                Registros encontrados:{" "}
+                <span className="font-semibold text-secondary">
+                  {formatNumero(config.totalRegistros)}
+                </span>
+              </span>
+              <div className="flex items-center gap-2 text-body-sm text-text-muted">
+                <button className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`} disabled>
+                  Anterior
+                </button>
+                <span>
+                  Pág. <span className="font-medium text-text">1</span> de{" "}
+                  <span className="font-medium text-text">{formatNumero(totalPages)}</span>
+                </span>
+                <button
+                  className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`}
+                  disabled={totalPages <= 1}
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          )}
+          </div>
+        </div>
+  );
+
   return (
     <>
       {/* Masthead — selector de tabla (hace de título) a la izquierda, período
@@ -364,6 +609,33 @@ export default function AbmScreen({
       </header>
 
       {/* Content */}
+      {esBarra ? (
+        // Layout "barra" (PRUEBA, solo CDS2): barra de búsqueda apoyada en el
+        // fondo + una sola card de Resultados a ancho completo — mismo
+        // padding y gap de página que Consultas de interrupción.
+        <div className="flex-1 min-h-0 flex flex-col px-(--page-px) pt-(--page-pt) pb-(--page-pt) relative overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col gap-(--page-gap)">
+            <AbmBarraBusqueda
+              config={config}
+              valores={valoresBusqueda}
+              onChange={(nombre, v) => setValoresBusqueda((prev) => ({ ...prev, [nombre]: v }))}
+              onLimpiarCampos={(nombres) =>
+                setValoresBusqueda((prev) => {
+                  const next = { ...prev };
+                  for (const n of nombres) next[n] = "";
+                  return next;
+                })
+              }
+              showData={showData}
+              onBuscar={handleBuscar}
+              onLimpiar={handleLimpiar}
+              flyoutOpen={flyoutOpen}
+              setFlyoutOpen={setFlyoutOpen}
+            />
+            {resultadosCard}
+          </div>
+        </div>
+      ) : (
       <div className="flex-1 flex overflow-hidden p-5 gap-5" key={mode}>
 
         {/* ── Left column: form ── */}
@@ -484,222 +756,60 @@ export default function AbmScreen({
           </div>
         </div>
 
-        {/* ── Right column: results — se atenua y deshabilita en modo alta
-            y en modo modificar, para que el foco visual quede en el panel
-            Búsqueda ── */}
-        <div
-          className={`shadow-sm flex-1 flex flex-col border border-border rounded-md bg-surface overflow-hidden transition-opacity duration-(--duration-base) ${
-            mode !== "buscar" ? "opacity-50 pointer-events-none" : ""
-          }`}
-        >
-          <CardHeader
-            title="Resultados"
-            tag={config.code}
-            actions={
-              <div className="flex items-center gap-2">
-                {/* Auditoría es una acción de panel, no de registro: genera
-                    una auditoría de todos los campos modificados en el
-                    conjunto de resultados, no de una fila puntual — por eso
-                    vive acá siempre visible/habilitada, no en la fila ni
-                    atada a una selección (corrige un comportamiento heredado
-                    del producto original que la ataba a un registro). */}
-                <button type="button" title="Auditoría" aria-label="Auditoría" className={actionBtnCls("neutral")}>
-                  <span className="inline-flex items-center gap-1.5"><Shield size={ICON.md} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Auditoría</span></span>
-                </button>
-                {showData && (
-                  <button
-                    type="button"
-                    title="Exportar"
-                    aria-label="Exportar"
-                    onClick={() =>
-                      exportRowsToCsv(
-                        config.exportFilename,
-                        config.columnasResultado.map((c) => c.label),
-                        visibleIndices.map((i) => getCells(config.rows[i]))
-                      )
-                    }
-                    className={actionBtnCls("neutral")}
-                  >
-                    <span className="inline-flex items-center gap-1.5"><Download size={ICON.md} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Exportar</span></span>
-                  </button>
-                )}
-                {config.hasInsertar && (
-                  <button type="button" title="Insertar" aria-label="Insertar" onClick={handleAbrirAlta} className={actionBtnCls("neutral")}>
-                    <span className="inline-flex items-center gap-1.5"><Plus size={ICON.sm} strokeWidth={1.5} /> <span className="[@media(max-height:760px)]:hidden">Insertar</span></span>
-                  </button>
-                )}
-              </div>
-            }
-          />
-          {showData && (
-            <TableToolbar search={search} onSearchChange={setSearch} hideExport />
-          )}
-
-          {/* Contenedor de la tabla — mx-(--card-px) mb-4 con borde propio, sin línea
-              entre él y el toolbar (proximidad, ver TableToolbar); sin datos
-              no hay toolbar y suma mt-3 para no quedar pegado al header.
-              Adentro: la línea de registro seleccionado, la tabla con
-              scroll propio y el pie de paginación. */}
-          <div className={`flex-1 min-h-0 mx-(--card-px) mb-4 flex flex-col border border-border rounded-sm overflow-hidden ${showData ? "" : "mt-3"}`}>
-          {hasSelection && (
-            <SelectionActionBar recordLabel={config.rows[selectedRow!][columnKeys[0]]} />
-          )}
-
-          {/* Header + Body — un solo <table> (thead+tbody), no dos divs
-              flex separados: así el navegador mide el ancho de cada
-              columna teniendo en cuenta header + TODAS las filas juntas
-              (mismo criterio que la Tabla 4 de Consultas de interrupción),
-              lo que además es la única forma de garantizar que header y
-              filas queden alineados en columnas shrink-to-fit — con divs
-              independientes por fila cada una mide su propio ancho por su
-              cuenta y se desalinean entre sí.
-              Cada columna de datos usa w-[1%] + whitespace-nowrap — el
-              truco estándar de CSS para "esta columna no debe crecer, se
-              achica a su contenido" en table-layout:auto (que además evita
-              el wrap a dos líneas, ej. "SAN FERNANDO" en CDS7/Zona). La
-              única columna SIN ese freno es el spacer vacío entre la
-              última columna de datos y Acciones: al ser la única sin
-              límite de ancho, absorbe ella sola todo el espacio sobrante
-              de la fila. Acciones mantiene su ancho fijo (w-40), pegada a
-              la derecha. */}
-          <div
-            ref={resultadosListRef}
-            tabIndex={showData ? 0 : -1}
-            onKeyDown={handleResultadosKeyDown}
-            className={`flex-1 min-h-0 overflow-y-auto ${FOCUS_RING_INSET}`}
-          >
-            {!showData ? (
-              <div className="flex flex-col items-center justify-center h-full gap-3 text-text-faint">
-                <Inbox size={ICON.xl} strokeWidth={1.25} />
-                <p className="text-body-lg text-text-muted mt-1">
-                  No hay resultados para los filtros aplicados
-                </p>
-                <p className="text-body-sm text-text-muted">
-                  Completá los filtros y presioná{" "}
-                  <span className="font-semibold text-secondary">Buscar</span>
-                </p>
-              </div>
-            ) : (
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-border">
-                    {config.columnasResultado.map((c, ci) => (
-                      <th key={c.key} className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left">
-                        <SortableHeaderCell
-                          label={c.label}
-                          active={sortIdx === ci}
-                          dir={sortDir}
-                          onClick={() => toggleSort(ci)}
-                        />
-                      </th>
-                    ))}
-                    <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid" />
-                    <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid w-40 whitespace-nowrap px-4 py-2 text-left text-heading-xs uppercase text-text-muted">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibleIndices.map((i) => {
-                    const row = config.rows[i];
-                    const isSelected = selectedRow === i;
-                    const isHovered = hoveredRow === i;
-                    return (
-                      <tr
-                        key={i}
-                        data-row-index={i}
-                        onClick={() => setSelectedRow(isSelected ? null : i)}
-                        onMouseEnter={() => setHoveredRow(i)}
-                        onMouseLeave={() => setHoveredRow(null)}
-                        className="border-b border-border-subtle cursor-pointer transition-colors duration-(--duration-fast)"
-                        style={{ backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined }}
-                      >
-                        {config.columnasResultado.map((c, ci) => (
-                          <td
-                            key={c.key}
-                            className={`w-[1%] whitespace-nowrap px-4 py-2.5 ${
-                              c.mono ? "text-code font-mono tabular-nums" : isSelected ? "text-body text-secondary font-medium" : "text-body text-text"
-                            }`}
-                            style={{
-                              ...(c.mono
-                                ? {
-                                    color: isSelected ? "var(--color-secondary)" : "var(--color-text)",
-                                    fontWeight: isSelected ? 600 : 400,
-                                  }
-                                : undefined),
-                              // Acento de selección en la primera celda, no
-                              // en el <tr>: con border-collapse un borde
-                              // puesto directo en la fila no renderiza de
-                              // forma confiable en todos los navegadores.
-                              borderLeft: ci === 0 ? (isSelected ? "3px solid var(--color-primary)" : "3px solid transparent") : undefined,
-                            }}
-                          >
-                            {row[c.key]}
-                          </td>
-                        ))}
-                        {/* Spacer — celda vacía, sin ancho fijo: absorbe
-                            sola todo el sobrante de la fila. */}
-                        <td />
-                        {/* Modificar/Borrar — con texto (no solo ícono,
-                            ambiguo) siempre visibles por fila, ya no atados
-                            a tener la fila seleccionada. stopPropagation:
-                            no deben togglear la selección de la fila (eso
-                            lo maneja el onClick del <tr>). */}
-                        <td className="w-40 px-4 py-2.5">
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); handleAbrirModificar(i); }}
-                              className={rowActionBtnCls("neutral")}
-                            >
-                              Modificar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); handleAbrirBorrar(i); }}
-                              className={rowActionBtnCls("destructive")}
-                            >
-                              Borrar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {/* Footer */}
-          {showData && (
-            <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-md shrink-0 flex items-center justify-between">
-              <span className="text-body-sm text-text">
-                Registros encontrados:{" "}
-                <span className="font-semibold text-secondary">
-                  {formatNumero(config.totalRegistros)}
-                </span>
-              </span>
-              <div className="flex items-center gap-2 text-body-sm text-text-muted">
-                <button className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`} disabled>
-                  Anterior
-                </button>
-                <span>
-                  Pág. <span className="font-medium text-text">1</span> de{" "}
-                  <span className="font-medium text-text">{formatNumero(totalPages)}</span>
-                </span>
-                <button
-                  className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`}
-                  disabled={totalPages <= 1}
-                >
-                  Siguiente
-                </button>
-              </div>
-            </div>
-          )}
-          </div>
-        </div>
+        {resultadosCard}
       </div>
+      )}
+
+      {/* Layout "barra": Modificar en un modal, con las mismas secciones y
+          campos del formulario (AbmFila/AbmCampo, respetando
+          camposReadonlyEnModificar). Guardar dispara el mismo
+          ConfirmarModificarModal y flujo que el layout split. */}
+      {esBarra && (
+        <Modal
+          title={config.barraBusqueda?.tituloModificar ?? "Modificar"}
+          open={mode === "modificar"}
+          onClose={handleCancelarModificar}
+          headerExtra={
+            <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2">
+              <span className="text-heading-xs uppercase text-text-muted">{columnas[0].label}</span>
+              <span className="text-code font-mono tabular-nums text-text">
+                {selectedRow !== null ? config.rows[selectedRow][columnKeys[0]] : ""}
+              </span>
+            </div>
+          }
+          footer={
+            <>
+              <button type="button" onClick={handleCancelarModificar} className={modalNeutralBtnCls}>Cancelar</button>
+              <button type="button" onClick={handleGuardarModificar} className={modalPrimaryBtnCls}>Guardar</button>
+            </>
+          }
+        >
+          <div className="flex flex-col gap-5">
+            {config.secciones.map((sec) => {
+              const conteoPorLongitud = new Map<number, number>();
+              for (const fila of sec.filas) conteoPorLongitud.set(fila.length, (conteoPorLongitud.get(fila.length) ?? 0) + 1);
+              return (
+                <div key={sec.titulo}>
+                  <SectionDivider title={sec.titulo} />
+                  <div className="flex flex-col gap-3">
+                    {sec.filas.map((fila, fi) => (
+                      <AbmFila
+                        key={fi}
+                        fila={fila}
+                        mode={mode}
+                        valores={valores}
+                        setValor={setValor}
+                        camposLocked={camposLocked}
+                        columnasCompartidas={(conteoPorLongitud.get(fila.length) ?? 0) > 1}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Modal>
+      )}
 
       <ConfirmarBorrarModal
         open={filaABorrar !== null}

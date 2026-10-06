@@ -45,6 +45,29 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     code: "CDS2",
     titulo: "Interrupciones",
     hasInsertar: false,
+    // PRUEBA de layout — solo esta tabla. Ver AbmLayout.
+    layout: "barra",
+    barraBusqueda: {
+      principales: [
+        { nombre: "codigoInterrupcion", ancho: 190 },
+        { nombre: "fecha", ancho: 170 },
+        { nombre: "nivelTension", placeholder: "Nivel", ancho: 88 },
+        { nombre: "faseElectrica", placeholder: "Fase", ancho: 84 },
+      ],
+      segmentados: [
+        { nombre: "origen", etiqueta: "Origen", anchoTier760: 92 },
+        { nombre: "tipo", etiqueta: "Tipo", anchoTier760: 112 },
+      ],
+      masFiltros: [
+        "cadenaElectricaAguasArriba",
+        "alimentadorMT",
+        "ctMtBtEquipoOperado",
+        "codigoEquipoOperado",
+        "descEquipoOperado",
+        "divisionRedNormal",
+      ],
+      tituloModificar: "Modificar interrupción",
+    },
     secciones: [
       {
         titulo: "Identificación",
@@ -94,6 +117,16 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     columnasResultado: [
       { key: "referencia", label: "Referencia", mono: true },
       { key: "fecha", label: "Fecha" },
+    ],
+    columnasResultadoBarra: [
+      { key: "referencia", label: "Referencia", mono: true },
+      { key: "fecha", label: "Fecha" },
+      { key: "nivel", label: "Nivel" },
+      { key: "faseElectrica", label: "Fase" },
+      { key: "origen", label: "Origen", campo: "origen" },
+      { key: "tipo", label: "Tipo", campo: "tipo" },
+      { key: "codigoEquipoOperado", label: "Código de equipo operado", mono: true },
+      { key: "alimentadorMT", label: "Alimentador MT" },
     ],
     mapeoFilaACampos: {
       referencia: "codigoInterrupcion",

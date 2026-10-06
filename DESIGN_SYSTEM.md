@@ -90,6 +90,14 @@ Octava pasada (también 06/10/2026):
   encabezado propio (breadcrumb + título `heading-lg` + período) y usa
   `TopBar` con "Búsqueda de interrupciones", como Inicio y "Otros".
 
+Novena pasada (también 06/10/2026):
+
+- **ABM, variante barra (prueba, solo Tabla 2):** `layout: "barra"` en la
+  config de CDS2 — barra de búsqueda copiada de Consultas de interrupción
+  (`AbmBarraBusqueda`), Resultados a ancho completo con
+  `columnasResultadoBarra` y Modificar en un modal. El resto de las tablas
+  sigue con el layout split.
+
 ## Índice
 
 **1. Fundamentos**
@@ -139,6 +147,7 @@ Octava pasada (también 06/10/2026):
 [Orden de botones](#orden-de-botones) ·
 [Aire: chrome vs datos](#aire-chrome-vs-datos) ·
 [Modal de trabajo](#modal-de-trabajo) ·
+[Layout de ABM — variante barra](#layout-de-abm--variante-barra-en-prueba-solo-tabla-2) ·
 [Barra de contexto de registro](#barra-de-contexto-de-registro) ·
 [Contenedores flex con scroll](#contenedores-flex-con-scroll) ·
 [Voz y formatos](#voz-y-formatos)
@@ -1360,6 +1369,63 @@ header. Sin cards ni fondo gris en el body.
 - **Estados especiales** (resultado Sí/No, vacío con ícono+texto+acción)
   van dentro del mismo contenedor con borde, centrados (`h-full flex
   items-center justify-center`) — nunca sueltos en el body.
+
+## Layout de ABM — variante barra (en prueba, solo Tabla 2)
+
+El ABM tiene dos layouts, elegidos por tabla con `layout` en
+`src/data/abmTables.ts` (`AbmLayout`). El masthead (selector de tabla +
+período) es el mismo en los dos.
+
+- **`split`** (default, CDS3…CDS9-NM): panel de Búsqueda/formulario a la
+  izquierda (41%; ~47% en el tier de 760px) y panel de Resultados a la
+  derecha. Seleccionar una fila vuelca sus datos en el formulario
+  ("consultando"); Insertar y Modificar usan el mismo panel de la izquierda
+  y atenúan Resultados.
+- **`barra`** (en prueba, solo CDS2): la búsqueda de Consultas de
+  interrupción llevada al ABM.
+
+```
+┌ masthead: [Tabla 2 · CDS2 ▾]                                [Período ▾] ┐
+│                                                                         │
+│ [código] [fecha] [Nivel] [Fase] | ORIGEN [I|E] TIPO [F|P]  [Más filtros] [Limpiar] [Buscar] │  barra, sin contenedor
+│ FILTROS APLICADOS: (chip ×) (chip ×)                                     │  solo si hay filtros del flyout
+│                                                                (gap --page-gap)
+│ ┌ Resultados [CDS2]                         [Auditoría] [Exportar] ┐    │
+│ ├──────────────────────────────────────────────────────────────────┤    │
+│ │ [buscador]                                                       │    │
+│ │ REFERENCIA  FECHA  NIVEL  FASE  ORIGEN  TIPO  CÓD. EQUIPO  ALIM. MT  ACCIONES │
+│ │ …                                            [Modificar] [Borrar] │    │
+│ │ Registros encontrados · Anterior  Pág. 1 de N  Siguiente          │    │
+│ └──────────────────────────────────────────────────────────────────┘    │
+```
+
+- **Barra de búsqueda** (`AbmBarraBusqueda`): copia del filter bar de
+  Consultas de interrupción — fila única apoyada en el fondo, mismas
+  clases, capas (`--z-raised` la barra, `--z-dismiss` el backdrop,
+  `--z-dropdown` el flyout) y comportamiento por tier (Origen/Tipo pasan a
+  `ValuePicker` en 760px). Los campos salen de `barraBusqueda` en la config
+  (`principales`, `segmentados`, `masFiltros`); tipo, opciones y labels, de
+  `secciones`. El flyout "Más filtros" renderiza cada campo con `AbmCampo`,
+  así usa el control que define la tabla (combobox con lista larga, toggle
+  Sí/No…). Badge con la cantidad y chips de filtros aplicados.
+- **Diferencia con Consultas:** seleccionar una fila **no** deshabilita la
+  barra ni le vuelca datos.
+- **Resultados a ancho completo:** una sola card debajo de la barra
+  (`gap-(--page-gap)`, padding de página `--page-px` / `--page-pt`), con el
+  mismo `CardHeader`, acciones de header, toolbar, tabla, acciones de fila
+  y paginación que el panel Resultados del split. Columnas propias
+  (`columnasResultadoBarra`); una columna con `campo` muestra la etiqueta
+  de la opción (Interno/Externo, Forzado/Programado), también para buscar,
+  ordenar y exportar. Estado vacío antes de buscar: el de Interrupciones en
+  Consultas ("Completá los filtros y presioná Buscar"). Se atenúa con el
+  flyout abierto.
+- **Modificar en modal:** la acción de fila abre un `Modal` (título de la
+  config, referencia en `headerExtra`) con las mismas secciones y campos
+  del formulario (`AbmFila` / `AbmCampo`, respetando
+  `camposReadonlyEnModificar`); pie Cancelar + Guardar. Guardar abre el
+  mismo `ConfirmarModificarModal`. Borrar no cambia.
+- **Sin Insertar:** el layout barra no tiene formulario de alta; solo sirve
+  para tablas sin `hasInsertar` (CDS2).
 
 ## Barra de contexto de registro
 
