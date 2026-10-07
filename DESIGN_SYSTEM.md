@@ -253,6 +253,14 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **Toggle de solo lectura = segmentado estático** (`SegmentadoSoloLectura`,
+  nuevo): una caja `READONLY_FIELD_CLS` con segmentos de texto y divisores,
+  la opción elegida con `Check`. Regla: un control que no se puede usar no
+  conserva la forma de botón. Se quita `readonlyOpcionCls`.
+- **Revisar cambios:** Motivo deja la caja azul (`border-primary` +
+  `primary-tint`) y pasa a ser una sección separada por `border-t`; ningún
+  bloque del modal lleva fondo de color.
+
 - **Estado de solo lectura unificado:** `READONLY_FIELD_CLS` y
   `readonlyOpcionCls` (`tokens.ts`) — fondo `fill-subtle`, borde `border`,
   contenido a contraste completo, sin hover; la opción seleccionada de un
@@ -360,6 +368,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [PeriodSelector](#periodselector) ·
 [ReadOnlyField](#readonlyfield) ·
 [SectionDivider](#sectiondivider) ·
+[SegmentadoSoloLectura](#segmentadosololectura) ·
 [SelectionActionBar](#selectionactionbar) ·
 [SelectWrap](#selectwrap) ·
 [SortableHeaderCell / SortableTh](#sortableheadercell--sortableth) ·
@@ -816,18 +825,22 @@ Tres estados de un campo o control, cada uno con un solo tratamiento:
 |---|---|---|---|
 | Significa | Se puede cambiar | El valor es un **dato fijo** del registro: se lee completo, no se edita | El control **no está disponible todavía** (falta completar algo, depende de otra acción) |
 | Campo | `MOD_FIELD_CLS`: `bg-surface`, `border-border-strong`, `text-text`, foco de campo (`FIELD_FOCUS`) | `READONLY_FIELD_CLS`: `bg-fill-subtle`, `border-border` (no `border-strong`), `text-text` (contraste completo) | Atenuado (`fill-muted` + `text-faint` en campos) |
-| Toggle | Opción en reposo `bg-surface` + `border-border-strong`; seleccionada `bg-primary-tint` + `border-primary` + `text-secondary`; hover tint | `readonlyOpcionCls`: seleccionada `bg-primary-tint` + `border-chip-border` + `text-secondary` (sin `border-primary`, que es de un control activo); las demás `bg-fill-subtle` + `border-border` + `text-text-muted` | `fill-muted` + `text-faint`; botones `opacity-40` |
+| Toggle | Opción en reposo `bg-surface` + `border-border-strong`; seleccionada `bg-primary-tint` + `border-primary` + `text-secondary`; hover tint | **Segmentado estático** (`SegmentadoSoloLectura`): una sola caja con `READONLY_FIELD_CLS`, ancho intrínseco; opciones como segmentos de texto de igual ancho separados por divisores de 1px (`bg-border`, `h-4`), sin borde ni fondo por segmento; la elegida en `text-text font-medium` con `Check` (`ICON.xs`), las demás en `text-text-faint`; `title` "No editable" | `fill-muted` + `text-faint`; botones `opacity-40` |
 | Interacción | Hover y foco | Sin hover, `cursor-default`, no responde a clic ni a teclado para cambiar el valor; solo el anillo de foco estándar (`FOCUS_RING`) si es enfocable. Un campo de texto se puede seleccionar y copiar | Sin eventos, `cursor-not-allowed` |
 | Señal | — | Ícono `Lock` (`ICON.xs`, `text-icon`, "No editable") junto al label | — |
-| Accesibilidad | — | Campo: `<input readOnly>`. Toggle: grupo `role="radiogroup"` con `aria-readonly="true"`, enfocable una vez; opciones no tabulables | `disabled` |
+| Accesibilidad | — | Campo: `<input readOnly>`. Toggle: grupo `role="radiogroup"` con `aria-readonly="true"` y el valor en su `aria-label`, enfocable una vez; opciones `role="radio"` con `aria-checked`, no tabulables | `disabled` |
 
 - **Regla:** un dato que no se puede editar se muestra con el estado de
   **solo lectura** — nunca como control normal ni como deshabilitado.
   Deshabilitado es solo para "todavía no disponible".
+- **Regla:** un control que no se puede usar no puede conservar la forma de
+  botón. Por eso el toggle de solo lectura es un segmentado estático: el
+  mismo lenguaje que un campo de solo lectura (una caja gris que contiene
+  un dato).
 - Solo lectura aplica igual a campos (`READONLY_FIELD_CLS`; en el ABM,
   `AbmCampo` con `readOnly`) y a toggles (`ButtonSelectGroup` y el toggle
-  de `AbmCampo`, prop `readOnly`), con el mismo ancho por opción que
-  cualquier toggle.
+  de `AbmCampo`, prop `readOnly`, que dibujan `SegmentadoSoloLectura`), con
+  el mismo ancho por opción que cualquier toggle.
 
 ---
 
@@ -854,7 +867,7 @@ color/variante/hover.
 | `ICON`, `ICON_BTN_XS/SM/MD` | Tamaños de ícono y de botón de ícono |
 | `FOCUS_RING`, `FOCUS_RING_INSET`, `PEER_FOCUS_RING`, `FIELD_FOCUS` | Foco (ver [Foco](#foco)) |
 | `MOD_FIELD_CLS`, `MOD_SELECT_CLS` | Clases únicas para todo `<input>` / `<select>` de texto simple |
-| `READONLY_FIELD_CLS`, `readonlyOpcionCls(sel)` | Estado de solo lectura de un campo y de una opción de toggle (ver [Estados](#estados-editable-solo-lectura-deshabilitado)) |
+| `READONLY_FIELD_CLS` | Estado de solo lectura de un campo (y la caja de `SegmentadoSoloLectura`), ver [Estados](#estados-editable-solo-lectura-deshabilitado) |
 | `ESTADO_CLASES` | Clases por estado de campo (`CampoEstado`: editable, bloqueado, solo lectura…) |
 | `ActionItem` | Tipo de una acción (label, variante, handler) |
 
@@ -1654,6 +1667,33 @@ largo (ABM).
 
 **Archivo:** `src/components/ui/SectionDivider.tsx`.
 
+## SegmentadoSoloLectura
+
+**Para qué:** un toggle en solo lectura (Origen y Tipo en el modal de
+edición de registro). Lo dibujan `ButtonSelectGroup` y el toggle de
+`AbmCampo` con `readOnly`; no se usa suelto.
+
+**Anatomía:** una caja con `READONLY_FIELD_CLS` (alto `--control-md`,
+`bg-fill-subtle`, `border-border`, `rounded-sm`), ancho intrínseco. Adentro,
+segmentos de texto de igual ancho (`inline-grid auto-cols-fr`) separados
+por divisores de 1px (`bg-border`, `h-4`), sin borde ni fondo propios. La
+opción elegida en `text-text font-medium` con `Check` (`ICON.xs`) a la
+izquierda; las demás en `text-text-faint`.
+
+**Props:** `opciones` (`{ value, label }[]`), `valor`, `ariaLabel` (nombre
+del campo), `id?`.
+
+**Estados:** ninguno (sin hover, `cursor-default`, `title` "No editable").
+
+**Accesibilidad:** `role="radiogroup"` con `aria-readonly="true"` y el
+valor en el `aria-label` ("Origen: Interno"), enfocable una vez; cada
+opción `role="radio"` con `aria-checked`.
+
+**Qué no hacer:** darle forma de botón a una opción (borde o fondo por
+segmento); usarlo para un toggle deshabilitado.
+
+**Archivo:** `src/components/ui/SegmentadoSoloLectura.tsx`.
+
 ## SelectionActionBar
 
 **Para qué:** confirmar qué registro está seleccionado en el ABM
@@ -2201,13 +2241,18 @@ pasos: **Editar → Revisar**.
   de la tabla en su orden, en una lista continua sin títulos de sección.
   - **No editables en solo lectura** (ver [Estados: editable, solo
     lectura, deshabilitado](#estados-editable-solo-lectura-deshabilitado)):
-    campos con `READONLY_FIELD_CLS`, toggles con `readonlyOpcionCls`, y un
+    campos con `READONLY_FIELD_CLS`, toggles como `SegmentadoSoloLectura`, y un
     candado junto al label — **nunca como controles deshabilitados**.
   - Pie: Cancelar · **Revisar cambios** (primario, habilitado solo si algún
     campo es distinto del original).
 - **Paso 2 — Revisar:** mismo modal y mismo header; el body pasa a
-  `RevisarCambiosContent` (Resumen de cambios + Motivo, el mismo contenido
-  que la confirmación del layout split). Pie: **Volver** (outline, vuelve al
+  `RevisarCambiosContent` (el mismo contenido que la confirmación del layout
+  split), con dos **secciones, no cajas**: Resumen de cambios (overline
+  `text-heading-xs`) y Motivo, separado por `border-t border-border` con el
+  mismo espaciado — título "Motivo" en `text-heading-sm text-text` + "·
+  obligatorio" en `text-body-sm text-text-muted`, ayuda en `text-body-sm
+  text-text-muted` y los chips de `NOTA_OPCIONES`. **Ningún bloque del
+  modal lleva fondo de color.** Pie: **Volver** (outline, vuelve al
   paso 1 con todo lo editado) · **Guardar** (primario, habilitado solo con
   un motivo válido). Guardar hace exactamente lo que hacía la confirmación
   y cierra.
