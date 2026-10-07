@@ -33,14 +33,16 @@ type CampoFlyout = keyof FilterBarValores;
 
 // Campos del flyout "Más filtros", en orden de grilla (2 columnas). Cada uno
 // cuenta para el badge del botón y se muestra como chip removible debajo de
-// la barra.
-const FLYOUT_FIELDS: { key: CampoFlyout; label: string; placeholder: string }[] = [
-  { key: "cadenaElectrica", label: "Cadena eléctrica", placeholder: "NCBT" },
-  { key: "alimentadorMT", label: "Alimentador MT", placeholder: "NCBT" },
-  { key: "centroTransf", label: "Centro de transformación", placeholder: "52705#B1#52705-TR1#1#3" },
-  { key: "codigoEquipo", label: "Código equipo", placeholder: "@27947890" },
-  { key: "descEquipo", label: "Descripción equipo operado", placeholder: "PROTECCION DE SUMINISTRO" },
-  { key: "divisionRed", label: "División red normal", placeholder: "S" },
+// la barra. Controles: texto libre; "combobox" = lista larga con buscador
+// que se abre completa en un modal (ValuePicker `modal`); "siNo" = toggle
+// Sí / No de igual ancho, sin selección = sin filtro.
+const FLYOUT_FIELDS: { key: CampoFlyout; label: string; control: "texto" | "combobox" | "siNo"; placeholder?: string }[] = [
+  { key: "cadenaElectrica", label: "Cadena eléctrica", control: "texto", placeholder: "NCBT" },
+  { key: "alimentadorMT", label: "Alimentador MT", control: "texto", placeholder: "NCBT" },
+  { key: "centroTransf", label: "Centro de transformación", control: "texto", placeholder: "52705#B1#52705-TR1#1#3" },
+  { key: "codigoEquipo", label: "Código equipo", control: "texto", placeholder: "@27947890" },
+  { key: "descEquipo", label: "Descripción equipo operado", control: "combobox" },
+  { key: "divisionRed", label: "División red normal", control: "siNo" },
 ];
 
 const FLYOUT_VACIO: Partial<FilterBarValores> = Object.fromEntries(FLYOUT_FIELDS.map((f) => [f.key, ""]));
@@ -60,6 +62,7 @@ export default function FilterBar({
   buscado,
   disabled = false,
   placeholderCodigo,
+  opcionesDescEquipo,
   flyoutAbierto,
   onFlyoutAbiertoChange,
 }: {
@@ -75,6 +78,9 @@ export default function FilterBar({
   // Consultas mientras hay una interrupción seleccionada).
   disabled?: boolean;
   placeholderCodigo: string;
+  // Lista de "Descripción equipo operado" (dato de dominio, lo pasa la
+  // pantalla).
+  opcionesDescEquipo: string[];
   // El flyout se controla afuera: la pantalla atenúa su contenido mientras
   // está abierto.
   flyoutAbierto: boolean;
@@ -238,17 +244,41 @@ export default function FilterBar({
               </button>
             </div>
             <div className="grid grid-cols-2 gap-x-3.5 gap-y-3">
-              {FLYOUT_FIELDS.map((f) => (
-                <div key={f.key}>
-                  <FieldLabel>{f.label}</FieldLabel>
-                  <input
-                    placeholder={f.placeholder}
+              {FLYOUT_FIELDS.map((f) =>
+                f.control === "combobox" ? (
+                  <ValuePicker
+                    key={f.key}
+                    label={f.label}
+                    modalTitle={f.label}
+                    opts={opcionesDescEquipo}
                     value={valores[f.key]}
-                    onChange={(e) => onChange({ [f.key]: e.target.value })}
-                    className={MOD_FIELD_CLS}
+                    onChange={(v) => onChange({ [f.key]: v })}
+                    searchable
+                    modal
                   />
-                </div>
-              ))}
+                ) : f.control === "siNo" ? (
+                  <div key={f.key}>
+                    <FieldLabel>{f.label}</FieldLabel>
+                    <ButtonSelectGroup
+                      options={["Sí", "No"]}
+                      selected={valores[f.key] ? [valores[f.key]] : []}
+                      onToggle={(opt) => onChange({ [f.key]: valores[f.key] === opt ? "" : opt })}
+                      sizeCls={BTN_SEG_MD}
+                      ariaLabel={f.label}
+                    />
+                  </div>
+                ) : (
+                  <div key={f.key}>
+                    <FieldLabel>{f.label}</FieldLabel>
+                    <input
+                      placeholder={f.placeholder}
+                      value={valores[f.key]}
+                      onChange={(e) => onChange({ [f.key]: e.target.value })}
+                      className={MOD_FIELD_CLS}
+                    />
+                  </div>
+                ),
+              )}
             </div>
             <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
               <button

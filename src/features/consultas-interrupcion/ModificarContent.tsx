@@ -23,6 +23,7 @@ import {
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { DRAWER_TAB_TO_ABM, DRAWER_TABS, STATUS_ITEMS } from "@/data/dominio";
 import {
+  DESCRIPCIONES_EQUIPO_OPERADO,
   generarFasesSinteticas,
   generarFilasTabla5,
   generarFilasTabla6,
@@ -340,6 +341,7 @@ export default function ModificarContent({
           buscado={modShowData}
           disabled={hasSelection}
           placeholderCodigo={`Ej: ${RECORD.referencia}`}
+          opcionesDescEquipo={DESCRIPCIONES_EQUIPO_OPERADO}
           flyoutAbierto={flyoutOpen}
           onFlyoutAbiertoChange={setFlyoutOpen}
         />
