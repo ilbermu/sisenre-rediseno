@@ -253,6 +253,12 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **ABM — encabezados de columna cortos y unificados:** `labelColumna` por
+  campo; mismo nombre real = mismo encabezado en todas las tablas ("Cant.",
+  contexto omitido, "Nro. X"), con excepciones documentadas (Tabla 7: SSEE,
+  POT, POTENCIA); los chips usan el mismo texto; verificación de desarrollo
+  (`encabezadosInconsistentes`).
+
 - **ABM — columnas de Resultados = estructura de la tabla real:** todos los
   campos con `nombreReal`, en el orden real (`ordenTablaReal`), con el
   campoId primero y fijo; sin campos sin nombreReal ni auditoría; sin
@@ -2332,13 +2338,37 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
     Tabla 6, Reclamos de Tabla 8), que siguen en el modal, ni los campos de
     auditoría de la tabla real;
   - **sin máximo de columnas**.
-- **Encabezado = label del campo en el formulario** (la del código de
-  interrupción es "Código de interrupción" en todas; nada de "Ref", "F",
-  "Alim", "Rec"), con **una excepción**: los campos POL y CUENTA se titulan
-  **"Nro. cuenta"** (`labelColumna` opcional del campo, solo para estos
-  casos; el label del formulario no cambia). El nombre real de la base va en
-  la pista del encabezado ([`ColumnHeaderHint`](#columnheaderhint)). Una
-  columna de toggle, select o combobox muestra la etiqueta de la opción.
+- **Encabezados de columna** (solo encabezados y chips; los labels del
+  formulario y del modal **no** cambian). El título sale del label del
+  campo, o de su `labelColumna` cuando hace falta uno más corto o uno que se
+  comparta entre tablas. Reglas:
+  - **Un mismo nombre real lleva el mismo encabezado en todas las
+    tablas** ("Código equipo" para ID_ELEM en Tablas 2 y 4; "Cant. clientes"
+    para CLI en Tablas 4, 5 y 7; "Fase de reposición" para F en todas las
+    que la tienen; "Código de interrupción" para REF, también el campo
+    Interrupción de Tabla 8).
+  - **"Cantidad" → "Cant."** ("Cant. clientes", "Cant. trafos MT/BT").
+  - **Se omite el contexto que ya da la tabla** ("Potencia" y no "Potencia
+    en KVA del trafo" en Tabla 5; "Capacidad", "Tensión" y "Longitud" en
+    Tabla 7; "Fecha" en Tabla 8).
+  - **Identificadores como "Nro. X"**: "Nro. cuenta" (POL y CUENTA, mismo
+    título aunque el nombre real difiera), "Nro. reclamo" (REC).
+  - **Excepciones**, solo cuando el dato es distinto aunque el nombre
+    coincida o dos campos de una tabla quedarían con el mismo título:
+    SSEE de Tabla 7 ("Subestación": es la subestación, no la cadena
+    eléctrica de "Cadena eléctrica" en Tablas 2 y 4) y POT / POTENCIA de
+    Tabla 7 ("Potencia trafos" / "Potencia clientes MT", porque ambas
+    serían "Potencia").
+  - Los **chips** de esos campos usan el mismo texto (`chipLabel`); el label
+    largo queda solo en el formulario, el modal y el menú "Agregar filtro".
+  - **Verificación de desarrollo:** `encabezadosInconsistentes`
+    (`columnasDeResultados.ts`) agrupa por nombre real y falla (se reporta
+    con `console.error` al cargar `AbmScreen` en DEV) si dos tablas titulan
+    distinto un mismo nombre real fuera de las excepciones, o si una tabla
+    repite un título.
+  - El nombre real va en la pista del encabezado
+    ([`ColumnHeaderHint`](#columnheaderhint)). Una columna de toggle,
+    select o combobox muestra la etiqueta de la opción.
 - **Ancho:** celdas y encabezados en `whitespace-nowrap`, ningún valor se
   trunca. Solo si las columnas no entran en la caja hay **scroll horizontal
   dentro de la caja**, con la columna del ID fija (ver [Tabla de

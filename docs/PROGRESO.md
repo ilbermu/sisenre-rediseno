@@ -453,6 +453,12 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   CUENTA (`labelColumna`), sin máximo ni auditoría; se quita
   `columnasResultadoBarra`. Tabla en `border-separate`, celdas nowrap y
   scroll horizontal dentro de la caja (paginación y barra fijas).
+- **Encabezados de columna unificados** (`4b56722`): `labelColumna` en 28
+  campos; mismo nombre real = mismo título en todas las tablas ("Cant.
+  clientes", "Código equipo", "Fase de reposición"…), "Nro. reclamo" para
+  REC, chips con el mismo texto. Excepciones en Tabla 7 (SSEE, POT,
+  POTENCIA). Verificación `encabezadosInconsistentes` (console.error en
+  DEV) y script de comprobación contra las 9 configs: sin problemas.
 - `DESIGN_SYSTEM.md`: Patrones → "ABM" (patrón único; el formulario y las
   reglas de edición son de cada tabla; regla de chips: hasta 5 visibles,
   el resto en "Agregar filtro"; labels de columna = label del form),
