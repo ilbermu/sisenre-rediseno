@@ -253,6 +253,21 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **`ChipFilterBar`** (nuevo, `components/ui`): barra de filtros híbrida —
+  input de ID directo + chips fijos y agregables que aplican al instante,
+  sin botón Buscar; editores por tipo (lista, lista con buscador, texto,
+  rango de fecha con hora opcional); chips de 200px máx. con valor truncado
+  y `title`; desborde en una línea ("+N filtros", modo compacto).
+- **`AnchoredPopover`** (nuevo): popover en portal anclado a su
+  disparador. Regla: un popover se ancla a su disparador.
+- **`FilterTrigger`:** exporta `FilterTriggerButton` (`size="md"`,
+  `maxWidth`, `valorDestacado`, `quitarSiempre`) y `RangoFechaEditor`; su
+  aspecto no cambia. `ICON_BTN_MD` se exporta; `FieldLabel` suma `htmlFor`.
+- **Patrón "Barra de filtros híbrida"** para la búsqueda principal de
+  pantallas de datos. **ABM Tabla 2** pasa de `FilterBar` a
+  `ChipFilterBar` (`config.filtrosBarra`); se elimina
+  `barraBusqueda.campos`. Consultas sigue con `FilterBar`.
+
 - **ABM, variante barra — buscar y refinar:** Buscar filtra de verdad las
   filas de muestra (`filtrarFilas`); Enter en un input y Aplicar del flyout
   ejecutan la búsqueda; estado vacío "No hay registros con estos filtros" +
@@ -301,9 +316,11 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **2. Componentes** (`src/components/ui/`)
 [tokens.ts](#tokensts) ·
+[AnchoredPopover](#anchoredpopover) ·
 [Botones](#botones) ·
 [ButtonSelectGroup](#buttonselectgroup) ·
 [CardHeader](#cardheader) ·
+[ChipFilterBar](#chipfilterbar) ·
 [CodeBadge](#codebadge) ·
 [CopyButton](#copybutton) ·
 [DateTimeField](#datetimefield) ·
@@ -334,6 +351,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [Card con secciones](#card-con-secciones) ·
 [Lista de filas](#lista-de-filas) ·
 [Toolbar de tabla y filtros](#toolbar-de-tabla-y-filtros) ·
+[Barra de filtros híbrida](#barra-de-filtros-híbrida) ·
 [Registro seleccionado y detalle](#registro-seleccionado-y-detalle) ·
 [Orden de botones](#orden-de-botones) ·
 [Aire: chrome vs datos](#aire-chrome-vs-datos) ·
@@ -818,6 +836,32 @@ de texto; escribir clases de foco a mano.
 
 **Archivo:** `src/components/ui/tokens.ts`.
 
+## AnchoredPopover
+
+**Para qué:** popover anclado a **su** disparador (editores y menús de
+[`ChipFilterBar`](#chipfilterbar)). **Regla:** un popover se ancla a su
+disparador, nunca al borde de la barra o del contenedor que lo tiene.
+
+**Anclaje:** portal a `document.body`, `position: fixed`, a 5px del
+disparador. Horizontal: alineado al borde izquierdo del disparador; si no
+entra a la derecha del viewport (margen 8px), al borde derecho del
+disparador. Vertical: debajo; arriba solo si abajo no entra y arriba hay más
+lugar. Se recalcula con scroll, resize, cambios de tamaño del panel y
+`reposicionar` (cuando el disparador se movió sin scroll ni resize).
+
+**Aspecto:** el de los dropdowns del sistema — `bg-surface`, `rounded-md`,
+`border-border`, `shadow-md`, capa `--z-dropdown`.
+
+**Props:** `anchorRef`, `open`, `onClose`, `role?` (`menu`, `dialog`,
+`listbox`; sin role la semántica la pone el contenido), `ariaLabel?`,
+`className?`, `style?`, `reposicionar?`.
+
+**Accesibilidad:** clic afuera (fuera del panel y del disparador) cierra;
+Escape cierra, corta la propagación (no cierra un `Modal` ni deselecciona
+una fila detrás) y devuelve el foco al disparador.
+
+**Archivo:** `src/components/ui/AnchoredPopover.tsx`.
+
 ## Botones
 
 **Para qué:** las acciones. No hay un componente `<Button/>`: cada botón
@@ -956,6 +1000,94 @@ acciones sobre el registro seleccionado en `actions` (solo alcance tabla:
 Insertar, Exportar, Auditoría); badge a la derecha; fondo propio.
 
 **Archivo:** `src/components/ui/CardHeader.tsx`.
+
+## ChipFilterBar
+
+**Para qué:** la [barra de filtros híbrida](#barra-de-filtros-híbrida):
+ID directo + chips de filtro que aplican al instante, sin botón Buscar. Hoy,
+ABM Tabla 2 (layout barra).
+
+**Anatomía:** una sola línea (`flex flex-nowrap gap-2`), todo a
+`--control-md`, en este orden:
+
+```
+[🔍 ID de interrupción     ✕] Fecha ▾  Nivel: MT ✕  Fase ▾  Origen ▾  Tipo ▾ │ Código equipo: @27… ✕  +2 filtros  [+ Agregar filtro]      Limpiar filtros
+```
+
+1. **Input de ID:** lupa a la izquierda, placeholder del ID, texto
+   `text-code font-mono`, ✕ interno (`ICON_BTN_XS`) con valor. Ancho
+   flexible: base 220px, mínimo 150px (es lo primero que se achica).
+   Aplica con Enter o a los 500 ms de dejar de tipear; busca "contiene"
+   sin distinguir mayúsculas.
+2. **Chips fijos** (siempre visibles): `FilterTriggerButton` `md`. Vacío =
+   trigger sin borde con chevron; con valor = pintado (`primary-tint`,
+   `border-primary`, `text-secondary`), "Etiqueta: **valor**" (valor en
+   semibold) + ✕.
+3. **Separador vertical** (solo con agregados) + **chips agregados**, mismo
+   aspecto, siempre con ✕.
+4. **"+N filtros"** (solo con desborde): chip pintado, mismo aspecto que un
+   chip con valor.
+5. **"Agregar filtro":** `ghostBtnCls("neutral")` a `--control-md`, ícono +
+   y texto (sin borde punteado). Menú con los campos agregables que no
+   están en la barra. Elegir uno agrega su chip y abre su editor; si el
+   editor se cierra sin valor, el chip se quita.
+6. **"Limpiar filtros":** link (`text-label text-secondary
+   hover:underline`, `ml-auto`), solo con algún filtro o ID cargado. Limpia
+   todo, incluidos los chips agregados.
+
+**Props:** `id`, `onIdChange`, `idPlaceholder`, `fijos` y `agregables`
+(`ChipFiltroDef[]`: `campo`, `label`, `editor`, `opciones?`), `valores`
+(campo → valor, `""` = sin filtro), `onChange(campo, valor)`, `onLimpiar`.
+Controlada desde la pantalla; qué agregados hay en la barra es estado
+propio. El valor de un filtro de fecha viaja como texto (`valorDeRango` /
+`rangoDeValor`).
+
+**Editores** (en [`AnchoredPopover`](#anchoredpopover), anclados a su
+disparador: el chip, o "+N" si el chip está oculto):
+- **`lista`** (Nivel, Fase, Origen, Tipo, División red normal): ítems con
+  el estilo de la lista de `FilterTrigger`; el elegido marcado
+  (`primary-tint`); elegir aplica y cierra.
+- **`busqueda`** (Descripción equipo operado): la lista completa con un
+  buscador arriba que filtra mientras se escribe; scroll propio (máx.
+  320px). Elegir aplica y cierra.
+- **`texto`** (Código equipo, Cadena eléctrica, Alimentador MT, CT MT/BT):
+  input con label; Enter aplica y cierra; vacío quita el filtro.
+- **`fecha`:** `RangoFechaEditor` con atajos Hoy, Últimos 7 días y Período
+  completo (vacía los extremos = todo el período), Desde y Hasta con fecha +
+  hora opcional (sin hora = día completo) y Aplicar — el único editor con
+  botón, porque el rango se arma en dos pasos. Texto del chip: "dd/mm hh:mm
+  – dd/mm hh:mm", "desde …" o "hasta …", sin la hora si no se cargó.
+
+**Valores largos:** cada chip mide como máximo 200px; el valor trunca con
+"…" y el texto completo va en el `title` del chip.
+
+**Desborde** (la barra nunca pasa de una línea). Si no entra todo, en este
+orden: (a) el ID se achica hasta 150px; (b) los chips agregados, de derecha
+a izquierda, pasan a "+N filtros"; (c) modo compacto: "Agregar filtro" solo
+ícono (`ICON_BTN_MD`, `aria-label`) y chips a 150px como máximo. Los fijos
+nunca se ocultan. Los anchos naturales salen de una fila de medición
+invisible e inerte; se recalcula al agregar o quitar filtros y con el ancho
+de la barra (`ResizeObserver`).
+- **Menú "+N":** una fila por filtro oculto — etiqueta en `text-text-muted`
+  + valor en `text-text`, truncado con `title`. Clic abre el editor de ese
+  filtro, anclado al "+N". A la derecha, ✕ ghost (`ICON_BTN_XS`,
+  `text-icon`, hover `bg-fill-muted`, `aria-label` "Quitar filtro X"),
+  discreta en reposo (opacidad 60%) y plena en la fila con hover o foco.
+  Nada de botones con borde dentro del menú.
+
+**Accesibilidad:** el input de ID lleva `aria-label`; cada chip, un botón
+con `aria-haspopup` y `aria-expanded` (con valor, `aria-label` "Etiqueta:
+valor") y su × como botón hermano ("Quitar filtro X"); menús con
+`role="menu"` / `menuitem`; listas con `role="listbox"` / `option` +
+`aria-selected`; editores de texto, búsqueda y fecha con `role="dialog"`.
+Al abrir un editor, el foco va a su primer control (el ítem elegido en las
+listas). Escape cierra y devuelve el foco al disparador; clic afuera
+cierra.
+
+**Qué no hacer:** anclar un editor al borde de la barra; dejar que la
+barra pase a dos líneas; ocultar un chip fijo; agregar un botón Buscar.
+
+**Archivo:** `src/components/ui/ChipFilterBar.tsx`.
 
 ## CodeBadge
 
@@ -1159,10 +1291,12 @@ fila.
 
 ## FilterBar
 
-**Para qué:** la barra de búsqueda general de una pantalla (Consultas de
-interrupción, ABM Tabla 2 en layout barra). **Regla:** toda pantalla con
-barra de búsqueda general usa `FilterBar`; los campos cambian por
-configuración (props, mapeo de la pantalla), nunca se copia el markup.
+**Para qué:** la barra de búsqueda general con botón Buscar y flyout "Más
+filtros" (hoy, solo Consultas de interrupción). Para la búsqueda principal
+de una pantalla de datos, ver [Barra de filtros
+híbrida](#barra-de-filtros-híbrida) ([`ChipFilterBar`](#chipfilterbar)).
+**Regla:** una pantalla con esta barra usa `FilterBar`; los campos cambian
+por configuración (props, mapeo de la pantalla), nunca se copia el markup.
 
 **Anatomía:** fila única sin contenedor, apoyada en el fondo de la página
 (`relative z-(--z-raised)`, `flex items-center gap-2`):
@@ -1266,6 +1400,14 @@ cerrar el `Modal` que lo contiene). Foco `FOCUS_RING`.
 **Qué no hacer:** usar su tratamiento (sin borde en reposo, hover tint)
 fuera de un trigger de filtro — los otros botones sin borde son los ghost y
 los de ícono, ver [Botones](#botones); anidar la × dentro del botón.
+
+**Piezas exportadas** (las reusa [`ChipFilterBar`](#chipfilterbar)):
+`FilterTriggerButton` (el trigger solo; suma `size="md"`, `maxWidth` con el
+valor truncado y el texto completo en `title`, `valorDestacado` para el
+valor en semibold, `quitarSiempre` para la × sin valor y `buttonRef`) y
+`RangoFechaEditor` (el contenido del panel de rango, sin posicionamiento,
+con el valor como texto de los inputs —`RangoTexto`, hora opcional— y los
+atajos por parámetro).
 
 **Archivo:** `src/components/ui/FilterTrigger.tsx`.
 
@@ -1723,6 +1865,30 @@ comparar columnas u ordenarlas, va tabla.
   (`border-dashed border-border`, sin fondo) y texto `text-text-muted` — ej.
   los tiles de "Tablas relacionadas" con 0, "No" o sin selección.
 
+## Barra de filtros híbrida
+
+La búsqueda principal de una **pantalla de datos** (una tabla que se
+consulta y se refina), con [`ChipFilterBar`](#chipfilterbar):
+
+- **ID directo:** el identificador se tipea en un input propio, sin abrir
+  nada (es lo más buscado).
+- **Chips:** los filtros frecuentes, fijos y siempre visibles; el resto se
+  suma con "Agregar filtro". Cada chip abre su editor en un popover.
+- **Aplicar al instante:** cada cambio filtra en el momento, vuelve a la
+  página 1 y deselecciona el registro si quedó afuera. **Sin botón
+  Buscar** ni Limpiar: "Limpiar filtros" es un link, solo con filtros.
+- **Estado inicial:** sin filtros, la tabla muestra todos los registros del
+  período (paginados). Sin resultados: "No hay registros con estos
+  filtros" + "Limpiar filtros" dentro de la caja de la tabla.
+- **Una línea:** nunca hace wrap; el desborde se resuelve con "+N filtros" y
+  modo compacto.
+- **Regla:** un popover se ancla a su disparador
+  ([`AnchoredPopover`](#anchoredpopover)), nunca al borde de la barra.
+
+**Relación con [`FilterBar`](#filterbar):** `FilterBar` (formulario en una
+fila + Buscar + flyout "Más filtros") queda, por ahora, en Consultas de
+interrupción. Una pantalla nueva de datos usa la barra híbrida.
+
 ## Registro seleccionado y detalle
 
 - **Registro seleccionado:** fila resaltada en su tabla
@@ -1825,14 +1991,14 @@ período) es el mismo en los dos.
   derecha. Seleccionar una fila vuelca sus datos en el formulario
   ("consultando"); Insertar y Modificar usan el mismo panel de la izquierda
   y atenúan Resultados.
-- **`barra`** (en prueba, solo CDS2): la barra de búsqueda de Consultas de
-  interrupción ([`FilterBar`](#filterbar)) + Resultados a ancho completo.
+- **`barra`** (en prueba, solo CDS2): [barra de filtros
+  híbrida](#barra-de-filtros-híbrida) ([`ChipFilterBar`](#chipfilterbar)) +
+  Resultados a ancho completo.
 
 ```
 ┌ masthead: [Tabla 2 · CDS2 ▾]                                [Período ▾] ┐
 │                                                                         │
-│ [Ej: BFZ…  ] [fecha 📅] [Nivel ▾] [Fase ▾] │ ORIGEN [Interno|Externo] TIPO [Forzado|Programado]  [Más filtros] [Limpiar] [Buscar] │  FilterBar
-│ FILTROS APLICADOS: (chip ×) (chip ×)                                     │  solo si hay filtros del flyout
+│ [🔍 ID de interrupción  ] Fecha ▾ Nivel ▾ Fase ▾ Origen ▾ Tipo ▾ │ (agregados) [+ Agregar filtro]   Limpiar filtros │  ChipFilterBar
 │                                                                (gap --page-gap)
 │ 40 de 40 registros                                                     │  barra de herramientas, sobre el fondo (sin selección)
 │ • REGISTRO SELECCIONADO BFZ…        [Modificar] [Borrar] [✕]            │  … o con un registro seleccionado
@@ -1844,30 +2010,21 @@ período) es el mismo en los dos.
 │ └───────────────────────────────────────────────────────────────────┘   │
 ```
 
-- **La barra es `FilterBar`**, idéntica a la de Consultas (sin labels
-  arriba, Nivel y Fase como dropdown, Origen/Tipo con label inline, mismo
-  flyout). `config.barraBusqueda.campos` dice a qué campo de la tabla
-  corresponde cada filtro (CDS2: código → `codigoInterrupcion`, fecha →
-  `fecha`, nivel → `nivelTension`, fase → `faseElectrica`, origen/tipo →
-  `origen`/`tipo`, cadena eléctrica → `cadenaElectricaAguasArriba`,
-  alimentador → `alimentadorMT`, centro de transformación →
-  `ctMtBtEquipoOperado`, código equipo → `codigoEquipoOperado`,
-  descripción → `descEquipoOperado`, división red normal →
-  `divisionRedNormal`). Los valores viven en `valores` del ABM; si el campo
-  tiene opciones `{value, label}`, `AbmScreen` traduce (Interno/Externo ↔
-  I/E, Forzado/Programado ↔ F/P). El placeholder del código y la lista de
-  descripciones salen de la config del campo.
-- **La barra busca y refina:** Buscar (botón, Enter en un input o Aplicar
-  del flyout) aplica los valores actuales sobre **todas** las filas de
-  muestra, nunca sobre el resultado anterior (`filtrarFilas`, en
-  `src/features/abm/filtrarFilas.ts`): todos los filtros con valor en AND;
-  código, cadena eléctrica, alimentador MT, centro de transformación y
-  código equipo por "contiene" sin distinguir mayúsculas; fecha por mismo
-  día (la hora cuenta solo si se cargó una); nivel, fase, origen, tipo,
-  descripción y división red normal por igualdad. Sin filtros trae todo.
-  Vuelve a la página 1 y actualiza "N de M registros"; si el registro
-  seleccionado no queda en el resultado, se deselecciona. Limpiar vacía
-  todo y vuelve al estado previo a buscar.
+- **La barra es `ChipFilterBar`**, configurada en `config.filtrosBarra`
+  (`src/data/abmTables.ts`, `AbmFiltrosBarra`): el ID (`id.columna`,
+  `id.placeholder`), los chips `fijos` y los `agregables`, cada uno con su
+  `campo` (= columna de `rows`), `label`, `editor` y `opciones`. CDS2: ID
+  sobre `referencia`; fijos Fecha, Nivel, Fase, Origen, Tipo; agregables
+  Código equipo, Descripción equipo operado, División red normal, Cadena
+  eléctrica, Alimentador MT, CT MT/BT. Estado propio en `AbmScreen` (no
+  comparte `valores` con el modal de Modificar).
+- **Filtra al instante:** cada cambio aplica `filtrarFilas`
+  (`src/features/abm/filtrarFilas.ts`) sobre **todas** las filas de
+  muestra: filtros con valor en AND; el ID y los editores `texto` por
+  "contiene" sin distinguir mayúsculas; `lista` y `busqueda` por igualdad;
+  `fecha` por rango (extremos inclusivos, sin hora = día completo). Sin
+  filtros se ven todos los registros. Vuelve a la página 1, actualiza "N de
+  M registros" y deselecciona el registro si quedó afuera.
 - **Nunca se bloquea:** ni por tener resultados ni por tener un registro
   seleccionado (no hay estado "consultando": seleccionar una fila no le
   vuelca datos).
@@ -1877,13 +2034,12 @@ período) es el mismo en los dos.
   - **Barra de herramientas de la tabla**, afuera de la caja, apoyada sobre
     el fondo, sin fondo ni borde propios, de alto fijo (`--control-md`) con
     dos modos que no cambian su alto: sin selección, solo `TableCounter`
-    a la izquierda — vacío antes de la primera búsqueda (y después de
-    Limpiar), "N de M registros" después de Buscar, "0 registros" si la
-    búsqueda no trajo resultados; con un registro seleccionado, `SelectionActionBar`
+    a la izquierda — "N de M registros", o "0 registros" si los filtros no
+    dejan ninguno; con un registro seleccionado, `SelectionActionBar`
     (`bare`) con Modificar y Borrar (`ghostBtnCls` neutral y destructivo,
     `sm`), un separador vertical y un botón de ícono ✕ (`ICON_BTN_SM`,
-    "Deseleccionar"). Son acciones de registro: no compiten con Más filtros
-    / Limpiar / Buscar, que son acciones de página.
+    "Deseleccionar"). Son acciones de registro: no compiten con la barra de
+    filtros, que es de página.
   - **La tabla conserva su contenedor**, a `gap-2` de la barra de
     herramientas: la misma caja que dentro del panel Resultados del split
     (`border border-border rounded-md bg-surface shadow-sm`), `thead`
@@ -1893,20 +2049,18 @@ período) es el mismo en los dos.
     Sin `overflow-hidden` en la caja: el radio lo resuelven el wrapper con
     scroll (`rounded-t-md`) y el pie. El scroll es del body de la tabla,
     nunca de la página.
-  - **Estado vacío** antes de buscar: el de Interrupciones en Consultas
-    ("Completá los filtros y presioná Buscar"), centrado dentro de la caja.
-  - **Sin resultados:** si la búsqueda no trae filas, dentro de la caja
+  - **Sin resultados:** si los filtros no dejan filas, dentro de la caja
     "No hay registros con estos filtros" + link "Limpiar filtros"
-    (`text-label text-secondary hover:underline`, hace lo mismo que
-    Limpiar), sin pie de paginación; el contador dice "0 registros".
+    (`text-label text-secondary hover:underline`, el mismo de la barra),
+    sin pie de paginación; el contador dice "0 registros".
   - **Pie:** "Registros encontrados" cuenta las filas encontradas cuando
     hay algún filtro aplicado (sin filtros, el total de la tabla).
   - Columnas propias (`columnasResultadoBarra`); una columna con `campo`
     muestra la etiqueta de la opción (Interno/Externo, Forzado/Programado),
-    también para buscar y ordenar. Se atenúa con el flyout abierto.
+    también para ordenar.
 - **Un solo buscador:** cuando la pantalla tiene barra de búsqueda
   general, la tabla no lleva buscador ni filtros propios (ni `TableToolbar`
-  ni `FilterTrigger`): las filas visibles salen solo de Buscar. Su barra de
+  ni `FilterTrigger`): las filas visibles salen solo de la barra. Su barra de
   herramientas muestra el contador o, con selección, las acciones del
   registro. El orden por columna se mantiene (es ordenar, no buscar).
 - **Acciones de registro solo con selección:** no hay columna de acciones
