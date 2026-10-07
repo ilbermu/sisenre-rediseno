@@ -180,7 +180,7 @@ type Abierto = { campo: string; ancla: "chip" | "mas" };
 // Barra de filtros híbrida (ver DESIGN_SYSTEM.md, "ChipFilterBar" y "Barra
 // de filtros híbrida"): input de ID directo + chips de filtro que aplican al
 // instante, sin botón Buscar. Una sola línea, todo a --control-md:
-//   ID · chips fijos · │ chips agregados · +N filtros · Agregar filtro · (ml-auto) Limpiar filtros
+//   ID · chips visibles · │ chips agregados · +N filtros · Agregar filtro · (ml-auto) Limpiar filtros
 // Controlada desde la pantalla: `id` y `valores` (campo → valor, "" = sin
 // filtro) vienen por props y cada cambio se avisa al instante. Los chips
 // agregados (cuáles están en la barra) son estado propio: un agregado sin
@@ -189,7 +189,7 @@ export default function ChipFilterBar({
   id,
   onIdChange,
   idPlaceholder,
-  fijos,
+  visibles,
   agregables,
   valores,
   onChange,
@@ -199,7 +199,7 @@ export default function ChipFilterBar({
   id: string;
   onIdChange: (v: string) => void;
   idPlaceholder: string;
-  fijos: ChipFiltroDef[];
+  visibles: ChipFiltroDef[];
   agregables: ChipFiltroDef[];
   valores: Record<string, string>;
   onChange: (campo: string, valor: string) => void;
@@ -224,7 +224,7 @@ export default function ChipFilterBar({
   useEffect(() => {
     const rango = periodo ? rangoDePeriodo(periodo) : null;
     if (!rango) return;
-    for (const d of [...fijos, ...agregables]) {
+    for (const d of [...visibles, ...agregables]) {
       const v = valores[d.campo] ?? "";
       if (d.editor !== "fecha" || !esRangoDePeriodo(v)) continue;
       const nuevo = valorDeRango(rango, true);
@@ -246,13 +246,16 @@ export default function ChipFilterBar({
     });
   }, [valores, abierto]);
 
-  const defs = useMemo(() => new Map([...fijos, ...agregables].map((d) => [d.campo, d])), [fijos, agregables]);
+  const defs = useMemo(() => new Map([...visibles, ...agregables].map((d) => [d.campo, d])), [visibles, agregables]);
   const disponibles = agregables.filter((d) => !agregados.includes(d.campo));
+  // Sin agregables (la tabla tiene 5 filtros o menos), no hay "Agregar
+  // filtro".
+  const hayAgregar = agregables.length > 0;
 
   // ── Desborde: la barra nunca pasa de una línea. Si no entra todo, en
   // orden: (a) el ID se achica hasta su mínimo (lo hace el flex); (b) los
   // agregados, de derecha a izquierda, pasan a "+N filtros"; (c) modo
-  // compacto: "Agregar filtro" solo ícono y chips a 150px. Los fijos nunca
+  // compacto: "Agregar filtro" solo ícono y chips a 150px. Los visibles nunca
   // se ocultan. Los anchos naturales salen de una fila de medición
   // invisible; se recalcula al cambiar filtros y con el ancho de la barra
   // (ResizeObserver).
@@ -271,8 +274,8 @@ export default function ChipFilterBar({
     setAnchoBarra(el.clientWidth);
     return () => ro.disconnect();
   }, []);
-  const [disposicion, setDisposicion] = useState({ visibles: agregados.length, compacto: false });
-  const hayAlgo = !!id || !!borradorId || fijos.some((d) => valores[d.campo]) || agregados.some((c) => valores[c]);
+  const [disposicion, setDisposicion] = useState({ enBarra: agregados.length, compacto: false });
+  const hayAlgo = !!id || !!borradorId || visibles.some((d) => valores[d.campo]) || agregados.some((c) => valores[c]);
   useLayoutEffect(() => {
     const barra = barraRef.current;
     if (!barra || anchoBarra === 0) return;
@@ -283,28 +286,28 @@ export default function ChipFilterBar({
       const cap = compacto ? CHIP_MAX_COMPACTO : CHIP_MAX;
       const anchos = [
         ID_MIN,
-        ...fijos.map((d) => chipAncho(d.campo, cap)),
+        ...visibles.map((d) => chipAncho(d.campo, cap)),
         ...(agregados.length > 0 ? [1] : []),
         ...agregados.slice(0, n).map((c) => chipAncho(c, cap)),
         ...(n < agregados.length ? [ancho("mas")] : []),
-        ancho(compacto ? "agregar-icono" : "agregar"),
+        ...(hayAgregar ? [ancho(compacto ? "agregar-icono" : "agregar")] : []),
         ...(hayAlgo ? [ancho("limpiar")] : []),
       ];
       return anchos.reduce((a, b) => a + b, 0) + gap * (anchos.length - 1);
     };
-    let elegida = { visibles: 0, compacto: true };
+    let elegida = { enBarra: 0, compacto: true };
     buscar: for (const compacto of [false, true]) {
       for (let n = agregados.length; n >= 0; n--) {
         if (total(n, compacto) <= anchoBarra) {
-          elegida = { visibles: n, compacto };
+          elegida = { enBarra: n, compacto };
           break buscar;
         }
       }
     }
-    setDisposicion((prev) => (prev.visibles === elegida.visibles && prev.compacto === elegida.compacto ? prev : elegida));
+    setDisposicion((prev) => (prev.enBarra === elegida.enBarra && prev.compacto === elegida.compacto ? prev : elegida));
   });
-  const visibles = agregados.slice(0, disposicion.visibles);
-  const ocultos = agregados.slice(disposicion.visibles);
+  const agregadosVisibles = agregados.slice(0, disposicion.enBarra);
+  const ocultos = agregados.slice(disposicion.enBarra);
 
   // ── Anclas de los popovers.
   const chipRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -394,7 +397,7 @@ export default function ChipFilterBar({
       {/* Fila de medición: anchos naturales de lo que puede desbordar.
           Invisible, inerte y fuera del flujo. */}
       <div aria-hidden inert className="absolute left-0 top-0 invisible pointer-events-none flex items-center gap-2 whitespace-nowrap">
-        {[...fijos, ...agregados.map((c) => defs.get(c)!)].map((d) => {
+        {[...visibles, ...agregados.map((c) => defs.get(c)!)].map((d) => {
           const v = valores[d.campo] ?? "";
           return (
             <div key={d.campo} ref={refMedida(`chip:${d.campo}`)} className="shrink-0 flex">
@@ -454,12 +457,12 @@ export default function ChipFilterBar({
         )}
       </div>
 
-      {/* 2. Chips fijos — siempre visibles. */}
-      {fijos.map((d) => chip(d))}
+      {/* 2. Chips visibles — siempre en la barra. */}
+      {visibles.map((d) => chip(d))}
 
       {/* 3. Chips agregados. */}
       {agregados.length > 0 && <div className="w-px h-5 bg-border shrink-0" />}
-      {visibles.map((c) => chip(defs.get(c)!))}
+      {agregadosVisibles.map((c) => chip(defs.get(c)!))}
 
       {/* 4. "+N filtros" — los agregados que no entran. */}
       {ocultos.length > 0 && (
@@ -475,7 +478,8 @@ export default function ChipFilterBar({
         </button>
       )}
 
-      {/* 5. Agregar filtro. */}
+      {/* 5. Agregar filtro — solo si la tabla tiene agregables. */}
+      {hayAgregar && (
       <button
         ref={agregarRef}
         type="button"
@@ -490,6 +494,7 @@ export default function ChipFilterBar({
         <Plus size={ICON.sm} strokeWidth={1.5} />
         {!disposicion.compacto && "Agregar filtro"}
       </button>
+      )}
 
       {/* 6. Limpiar filtros — solo con algún filtro o ID cargado. */}
       {hayAlgo && (
@@ -551,7 +556,7 @@ export default function ChipFilterBar({
         anchorRef={anclaEditor}
         open={!!defAbierto}
         onClose={cerrarEditor}
-        reposicionar={`${disposicion.visibles}|${disposicion.compacto}|${anchoBarra}`}
+        reposicionar={`${disposicion.enBarra}|${disposicion.compacto}|${anchoBarra}`}
       >
         {defAbierto?.editor === "lista" && <EditorLista def={defAbierto} opciones={opcionesDe(defAbierto, valores)} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
         {defAbierto?.editor === "busqueda" && <EditorBusqueda def={defAbierto} opciones={opcionesDe(defAbierto, valores)} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}

@@ -56,7 +56,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     campoId: "codigoInterrupcion",
     filtrosBarra: {
       idPlaceholder: "ID de interrupción",
-      fijos: [
+      visibles: [
         { campo: "fecha", chipLabel: "Fecha" },
         { campo: "nivelTension", chipLabel: "Nivel" },
         { campo: "faseElectrica", chipLabel: "Fase" },
@@ -165,7 +165,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      fijos: [{ campo: "causa", chipLabel: "Causa" }],
+      visibles: [{ campo: "causa", chipLabel: "Causa" }],
       agregables: [{ campo: "faseReposicion", chipLabel: "Fase rep." }],
     },
     secciones: [
@@ -203,7 +203,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      fijos: [{ campo: "fecha", chipLabel: "Fecha" }],
+      visibles: [{ campo: "fecha", chipLabel: "Fecha" }],
       agregables: [
         { campo: "faseReposicion", chipLabel: "Fase rep." },
         { campo: "faseElectrica", chipLabel: "Fase eléc." },
@@ -288,7 +288,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      fijos: [],
+      visibles: [],
       agregables: [
         { campo: "faseReposicion", chipLabel: "Fase rep." },
         { campo: "cadenaElectrica", chipLabel: "Cadena" },
@@ -357,7 +357,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      fijos: [],
+      visibles: [],
       agregables: [
         { campo: "fase", chipLabel: "Fase" },
         { campo: "idComercialCliente", chipLabel: "Cliente" },
@@ -446,7 +446,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "alimentadorMT",
     filtrosBarra: {
-      fijos: [{ campo: "zona", chipLabel: "Zona" }],
+      visibles: [{ campo: "zona", chipLabel: "Zona" }],
       agregables: [
         { campo: "subestacion", chipLabel: "Subest." },
         { campo: "cantClientes", chipLabel: "Clientes" },
@@ -539,7 +539,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: false,
     campoId: "idReclamo",
     filtrosBarra: {
-      fijos: [
+      visibles: [
         { campo: "fechaReclamo", chipLabel: "Fecha" },
         { campo: "partido", chipLabel: "Partido" },
         { campo: "localidad", chipLabel: "Localidad" },
@@ -650,7 +650,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      fijos: [{ campo: "tarifa", chipLabel: "Tarifa" }],
+      visibles: [{ campo: "tarifa", chipLabel: "Tarifa" }],
       agregables: [
         { campo: "fase", chipLabel: "Fase" },
         { campo: "cliente", chipLabel: "Cliente" },
@@ -710,7 +710,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      fijos: [{ campo: "tarifa", chipLabel: "Tarifa" }],
+      visibles: [{ campo: "tarifa", chipLabel: "Tarifa" }],
       // Sin CT: la tabla no tiene ese campo.
       agregables: [
         { campo: "fase", chipLabel: "Fase" },

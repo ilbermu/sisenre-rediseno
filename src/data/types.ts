@@ -132,10 +132,13 @@ export type AbmFiltroBarra = {
 export type AbmFiltrosBarra = {
   // Placeholder del input de ID. Default: el label de `campoId`.
   idPlaceholder?: string;
-  // Chips siempre visibles: la fecha (si la tabla tiene) y los campos de
-  // lista cerrada (toggle, select).
-  fijos: AbmFiltroBarra[];
-  // El resto, con "Agregar filtro".
+  // Chips siempre en la barra (hasta 5). Regla (ver DESIGN_SYSTEM.md,
+  // Patrones → "ABM"): se cuentan los campos filtrables sin el campoId; con
+  // 5 o menos, todos son visibles y no hay agregables; con más, 5 visibles
+  // por prioridad (1. la fecha, 2. listas cerradas: toggle, select,
+  // combobox con opciones, 3. el orden del formulario) y el resto acá.
+  visibles: AbmFiltroBarra[];
+  // El resto, con "Agregar filtro" (vacío = sin "Agregar filtro").
   agregables: AbmFiltroBarra[];
 };
 
@@ -158,7 +161,7 @@ export type AbmTableConfig = {
   filtrosBarra: AbmFiltrosBarra;
   secciones: SeccionBusqueda[];
   // Columnas de Resultados (tabla a ancho completo): campoId primero (mono),
-  // la fecha si hay, los campos de los chips fijos y 1 o 2 de contexto.
+  // la fecha si hay y los campos de los chips visibles (máximo 7).
   // Una columna con `campo` muestra la etiqueta de la opción.
   columnasResultadoBarra: ColumnaResultado[];
   rows: Record<string, string>[];

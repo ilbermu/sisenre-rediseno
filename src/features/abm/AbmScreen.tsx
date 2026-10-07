@@ -149,7 +149,7 @@ export default function AbmScreen({
       setPasoModal(1);
     } else {
       setMode("buscar");
-      const filtros = [...config.filtrosBarra.fijos, ...config.filtrosBarra.agregables];
+      const filtros = [...config.filtrosBarra.visibles, ...config.filtrosBarra.agregables];
       if (deepLink.campo === config.campoId) setIdBarra(deepLink.valor);
       else if (filtros.some((f) => f.campo === deepLink.campo)) setFiltrosBarraValores({ [deepLink.campo]: deepLink.valor });
       const idx = rows.findIndex((r) => r[deepLink.columna] === deepLink.valor);
@@ -185,7 +185,7 @@ export default function AbmScreen({
       emptyMessage: c?.emptyMessage,
     };
   };
-  const chipsFijos = config.filtrosBarra.fijos.map(chipDe);
+  const chipsVisibles = config.filtrosBarra.visibles.map(chipDe);
   const chipsAgregables = config.filtrosBarra.agregables.map(chipDe);
   function cambiarFiltro(campo: string, v: string) {
     // Misma dependencia que el formulario: al cambiar Partido se limpia
@@ -200,7 +200,7 @@ export default function AbmScreen({
   // "contiene"; cada chip según su editor.
   const filtrosFila: FiltroFila[] = [
     { columna: columnaDe(config.campoId) ?? config.campoId, valor: idBarra, modo: "contiene" },
-    ...[...chipsFijos, ...chipsAgregables].map((d) => ({
+    ...[...chipsVisibles, ...chipsAgregables].map((d) => ({
       columna: columnaDe(d.campo) ?? d.campo,
       valor: filtrosBarraValores[d.campo] ?? "",
       modo: modoDeEditor(d.editor),
@@ -579,7 +579,7 @@ export default function AbmScreen({
           id={idBarra}
           onIdChange={setIdBarra}
           idPlaceholder={config.filtrosBarra.idPlaceholder ?? campoDe(config.campoId)?.label ?? config.campoId}
-          fijos={chipsFijos}
+          visibles={chipsVisibles}
           agregables={chipsAgregables}
           valores={filtrosBarraValores}
           onChange={cambiarFiltro}
