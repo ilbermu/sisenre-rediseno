@@ -8,7 +8,7 @@ import {
   FOCUS_RING,
   ICON,
   MOD_FIELD_CLS,
-  ReadOnlyField,
+  READONLY_FIELD_CLS,
   ValuePicker,
 } from "@/components/ui";
 import { labelDeValor } from "@/features/abm/labelDeValor";
@@ -59,7 +59,8 @@ export default function AbmCampo({
   // "Estados: disabled vs read-only"): un toggle se muestra con su valor
   // marcado, a contraste completo, sin hover y sin responder a clic ni
   // teclado, con un candado junto al label; cualquier otro tipo de campo,
-  // como ReadOnlyField "plain". Lo usa el modal de edición de registro.
+  // como campo de solo lectura (READONLY_FIELD_CLS). Lo usa el modal de
+  // edición de registro.
   readOnly?: boolean;
   // Toggle a su ancho intrínseco en cualquier tier (sin el estiramiento del
   // tier 760px que necesita la grilla plana del panel de Búsqueda) — para
@@ -73,11 +74,17 @@ export default function AbmCampo({
   labelExterno?: { controlId: string; labelId: string };
 }) {
   if (readOnly && campo.tipo !== "toggle") {
+    // Estado de solo lectura (READONLY_FIELD_CLS): <input readOnly>, el
+    // valor se puede seleccionar y copiar.
     const legible = labelDeValor(campo, value ?? "", valoresFormulario ?? {});
-    if (labelExterno) {
-      return <span id={labelExterno.controlId} className="block truncate text-body text-text">{legible || " "}</span>;
-    }
-    return <ReadOnlyField variant="plain" label={campo.label} value={legible} />;
+    const campoSoloLectura = <input id={labelExterno?.controlId} readOnly value={legible} className={READONLY_FIELD_CLS} />;
+    if (labelExterno) return campoSoloLectura;
+    return (
+      <div>
+        <FieldLabel>{campo.label}</FieldLabel>
+        {campoSoloLectura}
+      </div>
+    );
   }
   const estado = estadoDeCampo(campo, mode, !!consultando, !!lockedEnModificar);
   const isDisabled = estado === "placeholder" || estado === "disabled";

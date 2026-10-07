@@ -91,6 +91,16 @@ export const MOD_FIELD_CLS =
   "w-full h-(--control-md) px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text " +
   "placeholder:text-text-muted " + FIELD_FOCUS + " transition-[border-color,box-shadow,background-color] duration-(--duration-base)";
 
+// Solo lectura (ver DESIGN_SYSTEM.md, "Estados: editable, solo lectura,
+// deshabilitado"): un dato que existe pero no se puede editar. Distinto de
+// editable (bg-surface, border-strong, hover/foco de campo) y de disabled
+// (opacity-40, "todavía no disponible"): fondo fill-subtle, borde border
+// (no border-strong), contenido a contraste completo, sin hover,
+// cursor-default; solo el anillo de foco estándar si es enfocable. Para un
+// <input readOnly> (seleccionable y copiable con mouse y teclado).
+export const READONLY_FIELD_CLS =
+  "w-full h-(--control-md) px-2.5 text-body bg-fill-subtle border border-border rounded-sm text-text cursor-default " + FOCUS_RING;
+
 export const MOD_SELECT_CLS =
   "h-(--control-md) px-2.5 pr-7 text-body bg-surface border border-border-strong rounded-sm text-text appearance-none " +
   "cursor-pointer " + FIELD_FOCUS + " transition-[border-color,box-shadow,background-color] duration-(--duration-base) shrink-0";
