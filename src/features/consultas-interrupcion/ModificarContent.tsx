@@ -1,19 +1,15 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { X, Filter, Inbox } from "lucide-react";
+import { Inbox } from "lucide-react";
 import {
-  BTN_MD,
-  BTN_SEG_MD,
   BTN_SM,
-  ButtonSelectGroup,
   CardHeader,
   CopyButton,
-  DateTimeField,
-  FieldLabel,
+  FILTER_BAR_VACIO,
+  FilterBar,
+  FilterBarValores,
   FilterTrigger,
   FOCUS_RING_INSET,
   ICON,
-  ICON_BTN_XS,
-  MOD_FIELD_CLS,
   Modal,
   parseDateTimeStr,
   RangoFecha,
@@ -23,7 +19,6 @@ import {
   TableToolbar,
   UnderlineTabs,
   useTableToolbar,
-  ValuePicker,
 } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { DRAWER_TAB_TO_ABM, DRAWER_TABS, STATUS_ITEMS } from "@/data/dominio";
@@ -73,32 +68,6 @@ function fechaEnRango(d: Date | null, r: RangoFecha | null): boolean {
   return true;
 }
 
-// Campos del flyout "Más filtros" de la Card A. Cada uno se puede aplicar,
-// mostrar como chip removible debajo de la filter bar, y contar para el
-// badge del botón "Más filtros".
-type FlyoutFilters = {
-  fecha: string;
-  codigoEquipo: string;
-  descEquipo: string;
-  cadenaElectrica: string;
-  alimentadorMT: string;
-  centroTransf: string;
-  divisionRed: string;
-};
-
-const EMPTY_FLYOUT_FILTERS: FlyoutFilters = {
-  fecha: "", codigoEquipo: "", descEquipo: "", cadenaElectrica: "", alimentadorMT: "", centroTransf: "", divisionRed: "",
-};
-
-const FLYOUT_FIELDS: { key: keyof FlyoutFilters; label: string; placeholder: string }[] = [
-  { key: "cadenaElectrica", label: "Cadena eléctrica", placeholder: "NCBT" },
-  { key: "alimentadorMT", label: "Alimentador MT", placeholder: "NCBT" },
-  { key: "centroTransf", label: "Centro de transformación", placeholder: "52705#B1#52705-TR1#1#3" },
-  { key: "codigoEquipo", label: "Código equipo", placeholder: "@27947890" },
-  { key: "descEquipo", label: "Descripción equipo operado", placeholder: "PROTECCION DE SUMINISTRO" },
-  { key: "divisionRed", label: "División red normal", placeholder: "S" },
-];
-
 export default function ModificarContent({
   onIrAAbm,
   initialRelTab = null,
@@ -126,16 +95,10 @@ export default function ModificarContent({
   const [modShowData, setModShowData] = useState(initialRowIndex >= 0);
   const [modSelectedRow, setModSelectedRow] = useState<number | null>(initialRowIndex >= 0 ? initialRowIndex : null);
   const [relTab, setRelTab] = useState<string | null>(initialRelTab);
-  const [origenSel, setOrigenSel] = useState<string | null>(null);
-  const [tipoSel, setTipoSel] = useState<string | null>(null);
   const [flyoutOpen, setFlyoutOpen] = useState(false);
-  const [flyoutFilters, setFlyoutFilters] = useState<FlyoutFilters>(EMPTY_FLYOUT_FILTERS);
-  // Campos de la barra principal de Búsqueda que antes quedaban sin
-  // controlar — ahora necesitan estado propio para poder autocompletarse
-  // con los datos de la interrupción seleccionada en la tabla de abajo.
-  const [nivelSel, setNivelSel] = useState("");
-  const [codigoBusqueda, setCodigoBusqueda] = useState("");
-  const [faseSel, setFaseSel] = useState("");
+  // Valores de la barra de búsqueda (FilterBar), controlados acá para poder
+  // autocompletarlos con los datos de la interrupción seleccionada.
+  const [filtros, setFiltros] = useState<FilterBarValores>(FILTER_BAR_VACIO);
   const [desarmeOpen, setDesarmeOpen] = useState(false);
   const [nivelTipoOpen, setNivelTipoOpen] = useState(false);
   const [replicarOpen, setReplicarOpen] = useState(false);
@@ -160,7 +123,7 @@ export default function ModificarContent({
   // una búsqueda ni toca modShowData/resultados. A diferencia de ABM, acá
   // no hay modo Modificar propio: mientras haya una fila seleccionada el
   // formulario entero queda fijo en placeholder/no editable (ver
-  // `disabled={hasSelection}` en cada campo más abajo) — no editable "por
+  // `disabled={hasSelection}` en FilterBar, más abajo) — no editable "por
   // si el usuario quiere ajustar y volver a buscar", nomás de consulta.
   // Cubre selección por click, por teclado (flechas) y la restauración
   // inicial al volver desde ABM, ya que todas pasan por modSelectedRow. Al
@@ -168,32 +131,12 @@ export default function ModificarContent({
   // mismo criterio que ya usan "Datos de la interrupción" y "Tablas
   // relacionadas" para su estado vacío.
   useEffect(() => {
-    if (selectedRecord) {
-      setNivelSel(selectedRecord.nivel);
-      setCodigoBusqueda(selectedRecord.referencia);
-      setFaseSel(selectedRecord.fase);
-      setOrigenSel(selectedRecord.origen);
-      setTipoSel(selectedRecord.tipo);
-      setFlyoutFilters((prev) => ({ ...prev, fecha: selectedRecord.fecha }));
-    } else {
-      setNivelSel("");
-      setCodigoBusqueda("");
-      setFaseSel("");
-      setOrigenSel(null);
-      setTipoSel(null);
-      setFlyoutFilters((prev) => ({ ...prev, fecha: "" }));
-    }
+    const datos = selectedRecord
+      ? { codigo: selectedRecord.referencia, fecha: selectedRecord.fecha, nivel: selectedRecord.nivel, fase: selectedRecord.fase, origen: selectedRecord.origen, tipo: selectedRecord.tipo }
+      : { codigo: "", fecha: "", nivel: "", fase: "", origen: "", tipo: "" };
+    setFiltros((prev) => ({ ...prev, ...datos }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modSelectedRow]);
-
-  // Filtros del flyout "Más filtros" con valor cargado — alimentan el badge
-  // del botón y los chips removibles debajo de la filter bar.
-  const activeFlyoutFields = FLYOUT_FIELDS.filter((f) => flyoutFilters[f.key].trim() !== "");
-
-  function clearFlyoutField(key: keyof FlyoutFilters) {
-    setFlyoutFilters((prev) => ({ ...prev, [key]: "" }));
-  }
-
 
   // Tabla Referencia / Fecha (columna derecha). El buscador cubre solo
   // Referencia (searchCols [0]); la fecha se filtra con el FilterTrigger
@@ -376,249 +319,30 @@ export default function ModificarContent({
     setModSelectedRow(modVisibleIndices[Math.max(nextPos, 0)]);
   }
 
-  // Más filtros / Limpiar / Buscar — mismo lugar (pegados a la derecha de la
-  // fila de filtros) en cualquier tamaño de ventana.
-  const masFiltrosBtn = (
-    <button
-      type="button"
-      onClick={() => setFlyoutOpen((v) => !v)}
-      className={`${BTN_MD} border flex items-center gap-1.5 transition-colors duration-(--duration-base) ${
-        activeFlyoutFields.length > 0
-          ? "bg-primary-tint border-primary text-secondary"
-          : "bg-surface border-border-strong text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
-      }`}
-    >
-      <Filter size={ICON.sm} strokeWidth={1.5} />
-      Más filtros
-      {activeFlyoutFields.length > 0 && (
-        <span className="w-4 h-4 rounded-full bg-primary-strong text-white text-caption flex items-center justify-center">
-          {activeFlyoutFields.length}
-        </span>
-      )}
-    </button>
-  );
-  const limpiarBuscarBtns = (
-    <>
-      <button
-        type="button"
-        onClick={() => {
-          setModShowData(false);
-          setModSelectedRow(null);
-          setOrigenSel(null);
-          setTipoSel(null);
-          setFlyoutFilters(EMPTY_FLYOUT_FILTERS);
-          setNivelSel("");
-          setCodigoBusqueda("");
-          setFaseSel("");
-        }}
-        disabled={!modShowData}
-        className={`${BTN_MD} border border-border-strong bg-surface text-text hover:bg-primary-tint hover:border-primary hover:text-secondary transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
-      >Limpiar</button>
-      <button
-        type="button"
-        onClick={() => { setModShowData(true); setModSelectedRow(null); }}
-        disabled={modShowData}
-        className={`${BTN_MD} text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
-      >Buscar</button>
-    </>
-  );
 
   return (
     <div className="flex-1 min-h-0 flex flex-col px-(--page-px) pt-(--page-pt) pb-(--page-pt) relative overflow-hidden">
     <div className="flex-1 min-h-0 flex flex-col gap-(--page-gap)">
 
         {/* Búsqueda — sin contenedor: la fila de filtros se apoya directo
-            en el fondo de la página, debajo del top bar. Una
-            sola fila + flyout "Más filtros" anclado a la derecha. */}
-        <div className="relative shrink-0">
-          <div className="relative">
-            <div className="relative z-(--z-raised) flex items-center gap-2 [@media(max-height:760px)]:flex-wrap">
-            {/* Ancho fijo (no crece a ocupar el sobrante) para que se vea
-                proporcionado contra Nivel/Fase — 190px en tamaño normal,
-                bastante más chico en tier 760px vía el `!` important de
-                abajo (el ancho normal es inline, gana a una clase sin
-                important). */}
-            <input
-              disabled={hasSelection}
-              placeholder={`Ej: ${RECORD.referencia}`}
-              className={MOD_FIELD_CLS + " !text-code font-mono" + (hasSelection ? " !bg-fill-subtle !text-text" : "") + " [@media(max-height:760px)]:!w-[112px]"}
-              style={{ width: 190, flexShrink: 0 }}
-              value={codigoBusqueda}
-              onChange={(e) => setCodigoBusqueda(e.target.value)}
-            />
-
-            <DateTimeField
-              value={flyoutFilters.fecha}
-              onChange={(v) => setFlyoutFilters((prev) => ({ ...prev, fecha: v }))}
-              disabled={hasSelection}
-              muted={false}
-              className="[@media(max-height:760px)]:!w-[128px]"
-            />
-
-            <ValuePicker
-              isDisabled={hasSelection}
-              triggerExtraClassName={hasSelection ? " !bg-fill-subtle !text-text" : ""}
-              triggerStyle={{ fontWeight: nivelSel ? 600 : 400 }}
-              value={nivelSel}
-              onChange={setNivelSel}
-              opts={["BT", "MT", "AT"]}
-              placeholder="Nivel"
-              wrapClassName="w-[88px] shrink-0"
-            />
-
-            <ValuePicker
-              isDisabled={hasSelection}
-              triggerExtraClassName={hasSelection ? " !bg-fill-subtle !text-text" : ""}
-              value={faseSel}
-              onChange={setFaseSel}
-              opts={["R", "S", "T", "RS", "RT", "ST", "RST"]}
-              placeholder="Fase"
-              wrapClassName="w-[84px] shrink-0"
-            />
-
-            <div className="w-px h-5 bg-border shrink-0" />
-
-            {/* Toggle Origen/Tipo — tamaño normal. En tier 760px pasan a
-                <select> nativo (ver más abajo): ocupan menos ancho por lo
-                que aportan, justo lo que le faltaba a esta fila. */}
-            <div className="contents [@media(max-height:760px)]:hidden">
-              <span className="text-heading-xs uppercase text-text-muted shrink-0">Origen</span>
-              <ButtonSelectGroup
-                options={["Interno", "Externo"]}
-                selected={origenSel ? [origenSel] : []}
-                onToggle={(opt) => setOrigenSel(origenSel === opt ? null : opt)}
-                disabled={modShowData || hasSelection}
-                sizeCls={BTN_SEG_MD}
-              />
-
-              <span className="text-heading-xs uppercase text-text-muted shrink-0">Tipo</span>
-              <ButtonSelectGroup
-                options={["Forzado", "Programado"]}
-                selected={tipoSel ? [tipoSel] : []}
-                onToggle={(opt) => setTipoSel(tipoSel === opt ? null : opt)}
-                disabled={modShowData || hasSelection}
-                sizeCls={BTN_SEG_MD}
-              />
-            </div>
-
-            <ValuePicker
-              isDisabled={modShowData || hasSelection}
-              value={origenSel ?? ""}
-              onChange={(v) => setOrigenSel(v || null)}
-              opts={["Interno", "Externo"]}
-              placeholder="Origen"
-              wrapClassName="hidden [@media(max-height:760px)]:block w-[92px] shrink-0"
-            />
-
-            <ValuePicker
-              isDisabled={modShowData || hasSelection}
-              value={tipoSel ?? ""}
-              onChange={(v) => setTipoSel(v || null)}
-              opts={["Forzado", "Programado"]}
-              placeholder="Tipo"
-              wrapClassName="hidden [@media(max-height:760px)]:block w-[112px] shrink-0"
-            />
-
-            {/* Más filtros / Limpiar / Buscar juntos, pegados a la derecha —
-                mismo lugar en cualquier tamaño de ventana. */}
-            <div className="ml-auto flex items-center gap-2 shrink-0">
-              {masFiltrosBtn}
-              {limpiarBuscarBtns}
-            </div>
-            </div>
-
-            {/* Backdrop — no bloqueante, sólo cierra el flyout al click afuera.
-                Vive junto al flyout (no en el wrapper externo que también
-                contiene los chips) para que su posición no se vea afectada
-                por si hay o no una fila de chips debajo. */}
-            {flyoutOpen && (
-              <div className="fixed inset-0 z-(--z-dismiss)" onClick={() => setFlyoutOpen(false)} />
-            )}
-
-            {/* Flyout "Más filtros" */}
-            {flyoutOpen && (
-              <div
-                className="shadow-md absolute right-0 z-(--z-dropdown) bg-surface border border-border rounded-md p-4"
-                style={{ top: "calc(100% + 6px)", width: 520 }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-heading-sm text-text">Más filtros</span>
-                  <button
-                    type="button"
-                    onClick={() => setFlyoutOpen(false)}
-                    className={`${ICON_BTN_XS} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors`}
-                  >
-                    <X size={ICON.sm} strokeWidth={1.5} />
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-x-3.5 gap-y-3">
-                  {FLYOUT_FIELDS.map((f) => (
-                    <div key={f.key}>
-                      <FieldLabel>{f.label}</FieldLabel>
-                      <input
-                        placeholder={f.placeholder}
-                        value={flyoutFilters[f.key]}
-                        onChange={(e) => setFlyoutFilters((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                        className={MOD_FIELD_CLS}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-                  <button
-                    type="button"
-                    onClick={() => setFlyoutFilters(EMPTY_FLYOUT_FILTERS)}
-                    className="text-label text-secondary hover:underline"
-                  >
-                    Limpiar filtros
-                  </button>
-                  <div className="flex items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setFlyoutOpen(false)}
-                      className={`${BTN_MD} border border-border-strong bg-surface text-text hover:bg-fill-muted transition-colors`}
-                    >
-                      Cerrar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFlyoutOpen(false)}
-                      className={`${BTN_MD} text-white bg-primary-strong hover:bg-primary-hover transition-colors`}
-                    >
-                      Aplicar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Chips de filtros aplicados (flyout) — franja propia, no texto suelto */}
-          {activeFlyoutFields.length > 0 && (
-            <div className="flex items-center flex-wrap gap-2 mt-4 px-3 py-2 rounded-sm border border-border bg-fill-subtle">
-              <span className="text-heading-xs uppercase text-text-muted shrink-0">
-                Filtros aplicados:
-              </span>
-              {activeFlyoutFields.map((f) => (
-                <span
-                  key={f.key}
-                  className="inline-flex items-center gap-1.5 h-(--control-sm) pl-3 pr-1.5 rounded-full bg-primary-tint border border-chip-border text-secondary text-label"
-                >
-                  {f.label}: {flyoutFilters[f.key]}
-                  <button
-                    type="button"
-                    onClick={() => clearFlyoutField(f.key)}
-                    className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-chip-border-hover transition-colors"
-                  >
-                    <svg width="8" height="8" viewBox="0 0 14 14" fill="none">
-                      <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                    </svg>
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+            en el fondo de la página, debajo del top bar (ver FilterBar).
+            Mientras hay una interrupción seleccionada la fila queda fija
+            mostrando sus datos. */}
+        <FilterBar
+          valores={filtros}
+          onChange={(cambios) => setFiltros((prev) => ({ ...prev, ...cambios }))}
+          onBuscar={() => { setModShowData(true); setModSelectedRow(null); }}
+          onLimpiar={() => {
+            setModShowData(false);
+            setModSelectedRow(null);
+            setFiltros(FILTER_BAR_VACIO);
+          }}
+          buscado={modShowData}
+          disabled={hasSelection}
+          placeholderCodigo={`Ej: ${RECORD.referencia}`}
+          flyoutAbierto={flyoutOpen}
+          onFlyoutAbiertoChange={setFlyoutOpen}
+        />
 
       {/* ── FILA INFERIOR — Interrupciones y Reposiciones (CDS4), una al lado
           de la otra. Cada card se ajusta a su contenido (items-start, no se

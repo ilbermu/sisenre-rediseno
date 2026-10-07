@@ -12,6 +12,8 @@ export * from "./FloatingPanel";
 export { default as FormRow } from "./FormRow";
 export { default as FilterTrigger } from "./FilterTrigger";
 export * from "./FilterTrigger";
+export { default as FilterBar } from "./FilterBar";
+export * from "./FilterBar";
 export { default as ListBox } from "./ListBox";
 export { default as Modal } from "./Modal";
 export { default as ModalCheckbox } from "./ModalCheckbox";
