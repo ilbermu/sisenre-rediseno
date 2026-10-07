@@ -1,19 +1,21 @@
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Pencil } from "lucide-react";
-import { dropdownAnchorStyle, ICON, useDropdownDirection } from "@/components/ui";
+import { ChevronDown } from "lucide-react";
+import { dropdownAnchorStyle, FOCUS_RING, ICON, useDropdownDirection } from "@/components/ui";
 import { ABM_TABLE_CONFIGS, ABM_TABLE_ORDER } from "@/data/abmTables";
 import { AbmTableKey } from "@/data/types";
 
 // ─── ABM engine: componentes de UI ─────────────────────────────────────────
 
-// Selector de tabla ABM — trigger + panel flotante tokenizado (mismo
-// mecanismo que PeriodSelector), pero el trigger hace las veces de título
-// del panel (ícono + nombre + badge de código) ya que el masthead no lleva
-// nada más. Lee/escribe el mismo estado `screen` que ya maneja el sidebar,
-// asi que ambos quedan sincronizados automaticamente sin estado global
-// adicional. Cada opción del panel replica la riqueza visual del sidebar
-// (ícono + nombre + badge), activa resaltada con bg-primary-tint +
-// border-primary + text-secondary.
+// Selector de tabla ABM, variante título (ver DESIGN_SYSTEM.md,
+// "AbmTableSelector"): nombra la vista y permite cambiarla — es el título
+// de la pantalla de ABM, no hay otro. Aspecto de título, no de botón:
+// "Tabla 2 · Interrupciones" en text-heading-md text-text + chevron, sin
+// borde ni fondo en reposo; hover bg-fill-muted; abierto, el seleccionado
+// persistente de siempre (tint + border-primary). Alto mínimo
+// --control-md; -ml-1.5 alinea el texto con el borde de la página. El
+// código CDS va solo en el tooltip. Panel: mismo mecanismo que
+// PeriodSelector. Lee/escribe el mismo estado `screen` que el sidebar, así
+// que quedan sincronizados sin estado global adicional.
 export default function AbmTableSelector({ value, onChange }: { value: AbmTableKey; onChange: (k: AbmTableKey) => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -29,21 +31,17 @@ export default function AbmTableSelector({ value, onChange }: { value: AbmTableK
       <button
         type="button"
         title={`${current.nombre} · ${current.titulo} (${current.code})`}
+        aria-haspopup="true"
+        aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="group flex items-center gap-2 h-(--control-md) pl-1.5 pr-2 -ml-1.5 rounded-sm min-w-0 transition-colors duration-(--duration-base) hover:bg-fill-muted"
+        className={`flex items-center gap-1.5 min-h-(--control-md) px-1.5 -ml-1.5 rounded-sm border min-w-0 transition-colors duration-(--duration-base) ${FOCUS_RING} ${
+          open ? "bg-primary-tint border-primary" : "border-transparent hover:bg-fill-muted"
+        }`}
       >
-        {/* Lápiz fijo — no el ícono por tabla: el masthead del panel de
-            trabajo siempre representa "estás en la herramienta de ABM",
-            no una tabla en particular (esa distinción vive en el badge). */}
-        <span className="shrink-0 text-icon group-hover:text-secondary transition-colors"><Pencil size={ICON.md} strokeWidth={1.5} /></span>
-        <span className="text-heading-md text-text truncate">{current.titulo}</span>
-        <span
-          className="px-1.5 py-0.5 text-caption font-mono rounded-xs border border-border-strong text-focus shrink-0"
-          style={{ backgroundColor: "var(--color-fill-muted)" }}
-        >
-          {current.nombre}
+        <span className={`text-heading-md truncate ${open ? "text-secondary" : "text-text"}`}>
+          {current.nombre} · {current.titulo}
         </span>
-        <span className={`shrink-0 text-icon transition-transform duration-(--duration-base) ${open ? "rotate-180" : ""}`}>
+        <span className={`shrink-0 transition-transform duration-(--duration-base) ${open ? "rotate-180 text-secondary" : "text-icon"}`}>
           <ChevronDown size={ICON.md} strokeWidth={1.5} />
         </span>
       </button>
