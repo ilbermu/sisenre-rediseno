@@ -68,6 +68,9 @@ export default function RevisarCambiosContent({
         <p className="text-body-sm text-text-muted mb-3">
           Seleccioná una nota o ingresá una manual para justificar este cambio.
         </p>
+        {/* Chips en una sola fila: el ancho "form" del modal está medido
+            para que entren. flex-wrap queda de respaldo (más opciones →
+            segunda línea); nunca se achican ni se truncan. */}
         <ButtonSelectGroup
           options={NOTA_OPCIONES}
           selected={seleccionBoton ? [seleccionBoton] : []}

@@ -253,6 +253,10 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **Modal `form` a 704px** (token `--modal-form-w`, antes 640): los chips
+  de Motivo entran en una sola fila en el paso Revisar; mismo ancho en los
+  dos pasos. La columna de controles del paso 1 no cambia (280px).
+
 - **Toggle de solo lectura = segmentado estático** (`SegmentadoSoloLectura`,
   nuevo): una caja `READONLY_FIELD_CLS` con segmentos de texto y divisores,
   la opción elegida con `Check`. Regla: un control que no se puede usar no
@@ -1538,7 +1542,7 @@ con el contenido y scrollea hasta el tope de alto. Footer con botones a la
 derecha (`modalNeutralBtnCls` + `modalPrimaryBtnCls`).
 
 **Props:** `title`, `subtitle?`, `open`, `onClose`, `size?` (`"sm"` 480 /
-`"form"` 640 / `"lg"` 920 / `"xl"` 1120), `footer?`, `children`, y para
+`"form"` `--modal-form-w` 704 / `"lg"` 920 / `"xl"` 1120), `footer?`, `children`, y para
 extenderlo sin tocar a los demás:
 - **`paso`** (`{ actual, total }`): indicador "Paso N de M" junto al título,
   para un modal de varios pasos (ver [Nunca un modal sobre
@@ -2225,7 +2229,12 @@ Para editar un registro desde una tabla cuando el formulario no está a la
 vista (ej. Modificar en el layout barra del ABM). Un solo modal con dos
 pasos: **Editar → Revisar**.
 
-- **Tamaño `form`** (640px), el mismo en los dos pasos; el alto se ajusta al
+- **Tamaño `form`** (`--modal-form-w`, 704px), el mismo en los dos pasos
+  (Editar y Revisar); el ancho sale de los chips de Motivo en una sola línea
+  (~642px con Inter 500 12px) + el `p-5` del body + margen para una barra de
+  scroll clásica, redondeado a múltiplo de 8. En el paso 1 la columna de
+  controles sigue en `--form-control-w` (280px): solo crece la de labels y
+  ninguna fila cambia de alto. El alto se ajusta al
   contenido.
 - **Header** de una línea: título (`text-heading-md`) + "Paso N de 2"
   (`text-body-sm text-text-muted`, prop `paso`) + ✕. Sin label de contexto.
@@ -2251,8 +2260,10 @@ pasos: **Editar → Revisar**.
   `text-heading-xs`) y Motivo, separado por `border-t border-border` con el
   mismo espaciado — título "Motivo" en `text-heading-sm text-text` + "·
   obligatorio" en `text-body-sm text-text-muted`, ayuda en `text-body-sm
-  text-text-muted` y los chips de `NOTA_OPCIONES`. **Ningún bloque del
-  modal lleva fondo de color.** Pie: **Volver** (outline, vuelve al
+  text-text-muted` y los chips de `NOTA_OPCIONES` **en una sola fila**
+  (`flex-wrap` queda de respaldo: si hay más opciones de las que entran,
+  pasan a una segunda línea; nunca se achican ni se truncan). **Ningún
+  bloque del modal lleva fondo de color.** Pie: **Volver** (outline, vuelve al
   paso 1 con todo lo editado) · **Guardar** (primario, habilitado solo con
   un motivo válido). Guardar hace exactamente lo que hacía la confirmación
   y cierra.

@@ -1028,7 +1028,7 @@ export default function AbmScreen({
 
       {/* Layout "barra": Modificar en un modal de edición de registro (ver
           DESIGN_SYSTEM.md, "Modal de edición de registro"):
-            - size "form" (640px), igual en los dos pasos;
+            - size "form" (--modal-form-w, 704px), igual en los dos pasos;
             - header con label de contexto arriba del título (Carbon "modal
               label"): la referencia en mono + CopyButton xs; junto al
               título, "Paso N de 2";
