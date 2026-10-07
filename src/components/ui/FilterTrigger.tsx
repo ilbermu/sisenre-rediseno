@@ -43,18 +43,30 @@ function textoRangoFecha(r: RangoFecha): string {
   return r.hasta ? `hasta ${fmtDiaHora(r.hasta)}` : "";
 }
 
-// Trigger compartido por las dos variantes. Reposo: sin borde ni fondo,
-// hover = hover secundario de la app (el de actionBtnCls). Abierto:
-// seleccionado persistente. Con filtro (`aplicado`): siempre pintado,
-// "{label}: {aplicado}" + ×, la × como botón HERMANO del principal dentro de
-// un contenedor con el estilo de pill (nunca un botón dentro de otro).
-function FilterTriggerButton({
+// Trigger compartido por las dos variantes (y por los chips de
+// ChipFilterBar). Reposo: sin borde ni fondo, hover = hover secundario de la
+// app (el de actionBtnCls). Abierto: seleccionado persistente. Con filtro
+// (`aplicado`): siempre pintado, "{label}: {aplicado}" + ×, la × como botón
+// HERMANO del principal dentro de un contenedor con el estilo de pill (nunca
+// un botón dentro de otro).
+//   size          "sm" (toolbar de tabla, default) | "md" (fila con controles md)
+//   maxWidth      ancho máximo del chip; el valor trunca con "…" y el texto
+//                 completo va en `title`
+//   valorDestacado valor en semibold
+//   quitarSiempre muestra la × también sin valor (chips agregados)
+export function FilterTriggerButton({
   label,
   aplicado,
   open,
   onToggle,
   onClear,
   disabled = false,
+  size = "sm",
+  maxWidth,
+  valorDestacado = false,
+  quitarSiempre = false,
+  buttonRef,
+  haspopup = "dialog",
 }: {
   label: string;
   aplicado: string | null;
@@ -62,17 +74,26 @@ function FilterTriggerButton({
   onToggle: () => void;
   onClear: () => void;
   disabled?: boolean;
+  size?: "sm" | "md";
+  maxWidth?: number;
+  valorDestacado?: boolean;
+  quitarSiempre?: boolean;
+  buttonRef?: React.Ref<HTMLButtonElement>;
+  haspopup?: "dialog" | "listbox" | "menu";
 }) {
   const chevron = open ? <ChevronUp size={ICON.xs} strokeWidth={1.5} /> : <ChevronDown size={ICON.xs} strokeWidth={1.5} />;
-  if (aplicado === null) {
+  const altoCls = size === "md" ? "h-(--control-md)" : "h-(--control-sm)";
+  const textoCompleto = aplicado !== null ? `${label}: ${aplicado}` : undefined;
+  if (aplicado === null && !quitarSiempre) {
     return (
       <button
+        ref={buttonRef}
         type="button"
-        aria-haspopup="dialog"
+        aria-haspopup={haspopup}
         aria-expanded={open}
         disabled={disabled}
         onClick={onToggle}
-        className={`h-(--control-sm) px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 transition-colors disabled:text-text-faint disabled:cursor-not-allowed disabled:pointer-events-none ${FOCUS_RING} ${
+        className={`${altoCls} shrink-0 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 whitespace-nowrap transition-colors disabled:text-text-faint disabled:cursor-not-allowed disabled:pointer-events-none ${FOCUS_RING} ${
           open
             ? "bg-primary-tint border-primary text-secondary"
             : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
@@ -83,25 +104,41 @@ function FilterTriggerButton({
       </button>
     );
   }
+  const pintado = aplicado !== null || open;
   return (
-    <div className="h-(--control-sm) rounded-sm text-label border inline-flex items-center bg-primary-tint border-primary text-secondary">
+    <div
+      title={textoCompleto}
+      className={`${altoCls} min-w-0 rounded-sm text-label border inline-flex items-center ${
+        pintado ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-text"
+      }`}
+      style={maxWidth ? { maxWidth } : undefined}
+    >
       <button
+        ref={buttonRef}
         type="button"
-        aria-haspopup="dialog"
+        aria-haspopup={haspopup}
         aria-expanded={open}
+        aria-label={textoCompleto}
         disabled={disabled}
         onClick={onToggle}
-        className={`h-full pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 whitespace-nowrap disabled:cursor-not-allowed ${FOCUS_RING}`}
+        className={`h-full min-w-0 pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 whitespace-nowrap disabled:cursor-not-allowed ${FOCUS_RING}`}
       >
-        {label}: <span className="tabular-nums">{aplicado}</span>
-        {chevron}
+        {aplicado === null ? (
+          <span className="shrink-0">{label}</span>
+        ) : (
+          <>
+            <span className="shrink-0">{label}:</span>
+            <span className={`min-w-0 truncate tabular-nums ${valorDestacado ? "font-semibold" : ""}`}>{aplicado}</span>
+          </>
+        )}
+        <span className="shrink-0 inline-flex">{chevron}</span>
       </button>
       <button
         type="button"
         aria-label={`Quitar filtro ${label}`}
         disabled={disabled}
         onClick={onClear}
-        className={`h-full px-1.5 rounded-sm inline-flex items-center disabled:cursor-not-allowed ${FOCUS_RING}`}
+        className={`h-full shrink-0 px-1.5 rounded-sm inline-flex items-center disabled:cursor-not-allowed ${FOCUS_RING}`}
       >
         <X size={ICON.xs} strokeWidth={1.5} />
       </button>
@@ -186,12 +223,54 @@ export default function FilterTrigger(props: FilterTriggerProps) {
   );
 }
 
-// Panel de la variante date-range. Borrador local (se inicializa del valor
-// aplicado cada vez que se abre, porque se monta al abrir): los atajos y los
-// inputs COMPLETAN el borrador, solo "Aplicar" lo aplica. Inputs nativos
-// date/time con MOD_FIELD_CLS — DateTimeField no sirve acá: junta fecha y hora
-// en un solo campo, fuerza 00:00 con la hora vacía (el "hasta" necesita 23:59)
-// y trae su propio Aplicar relleno.
+// Rango de fecha como texto de los inputs nativos: fecha "aaaa-mm-dd",
+// hora "hh:mm" o "" (sin hora = día completo: desde 00:00, hasta 23:59).
+export type RangoTexto = { desdeFecha: string; desdeHora: string; hastaFecha: string; hastaHora: string };
+
+export const RANGO_TEXTO_VACIO: RangoTexto = { desdeFecha: "", desdeHora: "", hastaFecha: "", hastaHora: "" };
+
+const aFechaInput = (d: Date) => `${d.getFullYear()}-${ceros(d.getMonth() + 1, 2)}-${ceros(d.getDate(), 2)}`;
+
+// Extremo del rango → Date. Hora vacía con fecha cargada: desde → 00:00,
+// hasta → 23:59.
+export function fechaDeExtremo(fecha: string, hora: string, finDeDia: boolean): Date | null {
+  if (!fecha) return null;
+  const [y, m, d] = fecha.split("-").map(Number);
+  const [hh, mm] = (hora || (finDeDia ? "23:59" : "00:00")).split(":").map(Number);
+  return new Date(y, m - 1, d, hh, mm);
+}
+
+// Atajo del editor de rango: completa los campos, no aplica.
+export type AtajoRango = { label: string; rango: () => RangoTexto };
+
+const ATAJOS_FILTER_TRIGGER: AtajoRango[] = [
+  {
+    label: "Hoy",
+    rango: () => {
+      const f = aFechaInput(new Date());
+      return { desdeFecha: f, desdeHora: "00:00", hastaFecha: f, hastaHora: "23:59" };
+    },
+  },
+  {
+    label: "Últimas 24 h",
+    rango: () => {
+      const n = new Date();
+      const d = new Date(n.getTime() - 24 * 3600_000);
+      return { desdeFecha: aFechaInput(d), desdeHora: formatHora(d), hastaFecha: aFechaInput(n), hastaHora: formatHora(n) };
+    },
+  },
+  {
+    label: "Últimos 7 días",
+    rango: () => {
+      const n = new Date();
+      const d = new Date(n.getTime() - 7 * 24 * 3600_000);
+      return { desdeFecha: aFechaInput(d), desdeHora: formatHora(d), hastaFecha: aFechaInput(n), hastaHora: formatHora(n) };
+    },
+  },
+];
+
+// Panel de la variante date-range: el editor posicionado junto al trigger.
+// Convierte entre RangoFecha (Date) y el texto de los inputs.
 function FilterDateRangePanel({
   label,
   direction,
@@ -203,39 +282,66 @@ function FilterDateRangePanel({
   value: RangoFecha | null;
   onApply: (value: RangoFecha | null) => void;
 }) {
-  const aFecha = (d: Date | null | undefined) => (d ? `${d.getFullYear()}-${ceros(d.getMonth() + 1, 2)}-${ceros(d.getDate(), 2)}` : "");
-  const aHora = (d: Date | null | undefined) => (d ? formatHora(d) : "");
-  const [desdeFecha, setDesdeFecha] = useState(aFecha(value?.desde));
-  const [desdeHora, setDesdeHora] = useState(aHora(value?.desde));
-  const [hastaFecha, setHastaFecha] = useState(aFecha(value?.hasta));
-  const [hastaHora, setHastaHora] = useState(aHora(value?.hasta));
-
-  // Hora vacía con fecha cargada: desde → 00:00, hasta → 23:59.
-  const armar = (fecha: string, hora: string, finDeDia: boolean): Date | null => {
-    if (!fecha) return null;
-    const [y, m, d] = fecha.split("-").map(Number);
-    const [hh, mm] = (hora || (finDeDia ? "23:59" : "00:00")).split(":").map(Number);
-    return new Date(y, m - 1, d, hh, mm);
+  const inicial: RangoTexto = {
+    desdeFecha: value?.desde ? aFechaInput(value.desde) : "",
+    desdeHora: value?.desde ? formatHora(value.desde) : "",
+    hastaFecha: value?.hasta ? aFechaInput(value.hasta) : "",
+    hastaHora: value?.hasta ? formatHora(value.hasta) : "",
   };
-  const desde = armar(desdeFecha, desdeHora, false);
-  const hasta = armar(hastaFecha, hastaHora, true);
+  return (
+    <div
+      className="shadow-md absolute left-0 bg-surface rounded-md border border-border z-(--z-dropdown)"
+      style={{ ...dropdownAnchorStyle(direction, 5) }}
+    >
+      <RangoFechaEditor
+        label={label}
+        inicial={inicial}
+        atajos={ATAJOS_FILTER_TRIGGER}
+        onApply={(r) => {
+          if (!r) return onApply(null);
+          const desde = fechaDeExtremo(r.desdeFecha, r.desdeHora, false);
+          const hasta = fechaDeExtremo(r.hastaFecha, r.hastaHora, true);
+          onApply(desde || hasta ? { desde, hasta } : null);
+        }}
+      />
+    </div>
+  );
+}
+
+// Editor de rango de fecha (contenido del popover, sin posicionamiento):
+// atajos, Desde y Hasta (fecha + hora opcional) y pie Limpiar + Aplicar.
+// Borrador local (se inicializa de `inicial` al montarse, o sea al abrir):
+// los atajos y los inputs COMPLETAN el borrador, solo "Aplicar" lo aplica —
+// el único editor de filtro con botón, porque un rango se arma en dos pasos.
+// Inputs nativos date/time con MOD_FIELD_CLS — DateTimeField no sirve acá:
+// junta fecha y hora en un solo campo, fuerza 00:00 con la hora vacía (el
+// "hasta" necesita 23:59) y trae su propio Aplicar relleno. Lo usan
+// FilterTrigger (date-range) y ChipFilterBar.
+export function RangoFechaEditor({
+  label,
+  inicial,
+  atajos,
+  onApply,
+}: {
+  label: string;
+  inicial: RangoTexto;
+  atajos: AtajoRango[];
+  // null = sin filtro (Limpiar, o Aplicar con los dos extremos vacíos).
+  onApply: (value: RangoTexto | null) => void;
+}) {
+  const [desdeFecha, setDesdeFecha] = useState(inicial.desdeFecha);
+  const [desdeHora, setDesdeHora] = useState(inicial.desdeHora);
+  const [hastaFecha, setHastaFecha] = useState(inicial.hastaFecha);
+  const [hastaHora, setHastaHora] = useState(inicial.hastaHora);
+
+  const desde = fechaDeExtremo(desdeFecha, desdeHora, false);
+  const hasta = fechaDeExtremo(hastaFecha, hastaHora, true);
   const invalido = desde !== null && hasta !== null && desde > hasta;
 
-  function completar(d: Date, h: Date) {
-    setDesdeFecha(aFecha(d)); setDesdeHora(aHora(d));
-    setHastaFecha(aFecha(h)); setHastaHora(aHora(h));
+  function completar(r: RangoTexto) {
+    setDesdeFecha(r.desdeFecha); setDesdeHora(r.desdeHora);
+    setHastaFecha(r.hastaFecha); setHastaHora(r.hastaHora);
   }
-  const atajos: { label: string; rango: () => [Date, Date] }[] = [
-    {
-      label: "Hoy",
-      rango: () => {
-        const n = new Date();
-        return [new Date(n.getFullYear(), n.getMonth(), n.getDate(), 0, 0), new Date(n.getFullYear(), n.getMonth(), n.getDate(), 23, 59)];
-      },
-    },
-    { label: "Últimas 24 h", rango: () => { const n = new Date(); return [new Date(n.getTime() - 24 * 3600_000), n]; } },
-    { label: "Últimos 7 días", rango: () => { const n = new Date(); return [new Date(n.getTime() - 7 * 24 * 3600_000), n]; } },
-  ];
 
   const rotuloCls = "block mb-1 text-heading-xs uppercase text-text-muted";
   const extremo = (nombre: "Desde" | "Hasta", fecha: string, setFecha: (v: string) => void, hora: string, setHora: (v: string) => void) => (
@@ -253,12 +359,7 @@ function FilterDateRangePanel({
   );
 
   return (
-    <div
-      role="dialog"
-      aria-label={`Filtrar por ${label.toLowerCase()}`}
-      className="shadow-md absolute left-0 bg-surface rounded-md border border-border z-(--z-dropdown) p-3"
-      style={{ ...dropdownAnchorStyle(direction, 5), width: 300 }}
-    >
+    <div role="dialog" aria-label={`Filtrar por ${label.toLowerCase()}`} className="p-3" style={{ width: 300 }}>
       {/* Atajos — clases de chip de ButtonSelectGroup (reposo). Completan
           los campos, no aplican. */}
       <div className="flex flex-wrap gap-1.5 mb-3">
@@ -266,7 +367,7 @@ function FilterDateRangePanel({
           <button
             key={a.label}
             type="button"
-            onClick={() => completar(...a.rango())}
+            onClick={() => completar(a.rango())}
             className={`${BTN_SM} border transition-[color,background-color,border-color,transform] duration-(--duration-base) shrink-0 bg-surface border-border-strong text-text hover:border-primary hover:bg-primary-tint hover:text-secondary active:scale-[0.98]`}
           >
             {a.label}
@@ -291,7 +392,7 @@ function FilterDateRangePanel({
         <button
           type="button"
           disabled={invalido}
-          onClick={() => onApply(desde || hasta ? { desde, hasta } : null)}
+          onClick={() => onApply(desdeFecha || hastaFecha ? { desdeFecha, desdeHora, hastaFecha, hastaHora } : null)}
           className={actionBtnCls("neutral") + " disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"}
         >
           Aplicar

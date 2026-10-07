@@ -1,6 +1,9 @@
 // Design system — reexporta todo lo de components/ui.
+export { default as AnchoredPopover } from "./AnchoredPopover";
 export { default as ButtonSelectGroup } from "./ButtonSelectGroup";
 export { default as CardHeader } from "./CardHeader";
+export { default as ChipFilterBar } from "./ChipFilterBar";
+export * from "./ChipFilterBar";
 export { default as CodeBadge } from "./CodeBadge";
 export { default as CopyButton } from "./CopyButton";
 export { default as DateTimeField } from "./DateTimeField";

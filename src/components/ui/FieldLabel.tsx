@@ -1,6 +1,6 @@
-export default function FieldLabel({ children }: { children: React.ReactNode }) {
+export default function FieldLabel({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
   return (
-    <label className="block mb-1 text-label text-text select-none">
+    <label htmlFor={htmlFor} className="block mb-1 text-label text-text select-none">
       {children}
     </label>
   );
