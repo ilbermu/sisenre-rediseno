@@ -473,7 +473,7 @@ export default function ModificarContent({
             </div>
             <div className="shrink-0 border-t border-border bg-fill-subtle px-(--card-px) py-1.5 flex items-center justify-between">
               <button className={`${BTN_SM} border border-border bg-surface text-text-muted disabled:opacity-40`} disabled>Anterior</button>
-              <span className="text-caption text-text-muted">Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">2.213</span></span>
+              <span className="text-caption text-text-muted tabular-nums">Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">2.213</span></span>
               <button className={`${BTN_SM} border border-border bg-surface text-text-muted hover:bg-fill-muted transition-colors`}>Siguiente</button>
             </div>
           </div>

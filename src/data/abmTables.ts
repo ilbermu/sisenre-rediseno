@@ -112,13 +112,13 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
     ],
     columnasResultadoBarra: [
-      { key: "referencia", label: "Código de interrupción", mono: true },
+      { key: "referencia", label: "Código de interrupción" },
       { key: "fecha", label: "Fecha" },
       { key: "nivel", label: "Nivel de tensión" },
       { key: "faseElectrica", label: "Fase eléctrica" },
       { key: "origen", label: "Origen", campo: "origen" },
       { key: "tipo", label: "Tipo", campo: "tipo" },
-      { key: "codigoEquipoOperado", label: "Código de equipo operado", mono: true },
+      { key: "codigoEquipoOperado", label: "Código de equipo operado" },
       { key: "alimentadorMT", label: "Alimentador MT" },
     ],
     mapeoFilaACampos: {
@@ -188,7 +188,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
     ],
     columnasResultadoBarra: [
-      { key: "referencia", label: "Código de interrupción", mono: true },
+      { key: "referencia", label: "Código de interrupción" },
       { key: "causa", label: "Causa" },
       { key: "fase", label: "Fase de reposición" },
     ],
@@ -254,11 +254,11 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
     ],
     columnasResultadoBarra: [
-      { key: "referencia", label: "Código de interrupción", mono: true },
+      { key: "referencia", label: "Código de interrupción" },
       { key: "fecha", label: "Fecha" },
       { key: "fase", label: "Fase de reposición" },
       { key: "faseElectrica", label: "Fase eléctrica" },
-      { key: "codigoEquipoManiobrado", label: "Código del equipo maniobrado", mono: true },
+      { key: "codigoEquipoManiobrado", label: "Código del equipo maniobrado" },
       { key: "descEquipoManiobrado", label: "Descripción del equipo maniobrado" },
     ],
     mapeoFilaACampos: {
@@ -331,9 +331,9 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
     ],
     columnasResultadoBarra: [
-      { key: "ref", label: "Código de interrupción", mono: true },
+      { key: "ref", label: "Código de interrupción" },
       { key: "f", label: "Fase de reposición" },
-      { key: "cadena", label: "Cadena eléctrica del trafo repuesto", mono: true },
+      { key: "cadena", label: "Cadena eléctrica del trafo repuesto" },
       { key: "potenciaKva", label: "Potencia en KVA del trafo" },
       { key: "faseElectrica", label: "Fase eléctrica" },
       { key: "cantidadClientesBt", label: "Cantidad de clientes BT repuestos" },
@@ -411,12 +411,12 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
     ],
     columnasResultadoBarra: [
-      { key: "ref", label: "Código de interrupción", mono: true },
+      { key: "ref", label: "Código de interrupción" },
       { key: "fase", label: "Fase" },
-      { key: "cliente", label: "Id. comercial del cliente", mono: true },
+      { key: "cliente", label: "Id. comercial del cliente" },
       { key: "consumo", label: "Consumo" },
-      { key: "ctTabla9", label: "CT (Tabla 9)", mono: true },
-      { key: "ctTabla10", label: "CT (Tabla 10)", mono: true },
+      { key: "ctTabla9", label: "CT (Tabla 9)" },
+      { key: "ctTabla10", label: "CT (Tabla 10)" },
     ],
     mapeoFilaACampos: {
       ref: "codigoInterrupcion",
@@ -515,7 +515,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
     ],
     columnasResultadoBarra: [
-      { key: "alim", label: "Alimentador MT", mono: true },
+      { key: "alim", label: "Alimentador MT" },
       { key: "zona", label: "Zona" },
       { key: "ssee", label: "Subestación" },
       { key: "cantClientes", label: "Cantidad de clientes del alimentador" },
@@ -620,11 +620,11 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
     ],
     columnasResultadoBarra: [
-      { key: "rec", label: "Identificador del reclamo", mono: true },
+      { key: "rec", label: "Identificador del reclamo" },
       { key: "fechaReclamo", label: "Fecha reclamo" },
       { key: "partido", label: "Partido" },
       { key: "localidad", label: "Localidad" },
-      { key: "ref", label: "Interrupción", mono: true },
+      { key: "ref", label: "Interrupción" },
       { key: "reclamos", label: "Reclamos" },
     ],
     mapeoFilaACampos: {
@@ -705,11 +705,11 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
     ],
     columnasResultadoBarra: [
-      { key: "ref", label: "Código de interrupción", mono: true },
+      { key: "ref", label: "Código de interrupción" },
       { key: "tarifa", label: "Tarifa" },
       { key: "f", label: "Fase" },
-      { key: "cliente", label: "Cliente", mono: true },
-      { key: "ct", label: "CT", mono: true },
+      { key: "cliente", label: "Cliente" },
+      { key: "ct", label: "CT" },
     ],
     mapeoFilaACampos: { ref: "codigoInterrupcion", f: "fase", cliente: "cliente", tarifa: "tarifa", ct: "ct" },
     rows: (() => {
@@ -767,10 +767,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
     ],
     columnasResultadoBarra: [
-      { key: "ref", label: "Código de interrupción", mono: true },
+      { key: "ref", label: "Código de interrupción" },
       { key: "tarifa", label: "Tarifa" },
       { key: "f", label: "Fase" },
-      { key: "cliente", label: "Cliente", mono: true },
+      { key: "cliente", label: "Cliente" },
     ],
     mapeoFilaACampos: { ref: "codigoInterrupcion", f: "fase", cliente: "cliente", tarifa: "tarifa" },
     rows: (() => {

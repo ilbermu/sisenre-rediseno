@@ -223,6 +223,9 @@ export default function AbmScreen({
     return campoDef ? labelDeValor(campoDef, valor, row) : valor;
   };
   const columnKeys = columnas.map((c) => c.key);
+  // Columna del identificador del registro (la del campoId): la única en
+  // font-mono.
+  const columnaId = columnaDe(config.campoId);
   const getCells = (row: Record<string, string>) => columnas.map((c) => celda(row, c));
   // Sin buscador propio (la barra de filtros es el único): useTableToolbar
   // aporta solo el orden por columna.
@@ -478,24 +481,25 @@ export default function AbmScreen({
                       className="border-b border-border-subtle cursor-pointer transition-colors duration-(--duration-fast)"
                       style={{ backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined }}
                     >
-                      {columnas.map((c, ci) => (
-                        <td
-                          key={c.key}
-                          className={`w-[1%] whitespace-nowrap px-4 py-2.5 ${
-                            c.mono ? "text-code font-mono tabular-nums" : isSelected ? "text-body text-secondary font-medium" : "text-body text-text"
-                          } ${ci === 0 && isSelected ? "inset-shadow-row-selected" : ""}`}
-                          style={
-                            c.mono
-                              ? {
-                                  color: isSelected ? "var(--color-secondary)" : "var(--color-text)",
-                                  fontWeight: isSelected ? 600 : 400,
-                                }
-                              : undefined
-                          }
-                        >
-                          {celda(row, c)}
-                        </td>
-                      ))}
+                      {columnas.map((c, ci) => {
+                        // Mono SOLO en el valor del identificador del
+                        // registro (la columna del campoId); el resto, fuente
+                        // de texto. Todas con tabular-nums: las cifras
+                        // (números, fechas, horas) alinean en columna.
+                        const esId = c.key === columnaId;
+                        return (
+                          <td
+                            key={c.key}
+                            className={`w-[1%] whitespace-nowrap px-4 py-2.5 tabular-nums ${
+                              esId ? "text-code font-mono" : "text-body"
+                            } ${isSelected ? `text-secondary ${esId ? "font-semibold" : "font-medium"}` : "text-text"} ${
+                              ci === 0 && isSelected ? "inset-shadow-row-selected" : ""
+                            }`}
+                          >
+                            {celda(row, c)}
+                          </td>
+                        );
+                      })}
                       <td />
                     </tr>
                   );
@@ -508,13 +512,13 @@ export default function AbmScreen({
         {/* Paginación — al pie, dentro de la caja. */}
         {hayResultados && (
           <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-md shrink-0 flex items-center justify-between">
-            <span className="text-body-sm text-text">
+            <span className="text-body-sm text-text tabular-nums">
               Registros encontrados:{" "}
               <span className="font-semibold text-secondary">
                 {formatNumero(registrosEncontrados)}
               </span>
             </span>
-            <div className="flex items-center gap-2 text-body-sm text-text-muted">
+            <div className="flex items-center gap-2 text-body-sm text-text-muted tabular-nums">
               <button className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`} disabled>
                 Anterior
               </button>

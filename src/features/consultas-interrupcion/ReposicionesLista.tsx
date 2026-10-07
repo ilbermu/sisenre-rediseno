@@ -13,7 +13,8 @@ const REPOSICIONES_ROW_H = 44;
 // DESIGN_SYSTEM.md, "Lista de filas"): cada reposición tiene pocos campos y
 // un identificador principal, así que va en UNA línea sin thead:
 //   izquierda (min-w-0 flex-1, trunca) → "Reposición {nro}" + código de
-//     equipo (font-mono) + descripción del equipo, todo muted salvo el nro.
+//     equipo + descripción del equipo (fuente de texto: mono solo en
+//     identificadores), todo muted salvo el nro.
 //   derecha (shrink-0, gap fijo)       → FaseIndicador · hora · "{n} usuarios BT".
 // modSelectedFase sigue siendo la única fuente de verdad, compartida con el
 // modal "Tablas relacionadas" — acá solo viven hover y ref. Alto flexible:
@@ -91,12 +92,12 @@ export default function ReposicionesLista({
                   <span className={`shrink-0 text-body whitespace-nowrap ${seleccionada ? "text-secondary font-medium" : "text-text"}`}>
                     Reposición {fila.nro}
                   </span>
-                  <span className="shrink-0 text-code font-mono text-text-muted">{fila.equipoCodigo}</span>
+                  <span className="shrink-0 text-body-sm tabular-nums text-text-muted">{fila.equipoCodigo}</span>
                   <span className="min-w-0 truncate text-body-sm text-text-muted" title={fila.equipoDesc}>{fila.equipoDesc}</span>
                 </div>
                 <div className="shrink-0 flex items-center justify-end gap-4">
                   <FaseIndicador fase={fila.fase} />
-                  <span className="text-code font-mono tabular-nums text-text-muted">{fila.horaRep}</span>
+                  <span className="text-body-sm tabular-nums text-text-muted">{fila.horaRep}</span>
                   <span className="text-body-sm tabular-nums text-text-muted whitespace-nowrap">{fila.usuariosBT} usuarios BT</span>
                 </div>
               </div>

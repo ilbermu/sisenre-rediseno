@@ -109,8 +109,8 @@ type ColumnaResultado = {
   label: string;
   // Sin width/align: la tabla de Resultados es un <table> real donde cada
   // columna siempre se ajusta a su propio contenido (shrink-to-fit,
-  // alineada a la izquierda) — ver AbmScreen.
-  mono?: boolean;
+  // alineada a la izquierda) — ver AbmScreen. Sin `mono`: el font-mono se
+  // deriva (solo la columna del campoId).
   // Nombre de un campo del formulario cuyas `opciones` traducen el value
   // crudo de la fila a su etiqueta (ej. origen "I" → "Interno"). Sin esto,
   // la celda muestra el value tal cual.
@@ -164,7 +164,7 @@ export type AbmTableConfig = {
   campoId: string;
   filtrosBarra: AbmFiltrosBarra;
   secciones: SeccionBusqueda[];
-  // Columnas de Resultados (tabla a ancho completo): campoId primero (mono),
+  // Columnas de Resultados (tabla a ancho completo): campoId primero,
   // la fecha si hay y los campos de los chips visibles (máximo 7). El label
   // es SIEMPRE el del campo en el formulario; el nombre corto de la base va
   // en la pista del encabezado (nombreReal del campo).
