@@ -53,7 +53,9 @@ function textoRangoFecha(r: RangoFecha): string {
 //   maxWidth      ancho máximo del chip; el valor trunca con "…" y el texto
 //                 completo va en `title`
 //   valorDestacado valor en semibold
-//   quitarSiempre muestra la × también sin valor (chips agregados)
+//   chevronConValor false → con valor, texto + × sin chevron (ChipFilterBar:
+//                 chip vacío = texto + chevron; con valor = texto + ×). La ×
+//                 tiene su propio espacio y el texto trunca antes de ella.
 //   etiqueta      texto visible corto (ChipFilterBar: chipLabel); `label`
 //                 sigue siendo el nombre completo, el de title / aria-label
 //   soloValor     con valor muestra solo el valor, sin etiqueta
@@ -67,7 +69,7 @@ export function FilterTriggerButton({
   size = "sm",
   maxWidth,
   valorDestacado = false,
-  quitarSiempre = false,
+  chevronConValor = true,
   etiqueta,
   soloValor = false,
   buttonRef,
@@ -82,7 +84,7 @@ export function FilterTriggerButton({
   size?: "sm" | "md";
   maxWidth?: number;
   valorDestacado?: boolean;
-  quitarSiempre?: boolean;
+  chevronConValor?: boolean;
   etiqueta?: string;
   soloValor?: boolean;
   buttonRef?: React.Ref<HTMLButtonElement>;
@@ -94,7 +96,7 @@ export function FilterTriggerButton({
   // muestre la etiqueta corta o solo el valor.
   const textoCompleto = aplicado !== null ? `${label}: ${aplicado}` : undefined;
   const visible = etiqueta ?? label;
-  if (aplicado === null && !quitarSiempre) {
+  if (aplicado === null) {
     return (
       <button
         ref={buttonRef}
@@ -115,13 +117,10 @@ export function FilterTriggerButton({
       </button>
     );
   }
-  const pintado = aplicado !== null || open;
   return (
     <div
       title={textoCompleto}
-      className={`${altoCls} min-w-0 rounded-sm text-label border inline-flex items-center ${
-        pintado ? "bg-primary-tint border-primary text-secondary" : "border-transparent text-text"
-      }`}
+      className={`${altoCls} min-w-0 rounded-sm text-label border inline-flex items-center bg-primary-tint border-primary text-secondary`}
       style={maxWidth ? { maxWidth } : undefined}
     >
       <button
@@ -134,22 +133,16 @@ export function FilterTriggerButton({
         onClick={onToggle}
         className={`h-full min-w-0 pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 whitespace-nowrap disabled:cursor-not-allowed ${FOCUS_RING}`}
       >
-        {aplicado === null ? (
-          <span className="shrink-0">{visible}</span>
-        ) : (
-          <>
-            {!soloValor && <span className="shrink-0">{visible}:</span>}
-            <span className={`min-w-0 truncate tabular-nums ${valorDestacado ? "font-semibold" : ""}`}>{aplicado}</span>
-          </>
-        )}
-        <span className="shrink-0 inline-flex">{chevron}</span>
+        {!soloValor && <span className="shrink-0">{visible}:</span>}
+        <span className={`min-w-0 truncate tabular-nums ${valorDestacado ? "font-semibold" : ""}`}>{aplicado}</span>
+        {chevronConValor && <span className="shrink-0 inline-flex">{chevron}</span>}
       </button>
       <button
         type="button"
         aria-label={`Quitar filtro ${label}`}
         disabled={disabled}
         onClick={onClear}
-        className={`h-full shrink-0 px-1.5 rounded-sm inline-flex items-center disabled:cursor-not-allowed ${FOCUS_RING}`}
+        className={`h-full shrink-0 ${chevronConValor ? "px-1.5" : "pl-1 pr-2"} rounded-sm inline-flex items-center disabled:cursor-not-allowed ${FOCUS_RING}`}
       >
         <X size={ICON.xs} strokeWidth={1.5} />
       </button>

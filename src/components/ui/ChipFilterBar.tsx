@@ -349,7 +349,7 @@ export default function ChipFilterBar({
   }
 
   const chipMax = disposicion.compacto ? CHIP_MAX_COMPACTO : CHIP_MAX;
-  const chip = (def: ChipFiltroDef, agregado: boolean) => {
+  const chip = (def: ChipFiltroDef) => {
     const v = valores[def.campo] ?? "";
     return (
       <div key={def.campo} className="shrink-0 min-w-0 flex">
@@ -365,7 +365,7 @@ export default function ChipFilterBar({
           size="md"
           maxWidth={chipMax}
           valorDestacado
-          quitarSiempre={agregado}
+          chevronConValor={false}
           haspopup={def.editor === "lista" || def.editor === "busqueda" ? "listbox" : "dialog"}
         />
       </div>
@@ -397,7 +397,7 @@ export default function ChipFilterBar({
                 onClear={() => {}}
                 size="md"
                 valorDestacado
-                quitarSiempre={agregados.includes(d.campo)}
+                chevronConValor={false}
               />
             </div>
           );
@@ -444,11 +444,11 @@ export default function ChipFilterBar({
       </div>
 
       {/* 2. Chips fijos — siempre visibles. */}
-      {fijos.map((d) => chip(d, false))}
+      {fijos.map((d) => chip(d))}
 
       {/* 3. Chips agregados. */}
       {agregados.length > 0 && <div className="w-px h-5 bg-border shrink-0" />}
-      {visibles.map((c) => chip(defs.get(c)!, true))}
+      {visibles.map((c) => chip(defs.get(c)!))}
 
       {/* 4. "+N filtros" — los agregados que no entran. */}
       {ocultos.length > 0 && (
