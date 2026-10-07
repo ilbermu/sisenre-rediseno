@@ -36,7 +36,6 @@ export default function AbmCampo({
   lockedEnModificar,
   consultando,
   valoresFormulario,
-  controlado = false,
   readOnly = false,
   intrinseco = false,
   labelExterno,
@@ -59,11 +58,6 @@ export default function AbmCampo({
   // función, para resolver opciones en cascada según otro campo (ej.
   // Localidad según Partido) sin acoplar acá el nombre de ningún campo.
   valoresFormulario?: Record<string, string>;
-  // Fuerza el modo controlado también en estado "empty" (modo buscar). La
-  // barra de búsqueda del layout "barra" lo necesita para contar los campos
-  // con valor (badge de "Más filtros", chips) y para que Limpiar los vacíe.
-  // Default false: el panel de Búsqueda del layout "split" no cambia.
-  controlado?: boolean;
   // Dato fijo (read-only), distinto de disabled (ver DESIGN_SYSTEM.md,
   // "Estados: disabled vs read-only"): un toggle se muestra con su valor
   // marcado, a contraste completo, sin hover y sin responder a clic ni
@@ -90,7 +84,7 @@ export default function AbmCampo({
   }
   const estado = estadoDeCampo(campo, mode, !!consultando, !!lockedEnModificar);
   const isDisabled = estado === "placeholder" || estado === "disabled";
-  const controlled = controlado || estado !== "empty";
+  const controlled = estado !== "empty";
   const estadoCls = ESTADO_CLASES[estado];
   // "readonly" (config) es un valor derivado/no tipeable por su cuenta, no
   // un widget propio — en estado "empty"/"enabled" (alta) se ve y escribe

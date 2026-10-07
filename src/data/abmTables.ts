@@ -48,9 +48,20 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     // PRUEBA de layout — solo esta tabla. Ver AbmLayout.
     layout: "barra",
     barraBusqueda: {
-      seccionesBarra: ["Identificación", "Clasificación"],
-      seccionesMasFiltros: ["Datos de red"],
-      anchos: { codigoInterrupcion: 200, fecha: 170 },
+      campos: {
+        codigo: "codigoInterrupcion",
+        fecha: "fecha",
+        nivel: "nivelTension",
+        fase: "faseElectrica",
+        origen: "origen",
+        tipo: "tipo",
+        cadenaElectrica: "cadenaElectricaAguasArriba",
+        alimentadorMT: "alimentadorMT",
+        centroTransf: "ctMtBtEquipoOperado",
+        codigoEquipo: "codigoEquipoOperado",
+        descEquipo: "descEquipoOperado",
+        divisionRed: "divisionRedNormal",
+      },
       tituloModificar: "Modificar interrupción",
     },
     secciones: [

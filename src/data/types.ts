@@ -1,3 +1,5 @@
+import type { FilterBarValores } from "@/components/ui/FilterBar";
+
 export type FaseRow = { fase: number; fecha: string; idElemento: string; tipoElemento: string; cadena: string; cliente: number };
 
 // Fila de la lista de Reposiciones (Tabla 4/CDS4) — campos con nombre en vez
@@ -117,24 +119,18 @@ type ColumnaResultado = {
 // Layout del ABM:
 //   "split" (default) → panel de Búsqueda/formulario a la izquierda +
 //                       panel de Resultados a la derecha.
-//   "barra" (en prueba, solo CDS2) → barra de búsqueda apoyada en el fondo
-//                       (copia del filter bar de Consultas de interrupción)
-//                       + una sola card de Resultados a ancho completo;
+//   "barra" (en prueba, solo CDS2) → barra de búsqueda general (FilterBar,
+//                       la misma de Consultas de interrupción) apoyada en el
+//                       fondo + una sola card de Resultados a ancho completo;
 //                       Modificar se abre en un modal.
 export type AbmLayout = "split" | "barra";
 
-// Barra de búsqueda del layout "barra": qué secciones de `secciones` van en
-// la fila y cuáles en el flyout "Más filtros". Los campos, controles,
-// opciones y labels salen siempre de esas secciones (se renderizan con
-// AbmCampo, igual que en el panel de Búsqueda del layout "split").
+// Barra de búsqueda del layout "barra" (FilterBar): a qué campo de la tabla
+// (`nombre` de `secciones`) corresponde cada filtro de la barra. Si el campo
+// tiene opciones {value,label}, la barra trabaja con la etiqueta y AbmScreen
+// traduce (ej. Origen "Interno" ↔ "I").
 export type AbmBarraBusqueda = {
-  // Títulos de sección (SeccionBusqueda.titulo) cuyos campos van en la fila.
-  seccionesBarra: string[];
-  // Títulos de sección cuyos campos van en el flyout "Más filtros".
-  seccionesMasFiltros: string[];
-  // Ancho fijo (px) por campo en la fila; un campo sin ancho toma el ancho
-  // de su contenido (toggles: el de sus opciones). Nunca se estiran.
-  anchos: Record<string, number>;
+  campos: Record<keyof FilterBarValores, string>;
   // Título del modal de Modificar (en este layout, Modificar es un modal).
   tituloModificar: string;
 };

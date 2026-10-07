@@ -5,6 +5,8 @@ import {
   BTN_SM,
   CardHeader,
   CopyButton,
+  FilterBar,
+  FilterBarValores,
   FOCUS_RING_INSET,
   FormRow,
   ghostBtnCls,
@@ -23,8 +25,7 @@ import {
 } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { ABM_ITEMS } from "@/data/dominio";
-import { AbmDeepLink, AbmMode, AbmTableKey } from "@/data/types";
-import AbmBarraBusqueda from "@/features/abm/AbmBarraBusqueda";
+import { AbmDeepLink, AbmMode, AbmTableKey, CampoOpcion } from "@/data/types";
 import AbmCampo from "@/features/abm/AbmCampo";
 import AbmFila from "@/features/abm/AbmFila";
 import AbmTableSelector from "@/features/abm/AbmTableSelector";
@@ -121,8 +122,8 @@ export default function AbmScreen({
   const [filasBorradas, setFilasBorradas] = useState<Set<number>>(new Set());
   const camposLocked = config.camposReadonlyEnModificar ?? [];
   // Layout "barra" (PRUEBA, solo CDS2 — ver AbmLayout): la búsqueda vive en
-  // una barra apoyada en el fondo, con el mismo estado (`valores` /
-  // setValor) que el panel de Búsqueda del layout "split".
+  // la barra de búsqueda general (FilterBar), con el mismo estado
+  // (`valores` / setValor) que el panel de Búsqueda del layout "split".
   const esBarra = config.layout === "barra";
   const [flyoutOpen, setFlyoutOpen] = useState(false);
   // Modal de edición de registro (layout "barra"): un solo modal con dos
@@ -198,6 +199,33 @@ export default function AbmScreen({
     });
   }
 
+  // FilterBar (layout "barra") ↔ `valores`: cada filtro de la barra lee y
+  // escribe el campo que indica config.barraBusqueda.campos. Si ese campo
+  // tiene opciones {value,label} (Origen I/E, Tipo F/P), la barra trabaja
+  // con la etiqueta y acá se traduce en los dos sentidos.
+  const camposTabla = config.secciones.flatMap((s) => s.filas.flat());
+  const opcionesDe = (nombre: string): CampoOpcion[] => {
+    const opciones = camposTabla.find((c) => c.nombre === nombre)?.opciones;
+    return Array.isArray(opciones) ? opciones : [];
+  };
+  const traducir = (nombre: string, v: string, a: "label" | "value") => {
+    const o = opcionesDe(nombre).find((o) => typeof o !== "string" && o[a === "label" ? "value" : "label"] === v);
+    return o && typeof o !== "string" ? o[a] : v;
+  };
+  const camposBarra = config.barraBusqueda?.campos;
+  const filtrosBarra = camposBarra
+    ? (Object.fromEntries(
+        Object.entries(camposBarra).map(([filtro, nombre]) => [filtro, traducir(nombre, valores[nombre] ?? "", "label")]),
+      ) as FilterBarValores)
+    : null;
+  function cambiarFiltrosBarra(cambios: Partial<FilterBarValores>) {
+    if (!camposBarra) return;
+    for (const [filtro, v] of Object.entries(cambios)) {
+      const nombre = camposBarra[filtro as keyof FilterBarValores];
+      setValor(nombre, traducir(nombre, v ?? "", "value"));
+    }
+  }
+
   // Secciones del formulario del panel de Búsqueda del layout "split"
   // (separador + filas de AbmFila; en tier 760px, grilla plana).
   const renderSecciones = (secciones: typeof config.secciones) =>
@@ -269,7 +297,6 @@ export default function AbmScreen({
   // muestra la etiqueta de la opción ("Interno") en vez del value ("I") —
   // también para buscar, ordenar y exportar.
   const columnas = esBarra && config.columnasResultadoBarra ? config.columnasResultadoBarra : config.columnasResultado;
-  const camposTabla = config.secciones.flatMap((sec) => sec.filas.flat());
   const celda = (row: Record<string, string>, c: (typeof columnas)[number]) => {
     const valor = row[c.key] ?? "";
     const campoDef = c.campo ? camposTabla.find((x) => x.nombre === c.campo) : undefined;
@@ -897,18 +924,19 @@ export default function AbmScreen({
         // padding y gap de página que Consultas de interrupción.
         <div className="flex-1 min-h-0 flex flex-col px-(--page-px) pt-(--page-pt) pb-(--page-pt) relative overflow-hidden">
           <div className="flex-1 min-h-0 flex flex-col gap-(--page-gap)">
-            <AbmBarraBusqueda
-              config={config}
-              mode="buscar"
-              valores={valores}
-              setValor={setValor}
-              camposLocked={camposLocked}
-              showData={showData}
-              onBuscar={handleBuscar}
-              onLimpiar={handleLimpiar}
-              flyoutOpen={flyoutOpen}
-              setFlyoutOpen={setFlyoutOpen}
-            />
+            {filtrosBarra && (
+              <FilterBar
+                valores={filtrosBarra}
+                onChange={cambiarFiltrosBarra}
+                onBuscar={handleBuscar}
+                onLimpiar={handleLimpiar}
+                buscado={showData}
+                placeholderCodigo={camposTabla.find((c) => c.nombre === camposBarra!.codigo)?.placeholder ?? ""}
+                opcionesDescEquipo={opcionesDe(camposBarra!.descEquipo).map((o) => (typeof o === "string" ? o : o.label))}
+                flyoutAbierto={flyoutOpen}
+                onFlyoutAbiertoChange={setFlyoutOpen}
+              />
+            )}
             {resultadosBarra}
           </div>
         </div>
