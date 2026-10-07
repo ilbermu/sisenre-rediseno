@@ -253,6 +253,17 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **Estado de solo lectura unificado:** `READONLY_FIELD_CLS` y
+  `readonlyOpcionCls` (`tokens.ts`) — fondo `fill-subtle`, borde `border`,
+  contenido a contraste completo, sin hover; la opción seleccionada de un
+  toggle en solo lectura usa `border-chip-border`. Tabla editable / solo
+  lectura / deshabilitado en Fundamentos; regla: un dato no editable se
+  muestra en solo lectura, nunca como control normal ni deshabilitado.
+  `ReadOnlyField` pierde la variante `plain`.
+- **Modal de edición de registro:** el identificador es el primer campo,
+  de solo lectura, con copiar adentro; el header queda en una línea
+  (título + paso). `Modal` pierde la prop `label`.
+
 - **`ChipFilterBar` — correcciones:** etiqueta corta de chip
   (`chipLabel`) y `soloValor` (regla: solo-valor únicamente para valores
   que se explican solos); `title` / `aria-label` siempre con el label
@@ -322,7 +333,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [Capas](#capas) ·
 [Movimiento](#movimiento) ·
 [Foco](#foco) ·
-[Estados: disabled vs read-only](#estados-disabled-vs-read-only)
+[Estados: editable, solo lectura, deshabilitado](#estados-editable-solo-lectura-deshabilitado)
 
 **2. Componentes** (`src/components/ui/`)
 [tokens.ts](#tokensts) ·
@@ -797,22 +808,26 @@ Un solo color de foco, `--color-focus` = `#076AEE` (mismo valor que
   el mismo anillo inset en la sección entera; el panel de un modal
   (`tabIndex=-1`, foco programático, no interactivo) es la única excepción.
 
-## Estados: disabled vs read-only
+## Estados: editable, solo lectura, deshabilitado
 
-Dos estados distintos de un control que no se puede cambiar:
+Tres estados de un campo o control, cada uno con un solo tratamiento:
 
-| | Disabled | Read-only |
-|---|---|---|
-| Significa | El control **no está disponible todavía** (falta completar algo, depende de otra acción) | El valor es un **dato fijo** del registro: se lee completo, no se edita |
-| Aspecto | Atenuado (`opacity-40`, o `fill-muted` + `text-faint` en campos) | **Contraste completo**: el seleccionado con su aspecto de siempre (`bg-primary-tint` + `border-primary` + `text-secondary`), los no seleccionados en reposo (`bg-surface` + `border-border-strong` + `text-text`) |
-| Interacción | Sin eventos, `cursor-not-allowed` | Sin hover, `cursor-default`, no responde a clic ni a teclado para cambiar el valor |
-| Señal | — | Ícono `Lock` (`ICON.xs`, `text-icon`, "No editable") junto al label |
-| Accesibilidad | `disabled` | Grupo `role="radiogroup"` con `aria-readonly="true"`, enfocable una vez; opciones no tabulables |
+| | Editable | Solo lectura | Deshabilitado |
+|---|---|---|---|
+| Significa | Se puede cambiar | El valor es un **dato fijo** del registro: se lee completo, no se edita | El control **no está disponible todavía** (falta completar algo, depende de otra acción) |
+| Campo | `MOD_FIELD_CLS`: `bg-surface`, `border-border-strong`, `text-text`, foco de campo (`FIELD_FOCUS`) | `READONLY_FIELD_CLS`: `bg-fill-subtle`, `border-border` (no `border-strong`), `text-text` (contraste completo) | Atenuado (`fill-muted` + `text-faint` en campos) |
+| Toggle | Opción en reposo `bg-surface` + `border-border-strong`; seleccionada `bg-primary-tint` + `border-primary` + `text-secondary`; hover tint | `readonlyOpcionCls`: seleccionada `bg-primary-tint` + `border-chip-border` + `text-secondary` (sin `border-primary`, que es de un control activo); las demás `bg-fill-subtle` + `border-border` + `text-text-muted` | `fill-muted` + `text-faint`; botones `opacity-40` |
+| Interacción | Hover y foco | Sin hover, `cursor-default`, no responde a clic ni a teclado para cambiar el valor; solo el anillo de foco estándar (`FOCUS_RING`) si es enfocable. Un campo de texto se puede seleccionar y copiar | Sin eventos, `cursor-not-allowed` |
+| Señal | — | Ícono `Lock` (`ICON.xs`, `text-icon`, "No editable") junto al label | — |
+| Accesibilidad | — | Campo: `<input readOnly>`. Toggle: grupo `role="radiogroup"` con `aria-readonly="true"`, enfocable una vez; opciones no tabulables | `disabled` |
 
-- Read-only **aplica a toggles** (`ButtonSelectGroup` y el toggle de
-  `AbmCampo`, prop `readOnly`). Un input, select o fecha read-only se
-  muestra con `ReadOnlyField` (variante `plain` dentro de un formulario).
-- Un dato fijo **nunca** se muestra como control deshabilitado.
+- **Regla:** un dato que no se puede editar se muestra con el estado de
+  **solo lectura** — nunca como control normal ni como deshabilitado.
+  Deshabilitado es solo para "todavía no disponible".
+- Solo lectura aplica igual a campos (`READONLY_FIELD_CLS`; en el ABM,
+  `AbmCampo` con `readOnly`) y a toggles (`ButtonSelectGroup` y el toggle
+  de `AbmCampo`, prop `readOnly`), con el mismo ancho por opción que
+  cualquier toggle.
 
 ---
 
@@ -839,6 +854,7 @@ color/variante/hover.
 | `ICON`, `ICON_BTN_XS/SM/MD` | Tamaños de ícono y de botón de ícono |
 | `FOCUS_RING`, `FOCUS_RING_INSET`, `PEER_FOCUS_RING`, `FIELD_FOCUS` | Foco (ver [Foco](#foco)) |
 | `MOD_FIELD_CLS`, `MOD_SELECT_CLS` | Clases únicas para todo `<input>` / `<select>` de texto simple |
+| `READONLY_FIELD_CLS`, `readonlyOpcionCls(sel)` | Estado de solo lectura de un campo y de una opción de toggle (ver [Estados](#estados-editable-solo-lectura-deshabilitado)) |
 | `ESTADO_CLASES` | Clases por estado de campo (`CampoEstado`: editable, bloqueado, solo lectura…) |
 | `ActionItem` | Tipo de una acción (label, variante, handler) |
 
@@ -942,8 +958,8 @@ largas de opciones que no entran en una línea, como el Motivo de
 
 **Estados:** reposo, hover (tint), seleccionado (tint persistente),
 deshabilitado (`fill-muted` + `text-faint`; si estaba seleccionado,
-tint atenuado), **read-only** (ver [Estados: disabled vs
-read-only](#estados-disabled-vs-read-only)).
+tint atenuado), **read-only** (ver [Estados: editable, solo lectura,
+deshabilitado](#estados-editable-solo-lectura-deshabilitado)).
 
 **Accesibilidad:** cada opción es un `<button>` con `aria-pressed`. En
 read-only, el grupo es `role="radiogroup"` con `aria-readonly="true"` y
@@ -1162,8 +1178,8 @@ Interrupción en el header del modal "Tablas relacionadas").
 **Props:** `value: string`, `label: string` (qué se copia, en minúscula y
 sin artículo: arma "Copiar interrupción" / "Interrupción copiada"),
 `size?` (`"sm"` default, `ICON_BTN_SM` + `ICON.sm`; `"xs"`, `ICON_BTN_XS` +
-`ICON.xs`, para ir junto a un texto chico como el label de contexto de un
-modal).
+`ICON.xs`, para ir junto a un texto chico o dentro de un campo, como el
+identificador de solo lectura del modal de edición de registro).
 
 **Estados:** reposo; copiado — **solo si la copia realmente ocurrió**, el
 ícono pasa a `Check` (`text-success-text-strong`) por 1.5s. Usa
@@ -1320,8 +1336,8 @@ derecha. Ver [Formulario de edición](#formulario-de-edición).
 (`"fijo"` | `"intrinseco"`), `children` (el control).
 
 **Estados:** read-only → candado (`ICON.xs`, `text-icon`, "No editable") a
-la derecha del label; el control en su estado read-only (ver [Estados:
-disabled vs read-only](#estados-disabled-vs-read-only)).
+la derecha del label; el control en su estado read-only (ver [Estados: editable,
+solo lectura, deshabilitado](#estados-editable-solo-lectura-deshabilitado)).
 
 **Accesibilidad:** el label es un `<label htmlFor>` apuntando al id del
 control; un grupo de toggles usa `aria-labelledby={labelId}`. En el ABM,
@@ -1511,11 +1527,6 @@ derecha (`modalNeutralBtnCls` + `modalPrimaryBtnCls`).
 **Props:** `title`, `subtitle?`, `open`, `onClose`, `size?` (`"sm"` 480 /
 `"form"` 640 / `"lg"` 920 / `"xl"` 1120), `footer?`, `children`, y para
 extenderlo sin tocar a los demás:
-- **`label`**: label de contexto ARRIBA del título (Carbon "modal label"):
-  el registro sobre el que actúa el modal (ej. la referencia en
-  `text-code font-mono text-text-muted` + `CopyButton` `xs`). El header
-  pasa a dos líneas (`px-(--card-px) py-3`), con ✕ centrado en el bloque.
-  Es la excepción documentada a la regla de header de una línea.
 - **`paso`** (`{ actual, total }`): indicador "Paso N de M" junto al título,
   para un modal de varios pasos (ver [Nunca un modal sobre
   otro](#nunca-un-modal-sobre-otro)).
@@ -1617,17 +1628,14 @@ seleccionada (tint).
 
 **Para qué:** par etiqueta/valor de solo lectura.
 
-**Anatomía — dos variantes:**
-- **`box`** (default) — grillas densas (datos de la interrupción): etiqueta
-  `text-heading-xs uppercase text-text-muted` + caja `h-(--control-sm)`
-  `bg-fill-muted` `border-border` con el valor en `text-body-sm`.
-- **`plain`** — dato fijo dentro de un formulario: `FieldLabel` (igual que
-  los campos vecinos) + valor en `text-body text-text`, sin caja ni borde,
-  centrado en `h-(--control-md)` para que la fila quede alineada con los
-  controles. En el ABM lo arma `AbmCampo` con `readOnly` para un campo
-  que no es toggle.
+**Anatomía:** para grillas densas de datos (datos de la interrupción):
+etiqueta `text-heading-xs uppercase text-text-muted` + caja
+`h-(--control-sm)` con el tratamiento de solo lectura (`bg-fill-subtle`,
+`border-border`, `text-text`) y el valor en `text-body-sm`. Un campo de solo
+lectura dentro de un formulario no usa este componente: es un `<input
+readOnly>` con `READONLY_FIELD_CLS`.
 
-**Props:** `label`, `value`, `variant?` (`"box"` | `"plain"`).
+**Props:** `label`, `value`.
 
 **Qué no hacer:** usarlo para un campo editable deshabilitado (eso es el
 campo con su estado disabled).
@@ -2179,21 +2187,22 @@ pasos: **Editar → Revisar**.
 
 - **Tamaño `form`** (640px), el mismo en los dos pasos; el alto se ajusta al
   contenido.
-- **Header:** label de contexto arriba del título (Carbon "modal label",
-  prop `label` de `Modal`) con el registro sobre el que actúa — la
-  referencia en `text-code font-mono text-text-muted` + `CopyButton` `xs` —;
-  debajo el título (`text-heading-md`) con el indicador "Paso N de 2"
-  (`text-body-sm text-text-muted`, prop `paso`); ✕ a la derecha, centrado en
-  el bloque. Los headers de modal con label son la excepción documentada a
-  la regla de header de una línea. El identificador no aparece en el body.
+- **Header** de una línea: título (`text-heading-md`) + "Paso N de 2"
+  (`text-body-sm text-text-muted`, prop `paso`) + ✕. Sin label de contexto.
+- **El identificador del registro es el primer campo** del formulario
+  (en CDS2, "Código de interrupción"): `FormRow` con candado; control de
+  solo lectura (`<input readOnly>` con `READONLY_FIELD_CLS`, ancho
+  `--form-control-w`, valor en `text-code font-mono`), seleccionable y
+  copiable con mouse y teclado, con `CopyButton` `xs` dentro del campo, a la
+  derecha (Check 1,5 s y "Referencia copiada" solo si la copia ocurrió). No
+  se edita: nunca aparece en "Revisar cambios".
 - **Paso 1 — Editar:** el [formulario de edición](#formulario-de-edición)
-  horizontal en filas: los campos de la config de la tabla en su orden, en
-  una lista continua sin títulos de sección (en CDS2, sin el código de
-  interrupción, que va en el header).
-  - **No editables en read-only** (ver [Estados: disabled vs
-    read-only](#estados-disabled-vs-read-only)): el toggle con su valor
-    marcado a contraste completo y un candado junto al label — **nunca como
-    controles deshabilitados**.
+  horizontal en filas: después del identificador, los campos de la config
+  de la tabla en su orden, en una lista continua sin títulos de sección.
+  - **No editables en solo lectura** (ver [Estados: editable, solo
+    lectura, deshabilitado](#estados-editable-solo-lectura-deshabilitado)):
+    campos con `READONLY_FIELD_CLS`, toggles con `readonlyOpcionCls`, y un
+    candado junto al label — **nunca como controles deshabilitados**.
   - Pie: Cancelar · **Revisar cambios** (primario, habilitado solo si algún
     campo es distinto del original).
 - **Paso 2 — Revisar:** mismo modal y mismo header; el body pasa a
