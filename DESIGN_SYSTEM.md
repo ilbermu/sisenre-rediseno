@@ -253,6 +253,17 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **Nomenclatura "Tabla N":** cada tabla suma `nombre` en su config; tags,
+  badges, selector, accesos del Inicio y links muestran "Tabla N". El
+  código CDS queda como dato interno (exportaciones, archivos, tooltip del
+  selector). Reemplaza la decisión de mostrar el código como tag.
+- **ABM con `TopBar`:** deja su encabezado propio; "Alta, baja y
+  modificación" + `PeriodSelector` controlado (`TopBar` suma `periodo` /
+  `onPeriodoChange`).
+- **`AbmTableSelector`, variante título:** "Tabla 2 · Interrupciones" en
+  `heading-md` + chevron, sin borde ni fondo en reposo; primer elemento del
+  contenido en los dos layouts del ABM.
+
 - **Modal `form` a 704px** (token `--modal-form-w`, antes 640): los chips
   de Motivo entran en una sola fila en el paso Revisar; mismo ancho en los
   dos pasos. La columna de controles del paso 1 no cambia (280px).
@@ -349,6 +360,7 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **2. Componentes** (`src/components/ui/`)
 [tokens.ts](#tokensts) ·
+[AbmTableSelector](#abmtableselector) ·
 [AnchoredPopover](#anchoredpopover) ·
 [Botones](#botones) ·
 [ButtonSelectGroup](#buttonselectgroup) ·
@@ -601,8 +613,8 @@ juntos. Se elige por **rol** (qué es el texto), nunca por tamaño.
   - `text-code font-mono` — el rol para **datos**: IDs, referencias, fechas,
     códigos de equipo. Va a 12px porque JetBrains Mono a 12 empareja
     ópticamente con Inter a 13 en la misma fila.
-  - `text-caption font-mono` — **badges y contadores**: código de tabla
-    (CDS4, etc.), contadores del sidebar, letra de fase.
+  - `text-caption font-mono` — **badges y contadores**: nombre de tabla
+    ("Tabla 4"), contadores del sidebar, letra de fase.
 
 ## Espaciado y densidad
 
@@ -880,6 +892,33 @@ de texto; escribir clases de foco a mano.
 
 **Archivo:** `src/components/ui/tokens.ts`.
 
+## AbmTableSelector
+
+**Para qué:** variante **título** de un selector: nombra la vista y
+permite cambiarla. Es el título de la pantalla de ABM (no hay otro título
+de tabla), primer elemento del contenido debajo del `TopBar`, en todos los
+layouts.
+
+**Anatomía:** texto "Tabla 2 · Interrupciones" (`nombre · titulo`) en
+`text-heading-md text-text` + chevron (`ICON.md`, `text-icon`) a la
+derecha. Sin borde ni fondo en reposo; alto mínimo `--control-md`,
+`px-1.5` y `-ml-1.5` para que el texto quede alineado con el borde de la
+página. A la izquierda, solo con un deep-link, el "←" para volver a
+Consultas. Panel: "Cambiar de tabla" con la lista de tablas (titulo +
+"Tabla N"), la activa en tint.
+
+**Estados:** reposo (título plano); hover `bg-fill-muted` `rounded-sm`;
+abierto = seleccionado persistente (`bg-primary-tint` + `border-primary`,
+texto y chevron `text-secondary`, chevron rotado). Foco `FOCUS_RING`.
+
+**Accesibilidad:** `<button>` con `aria-haspopup` y `aria-expanded`;
+`title` con el código interno ("Tabla 2 · Interrupciones (CDS2)").
+
+**Qué no hacer:** darle borde o fondo en reposo (no es un botón); sumar
+otro título de tabla en la pantalla.
+
+**Archivo:** `src/features/abm/AbmTableSelector.tsx`.
+
 ## AnchoredPopover
 
 **Para qué:** popover anclado a **su** disparador (editores y menús de
@@ -996,14 +1035,14 @@ y la referencia del header de `Modal`. Ningún header se arma a mano.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Título [CDS4] · ETIQUETA valor-en-mono          [acciones]│  h-(--card-header-h), px-(--card-px)
+│ Título [Tabla 4] · ETIQUETA valor-en-mono       [acciones]│  h-(--card-header-h), px-(--card-px)
 ├──────────────────────────────────────────────────────────┤  border-b border-border, siempre
 ```
 
 | Slot | Prop | Tokens | Contenido |
 |---|---|---|---|
 | Título | `title` | `text-heading-md text-text` (`heading-sm` con `level="section"`) | Nombre de la card. No trunca |
-| Badge | `tag` | `CodeBadge` | Código de origen (CDS2, CDS4…), **en línea con el título**. Opcional |
+| Badge | `tag` | `CodeBadge` | Nombre de la tabla de origen (`config.nombre`: "Tabla 2", "Tabla 4"…), **en línea con el título**. Opcional |
 | Contexto | `context: { label, value }` | "·" en `text-text-faint`; etiqueta `text-heading-xs uppercase text-text-muted`; valor `text-code font-mono text-text-muted` | En la **misma línea**, después del título. Trunca antes que el título. Opcional |
 | Acciones | `actions` | botones `actionBtnCls` / `BTN_MD` | A la derecha (`ml-auto`), centradas en vertical. Opcional |
 
@@ -1168,8 +1207,10 @@ números o Sí/No.
 
 ## CodeBadge
 
-**Para qué:** dejar explícito sobre qué tabla se trabaja (CDS2, CDS4…), en
-`CardHeader` y en la barra de contexto de registro.
+**Para qué:** dejar explícito sobre qué tabla se trabaja, con su nombre
+("Tabla 2", "Tabla 4" — `config.nombre`, nunca el código CDS; ver
+[Voz y formatos](#voz-y-formatos), "Nombres de tabla"), en `CardHeader` y
+en la barra de contexto de registro.
 
 **Anatomía:** `text-caption font-mono`, `px-1.5 py-0.5`, `rounded-xs`,
 `border-border-strong`, `text-text-muted`.
@@ -1789,9 +1830,11 @@ nombra (ver [Toolbar de tabla y filtros](#toolbar-de-tabla-y-filtros)).
 
 ## TopBar
 
-**Para qué:** el encabezado de pantalla. **Todas las pantallas salvo el
-ABM** (que tiene su encabezado propio con el selector de tabla) usan
-`TopBar`. No hay breadcrumb ni encabezados de página propios.
+**Para qué:** el encabezado de pantalla. **Todas las pantallas** usan
+`TopBar`, incluido el ABM ("Alta, baja y modificación"). El título es la
+sección del menú. No hay breadcrumb ni encabezados de página propios: en el
+ABM, la tabla se nombra con el [selector-título](#abmtableselector) debajo
+del `TopBar`, como primer elemento del contenido.
 
 **Anatomía:** `<header>` con título `h1 text-heading-md text-text` a la
 izquierda y `PeriodSelector` a la derecha; `px-6`, `border-b border-border`,
@@ -1799,8 +1842,11 @@ fondo `bg-bg-app` y alto mínimo `var(--header-min-height, 60px)` (44px en
 el tier de 760px). El contenido de la pantalla arranca debajo con su propio
 padding (`pt-(--page-pt)` en Consultas de interrupción).
 
-**Props:** `title`. El título de cada pantalla sale del mapa
-`TITULOS_PANTALLA` de `src/App.tsx`.
+**Props:** `title`; `periodo?` y `onPeriodoChange?` para un
+`PeriodSelector` controlado (el ABM, que usa el período en el atajo
+"Período completo" de `ChipFilterBar`), con el mismo aspecto; sin ellos,
+estado propio. El título de cada pantalla sale del mapa `TITULOS_PANTALLA`
+de `src/App.tsx`; el del ABM lo pone `AbmScreen`.
 
 **Accesibilidad:** el título es el `h1` de la pantalla.
 
@@ -1874,7 +1920,7 @@ dividido en franjas por líneas `border-border` a todo el ancho.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Título (heading-md) [CDS4] · ETIQUETA valor  [acciones] │  header (alto fijo --card-header-h)
+│ Título (heading-md) [Tabla 4] · ETIQUETA valor [acciones] │  header (alto fijo --card-header-h)
 ├──────────────────────────────────────────────────────────┤  línea del header (siempre)
 │ [Buscar referencia…] | Fecha ▾              40 de 40 reg. │  toolbar (siempre; sin datos: deshabilitado, "0 registros")
 ├──────────────────────────────────────────────────────────┤  línea superior de la tabla
@@ -1889,7 +1935,7 @@ dividido en franjas por líneas `border-border` a todo el ancho.
 ```
 
 - **Header de card:** `CardHeader` — título
-  `heading-md` con el badge CDS en línea, acciones (si hay) a la derecha,
+  `heading-md` con el badge de tabla en línea, acciones (si hay) a la derecha,
   línea inferior a todo el ancho, siempre visible.
 - **Toolbar siempre presente:** se renderiza aunque no haya resultados.
   Sin resultados, el buscador y el filtro quedan deshabilitados y el
@@ -2104,21 +2150,24 @@ header. Sin cards ni fondo gris en el body.
 ## Layout de ABM — variante barra (en prueba, solo Tabla 2)
 
 El ABM tiene dos layouts, elegidos por tabla con `layout` en
-`src/data/abmTables.ts` (`AbmLayout`). El masthead (selector de tabla +
-período) es el mismo en los dos.
+`src/data/abmTables.ts` (`AbmLayout`). El encabezado es el mismo en los
+dos: el `TopBar` común ("Alta, baja y modificación" + período) y, como
+primer elemento del contenido, el [selector de tabla como
+título](#abmtableselector), a `--page-gap` de lo que sigue.
 
-- **`split`** (default, CDS3…CDS9-NM): panel de Búsqueda/formulario a la
+- **`split`** (default, Tabla 3 … Tabla 9 NM): panel de Búsqueda/formulario a la
   izquierda (41%; ~47% en el tier de 760px) y panel de Resultados a la
   derecha. Seleccionar una fila vuelca sus datos en el formulario
   ("consultando"); Insertar y Modificar usan el mismo panel de la izquierda
   y atenúan Resultados.
-- **`barra`** (en prueba, solo CDS2): [barra de filtros
+- **`barra`** (en prueba, solo Tabla 2): [barra de filtros
   híbrida](#barra-de-filtros-híbrida) ([`ChipFilterBar`](#chipfilterbar)) +
   Resultados a ancho completo.
 
 ```
-┌ masthead: [Tabla 2 · CDS2 ▾]                                [Período ▾] ┐
-│                                                                         │
+┌ TopBar: Alta, baja y modificación                          [Período ▾] ┐
+│ Tabla 2 · Interrupciones ▾                                              │  selector-título
+│                                                                (gap --page-gap)
 │ [🔍 ID de interrupción  ] Fecha ▾ Nivel ▾ Fase ▾ Origen ▾ Tipo ▾ │ (agregados) [+ Agregar filtro]   Limpiar filtros │  ChipFilterBar
 │                                                                (gap --page-gap)
 │ 40 de 40 registros                                                     │  barra de herramientas, sobre el fondo (sin selección)
@@ -2297,7 +2346,7 @@ contenedor único (borde de card, fondo blanco) con:
   horizontal).
 
 Todo el contenido debajo pertenece a ese registro. Ej.:
-`FaseReposicionFicha` en "Tablas relacionadas" ("Reposición 1 `CDS4` · hora
+`FaseReposicionFicha` en "Tablas relacionadas" ("Reposición 1 `Tabla 4` · hora
 · Fase R S T · equipo · usuarios BT"), con destello `primary-tint` al
 cambiar de reposición (sin destello con movimiento reducido).
 
@@ -2315,9 +2364,16 @@ siempre el contenedor exterior, nunca sus secciones.
 - **Voseo en toda la app:** "Seleccioná", "Ingresá", "Completá",
   "Presioná" — nunca la forma de usted ("Seleccione", "Ingrese").
 - **Mayúscula solo en la primera palabra** de labels, títulos y botones
-  ("Datos de la interrupción"), salvo siglas y nombres propios (CDS2,
-  BT/MT/AT, Edenor, CTs). Los labels abreviados heredados de la base
+  ("Datos de la interrupción"), salvo siglas y nombres propios
+  (BT/MT/AT, Edenor, CTs). Los labels abreviados heredados de la base
   ("Hue Ini SR", "Max Med SR"…) no se tocan.
+- **Nombres de tabla:** en la UI las tablas se nombran **"Tabla N"**
+  ("Tabla 2" … "Tabla 9 NM", `config.nombre`, los mismos labels del menú
+  lateral): tags, badges, selector, accesos del Inicio, links. El código
+  CDS (`config.code`) es un **dato interno** — datos, exportaciones,
+  nombres de archivo — y solo se muestra en el tooltip del selector de
+  tabla ("Tabla 2 · Interrupciones (CDS2)"). Reemplaza la decisión anterior
+  de mostrar el código como tag.
 - **Helpers únicos** (`src/lib/format.ts`), sin `toLocaleString` ni armado a
   mano:
 
