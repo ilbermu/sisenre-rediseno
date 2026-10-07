@@ -253,6 +253,16 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **`ChipFilterBar` — correcciones:** etiqueta corta de chip
+  (`chipLabel`) y `soloValor` (regla: solo-valor únicamente para valores
+  que se explican solos); `title` / `aria-label` siempre con el label
+  completo. Chip vacío = texto + chevron; con valor = texto + ✕ (sin
+  chevron), con la ✕ en su propio espacio. Editor de fecha nuevo
+  (`RangoFechaCalendario`): atajos Hoy / Ayer / Últimos 7 días / Período
+  completo, calendario en modo rango con el skin de `DateTimeField` y hora
+  en `HoraCombobox` (nuevo). "Período completo" ligado al `PeriodSelector`,
+  que pasa a ser controlable (`value` / `onChange`).
+
 - **`ChipFilterBar`** (nuevo, `components/ui`): barra de filtros híbrida —
   input de ID directo + chips fijos y agregables que aplican al instante,
   sin botón Buscar; editores por tipo (lista, lista con buscador, texto,
@@ -329,6 +339,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [FieldLabel](#fieldlabel) ·
 [FloatingPanel](#floatingpanel) ·
 [FormRow](#formrow) ·
+[HoraCombobox](#horacombobox) ·
 [FilterBar](#filterbar) ·
 [FilterTrigger](#filtertrigger) ·
 [ListBox](#listbox) ·
@@ -1011,7 +1022,7 @@ ABM Tabla 2 (layout barra).
 `--control-md`, en este orden:
 
 ```
-[🔍 ID de interrupción     ✕] Fecha ▾  Nivel: MT ✕  Fase ▾  Origen ▾  Tipo ▾ │ Código equipo: @27… ✕  +2 filtros  [+ Agregar filtro]      Limpiar filtros
+[🔍 ID de interrupción     ✕] Fecha ▾  Nivel: MT ✕  Fase ▾  Origen ▾  Tipo ▾ │ Cód. equipo: @27… ✕  PROTECCION DE SUM… ✕  +2 filtros  [+ Agregar filtro]      Limpiar filtros
 ```
 
 1. **Input de ID:** lupa a la izquierda, placeholder del ID, texto
@@ -1019,12 +1030,15 @@ ABM Tabla 2 (layout barra).
    flexible: base 220px, mínimo 150px (es lo primero que se achica).
    Aplica con Enter o a los 500 ms de dejar de tipear; busca "contiene"
    sin distinguir mayúsculas.
-2. **Chips fijos** (siempre visibles): `FilterTriggerButton` `md`. Vacío =
-   trigger sin borde con chevron; con valor = pintado (`primary-tint`,
-   `border-primary`, `text-secondary`), "Etiqueta: **valor**" (valor en
-   semibold) + ✕.
+2. **Chips fijos** (siempre visibles): `FilterTriggerButton` `md`
+   (`chevronConValor={false}`). Vacío = trigger sin borde, **texto +
+   chevron, sin ✕**; con valor = pintado (`primary-tint`, `border-primary`,
+   `text-secondary`), "chipLabel: **valor**" (valor en semibold) o solo
+   **valor** (`soloValor`), **+ ✕, sin chevron**. La ✕ tiene su propio
+   espacio dentro del chip (`pl-1 pr-2`): el texto trunca antes de llegar a
+   ella, nunca se superponen.
 3. **Separador vertical** (solo con agregados) + **chips agregados**, mismo
-   aspecto, siempre con ✕.
+   aspecto (un agregado vacío solo existe con su editor abierto).
 4. **"+N filtros"** (solo con desborde): chip pintado, mismo aspecto que un
    chip con valor.
 5. **"Agregar filtro":** `ghostBtnCls("neutral")` a `--control-md`, ícono +
@@ -1035,12 +1049,23 @@ ABM Tabla 2 (layout barra).
    hover:underline`, `ml-auto`), solo con algún filtro o ID cargado. Limpia
    todo, incluidos los chips agregados.
 
+**Etiquetas:** cada filtro (`ChipFiltroDef`) tiene `label` (nombre
+completo: menú "Agregar filtro", editor, `title` y `aria-label`),
+`chipLabel` (nombre corto del chip, máx. ~10 caracteres: "Cód. equipo",
+"Alim. MT", "CT") y opcionalmente `soloValor`. El `title` y el
+`aria-label` del chip son **siempre** "label completo: valor". **Regla:**
+el chip usa la etiqueta corta; solo-valor únicamente para campos cuyos
+valores se explican solos (descripciones, nombres) — nunca para Sí/No,
+códigos o números.
+
 **Props:** `id`, `onIdChange`, `idPlaceholder`, `fijos` y `agregables`
-(`ChipFiltroDef[]`: `campo`, `label`, `editor`, `opciones?`), `valores`
-(campo → valor, `""` = sin filtro), `onChange(campo, valor)`, `onLimpiar`.
-Controlada desde la pantalla; qué agregados hay en la barra es estado
-propio. El valor de un filtro de fecha viaja como texto (`valorDeRango` /
-`rangoDeValor`).
+(`ChipFiltroDef[]`: `campo`, `label`, `chipLabel?`, `soloValor?`,
+`editor`, `opciones?`), `valores` (campo → valor, `""` = sin filtro),
+`onChange(campo, valor)`, `onLimpiar`, `periodo?` (el del
+[`PeriodSelector`](#periodselector) de la pantalla). Controlada desde la
+pantalla; qué agregados hay en la barra es estado propio. El valor de un
+filtro de fecha viaja como texto (`valorDeRango` / `rangoDeValor`, con una
+marca si vino de "Período completo").
 
 **Editores** (en [`AnchoredPopover`](#anchoredpopover), anclados a su
 disparador: el chip, o "+N" si el chip está oculto):
@@ -1052,14 +1077,30 @@ disparador: el chip, o "+N" si el chip está oculto):
   320px). Elegir aplica y cierra.
 - **`texto`** (Código equipo, Cadena eléctrica, Alimentador MT, CT MT/BT):
   input con label; Enter aplica y cierra; vacío quita el filtro.
-- **`fecha`:** `RangoFechaEditor` con atajos Hoy, Últimos 7 días y Período
-  completo (vacía los extremos = todo el período), Desde y Hasta con fecha +
-  hora opcional (sin hora = día completo) y Aplicar — el único editor con
-  botón, porque el rango se arma en dos pasos. Texto del chip: "dd/mm hh:mm
-  – dd/mm hh:mm", "desde …" o "hasta …", sin la hora si no se cargó.
+- **`fecha`** (`RangoFechaCalendario`):
+  - **Atajos** en una columna a la izquierda: Hoy, Ayer, Últimos 7 días,
+    Período completo. Completan el borrador, no aplican.
+  - **Calendario** con el skin y los componentes de `DateTimeField`
+    (react-day-picker, locale `es`, selector de mes/año propio), en
+    `mode="range"`: primer clic = desde, segundo = hasta (si es anterior,
+    se invierten), días intermedios con la banda `primary-tint`; extremos
+    con el círculo de "seleccionado".
+  - **Hora desde / Hora hasta** debajo, con
+    [`HoraCombobox`](#horacombobox). Vacío = sin hora (día completo).
+    Nada de `input type="time"` ni `type="date"`.
+  - **Pie:** Limpiar (link) a la izquierda, Aplicar a la derecha — el único
+    editor con botón, porque el rango se arma en dos pasos.
+  - **Período completo** = el período del `PeriodSelector` de la pantalla
+    (Agosto 2026 → 01/08/2026 00:00 – 31/08/2026 23:59). Un filtro aplicado
+    con este atajo sigue al período: si el período cambia, se actualiza.
+  - Calendario, selector de mes/año y lista de horas se abren **dentro**
+    del popover del chip (sin popovers anidados afuera).
+  - Texto del chip: "dd/mm hh:mm – dd/mm hh:mm", "desde …" o "hasta …",
+    sin la hora si no se cargó.
 
-**Valores largos:** cada chip mide como máximo 200px; el valor trunca con
-"…" y el texto completo va en el `title` del chip.
+**Valores largos:** cada chip mide como máximo 200px (150px en modo
+compacto); el valor trunca con "…" antes de la ✕ y el texto completo va en
+el `title` del chip.
 
 **Desborde** (la barra nunca pasa de una línea). Si no entra todo, en este
 orden: (a) el ID se achica hasta 150px; (b) los chips agregados, de derecha
@@ -1076,16 +1117,19 @@ de la barra (`ResizeObserver`).
   Nada de botones con borde dentro del menú.
 
 **Accesibilidad:** el input de ID lleva `aria-label`; cada chip, un botón
-con `aria-haspopup` y `aria-expanded` (con valor, `aria-label` "Etiqueta:
-valor") y su × como botón hermano ("Quitar filtro X"); menús con
+con `aria-haspopup` y `aria-expanded` (con valor, `aria-label` "label
+completo: valor"; vacío con etiqueta corta, `aria-label` con el label
+completo) y su × como botón hermano ("Quitar filtro X"); menús con
 `role="menu"` / `menuitem`; listas con `role="listbox"` / `option` +
 `aria-selected`; editores de texto, búsqueda y fecha con `role="dialog"`.
 Al abrir un editor, el foco va a su primer control (el ítem elegido en las
-listas). Escape cierra y devuelve el foco al disparador; clic afuera
-cierra.
+listas). Escape cierra y devuelve el foco al disparador (con la lista de
+horas abierta, cierra solo esa lista); clic afuera cierra.
 
 **Qué no hacer:** anclar un editor al borde de la barra; dejar que la
-barra pase a dos líneas; ocultar un chip fijo; agregar un botón Buscar.
+barra pase a dos líneas; ocultar un chip fijo; agregar un botón Buscar;
+mostrar chevron y ✕ juntos; usar `soloValor` en un campo de códigos,
+números o Sí/No.
 
 **Archivo:** `src/components/ui/ChipFilterBar.tsx`.
 
@@ -1401,15 +1445,38 @@ cerrar el `Modal` que lo contiene). Foco `FOCUS_RING`.
 fuera de un trigger de filtro — los otros botones sin borde son los ghost y
 los de ícono, ver [Botones](#botones); anidar la × dentro del botón.
 
-**Piezas exportadas** (las reusa [`ChipFilterBar`](#chipfilterbar)):
-`FilterTriggerButton` (el trigger solo; suma `size="md"`, `maxWidth` con el
-valor truncado y el texto completo en `title`, `valorDestacado` para el
-valor en semibold, `quitarSiempre` para la × sin valor y `buttonRef`) y
-`RangoFechaEditor` (el contenido del panel de rango, sin posicionamiento,
-con el valor como texto de los inputs —`RangoTexto`, hora opcional— y los
-atajos por parámetro).
+**Piezas exportadas:** `FilterTriggerButton` (el trigger solo; lo reusa
+[`ChipFilterBar`](#chipfilterbar); suma `size="md"`, `maxWidth` con el
+valor truncado y el texto completo en `title`, `valorDestacado`,
+`etiqueta` corta, `soloValor`, `chevronConValor` y `buttonRef`) y
+`RangoFechaEditor` (el contenido del panel de rango con inputs nativos, que
+usa la variante `date-range`; `RangoTexto`, `fechaDeExtremo`). El editor de
+fecha de `ChipFilterBar` es otro: `RangoFechaCalendario`.
 
 **Archivo:** `src/components/ui/FilterTrigger.tsx`.
+
+## HoraCombobox
+
+**Para qué:** elegir una hora (24 h) sin `input type="time"`. Hoy, Hora
+desde / Hora hasta del editor de fecha de [`ChipFilterBar`](#chipfilterbar).
+
+**Anatomía:** input de texto (`MOD_FIELD_CLS`: mismo alto, borde y foco
+`FIELD_FOCUS` que el resto de los campos) con máscara `hh:mm` + lista
+desplegable debajo (pasos de 15 minutos, 00:00 … 23:45) que se filtra al
+escribir. La lista se abre dentro del contenedor (sin portal).
+
+**Comportamiento:** se escribe con o sin ":" ("930" → 09:30, "9" → 09:00);
+al salir o con Enter se normaliza; un valor inválido vuelve al anterior.
+Vacío = sin hora. Flechas recorren la lista, Enter elige, Escape la cierra
+(sin cerrar el popover que la contiene: `data-escape-local`).
+
+**Props:** `value` (`"hh:mm"` o `""`), `onChange`, `id?`, `ariaLabel?`.
+
+**Accesibilidad:** `role="combobox"` con `aria-expanded`, `aria-controls`,
+`aria-autocomplete="list"` y `aria-activedescendant`; lista `listbox` /
+`option` con `aria-selected`.
+
+**Archivo:** `src/components/ui/HoraCombobox.tsx`.
 
 ## ListBox
 
@@ -1535,7 +1602,9 @@ input.
 chevron que rota; panel con overline "Seleccioná el período" y la lista de
 `PERIODS`.
 
-**Props:** ninguna (estado propio).
+**Props:** `value?` y `onChange?` — controlado cuando la pantalla necesita
+el período (ABM: el atajo "Período completo" de `ChipFilterBar`); sin
+props, estado propio (`TopBar`).
 
 **Estados:** reposo, hover (tint), abierto (tint persistente), opción
 seleccionada (tint).
