@@ -398,6 +398,56 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
 (ver "Project Structure" en `AGENTS.md`). Login del prototipo:
 `src/features/login/LoginScreen.tsx`.
 
+## 2026-10-07
+
+### Qué se hizo
+
+- **ABM — patrón único de pantalla y modal** (`4c6bfb5`, `9758308`): las 9
+  tablas usan el patrón aprobado en Tabla 2. Se adapta el patrón, no se
+  copia el formulario: campos, tipos, opciones, dependencias,
+  `camposReadonlyEnModificar` y `mapeoFilaACampos` siguen saliendo de la
+  config de cada tabla, sin cambios.
+  - Config (`src/data/abmTables.ts`): sin `layout` ni `columnasResultado`;
+    cada tabla suma `campoId`, `filtrosBarra` (fijos = fecha + campos de
+    lista cerrada; el resto, agregables; el editor sale del tipo del
+    campo) y `columnasResultadoBarra` con labels completos.
+    `barraBusqueda.tituloModificar` pasa a `tituloModificar`.
+  - `AbmScreen` reescrito solo con el layout barra: TopBar, selector-título
+    (+ Insertar primario si `hasInsertar`), `ChipFilterBar` (estado por
+    nombre de campo, traducido a columnas con `mapeoFilaACampos`),
+    barra de la tabla y caja. `ChipFilterBar` suma opciones dependientes y
+    `emptyMessage` (Partido → Localidad en Tabla 8).
+  - Modal único para Modificar e Insertar ("Insertar en Tabla N":
+    Completar → Revisar con resumen de valores; la fila nueva va a la data
+    local y queda seleccionada). Lo bloqueado en solo lectura con candado;
+    el `campoId` bloqueado con copiar.
+  - Borrados: layout split, `AbmFila`, `ConfirmarModificarModal`,
+    `SectionDivider` y la prop `consultando` de `AbmCampo`.
+  - `filtrarFilas` verificado contra la data sintética de las 9 tablas
+    (ID, cada chip y valores de lista dentro de las opciones).
+- `DESIGN_SYSTEM.md`: Patrones → "ABM" (patrón único; el formulario y las
+  reglas de edición son de cada tabla; regla de chips fijos y agregables) y
+  "Modal de edición de registro" con Insertar.
+
+### Pendientes abiertos
+
+- **Sin probar en el navegador:** las 8 tablas nuevas en el patrón,
+  Insertar, el desborde de la barra con muchos agregados (Tabla 4: 8,
+  Tabla 7: 9, Tabla 8: 9) y los toggles con `expandirBotones` en el modal
+  (Causa ≈ 323px, Zona ≈ 297px: más anchos que `--form-control-w`).
+- **Tabla 9 NM no tiene CT:** el pedido listaba CT como agregable; se
+  omitió (el campo no existe en la config).
+- **Deep-link de alta a Tabla 8** ("Ir a Tabla 8 a insertar" desde Tablas
+  relacionadas): Tabla 8 no tiene Insertar, así que se aplica como
+  búsqueda por Interrupción. Revisar si el link debería ocultarse.
+- **Modificar y Borrar sin persistencia:** Guardar cierra sin cambiar la
+  fila (`handleConfirmarModificar`); Borrar solo la oculta en la sesión.
+  Insertar sí agrega la fila a la data local de la sesión.
+- **Auditoría y Exportar** siguen sin renderizarse en el ABM;
+  `exportFilename` queda en la config sin uso.
+- **No hay script `lint`** en `package.json`: se verificó con
+  `tsc --noEmit` y `pnpm build`.
+
 ## Historia de decisiones del DS
 
 Narrativa que antes vivía en `DESIGN_SYSTEM.md`. Ahí queda solo la regla

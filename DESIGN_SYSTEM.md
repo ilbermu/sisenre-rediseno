@@ -253,6 +253,15 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **ABM — patrón único:** todas las tablas usan la pantalla y el modal de
+  Tabla 2; el formulario y las reglas de edición siguen siendo de cada
+  tabla. Config: `campoId`, `filtrosBarra` (regla de fijos y agregables;
+  el editor sale del tipo del campo), `columnasResultadoBarra` con labels
+  completos, `tituloModificar`; se quitan `layout`, `columnasResultado` y
+  el layout split. Insertar (tablas con `hasInsertar`) en el mismo modal:
+  "Insertar en Tabla N", Completar → Revisar. Se eliminan `SectionDivider`,
+  `AbmFila` y `ConfirmarModificarModal`.
+
 - **Nomenclatura "Tabla N":** cada tabla suma `nombre` en su config; tags,
   badges, selector, accesos del Inicio y links muestran "Tabla N". El
   código CDS queda como dato interno (exportaciones, archivos, tooltip del
@@ -383,7 +392,6 @@ Vigesimosexta pasada (también 06/10/2026):
 [ModalRadio](#modalradio) ·
 [PeriodSelector](#periodselector) ·
 [ReadOnlyField](#readonlyfield) ·
-[SectionDivider](#sectiondivider) ·
 [SegmentadoSoloLectura](#segmentadosololectura) ·
 [SelectionActionBar](#selectionactionbar) ·
 [SelectWrap](#selectwrap) ·
@@ -406,7 +414,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [Formulario de edición](#formulario-de-edición) ·
 [Modal de edición de registro](#modal-de-edición-de-registro) ·
 [Nunca un modal sobre otro](#nunca-un-modal-sobre-otro) ·
-[Layout de ABM — variante barra](#layout-de-abm--variante-barra-en-prueba-solo-tabla-2) ·
+[ABM](#abm) ·
 [Barra de contexto de registro](#barra-de-contexto-de-registro) ·
 [Contenedores flex con scroll](#contenedores-flex-con-scroll) ·
 [Voz y formatos](#voz-y-formatos)
@@ -1088,7 +1096,7 @@ Insertar, Exportar, Auditoría); badge a la derecha; fondo propio.
 
 **Para qué:** la [barra de filtros híbrida](#barra-de-filtros-híbrida):
 ID directo + chips de filtro que aplican al instante, sin botón Buscar. Hoy,
-ABM Tabla 2 (layout barra).
+todas las tablas del ABM.
 
 **Anatomía:** una sola línea (`flex flex-nowrap gap-2`), todo a
 `--control-md`, en este orden:
@@ -1700,18 +1708,6 @@ campo con su estado disabled).
 
 **Archivo:** `src/components/ui/ReadOnlyField.tsx`.
 
-## SectionDivider
-
-**Para qué:** separador titulado entre grupos de campos de un formulario
-largo (ABM).
-
-**Anatomía:** overline `text-heading-xs uppercase text-text-muted` + línea
-`h-px bg-border` que ocupa el resto del ancho.
-
-**Props:** `title`.
-
-**Archivo:** `src/components/ui/SectionDivider.tsx`.
-
 ## SegmentadoSoloLectura
 
 **Para qué:** un toggle en solo lectura (Origen y Tipo en el modal de
@@ -1750,9 +1746,8 @@ text-secondary`, id en `text-code font-mono`; `border-b border-border`.
 **Props:** `recordLabel`, `actions?` (slot a la derecha, `ml-auto`), `bare?`
 (sin padding ni `border-b` propios, para vivir dentro de otra barra).
 
-**Qué no hacer:** acciones en el layout split del ABM (ahí Modificar/Borrar
-viven en la fila y Auditoría en el header del panel). En el layout barra,
-`actions` lleva Modificar, Borrar y Deseleccionar.
+**Qué no hacer:** acciones por fila en la tabla. En el ABM, `bare` dentro
+de la barra de la tabla, con `actions`: Modificar, Borrar y Deseleccionar.
 
 **Archivo:** `src/components/ui/SelectionActionBar.tsx`.
 
@@ -2147,105 +2142,94 @@ header. Sin cards ni fondo gris en el body.
   van dentro del mismo contenedor con borde, centrados (`h-full flex
   items-center justify-center`) — nunca sueltos en el body.
 
-## Layout de ABM — variante barra (en prueba, solo Tabla 2)
+## ABM
 
-El ABM tiene dos layouts, elegidos por tabla con `layout` en
-`src/data/abmTables.ts` (`AbmLayout`). El encabezado es el mismo en los
-dos: el `TopBar` común ("Alta, baja y modificación" + período) y, como
-primer elemento del contenido, el [selector de tabla como
-título](#abmtableselector), a `--page-gap` de lo que sigue.
-
-- **`split`** (default, Tabla 3 … Tabla 9 NM): panel de Búsqueda/formulario a la
-  izquierda (41%; ~47% en el tier de 760px) y panel de Resultados a la
-  derecha. Seleccionar una fila vuelca sus datos en el formulario
-  ("consultando"); Insertar y Modificar usan el mismo panel de la izquierda
-  y atenúan Resultados.
-- **`barra`** (en prueba, solo Tabla 2): [barra de filtros
-  híbrida](#barra-de-filtros-híbrida) ([`ChipFilterBar`](#chipfilterbar)) +
-  Resultados a ancho completo.
+**Un solo patrón de pantalla y de modal para todas las tablas** (Tabla 2 …
+Tabla 9 NM), en `AbmScreen`. El patrón es la estructura y la presentación;
+**el formulario y las reglas de edición son de cada tabla**: campos, orden,
+labels, placeholders, tipos, opciones, `expandirBotones`, `listaLarga`,
+dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
+`camposReadonlyEnModificar` y `mapeoFilaACampos` salen de su config en
+`src/data/abmTables.ts`, sin excepciones por tabla en el código.
 
 ```
 ┌ TopBar: Alta, baja y modificación                          [Período ▾] ┐
-│ Tabla 2 · Interrupciones ▾                                              │  selector-título
+│ Tabla 3 · Interrupciones no computables ▾                  [+ Insertar] │  selector-título (+ Insertar si hasInsertar)
 │                                                                (gap --page-gap)
-│ [🔍 ID de interrupción  ] Fecha ▾ Nivel ▾ Fase ▾ Origen ▾ Tipo ▾ │ (agregados) [+ Agregar filtro]   Limpiar filtros │  ChipFilterBar
+│ [🔍 Código de interrupción ] Causa ▾ │ (agregados) [+ Agregar filtro]  Limpiar filtros │  ChipFilterBar
 │                                                                (gap --page-gap)
-│ 40 de 40 registros                                                     │  barra de herramientas, sobre el fondo (sin selección)
-│ • REGISTRO SELECCIONADO BFZ…        [Modificar] [Borrar] [✕]            │  … o con un registro seleccionado
+│ 40 de 40 registros                                                     │  barra de la tabla (sin selección)
+│ • REGISTRO SELECCIONADO BPR…        [Modificar] [Borrar] [✕]            │  … o con un registro seleccionado
 │                                                                (gap-2)
 │ ┌───────────────────────────────────────────────────────────────────┐   │  caja de la tabla (borde, md, surface, shadow-sm)
-│ │ REFERENCIA  FECHA  NIVEL  FASE  ORIGEN  TIPO  CÓD. EQUIPO  ALIM. MT │   │  thead fill-subtle-solid, sticky
+│ │ CÓDIGO DE INTERRUPCIÓN   CAUSA   FASE DE REPOSICIÓN                │   │  thead fill-subtle-solid, sticky
 │ │ fila…                                                              │   │
 │ │ Registros encontrados: N           Anterior  Pág. 1 de N  Siguiente │   │  paginación fill-subtle, border-t
 │ └───────────────────────────────────────────────────────────────────┘   │
 ```
 
-- **La barra es `ChipFilterBar`**, configurada en `config.filtrosBarra`
-  (`src/data/abmTables.ts`, `AbmFiltrosBarra`): el ID (`id.columna`,
-  `id.placeholder`), los chips `fijos` y los `agregables`, cada uno con su
-  `campo` (= columna de `rows`), `label`, `editor` y `opciones`. CDS2: ID
-  sobre `referencia`; fijos Fecha, Nivel, Fase, Origen, Tipo; agregables
-  Código equipo, Descripción equipo operado, División red normal, Cadena
-  eléctrica, Alimentador MT, CT MT/BT. Estado propio en `AbmScreen` (no
-  comparte `valores` con el modal de Modificar).
-- **Filtra al instante:** cada cambio aplica `filtrarFilas`
-  (`src/features/abm/filtrarFilas.ts`) sobre **todas** las filas de
-  muestra: filtros con valor en AND; el ID y los editores `texto` por
-  "contiene" sin distinguir mayúsculas; `lista` y `busqueda` por igualdad;
-  `fecha` por rango (extremos inclusivos, sin hora = día completo). Sin
-  filtros se ven todos los registros. Vuelve a la página 1, actualiza "N de
-  M registros" y deselecciona el registro si quedó afuera.
-- **Nunca se bloquea:** ni por tener resultados ni por tener un registro
-  seleccionado (no hay estado "consultando": seleccionar una fila no le
-  vuelca datos).
-- **Sin card de Resultados:** no hay card ni `CardHeader` "Resultados".
-  Debajo de la barra de búsqueda (`gap-(--page-gap)`), en la misma vertical
-  (`--page-px`):
-  - **Barra de herramientas de la tabla**, afuera de la caja, apoyada sobre
-    el fondo, sin fondo ni borde propios, de alto fijo (`--control-md`) con
-    dos modos que no cambian su alto: sin selección, solo `TableCounter`
-    a la izquierda — "N de M registros", o "0 registros" si los filtros no
-    dejan ninguno; con un registro seleccionado, `SelectionActionBar`
-    (`bare`) con Modificar y Borrar (`ghostBtnCls` neutral y destructivo,
-    `sm`), un separador vertical y un botón de ícono ✕ (`ICON_BTN_SM`,
-    "Deseleccionar"). Son acciones de registro: no compiten con la barra de
-    filtros, que es de página.
-  - **La tabla conserva su contenedor**, a `gap-2` de la barra de
-    herramientas: la misma caja que dentro del panel Resultados del split
-    (`border border-border rounded-md bg-surface shadow-sm`), `thead`
-    sticky en `bg-fill-subtle-solid`, filas con hover `fill-muted` y
-    seleccionada `primary-tint` + `inset-shadow-row-selected`, paginación al
-    pie dentro de la caja (`border-t`, `bg-fill-subtle`, `rounded-b-md`).
-    Sin `overflow-hidden` en la caja: el radio lo resuelven el wrapper con
-    scroll (`rounded-t-md`) y el pie. El scroll es del body de la tabla,
-    nunca de la página.
-  - **Sin resultados:** si los filtros no dejan filas, dentro de la caja
-    "No hay registros con estos filtros" + link "Limpiar filtros"
-    (`text-label text-secondary hover:underline`, el mismo de la barra),
-    sin pie de paginación; el contador dice "0 registros".
-  - **Pie:** "Registros encontrados" cuenta las filas encontradas cuando
-    hay algún filtro aplicado (sin filtros, el total de la tabla).
-  - Columnas propias (`columnasResultadoBarra`); una columna con `campo`
-    muestra la etiqueta de la opción (Interno/Externo, Forzado/Programado),
-    también para ordenar.
-- **Un solo buscador:** cuando la pantalla tiene barra de búsqueda
-  general, la tabla no lleva buscador ni filtros propios (ni `TableToolbar`
-  ni `FilterTrigger`): las filas visibles salen solo de la barra. Su barra de
-  herramientas muestra el contador o, con selección, las acciones del
-  registro. El orden por columna se mantiene (es ordenar, no buscar).
-- **Acciones de registro solo con selección:** no hay columna de acciones
-  por fila (ni en reposo ni en hover). Modificar y Borrar aparecen en la
-  barra de herramientas solo con un registro seleccionado; ✕ o Escape lo
-  deseleccionan. Las flechas siguen moviendo la selección.
-- **Auditoría y Exportar: deprecados en esta variante** (no se renderizan;
-  pendientes de reubicar). Siguen en el layout split.
-- **Modificar en modal:** abre un [modal de edición de
-  registro](#modal-de-edición-de-registro). Guardar abre el mismo
-  `ConfirmarModificarModal`; Borrar abre `ConfirmarBorrarModal`, como en el
-  split.
-- **Sin Insertar:** el layout barra no tiene formulario de alta; solo sirve
-  para tablas sin `hasInsertar` (CDS2).
+**Pantalla:**
+- **Encabezado:** el `TopBar` común ("Alta, baja y modificación" +
+  `PeriodSelector` controlado; en tablas sin fecha sigue acotando el
+  período) y, como primer elemento del contenido, el [selector de tabla
+  como título](#abmtableselector). Con `hasInsertar`, **Insertar** (botón
+  primario `md`, ícono +) a la derecha de esa fila.
+- **Barra de filtros:** [`ChipFilterBar`](#chipfilterbar) con la config de
+  la tabla (ver abajo): aplica al instante, "Limpiar filtros", desborde con
+  "+N" y modo compacto, popovers anclados, chevron o ✕. Estado propio por
+  nombre de campo (no comparte valores con el modal); cada filtro se
+  traduce a su columna de `rows` con `mapeoFilaACampos` y se aplica con
+  `filtrarFilas` (`src/features/abm/filtrarFilas.ts`): filtros con valor en
+  AND; el ID y los de texto por "contiene" sin distinguir mayúsculas; lista
+  y lista con búsqueda por igualdad; fecha por rango (extremos inclusivos,
+  sin hora = día completo). Sin filtros se ven todos los registros.
+  Vuelve a la página 1, actualiza "N de M registros" y deselecciona el
+  registro si quedó afuera. Nunca se bloquea (no hay estado
+  "consultando").
+- **Barra de la tabla**, afuera de la caja, sobre el fondo, alto fijo
+  (`--control-md`): sin selección, `TableCounter` ("N de M registros" o "0
+  registros"); con un registro seleccionado, `SelectionActionBar` (`bare`)
+  con Modificar y Borrar (`ghostBtnCls` neutral y destructivo, `sm`), un
+  separador y ✕ (`ICON_BTN_SM`, "Deseleccionar"); Escape también
+  deselecciona y las flechas mueven la selección. Sin columna de acciones
+  por fila.
+- **Tabla en su caja**, a `gap-2`: `border border-border rounded-md
+  bg-surface shadow-sm`, `thead` sticky `bg-fill-subtle-solid`, filas con
+  hover `fill-muted` y seleccionada `primary-tint` +
+  `inset-shadow-row-selected`, paginación al pie dentro de la caja
+  ("Registros encontrados" cuenta las filas encontradas con algún filtro;
+  sin filtros, el total de la tabla). Sin `overflow-hidden`: el radio lo
+  resuelven el wrapper con scroll (`rounded-t-md`) y el pie. Sin
+  resultados: "No hay registros con estos filtros" + link "Limpiar
+  filtros", sin pie. Un solo buscador: la tabla no lleva `TableToolbar` ni
+  `FilterTrigger`; el orden por columna se mantiene.
+- **Columnas** (`columnasResultadoBarra`): el `campoId` primero (mono), la
+  fecha si hay, los campos de los chips fijos y 1 o 2 de contexto, con el
+  **label completo del campo** (nada de "Ref", "F", "Alim"). Una columna con
+  `campo` muestra la etiqueta de la opción.
+- **Auditoría y Exportar** no se renderizan (pendientes de reubicar).
+- **Borrar** abre `ConfirmarBorrarModal`.
 
+**Config de la barra (por tabla):**
+- `campoId`: el campo del input de ID ("contiene"). No se repite como chip.
+- `filtrosBarra.fijos` y `filtrosBarra.agregables` (`AbmFiltroBarra`:
+  `campo`, `label?`, `chipLabel?`, `soloValor?`). **Regla:** son **fijos**
+  la fecha (si la tabla tiene) y los campos que ya son de lista cerrada en
+  la config (toggle, select); el resto va a **"Agregar filtro"**. Una
+  tabla sin fijos muestra solo el ID + "Agregar filtro" (+ "Limpiar
+  filtros"), sin chips vacíos inventados.
+- **El editor sale del tipo actual del campo:** texto / readonly → input
+  "contiene"; toggle / select → lista; combobox → lista con búsqueda;
+  fecha → rango con hora. Las opciones, el `emptyMessage` y las
+  dependencias son las del campo (Partido → Localidad en Tabla 8: sin
+  Partido, Localidad muestra el `emptyMessage`; al cambiar Partido se
+  limpia).
+
+**Modal:** el [modal de edición de registro](#modal-de-edición-de-registro),
+el mismo para **Modificar** y para **Insertar**, recorriendo los campos de
+la tabla activa en su orden.
+
+## Formulario de edición
 ## Formulario de edición
 
 Formulario **horizontal en filas** (patrón de pantallas de configuración),
@@ -2272,11 +2256,12 @@ registro](#modal-de-edición-de-registro):
     letras que se marcan según el valor, sin interacción.
 
 ## Modal de edición de registro
-## Modal de edición de registro
 
-Para editar un registro desde una tabla cuando el formulario no está a la
-vista (ej. Modificar en el layout barra del ABM). Un solo modal con dos
-pasos: **Editar → Revisar**.
+Para editar o crear un registro desde una tabla (Modificar e Insertar en el
+ABM). Un solo modal con dos pasos: **Editar → Revisar** (Modificar) o
+**Completar → Revisar** (Insertar). Los campos se recorren desde las
+secciones de la tabla activa, en su orden; cada control con el tipo de su
+config (`AbmCampo`). Nada de una tabla puntual vive en el modal.
 
 - **Tamaño `form`** (`--modal-form-w`, 704px), el mismo en los dos pasos
   (Editar y Revisar); el ancho sale de los chips de Motivo en una sola línea
@@ -2287,25 +2272,38 @@ pasos: **Editar → Revisar**.
   contenido.
 - **Header** de una línea: título (`text-heading-md`) + "Paso N de 2"
   (`text-body-sm text-text-muted`, prop `paso`) + ✕. Sin label de contexto.
-- **El identificador del registro es el primer campo** del formulario
-  (en CDS2, "Código de interrupción"): `FormRow` con candado; control de
-  solo lectura (`<input readOnly>` con `READONLY_FIELD_CLS`, ancho
-  `--form-control-w`, valor en `text-code font-mono`), seleccionable y
-  copiable con mouse y teclado, con `CopyButton` `xs` dentro del campo, a la
-  derecha (Check 1,5 s y "Referencia copiada" solo si la copia ocurrió). No
-  se edita: nunca aparece en "Revisar cambios".
-- **Paso 1 — Editar:** el [formulario de edición](#formulario-de-edición)
-  horizontal en filas: después del identificador, los campos de la config
-  de la tabla en su orden, en una lista continua sin títulos de sección.
+- **Título:** Modificar → `tituloModificar` de la tabla (Tabla 2:
+  "Modificar interrupción") o "Modificar en Tabla N"; Insertar → "Insertar
+  en Tabla N".
+- **Lo bloqueado es de cada tabla:** en Modificar, `camposReadonlyEnModificar`
+  + los campos tipo `"readonly"`; en Insertar no se bloquea nada (lo que
+  hace `AbmCampo` en modo alta). Una tabla sin campos bloqueados (Tabla 7)
+  no muestra ningún candado.
+- **El identificador (`campoId`) bloqueado** lleva `CopyButton` `xs`
+  dentro del campo: `FormRow` con candado; `<input readOnly>` con
+  `READONLY_FIELD_CLS`, ancho `--form-control-w`, valor en `text-code
+  font-mono`, seleccionable y copiable con mouse y teclado (Check 1,5 s y
+  "… copiada" solo si la copia ocurrió). No se edita: nunca aparece en
+  "Revisar cambios".
+- **Paso 1 — Editar / Completar:** el [formulario de
+  edición](#formulario-de-edición) horizontal en filas: los campos de la
+  config de la tabla en su orden, en una lista continua sin títulos de
+  sección. Toggles a su ancho, con opciones de igual ancho; con
+  `expandirBotones`, al menos el ancho de la columna de controles
+  (`--form-control-w`).
   - **No editables en solo lectura** (ver [Estados: editable, solo
     lectura, deshabilitado](#estados-editable-solo-lectura-deshabilitado)):
     campos con `READONLY_FIELD_CLS`, toggles como `SegmentadoSoloLectura`, y un
     candado junto al label — **nunca como controles deshabilitados**.
-  - Pie: Cancelar · **Revisar cambios** (primario, habilitado solo si algún
-    campo es distinto del original).
-- **Paso 2 — Revisar:** mismo modal y mismo header; el body pasa a
-  `RevisarCambiosContent` (el mismo contenido que la confirmación del layout
-  split), con dos **secciones, no cajas**: Resumen de cambios (overline
+  - Pie: Cancelar · **Revisar cambios** (Modificar: habilitado solo si
+    algún campo es distinto del original) o **Revisar** (Insertar:
+    habilitado con algún valor cargado).
+- **Paso 2 — Revisar (Insertar):** `ResumenValoresContent` — los campos en
+  orden con su valor, sin diff y sin Motivo. Pie: Volver · **Insertar**
+  (agrega la fila a la data local y la deja seleccionada; si los filtros la
+  dejarían afuera, se limpian).
+- **Paso 2 — Revisar (Modificar):** mismo modal y mismo header; el body
+  pasa a `RevisarCambiosContent`, con dos **secciones, no cajas**: Resumen de cambios (overline
   `text-heading-xs`) y Motivo, separado por `border-t border-border` con el
   mismo espaciado — título "Motivo" en `text-heading-sm text-text` + "·
   obligatorio" en `text-body-sm text-text-muted`, ayuda en `text-body-sm
@@ -2314,8 +2312,7 @@ pasos: **Editar → Revisar**.
   pasan a una segunda línea; nunca se achican ni se truncan). **Ningún
   bloque del modal lleva fondo de color.** Pie: **Volver** (outline, vuelve al
   paso 1 con todo lo editado) · **Guardar** (primario, habilitado solo con
-  un motivo válido). Guardar hace exactamente lo que hacía la confirmación
-  y cierra.
+  un motivo válido). Guardar cierra (todavía sin persistencia).
 - Al pasar de paso, el foco va al primer elemento interactivo del body
   nuevo. Escape, ✕ y Cancelar cierran todo el flujo sin guardar, en
   cualquier paso.
