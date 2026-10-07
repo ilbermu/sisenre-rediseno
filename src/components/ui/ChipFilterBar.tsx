@@ -27,7 +27,11 @@ export type ChipFiltroDef = {
   // códigos o números.
   soloValor?: boolean;
   editor: "lista" | "busqueda" | "texto" | "fecha";
-  opciones?: ChipFiltroOpcion[];
+  // Lista fija, o función de los valores de la barra (opciones
+  // dependientes, ej. Localidad según Partido).
+  opciones?: ChipFiltroOpcion[] | ((valores: Record<string, string>) => ChipFiltroOpcion[]);
+  // Lista vacía (ej. Localidad sin Partido). Default "Sin opciones".
+  emptyMessage?: string;
 };
 
 // El valor de un filtro "fecha" viaja como string (todos los valores de la
@@ -62,9 +66,14 @@ function textoRango(v: string): string {
 const normalizar = (o: ChipFiltroOpcion) => (typeof o === "string" ? { value: o, label: o } : o);
 
 // Texto visible del valor de un filtro (etiqueta de la opción, rango legible).
-function textoValor(def: ChipFiltroDef, v: string): string {
+function opcionesDe(def: ChipFiltroDef, valores: Record<string, string>): { value: string; label: string }[] {
+  const o = typeof def.opciones === "function" ? def.opciones(valores) : def.opciones;
+  return (o ?? []).map(normalizar);
+}
+
+function textoValor(def: ChipFiltroDef, v: string, valores: Record<string, string>): string {
   if (def.editor === "fecha") return textoRango(v);
-  return (def.opciones ?? []).map(normalizar).find((o) => o.value === v)?.label ?? v;
+  return opcionesDe(def, valores).find((o) => o.value === v)?.label ?? v;
 }
 
 const ID_DEBOUNCE_MS = 500;
@@ -83,11 +92,13 @@ const itemCls = (sel: boolean) =>
 
 // ─── Editores ─────────────────────────────────────────────────────────────────
 
-function EditorLista({ def, valor, onAplicar }: { def: ChipFiltroDef; valor: string; onAplicar: (v: string) => void }) {
-  const opciones = (def.opciones ?? []).map(normalizar);
+type OpcionNormal = { value: string; label: string };
+
+function EditorLista({ def, opciones, valor, onAplicar }: { def: ChipFiltroDef; opciones: OpcionNormal[]; valor: string; onAplicar: (v: string) => void }) {
   const iFoco = Math.max(0, opciones.findIndex((o) => o.value === valor));
   return (
     <div role="listbox" aria-label={def.label} className="p-1.5 flex flex-col gap-0.5 min-w-40 max-h-80 overflow-y-auto">
+      {opciones.length === 0 && <p className="px-2.5 py-2 text-body-sm text-text-muted">{def.emptyMessage ?? "Sin opciones"}</p>}
       {opciones.map((o, i) => (
         <button
           key={o.value}
@@ -105,9 +116,8 @@ function EditorLista({ def, valor, onAplicar }: { def: ChipFiltroDef; valor: str
   );
 }
 
-function EditorBusqueda({ def, valor, onAplicar }: { def: ChipFiltroDef; valor: string; onAplicar: (v: string) => void }) {
+function EditorBusqueda({ def, opciones, valor, onAplicar }: { def: ChipFiltroDef; opciones: OpcionNormal[]; valor: string; onAplicar: (v: string) => void }) {
   const [filtro, setFiltro] = useState("");
-  const opciones = (def.opciones ?? []).map(normalizar);
   const visibles = filtro ? opciones.filter((o) => o.label.toLowerCase().includes(filtro.toLowerCase())) : opciones;
   return (
     <div role="dialog" aria-label={`Filtrar por ${def.label.toLowerCase()}`} className="flex flex-col" style={{ width: 320 }}>
@@ -124,7 +134,7 @@ function EditorBusqueda({ def, valor, onAplicar }: { def: ChipFiltroDef; valor: 
       </div>
       <div role="listbox" aria-label={def.label} className="p-1.5 flex flex-col gap-0.5 overflow-y-auto" style={{ maxHeight: 320 }}>
         {visibles.length === 0 ? (
-          <p className="px-2.5 py-2 text-body-sm text-text-muted">Sin resultados</p>
+          <p className="px-2.5 py-2 text-body-sm text-text-muted">{opciones.length === 0 ? (def.emptyMessage ?? "Sin opciones") : "Sin resultados"}</p>
         ) : (
           visibles.map((o) => (
             <button
@@ -359,7 +369,7 @@ export default function ChipFilterBar({
           label={def.label}
           etiqueta={def.chipLabel}
           soloValor={def.soloValor}
-          aplicado={v ? textoValor(def, v) : null}
+          aplicado={v ? textoValor(def, v, valores) : null}
           open={abierto?.campo === def.campo}
           onToggle={() => (abierto?.campo === def.campo ? cerrarEditor() : setAbierto({ campo: def.campo, ancla: "chip" }))}
           onClear={() => quitar(def.campo)}
@@ -392,7 +402,7 @@ export default function ChipFilterBar({
                 label={d.label}
                 etiqueta={d.chipLabel}
                 soloValor={d.soloValor}
-                aplicado={v ? textoValor(d, v) : null}
+                aplicado={v ? textoValor(d, v, valores) : null}
                 open={false}
                 onToggle={() => {}}
                 onClear={() => {}}
@@ -505,7 +515,7 @@ export default function ChipFilterBar({
           {ocultos.map((c, i) => {
             const d = defs.get(c)!;
             const v = valores[c] ?? "";
-            const texto = v ? textoValor(d, v) : "";
+            const texto = v ? textoValor(d, v, valores) : "";
             return (
               <div key={c} className="group flex items-center gap-1 rounded-sm hover:bg-fill-muted focus-within:bg-fill-muted">
                 <button
@@ -543,8 +553,8 @@ export default function ChipFilterBar({
         onClose={cerrarEditor}
         reposicionar={`${disposicion.visibles}|${disposicion.compacto}|${anchoBarra}`}
       >
-        {defAbierto?.editor === "lista" && <EditorLista def={defAbierto} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
-        {defAbierto?.editor === "busqueda" && <EditorBusqueda def={defAbierto} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
+        {defAbierto?.editor === "lista" && <EditorLista def={defAbierto} opciones={opcionesDe(defAbierto, valores)} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
+        {defAbierto?.editor === "busqueda" && <EditorBusqueda def={defAbierto} opciones={opcionesDe(defAbierto, valores)} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
         {defAbierto?.editor === "texto" && <EditorTexto def={defAbierto} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
         {defAbierto?.editor === "fecha" && (
           <RangoFechaCalendario
