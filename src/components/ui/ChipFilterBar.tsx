@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Plus, Search, X } from "lucide-react";
 import AnchoredPopover from "@/components/ui/AnchoredPopover";
 import FieldLabel from "@/components/ui/FieldLabel";
 import { AtajoRango, FilterTriggerButton, RANGO_TEXTO_VACIO, RangoFechaEditor, RangoTexto } from "@/components/ui/FilterTrigger";
-import { FOCUS_RING, ghostBtnCls, ICON, ICON_BTN_XS, MOD_FIELD_CLS } from "@/components/ui/tokens";
+import { FOCUS_RING, ghostBtnCls, ICON, ICON_BTN_MD, ICON_BTN_XS, MOD_FIELD_CLS } from "@/components/ui/tokens";
 import { ceros } from "@/lib/format";
 
 // ─── Tipos y helpers ──────────────────────────────────────────────────────────
@@ -81,6 +81,9 @@ const ID_DEBOUNCE_MS = 500;
 // Ancho máximo de un chip: el valor trunca con "…" y el texto completo va
 // en el `title` del chip.
 const CHIP_MAX = 200;
+// Modo compacto (desborde, paso c): chips más angostos.
+const CHIP_MAX_COMPACTO = 150;
+const ID_MIN = 150;
 
 // Ítem de menú/lista de los popovers — el de la lista de FilterTrigger.
 const itemCls = (sel: boolean) =>
@@ -227,8 +230,63 @@ export default function ChipFilterBar({
 
   const defs = useMemo(() => new Map([...fijos, ...agregables].map((d) => [d.campo, d])), [fijos, agregables]);
   const disponibles = agregables.filter((d) => !agregados.includes(d.campo));
-  const visibles = agregados;
-  const ocultos: string[] = [];
+
+  // ── Desborde: la barra nunca pasa de una línea. Si no entra todo, en
+  // orden: (a) el ID se achica hasta su mínimo (lo hace el flex); (b) los
+  // agregados, de derecha a izquierda, pasan a "+N filtros"; (c) modo
+  // compacto: "Agregar filtro" solo ícono y chips a 150px. Los fijos nunca
+  // se ocultan. Los anchos naturales salen de una fila de medición
+  // invisible; se recalcula al cambiar filtros y con el ancho de la barra
+  // (ResizeObserver).
+  const barraRef = useRef<HTMLDivElement>(null);
+  const medidasRef = useRef(new Map<string, HTMLElement>());
+  const refMedida = (clave: string) => (el: HTMLElement | null) => {
+    if (el) medidasRef.current.set(clave, el);
+    else medidasRef.current.delete(clave);
+  };
+  const [anchoBarra, setAnchoBarra] = useState(0);
+  useLayoutEffect(() => {
+    const el = barraRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setAnchoBarra(el.clientWidth));
+    ro.observe(el);
+    setAnchoBarra(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
+  const [disposicion, setDisposicion] = useState({ visibles: agregados.length, compacto: false });
+  const hayAlgo = !!id || !!borradorId || fijos.some((d) => valores[d.campo]) || agregados.some((c) => valores[c]);
+  useLayoutEffect(() => {
+    const barra = barraRef.current;
+    if (!barra || anchoBarra === 0) return;
+    const gap = parseFloat(getComputedStyle(barra).columnGap) || 0;
+    const ancho = (clave: string) => medidasRef.current.get(clave)?.offsetWidth ?? 0;
+    const chipAncho = (campo: string, cap: number) => Math.min(ancho(`chip:${campo}`), cap);
+    const total = (n: number, compacto: boolean) => {
+      const cap = compacto ? CHIP_MAX_COMPACTO : CHIP_MAX;
+      const anchos = [
+        ID_MIN,
+        ...fijos.map((d) => chipAncho(d.campo, cap)),
+        ...(agregados.length > 0 ? [1] : []),
+        ...agregados.slice(0, n).map((c) => chipAncho(c, cap)),
+        ...(n < agregados.length ? [ancho("mas")] : []),
+        ancho(compacto ? "agregar-icono" : "agregar"),
+        ...(hayAlgo ? [ancho("limpiar")] : []),
+      ];
+      return anchos.reduce((a, b) => a + b, 0) + gap * (anchos.length - 1);
+    };
+    let elegida = { visibles: 0, compacto: true };
+    buscar: for (const compacto of [false, true]) {
+      for (let n = agregados.length; n >= 0; n--) {
+        if (total(n, compacto) <= anchoBarra) {
+          elegida = { visibles: n, compacto };
+          break buscar;
+        }
+      }
+    }
+    setDisposicion((prev) => (prev.visibles === elegida.visibles && prev.compacto === elegida.compacto ? prev : elegida));
+  });
+  const visibles = agregados.slice(0, disposicion.visibles);
+  const ocultos = agregados.slice(disposicion.visibles);
 
   // ── Anclas de los popovers.
   const chipRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -282,9 +340,8 @@ export default function ChipFilterBar({
     setMenu(null);
     onLimpiar();
   }
-  const hayAlgo = !!id || !!borradorId || [...defs.keys()].some((c) => valores[c]);
 
-  const chipMax = CHIP_MAX;
+  const chipMax = disposicion.compacto ? CHIP_MAX_COMPACTO : CHIP_MAX;
   const chip = (def: ChipFiltroDef, agregado: boolean) => {
     const v = valores[def.campo] ?? "";
     return (
@@ -306,11 +363,45 @@ export default function ChipFilterBar({
     );
   };
 
+  // "+N filtros": chip pintado, mismo aspecto que un chip con valor.
+  const masCls = "h-(--control-md) px-2.5 rounded-sm text-label border inline-flex items-center whitespace-nowrap bg-primary-tint border-primary text-secondary";
+
   const defAbierto = abierto ? defs.get(abierto.campo) : undefined;
   const valorAbierto = defAbierto ? valores[defAbierto.campo] ?? "" : "";
 
   return (
-    <div className="relative shrink-0 flex items-center gap-2 flex-nowrap min-w-0">
+    <div ref={barraRef} className="relative shrink-0 flex items-center gap-2 flex-nowrap min-w-0">
+      {/* Fila de medición: anchos naturales de lo que puede desbordar.
+          Invisible, inerte y fuera del flujo. */}
+      <div aria-hidden inert className="absolute left-0 top-0 invisible pointer-events-none flex items-center gap-2 whitespace-nowrap">
+        {[...fijos, ...agregados.map((c) => defs.get(c)!)].map((d) => {
+          const v = valores[d.campo] ?? "";
+          return (
+            <div key={d.campo} ref={refMedida(`chip:${d.campo}`)} className="shrink-0 flex">
+              <FilterTriggerButton
+                label={d.label}
+                aplicado={v ? textoValor(d, v) : null}
+                open={false}
+                onToggle={() => {}}
+                onClear={() => {}}
+                size="md"
+                valorDestacado
+                quitarSiempre={agregados.includes(d.campo)}
+              />
+            </div>
+          );
+        })}
+        <span ref={refMedida("mas")} className={`${masCls} shrink-0`}>+{agregados.length} filtros</span>
+        <span ref={refMedida("agregar")} className={`${ghostBtnCls("neutral")} h-(--control-md)! gap-1.5`}>
+          <Plus size={ICON.sm} strokeWidth={1.5} />
+          Agregar filtro
+        </span>
+        <span ref={refMedida("agregar-icono")} className={`${ghostBtnCls("neutral")} ${ICON_BTN_MD} px-0!`}>
+          <Plus size={ICON.sm} strokeWidth={1.5} />
+        </span>
+        <span ref={refMedida("limpiar")} className="text-label">Limpiar filtros</span>
+      </div>
+
       {/* 1. ID — se achica antes que nada (base 220px, mínimo 150px). */}
       <div className="relative" style={{ flex: "0 1 220px", minWidth: 150 }}>
         <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-icon">
@@ -356,7 +447,7 @@ export default function ChipFilterBar({
           aria-haspopup="menu"
           aria-expanded={menu === "mas"}
           onClick={() => setMenu(menu === "mas" ? null : "mas")}
-          className={`h-(--control-md) shrink-0 px-2.5 rounded-sm text-label border inline-flex items-center whitespace-nowrap bg-primary-tint border-primary text-secondary ${FOCUS_RING}`}
+          className={`${masCls} shrink-0 ${FOCUS_RING}`}
         >
           +{ocultos.length} {ocultos.length === 1 ? "filtro" : "filtros"}
         </button>
@@ -368,12 +459,14 @@ export default function ChipFilterBar({
         type="button"
         aria-haspopup="menu"
         aria-expanded={menu === "agregar"}
+        aria-label={disposicion.compacto ? "Agregar filtro" : undefined}
+        title={disposicion.compacto ? "Agregar filtro" : undefined}
         disabled={disponibles.length === 0}
         onClick={() => setMenu(menu === "agregar" ? null : "agregar")}
-        className={`${ghostBtnCls("neutral")} h-(--control-md)! shrink-0 gap-1.5`}
+        className={`${ghostBtnCls("neutral")} shrink-0 ${disposicion.compacto ? `${ICON_BTN_MD} px-0!` : "h-(--control-md)! gap-1.5"}`}
       >
         <Plus size={ICON.sm} strokeWidth={1.5} />
-        Agregar filtro
+        {!disposicion.compacto && "Agregar filtro"}
       </button>
 
       {/* 6. Limpiar filtros — solo con algún filtro o ID cargado. */}
@@ -436,6 +529,7 @@ export default function ChipFilterBar({
         anchorRef={anclaEditor}
         open={!!defAbierto}
         onClose={cerrarEditor}
+        reposicionar={`${disposicion.visibles}|${disposicion.compacto}|${anchoBarra}`}
       >
         {defAbierto?.editor === "lista" && <EditorLista def={defAbierto} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
         {defAbierto?.editor === "busqueda" && <EditorBusqueda def={defAbierto} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}

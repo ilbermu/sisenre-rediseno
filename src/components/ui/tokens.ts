@@ -23,7 +23,7 @@ export const FIELD_FOCUS = "focus:outline-none focus:border-focus focus:ring-2 f
 // dentro de componentes densos (calendario, flechas de orden, cerrar flyout).
 export const ICON_BTN_XS = "size-(--control-xs)";
 export const ICON_BTN_SM = "size-(--control-sm)";
-const ICON_BTN_MD = "size-(--control-md)";
+export const ICON_BTN_MD = "size-(--control-md)";
 
 // ─── Sistema de tamaños de botón ────────────────────────────────────────────
 // Los 2 únicos tamaños de botón de toda la app — ver documentación completa

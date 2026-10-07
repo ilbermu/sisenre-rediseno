@@ -26,6 +26,7 @@ export default function AnchoredPopover({
   style,
   ariaLabel,
   role,
+  reposicionar,
 }: {
   anchorRef: React.RefObject<HTMLElement | null>;
   open: boolean;
@@ -37,6 +38,9 @@ export default function AnchoredPopover({
   // Sin role, la semántica la pone el contenido (ej. un editor con su
   // propio listbox o dialog).
   role?: "dialog" | "menu" | "listbox";
+  // Cambia cuando el disparador puede haberse movido sin scroll ni resize
+  // (ej. la barra reacomodó sus chips): fuerza recalcular la posición.
+  reposicionar?: string;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<React.CSSProperties | null>(null);
@@ -75,7 +79,7 @@ export default function AnchoredPopover({
       window.removeEventListener("resize", actualizar);
       window.removeEventListener("scroll", actualizar, true);
     };
-  }, [open, anchorRef]);
+  }, [open, anchorRef, reposicionar]);
 
   useEffect(() => {
     if (!open) return;
