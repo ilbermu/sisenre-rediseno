@@ -165,8 +165,12 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      visibles: [{ campo: "causa", chipLabel: "Causa" }],
-      agregables: [{ campo: "faseReposicion", chipLabel: "Fase rep." }],
+      // 2 filtros (≤ 5): todos visibles, sin "Agregar filtro".
+      visibles: [
+        { campo: "causa", chipLabel: "Causa" },
+        { campo: "faseReposicion", chipLabel: "Fase rep." },
+      ],
+      agregables: [],
     },
     secciones: [
       {
@@ -203,12 +207,16 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      visibles: [{ campo: "fecha", chipLabel: "Fecha" }],
-      agregables: [
+      // 9 filtros: fecha + los 4 primeros del formulario (no hay listas
+      // cerradas); el resto en "Agregar filtro".
+      visibles: [
+        { campo: "fecha", chipLabel: "Fecha" },
         { campo: "faseReposicion", chipLabel: "Fase rep." },
         { campo: "faseElectrica", chipLabel: "Fase eléc." },
         { campo: "codigoEquipoManiobrado", chipLabel: "Cód. equipo" },
         { campo: "descEquipoManiobrado", soloValor: true },
+      ],
+      agregables: [
         { campo: "cadenaElectricaAguasArriba", chipLabel: "Cadena" },
         { campo: "alimentadorMT", chipLabel: "Alim. MT" },
         { campo: "cantidadClientesBt", chipLabel: "Clientes BT" },
@@ -249,7 +257,9 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       { key: "referencia", label: "Código de interrupción", mono: true },
       { key: "fecha", label: "Fecha" },
       { key: "fase", label: "Fase de reposición" },
-      { key: "alimentadorMT", label: "Alimentador MT" },
+      { key: "faseElectrica", label: "Fase eléctrica" },
+      { key: "codigoEquipoManiobrado", label: "Código del equipo maniobrado", mono: true },
+      { key: "descEquipoManiobrado", label: "Descripción del equipo maniobrado" },
     ],
     mapeoFilaACampos: {
       referencia: "codigoInterrupcion",
@@ -288,14 +298,15 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      visibles: [],
-      agregables: [
+      // 5 filtros (≤ 5): todos visibles, sin "Agregar filtro".
+      visibles: [
         { campo: "faseReposicion", chipLabel: "Fase rep." },
         { campo: "cadenaElectrica", chipLabel: "Cadena" },
         { campo: "potenciaKva", chipLabel: "Potencia" },
         { campo: "faseElectrica", chipLabel: "Fase eléc." },
         { campo: "cantidadClientesBt", chipLabel: "Clientes BT" },
       ],
+      agregables: [],
     },
     secciones: [
       {
@@ -324,6 +335,8 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       { key: "f", label: "Fase de reposición" },
       { key: "cadena", label: "Cadena eléctrica del trafo repuesto", mono: true },
       { key: "potenciaKva", label: "Potencia en KVA del trafo" },
+      { key: "faseElectrica", label: "Fase eléctrica" },
+      { key: "cantidadClientesBt", label: "Cantidad de clientes BT repuestos" },
     ],
     mapeoFilaACampos: {
       ref: "codigoInterrupcion",
@@ -357,13 +370,16 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      visibles: [],
-      agregables: [
+      // 8 filtros: los 5 primeros del formulario (sin fecha ni listas
+      // cerradas); el resto en "Agregar filtro".
+      visibles: [
         { campo: "fase", chipLabel: "Fase" },
         { campo: "idComercialCliente", chipLabel: "Cliente" },
         { campo: "consumo", chipLabel: "Consumo" },
         { campo: "ctTabla9", chipLabel: "CT T9" },
         { campo: "ctTabla10", chipLabel: "CT T10" },
+      ],
+      agregables: [
         { campo: "demandaMedia", chipLabel: "Demanda" },
         { campo: "tarifa", chipLabel: "Tarifa" },
         { campo: "nivelTension", chipLabel: "Nivel" },
@@ -398,7 +414,9 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       { key: "ref", label: "Código de interrupción", mono: true },
       { key: "fase", label: "Fase" },
       { key: "cliente", label: "Id. comercial del cliente", mono: true },
-      { key: "tarifa", label: "Tarifa" },
+      { key: "consumo", label: "Consumo" },
+      { key: "ctTabla9", label: "CT (Tabla 9)", mono: true },
+      { key: "ctTabla10", label: "CT (Tabla 10)", mono: true },
     ],
     mapeoFilaACampos: {
       ref: "codigoInterrupcion",
@@ -446,12 +464,16 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "alimentadorMT",
     filtrosBarra: {
-      visibles: [{ campo: "zona", chipLabel: "Zona" }],
-      agregables: [
+      // 10 filtros: Zona (lista cerrada) + los 4 primeros del formulario;
+      // el resto en "Agregar filtro".
+      visibles: [
+        { campo: "zona", chipLabel: "Zona" },
         { campo: "subestacion", chipLabel: "Subest." },
         { campo: "cantClientes", chipLabel: "Clientes" },
         { campo: "cantTrafos", chipLabel: "Trafos" },
         { campo: "sumaPotenciaTrafos", chipLabel: "Pot. trafos" },
+      ],
+      agregables: [
         { campo: "demandaMaxima", chipLabel: "Dem. máx." },
         { campo: "sumaPotenciaClientesMT", chipLabel: "Pot. MT" },
         { campo: "capacidadAlimentador", chipLabel: "Capacidad" },
@@ -497,6 +519,8 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       { key: "zona", label: "Zona" },
       { key: "ssee", label: "Subestación" },
       { key: "cantClientes", label: "Cantidad de clientes del alimentador" },
+      { key: "cantTrafos", label: "Cantidad de trafos MT/BT del alimentador" },
+      { key: "sumaPotenciaTrafos", label: "Suma potencia media trafos MT/BT del alimentador" },
     ],
     mapeoFilaACampos: {
       alim: "alimentadorMT",
@@ -539,13 +563,16 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: false,
     campoId: "idReclamo",
     filtrosBarra: {
+      // 13 filtros: fecha + Partido y Localidad (listas cerradas) + los 2
+      // primeros del formulario; el resto en "Agregar filtro".
       visibles: [
         { campo: "fechaReclamo", chipLabel: "Fecha" },
         { campo: "partido", chipLabel: "Partido" },
         { campo: "localidad", chipLabel: "Localidad" },
+        { campo: "interrupcion", chipLabel: "Interrupción" },
+        { campo: "reclamos", chipLabel: "Reclamos" },
       ],
       agregables: [
-        { campo: "interrupcion", chipLabel: "Interrupción" },
         { campo: "codigoFalla", chipLabel: "Cód. falla" },
         { campo: "nroPoliza", chipLabel: "Póliza" },
         { campo: "nombre", soloValor: true },
@@ -598,6 +625,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       { key: "partido", label: "Partido" },
       { key: "localidad", label: "Localidad" },
       { key: "ref", label: "Interrupción", mono: true },
+      { key: "reclamos", label: "Reclamos" },
     ],
     mapeoFilaACampos: {
       rec: "idReclamo",
@@ -650,12 +678,15 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      visibles: [{ campo: "tarifa", chipLabel: "Tarifa" }],
-      agregables: [
+      // 4 filtros (≤ 5): todos visibles, sin "Agregar filtro". Tarifa
+      // primero (lista cerrada), después el orden del formulario.
+      visibles: [
+        { campo: "tarifa", chipLabel: "Tarifa" },
         { campo: "fase", chipLabel: "Fase" },
         { campo: "cliente", chipLabel: "Cliente" },
         { campo: "ct", chipLabel: "CT" },
       ],
+      agregables: [],
     },
     secciones: [
       {
@@ -678,6 +709,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       { key: "tarifa", label: "Tarifa" },
       { key: "f", label: "Fase" },
       { key: "cliente", label: "Cliente", mono: true },
+      { key: "ct", label: "CT", mono: true },
     ],
     mapeoFilaACampos: { ref: "codigoInterrupcion", f: "fase", cliente: "cliente", tarifa: "tarifa", ct: "ct" },
     rows: (() => {
@@ -710,12 +742,14 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: true,
     campoId: "codigoInterrupcion",
     filtrosBarra: {
-      visibles: [{ campo: "tarifa", chipLabel: "Tarifa" }],
-      // Sin CT: la tabla no tiene ese campo.
-      agregables: [
+      // 3 filtros (≤ 5): todos visibles, sin "Agregar filtro". Sin CT: la
+      // tabla no tiene ese campo.
+      visibles: [
+        { campo: "tarifa", chipLabel: "Tarifa" },
         { campo: "fase", chipLabel: "Fase" },
         { campo: "cliente", chipLabel: "Cliente" },
       ],
+      agregables: [],
     },
     secciones: [
       {
