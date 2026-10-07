@@ -54,6 +54,9 @@ function textoRangoFecha(r: RangoFecha): string {
 //                 completo va en `title`
 //   valorDestacado valor en semibold
 //   quitarSiempre muestra la × también sin valor (chips agregados)
+//   etiqueta      texto visible corto (ChipFilterBar: chipLabel); `label`
+//                 sigue siendo el nombre completo, el de title / aria-label
+//   soloValor     con valor muestra solo el valor, sin etiqueta
 export function FilterTriggerButton({
   label,
   aplicado,
@@ -65,6 +68,8 @@ export function FilterTriggerButton({
   maxWidth,
   valorDestacado = false,
   quitarSiempre = false,
+  etiqueta,
+  soloValor = false,
   buttonRef,
   haspopup = "dialog",
 }: {
@@ -78,12 +83,17 @@ export function FilterTriggerButton({
   maxWidth?: number;
   valorDestacado?: boolean;
   quitarSiempre?: boolean;
+  etiqueta?: string;
+  soloValor?: boolean;
   buttonRef?: React.Ref<HTMLButtonElement>;
   haspopup?: "dialog" | "listbox" | "menu";
 }) {
   const chevron = open ? <ChevronUp size={ICON.xs} strokeWidth={1.5} /> : <ChevronDown size={ICON.xs} strokeWidth={1.5} />;
   const altoCls = size === "md" ? "h-(--control-md)" : "h-(--control-sm)";
+  // title y aria-label siempre con el nombre completo, aunque el chip
+  // muestre la etiqueta corta o solo el valor.
   const textoCompleto = aplicado !== null ? `${label}: ${aplicado}` : undefined;
+  const visible = etiqueta ?? label;
   if (aplicado === null && !quitarSiempre) {
     return (
       <button
@@ -91,6 +101,7 @@ export function FilterTriggerButton({
         type="button"
         aria-haspopup={haspopup}
         aria-expanded={open}
+        aria-label={visible !== label ? label : undefined}
         disabled={disabled}
         onClick={onToggle}
         className={`${altoCls} shrink-0 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 whitespace-nowrap transition-colors disabled:text-text-faint disabled:cursor-not-allowed disabled:pointer-events-none ${FOCUS_RING} ${
@@ -99,7 +110,7 @@ export function FilterTriggerButton({
             : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
         }`}
       >
-        {label}
+        {visible}
         {chevron}
       </button>
     );
@@ -124,10 +135,10 @@ export function FilterTriggerButton({
         className={`h-full min-w-0 pl-2.5 pr-1 rounded-sm inline-flex items-center gap-1.5 whitespace-nowrap disabled:cursor-not-allowed ${FOCUS_RING}`}
       >
         {aplicado === null ? (
-          <span className="shrink-0">{label}</span>
+          <span className="shrink-0">{visible}</span>
         ) : (
           <>
-            <span className="shrink-0">{label}:</span>
+            {!soloValor && <span className="shrink-0">{visible}:</span>}
             <span className={`min-w-0 truncate tabular-nums ${valorDestacado ? "font-semibold" : ""}`}>{aplicado}</span>
           </>
         )}

@@ -18,7 +18,14 @@ export type ChipFiltroOpcion = string | { value: string; label: string };
 //   "fecha"    → rango desde/hasta (ver valorDeRango)
 export type ChipFiltroDef = {
   campo: string;
+  // Nombre completo: "Agregar filtro", editor, title / aria-label del chip.
   label: string;
+  // Nombre corto del chip (máx. ~10 caracteres). Sin chipLabel, `label`.
+  chipLabel?: string;
+  // El chip con valor muestra solo el valor — únicamente para campos cuyos
+  // valores se explican solos (descripciones, nombres); nunca para Sí/No,
+  // códigos o números.
+  soloValor?: boolean;
   editor: "lista" | "busqueda" | "texto" | "fecha";
   opciones?: ChipFiltroOpcion[];
 };
@@ -349,6 +356,8 @@ export default function ChipFilterBar({
         <FilterTriggerButton
           buttonRef={refChip(def.campo)}
           label={def.label}
+          etiqueta={def.chipLabel}
+          soloValor={def.soloValor}
           aplicado={v ? textoValor(def, v) : null}
           open={abierto?.campo === def.campo}
           onToggle={() => (abierto?.campo === def.campo ? cerrarEditor() : setAbierto({ campo: def.campo, ancla: "chip" }))}
@@ -380,6 +389,8 @@ export default function ChipFilterBar({
             <div key={d.campo} ref={refMedida(`chip:${d.campo}`)} className="shrink-0 flex">
               <FilterTriggerButton
                 label={d.label}
+                etiqueta={d.chipLabel}
+                soloValor={d.soloValor}
                 aplicado={v ? textoValor(d, v) : null}
                 open={false}
                 onToggle={() => {}}
