@@ -455,6 +455,7 @@ export default function AbmScreen({
                         active={sortIdx === ci}
                         dir={sortDir}
                         onClick={() => toggleSort(ci)}
+                        hint={campoDe(config.mapeoFilaACampos[c.key] ?? "")?.nombreReal}
                       />
                     </th>
                   ))}

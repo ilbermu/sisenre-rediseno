@@ -77,8 +77,8 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Identificación",
         filas: [
           [
-            { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BFZ202607056849" },
-            { nombre: "fecha", label: "Fecha", tipo: "fecha" },
+            { nombre: "codigoInterrupcion", nombreReal: "REF", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BFZ202607056849" },
+            { nombre: "fecha", nombreReal: "FECHA", label: "Fecha", tipo: "fecha" },
           ],
         ],
       },
@@ -86,10 +86,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Clasificación",
         filas: [
           [
-            { nombre: "nivelTension", label: "Nivel de tensión", tipo: "toggle", opciones: OPCIONES_NIVEL },
-            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "select", opciones: OPCIONES_FASE },
-            { nombre: "origen", label: "Origen", tipo: "toggle", opciones: OPCIONES_ORIGEN },
-            { nombre: "tipo", label: "Tipo", tipo: "toggle", opciones: OPCIONES_TIPO },
+            { nombre: "nivelTension", nombreReal: "TE", label: "Nivel de tensión", tipo: "toggle", opciones: OPCIONES_NIVEL },
+            { nombre: "faseElectrica", nombreReal: "FAS", label: "Fase eléctrica", tipo: "select", opciones: OPCIONES_FASE },
+            { nombre: "origen", nombreReal: "ORIGEN", label: "Origen", tipo: "toggle", opciones: OPCIONES_ORIGEN },
+            { nombre: "tipo", nombreReal: "TIPO", label: "Tipo", tipo: "toggle", opciones: OPCIONES_TIPO },
           ],
         ],
       },
@@ -97,25 +97,25 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Datos de red",
         filas: [
           [
-            { nombre: "codigoEquipoOperado", label: "Código de equipo operado", tipo: "texto" },
-            { nombre: "descEquipoOperado", label: "Descripción equipo operado", tipo: "combobox", opciones: DESCRIPCIONES_EQUIPO_OPERADO, listaLarga: true },
+            { nombre: "codigoEquipoOperado", nombreReal: "ID_ELEM", label: "Código de equipo operado", tipo: "texto" },
+            { nombre: "descEquipoOperado", nombreReal: "TIPO_ELE", label: "Descripción equipo operado", tipo: "combobox", opciones: DESCRIPCIONES_EQUIPO_OPERADO, listaLarga: true },
           ],
           [
-            { nombre: "divisionRedNormal", label: "División red normal?", tipo: "toggle", opciones: ["Sí", "No"] },
-            { nombre: "cadenaElectricaAguasArriba", label: "Cadena eléctrica aguas arriba", tipo: "texto" },
+            { nombre: "divisionRedNormal", nombreReal: "DIVI_RED", label: "División red normal?", tipo: "toggle", opciones: ["Sí", "No"] },
+            { nombre: "cadenaElectricaAguasArriba", nombreReal: "SSEE", label: "Cadena eléctrica aguas arriba", tipo: "texto" },
           ],
           [
-            { nombre: "alimentadorMT", label: "Alimentador MT", tipo: "texto" },
-            { nombre: "ctMtBtEquipoOperado", label: "CT MT/BT del equipo operado", tipo: "texto" },
+            { nombre: "alimentadorMT", nombreReal: "ALIM", label: "Alimentador MT", tipo: "texto" },
+            { nombre: "ctMtBtEquipoOperado", nombreReal: "CMTBT", label: "CT MT/BT del equipo operado", tipo: "texto" },
           ],
         ],
       },
     ],
     columnasResultadoBarra: [
-      { key: "referencia", label: "Referencia", mono: true },
+      { key: "referencia", label: "Código de interrupción", mono: true },
       { key: "fecha", label: "Fecha" },
-      { key: "nivel", label: "Nivel" },
-      { key: "faseElectrica", label: "Fase" },
+      { key: "nivel", label: "Nivel de tensión" },
+      { key: "faseElectrica", label: "Fase eléctrica" },
       { key: "origen", label: "Origen", campo: "origen" },
       { key: "tipo", label: "Tipo", campo: "tipo" },
       { key: "codigoEquipoOperado", label: "Código de equipo operado", mono: true },
@@ -177,14 +177,14 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Identificación",
         filas: [
           [
-            { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BPR202607059383" },
-            { nombre: "faseReposicion", label: "Fase de reposición", tipo: "texto", placeholder: "1" },
+            { nombre: "codigoInterrupcion", nombreReal: "REF", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BPR202607059383" },
+            { nombre: "faseReposicion", nombreReal: "F", label: "Fase de reposición", tipo: "texto", placeholder: "1" },
           ],
         ],
       },
       {
         titulo: "Clasificación",
-        filas: [[{ nombre: "causa", label: "Causa", tipo: "toggle", opciones: CAUSAS_NC, expandirBotones: true }]],
+        filas: [[{ nombre: "causa", nombreReal: "CAUSA", label: "Causa", tipo: "toggle", opciones: CAUSAS_NC, expandirBotones: true }]],
       },
     ],
     columnasResultadoBarra: [
@@ -228,27 +228,27 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Identificación",
         filas: [
           [
-            { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BPR202607059383" },
-            { nombre: "faseReposicion", label: "Fase de reposición", tipo: "texto", placeholder: "1" },
+            { nombre: "codigoInterrupcion", nombreReal: "REF", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BPR202607059383" },
+            { nombre: "faseReposicion", nombreReal: "F", label: "Fase de reposición", tipo: "texto", placeholder: "1" },
           ],
           [
-            { nombre: "fecha", label: "Fecha", tipo: "fecha" },
-            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "texto", placeholder: "RST" },
+            { nombre: "fecha", nombreReal: "FEC", label: "Fecha", tipo: "fecha" },
+            { nombre: "faseElectrica", nombreReal: "FAS", label: "Fase eléctrica", tipo: "texto", placeholder: "RST" },
           ],
         ],
       },
       {
         titulo: "Datos de red",
         filas: [
-          [{ nombre: "codigoEquipoManiobrado", label: "Código del equipo maniobrado", tipo: "texto", placeholder: "@47309278" }],
-          [{ nombre: "descEquipoManiobrado", label: "Descripción del equipo maniobrado", tipo: "texto", placeholder: "PROTECCION DE TOMA/ACOMETIDA" }],
+          [{ nombre: "codigoEquipoManiobrado", nombreReal: "ID_ELEM", label: "Código del equipo maniobrado", tipo: "texto", placeholder: "@47309278" }],
+          [{ nombre: "descEquipoManiobrado", nombreReal: "TIPO_ELE", label: "Descripción del equipo maniobrado", tipo: "texto", placeholder: "PROTECCION DE TOMA/ACOMETIDA" }],
           [
-            { nombre: "cadenaElectricaAguasArriba", label: "Cadena eléctrica aguas arriba", tipo: "texto", placeholder: "NCBT" },
-            { nombre: "alimentadorMT", label: "Alimentador MT", tipo: "texto", placeholder: "NCBT" },
+            { nombre: "cadenaElectricaAguasArriba", nombreReal: "SSEE", label: "Cadena eléctrica aguas arriba", tipo: "texto", placeholder: "NCBT" },
+            { nombre: "alimentadorMT", nombreReal: "ALIM", label: "Alimentador MT", tipo: "texto", placeholder: "NCBT" },
           ],
           [
-            { nombre: "cantidadClientesBt", label: "Cantidad de clientes BT repuestos", tipo: "texto", placeholder: "1" },
-            { nombre: "ctMtBtManiobrado", label: "CT MT/BT maniobrado", tipo: "texto", placeholder: "NCBT" },
+            { nombre: "cantidadClientesBt", nombreReal: "CLI", label: "Cantidad de clientes BT repuestos", tipo: "texto", placeholder: "1" },
+            { nombre: "ctMtBtManiobrado", nombreReal: "CMTBT", label: "CT MT/BT maniobrado", tipo: "texto", placeholder: "NCBT" },
           ],
         ],
       },
@@ -312,20 +312,20 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       {
         titulo: "Identificación",
         filas: [[
-          { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MFZ202401001157" },
-          { nombre: "faseReposicion", label: "Fase de reposición", tipo: "readonly", placeholder: "1" },
+          { nombre: "codigoInterrupcion", nombreReal: "REF", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MFZ202401001157" },
+          { nombre: "faseReposicion", nombreReal: "F", label: "Fase de reposición", tipo: "readonly", placeholder: "1" },
         ]],
       },
       {
         titulo: "Datos del trafo",
         filas: [
           [
-            { nombre: "cadenaElectrica", label: "Cadena eléctrica del trafo repuesto", tipo: "texto", placeholder: "50006#B1#50006-TR1" },
-            { nombre: "potenciaKva", label: "Potencia en KVA del trafo", tipo: "texto", placeholder: "800" },
+            { nombre: "cadenaElectrica", nombreReal: "CADENA", label: "Cadena eléctrica del trafo repuesto", tipo: "texto", placeholder: "50006#B1#50006-TR1" },
+            { nombre: "potenciaKva", nombreReal: "POT", label: "Potencia en KVA del trafo", tipo: "texto", placeholder: "800" },
           ],
           [
-            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "texto", placeholder: "RST" },
-            { nombre: "cantidadClientesBt", label: "Cantidad de clientes BT repuestos", tipo: "texto", placeholder: "753" },
+            { nombre: "faseElectrica", nombreReal: "FAS", label: "Fase eléctrica", tipo: "texto", placeholder: "RST" },
+            { nombre: "cantidadClientesBt", nombreReal: "CLI", label: "Cantidad de clientes BT repuestos", tipo: "texto", placeholder: "753" },
           ],
         ],
       },
@@ -389,23 +389,23 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       {
         titulo: "Identificación",
         filas: [[
-          { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MPR202401004095" },
-          { nombre: "fase", label: "Fase", tipo: "readonly", placeholder: "1" },
+          { nombre: "codigoInterrupcion", nombreReal: "REF", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MPR202401004095" },
+          { nombre: "fase", nombreReal: "F", label: "Fase", tipo: "readonly", placeholder: "1" },
         ]],
       },
       {
         titulo: "Cliente",
         filas: [
           [
-            { nombre: "idComercialCliente", label: "Id. comercial del cliente", tipo: "texto", placeholder: "9933000000" },
+            { nombre: "idComercialCliente", nombreReal: "CUENTA", label: "Id. comercial del cliente", tipo: "texto", placeholder: "9933000000" },
             { nombre: "consumo", label: "Consumo", tipo: "readonly", placeholder: "1240" },
             { nombre: "ctTabla9", label: "CT (Tabla 9)", tipo: "readonly", placeholder: "50006#B1#50006-TR1" },
             { nombre: "ctTabla10", label: "CT (Tabla 10)", tipo: "readonly", placeholder: "50006#B1#50006-TR1" },
           ],
           [
-            { nombre: "demandaMedia", label: "Demanda media del cliente (KW)", tipo: "texto", placeholder: "290" },
-            { nombre: "tarifa", label: "Tarifa", tipo: "texto", placeholder: "3MT" },
-            { nombre: "nivelTension", label: "Nivel de tensión", tipo: "texto", placeholder: "MT" },
+            { nombre: "demandaMedia", nombreReal: "POTENCIA", label: "Demanda media del cliente (KW)", tipo: "texto", placeholder: "290" },
+            { nombre: "tarifa", nombreReal: "TARIFA", label: "Tarifa", tipo: "texto", placeholder: "3MT" },
+            { nombre: "nivelTension", nombreReal: "TE", label: "Nivel de tensión", tipo: "texto", placeholder: "MT" },
           ],
         ],
       },
@@ -486,30 +486,30 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Identificación",
         filas: [
           [
-            { nombre: "alimentadorMT", label: "Alimentador MT", tipo: "texto", placeholder: "NCBT" },
-            { nombre: "subestacion", label: "Subestación", tipo: "texto", placeholder: "SE NORTE" },
+            { nombre: "alimentadorMT", nombreReal: "ALIM", label: "Alimentador MT", tipo: "texto", placeholder: "NCBT" },
+            { nombre: "subestacion", nombreReal: "SSEE", label: "Subestación", tipo: "texto", placeholder: "SE NORTE" },
           ],
-          [{ nombre: "zona", label: "Zona", tipo: "toggle", opciones: ZONAS_CDS7, expandirBotones: true }],
+          [{ nombre: "zona", nombreReal: "ZONA", label: "Zona", tipo: "toggle", opciones: ZONAS_CDS7, expandirBotones: true }],
         ],
       },
       {
         titulo: "Datos del alimentador",
         filas: [
           [
-            { nombre: "cantClientes", label: "Cantidad de clientes del alimentador", tipo: "texto", placeholder: "1250" },
-            { nombre: "cantTrafos", label: "Cantidad de trafos MT/BT del alimentador", tipo: "texto", placeholder: "48" },
+            { nombre: "cantClientes", nombreReal: "CLI", label: "Cantidad de clientes del alimentador", tipo: "texto", placeholder: "1250" },
+            { nombre: "cantTrafos", nombreReal: "TRAFOS", label: "Cantidad de trafos MT/BT del alimentador", tipo: "texto", placeholder: "48" },
           ],
           [
-            { nombre: "sumaPotenciaTrafos", label: "Suma potencia media trafos MT/BT del alimentador", tipo: "texto", placeholder: "3200" },
-            { nombre: "demandaMaxima", label: "Demanda máxima", tipo: "texto", placeholder: "2800" },
+            { nombre: "sumaPotenciaTrafos", nombreReal: "POT", label: "Suma potencia media trafos MT/BT del alimentador", tipo: "texto", placeholder: "3200" },
+            { nombre: "demandaMaxima", nombreReal: "DEM_MAX", label: "Demanda máxima", tipo: "texto", placeholder: "2800" },
           ],
           [
-            { nombre: "sumaPotenciaClientesMT", label: "Suma potencia media clientes MT del alimentador", tipo: "texto", placeholder: "450" },
-            { nombre: "capacidadAlimentador", label: "Capacidad del alimentador", tipo: "texto", placeholder: "4000" },
+            { nombre: "sumaPotenciaClientesMT", nombreReal: "POTENCIA", label: "Suma potencia media clientes MT del alimentador", tipo: "texto", placeholder: "450" },
+            { nombre: "capacidadAlimentador", nombreReal: "CAP_ALIM", label: "Capacidad del alimentador", tipo: "texto", placeholder: "4000" },
           ],
           [
-            { nombre: "tensionAlimentador", label: "Tensión del alimentador", tipo: "texto", placeholder: "13.2" },
-            { nombre: "longitudAlimentador", label: "Longitud del alimentador", tipo: "texto", placeholder: "28.4" },
+            { nombre: "tensionAlimentador", nombreReal: "TENSION", label: "Tensión del alimentador", tipo: "texto", placeholder: "13.2" },
+            { nombre: "longitudAlimentador", nombreReal: "LONG_ALIM", label: "Longitud del alimentador", tipo: "texto", placeholder: "28.4" },
           ],
         ],
       },
@@ -588,13 +588,13 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Reclamo",
         filas: [
           [
-            { nombre: "idReclamo", label: "Identificador del reclamo", tipo: "readonly", placeholder: "R-2024-01-00001" },
-            { nombre: "interrupcion", label: "Interrupción", tipo: "texto", placeholder: "MFZ202401001496" },
+            { nombre: "idReclamo", nombreReal: "REC", label: "Identificador del reclamo", tipo: "readonly", placeholder: "R-2024-01-00001" },
+            { nombre: "interrupcion", nombreReal: "REF", label: "Interrupción", tipo: "texto", placeholder: "MFZ202401001496" },
             { nombre: "reclamos", label: "Reclamos", tipo: "readonly", placeholder: "3" },
           ],
           [
-            { nombre: "fechaReclamo", label: "Fecha reclamo", tipo: "fecha" },
-            { nombre: "codigoFalla", label: "Código falla", tipo: "texto", placeholder: "Otros" },
+            { nombre: "fechaReclamo", nombreReal: "FECHA", label: "Fecha reclamo", tipo: "fecha" },
+            { nombre: "codigoFalla", nombreReal: "COD_FALLA", label: "Código falla", tipo: "texto", placeholder: "Otros" },
           ],
         ],
       },
@@ -602,19 +602,19 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Cliente",
         filas: [
           [
-            { nombre: "nroPoliza", label: "Nro póliza", tipo: "readonly", placeholder: "123456" },
-            { nombre: "nombre", label: "Nombre", tipo: "texto", placeholder: "MENDEZ MONICA ISABEL" },
-            { nombre: "tarifa", label: "Tarifa", tipo: "texto", placeholder: "1R" },
+            { nombre: "nroPoliza", nombreReal: "POL", label: "Nro póliza", tipo: "readonly", placeholder: "123456" },
+            { nombre: "nombre", nombreReal: "NOMBRE", label: "Nombre", tipo: "texto", placeholder: "MENDEZ MONICA ISABEL" },
+            { nombre: "tarifa", nombreReal: "TARIFA", label: "Tarifa", tipo: "texto", placeholder: "1R" },
           ],
           [
-            { nombre: "calle", label: "Calle", tipo: "texto", placeholder: "SALTA" },
-            { nombre: "nro", label: "Nro", tipo: "texto", placeholder: "666" },
-            { nombre: "piso", label: "Piso", tipo: "texto", placeholder: "1" },
-            { nombre: "depto", label: "Depto.", tipo: "texto", placeholder: "A" },
+            { nombre: "calle", nombreReal: "CALLE", label: "Calle", tipo: "texto", placeholder: "SALTA" },
+            { nombre: "nro", nombreReal: "NUMERO", label: "Nro", tipo: "texto", placeholder: "666" },
+            { nombre: "piso", nombreReal: "PISO", label: "Piso", tipo: "texto", placeholder: "1" },
+            { nombre: "depto", nombreReal: "DPTO", label: "Depto.", tipo: "texto", placeholder: "A" },
           ],
           [
-            { nombre: "partido", label: "Partido", tipo: "select", opciones: PARTIDOS, limpiaAlCambiar: ["localidad"], listaLarga: true },
-            { nombre: "localidad", label: "Localidad", tipo: "combobox", opciones: (valores: Record<string, string>) => PARTIDO_LOCALIDAD[valores.partido] ?? [], listaLarga: true, emptyMessage: "Sin opciones — seleccioná Partido primero" },
+            { nombre: "partido", nombreReal: "PARTIDO", label: "Partido", tipo: "select", opciones: PARTIDOS, limpiaAlCambiar: ["localidad"], listaLarga: true },
+            { nombre: "localidad", nombreReal: "LOCALIDAD", label: "Localidad", tipo: "combobox", opciones: (valores: Record<string, string>) => PARTIDO_LOCALIDAD[valores.partido] ?? [], listaLarga: true, emptyMessage: "Sin opciones — seleccioná Partido primero" },
           ],
         ],
       },
@@ -693,14 +693,14 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Identificación",
         filas: [
           [
-            { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MFZ202401001157" },
-            { nombre: "fase", label: "Fase", tipo: "readonly", placeholder: "1" },
+            { nombre: "codigoInterrupcion", nombreReal: "REF", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MFZ202401001157" },
+            { nombre: "fase", nombreReal: "F", label: "Fase", tipo: "readonly", placeholder: "1" },
           ],
           [
-            { nombre: "cliente", label: "Cliente", tipo: "readonly", placeholder: "3190897997" },
-            { nombre: "tarifa", label: "Tarifa", tipo: "select", opciones: ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"] },
+            { nombre: "cliente", nombreReal: "POL", label: "Cliente", tipo: "readonly", placeholder: "3190897997" },
+            { nombre: "tarifa", nombreReal: "TARIFA", label: "Tarifa", tipo: "select", opciones: ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"] },
           ],
-          [{ nombre: "ct", label: "CT", tipo: "texto", placeholder: "19649#B1#19649-TR1" }],
+          [{ nombre: "ct", nombreReal: "CT", label: "CT", tipo: "texto", placeholder: "19649#B1#19649-TR1" }],
         ],
       },
     ],
@@ -756,12 +756,12 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Identificación",
         filas: [
           [
-            { nombre: "codigoInterrupcion", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BFZ202607056849" },
-            { nombre: "fase", label: "Fase", tipo: "texto", placeholder: "1" },
+            { nombre: "codigoInterrupcion", nombreReal: "REF", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BFZ202607056849" },
+            { nombre: "fase", nombreReal: "F", label: "Fase", tipo: "texto", placeholder: "1" },
           ],
           [
-            { nombre: "cliente", label: "Cliente", tipo: "texto", placeholder: "0932073585" },
-            { nombre: "tarifa", label: "Tarifa", tipo: "select", opciones: ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"] },
+            { nombre: "cliente", nombreReal: "POL", label: "Cliente", tipo: "texto", placeholder: "0932073585" },
+            { nombre: "tarifa", nombreReal: "TARIFA", label: "Tarifa", tipo: "select", opciones: ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"] },
           ],
         ],
       },

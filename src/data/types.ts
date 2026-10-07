@@ -61,6 +61,10 @@ export type CampoTipo = "texto" | "select" | "fecha" | "readonly" | "toggle" | "
 
 export type CampoBusqueda = {
   nombre: string;
+  // Nombre de la columna en la tabla real de la base (exportes del período
+  // 202608): REF, F, FAS… Se muestra como pista en el encabezado de la
+  // columna de Resultados (ColumnHeaderHint). Sin nombreReal, sin pista.
+  nombreReal?: string;
   label: string;
   tipo: CampoTipo;
   // Función en vez de array fijo: opciones en cascada que dependen de otro
@@ -161,7 +165,9 @@ export type AbmTableConfig = {
   filtrosBarra: AbmFiltrosBarra;
   secciones: SeccionBusqueda[];
   // Columnas de Resultados (tabla a ancho completo): campoId primero (mono),
-  // la fecha si hay y los campos de los chips visibles (máximo 7).
+  // la fecha si hay y los campos de los chips visibles (máximo 7). El label
+  // es SIEMPRE el del campo en el formulario; el nombre corto de la base va
+  // en la pista del encabezado (nombreReal del campo).
   // Una columna con `campo` muestra la etiqueta de la opción.
   columnasResultadoBarra: ColumnaResultado[];
   rows: Record<string, string>[];
