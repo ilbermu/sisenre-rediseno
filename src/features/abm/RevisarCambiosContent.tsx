@@ -26,9 +26,8 @@ export function useMotivoCambio() {
 
 // Contenido de "revisar cambios" — dos secciones (sin cajas de color):
 // Resumen de cambios (anterior → nuevo) + Motivo (NOTA_OPCIONES u "Otra
-// (especificar)"). Sin modal propio: lo usan
-// ConfirmarModificarModal (layout split del ABM) y el paso 2 del modal de
-// edición de registro (layout barra), con el mismo aspecto.
+// (especificar)"). Sin modal propio: es el paso 2 del modal de edición de
+// registro del ABM (Modificar).
 export default function RevisarCambiosContent({
   cambios,
   motivo,
@@ -86,6 +85,25 @@ export default function RevisarCambiosContent({
             className={`mt-2 w-full h-(--control-md) px-2.5 text-body bg-surface border border-border-strong rounded-sm text-text placeholder:text-text-muted ${FIELD_FOCUS}`}
           />
         )}
+      </div>
+    </div>
+  );
+}
+
+// Paso "Revisar" de Insertar: resumen de los valores del registro nuevo,
+// campo por campo en el orden del formulario — sin diff (no hay valor
+// anterior) y sin Motivo. Mismas filas que el Resumen de cambios.
+export function ResumenValoresContent({ valores }: { valores: { label: string; valor: string }[] }) {
+  return (
+    <div>
+      <p className="text-heading-xs uppercase text-text-muted mb-3">Resumen del registro</p>
+      <div className="flex flex-col gap-2">
+        {valores.map((v) => (
+          <div key={v.label} className="flex items-center gap-3 px-3 py-2 rounded-sm bg-fill-subtle border border-border">
+            <span className="w-[38%] shrink-0 text-label text-text">{v.label}</span>
+            <span className={`flex-1 min-w-0 truncate ${v.valor ? "text-label text-text" : "text-body-sm text-text-muted"}`}>{v.valor || "(vacío)"}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

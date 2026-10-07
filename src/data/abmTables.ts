@@ -52,27 +52,24 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     nombre: "Tabla 2",
     titulo: "Interrupciones",
     hasInsertar: false,
-    // PRUEBA de layout — solo esta tabla. Ver AbmLayout.
-    layout: "barra",
-    barraBusqueda: {
-      tituloModificar: "Modificar interrupción",
-    },
+    tituloModificar: "Modificar interrupción",
+    campoId: "codigoInterrupcion",
     filtrosBarra: {
-      id: { columna: "referencia", placeholder: "ID de interrupción" },
+      idPlaceholder: "ID de interrupción",
       fijos: [
-        { campo: "fecha", label: "Fecha", chipLabel: "Fecha", editor: "fecha" },
-        { campo: "nivel", label: "Nivel de tensión", chipLabel: "Nivel", editor: "lista", opciones: OPCIONES_NIVEL },
-        { campo: "faseElectrica", label: "Fase eléctrica", chipLabel: "Fase", editor: "lista", opciones: OPCIONES_FASE },
-        { campo: "origen", label: "Origen", chipLabel: "Origen", editor: "lista", opciones: OPCIONES_ORIGEN },
-        { campo: "tipo", label: "Tipo", chipLabel: "Tipo", editor: "lista", opciones: OPCIONES_TIPO },
+        { campo: "fecha", chipLabel: "Fecha" },
+        { campo: "nivelTension", chipLabel: "Nivel" },
+        { campo: "faseElectrica", chipLabel: "Fase" },
+        { campo: "origen", chipLabel: "Origen" },
+        { campo: "tipo", chipLabel: "Tipo" },
       ],
       agregables: [
-        { campo: "codigoEquipoOperado", label: "Código equipo", chipLabel: "Cód. equipo", editor: "texto" },
-        { campo: "descEquipoOperado", label: "Descripción equipo operado", soloValor: true, editor: "busqueda", opciones: DESCRIPCIONES_EQUIPO_OPERADO },
-        { campo: "divisionRedNormal", label: "División red normal", chipLabel: "División", editor: "lista", opciones: ["Sí", "No"] },
-        { campo: "cadenaElectricaAguasArriba", label: "Cadena eléctrica", chipLabel: "Cadena", editor: "texto" },
-        { campo: "alimentadorMT", label: "Alimentador MT", chipLabel: "Alim. MT", editor: "texto" },
-        { campo: "ctMtBtEquipoOperado", label: "CT MT/BT", chipLabel: "CT", editor: "texto" },
+        { campo: "codigoEquipoOperado", label: "Código equipo", chipLabel: "Cód. equipo" },
+        { campo: "descEquipoOperado", soloValor: true },
+        { campo: "divisionRedNormal", label: "División red normal", chipLabel: "División" },
+        { campo: "cadenaElectricaAguasArriba", label: "Cadena eléctrica", chipLabel: "Cadena" },
+        { campo: "alimentadorMT", chipLabel: "Alim. MT" },
+        { campo: "ctMtBtEquipoOperado", label: "CT MT/BT", chipLabel: "CT" },
       ],
     },
     secciones: [
@@ -87,13 +84,6 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       },
       {
         titulo: "Clasificación",
-        // Orden Nivel, Fase, Origen, Tipo (no el orden "de lectura" Nivel/
-        // Origen/Tipo/Fase) — en tamaño normal esta fila de 4 sigue en una
-        // sola línea (gridTemplateColumns propio de AbmFila, no le importa
-        // el orden), pero en tier 760px (grilla plana de 2 columnas, ver
-        // AbmScreen) el wrap natural empareja de a 2 en el orden del
-        // array: así entran (Nivel+Fase) y (Origen+Tipo), no (Nivel+Origen)
-        // y (Tipo+Fase).
         filas: [
           [
             { nombre: "nivelTension", label: "Nivel de tensión", tipo: "toggle", opciones: OPCIONES_NIVEL },
@@ -120,10 +110,6 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
           ],
         ],
       },
-    ],
-    columnasResultado: [
-      { key: "referencia", label: "Referencia", mono: true },
-      { key: "fecha", label: "Fecha" },
     ],
     columnasResultadoBarra: [
       { key: "referencia", label: "Referencia", mono: true },
@@ -177,6 +163,11 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     nombre: "Tabla 3",
     titulo: "Interrupciones no computables",
     hasInsertar: true,
+    campoId: "codigoInterrupcion",
+    filtrosBarra: {
+      fijos: [{ campo: "causa", chipLabel: "Causa" }],
+      agregables: [{ campo: "faseReposicion", chipLabel: "Fase rep." }],
+    },
     secciones: [
       {
         titulo: "Identificación",
@@ -192,9 +183,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         filas: [[{ nombre: "causa", label: "Causa", tipo: "toggle", opciones: CAUSAS_NC, expandirBotones: true }]],
       },
     ],
-    columnasResultado: [
-      { key: "referencia", label: "Referencia", mono: true },
-      { key: "fase", label: "Fase" },
+    columnasResultadoBarra: [
+      { key: "referencia", label: "Código de interrupción", mono: true },
+      { key: "causa", label: "Causa" },
+      { key: "fase", label: "Fase de reposición" },
     ],
     mapeoFilaACampos: { referencia: "codigoInterrupcion", fase: "faseReposicion", causa: "causa" },
     rows: CDS3_ROWS.map((r) => ({ referencia: r.referencia, fase: r.fase, causa: r.causa })),
@@ -209,6 +201,20 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     nombre: "Tabla 4",
     titulo: "Reposiciones",
     hasInsertar: true,
+    campoId: "codigoInterrupcion",
+    filtrosBarra: {
+      fijos: [{ campo: "fecha", chipLabel: "Fecha" }],
+      agregables: [
+        { campo: "faseReposicion", chipLabel: "Fase rep." },
+        { campo: "faseElectrica", chipLabel: "Fase eléc." },
+        { campo: "codigoEquipoManiobrado", chipLabel: "Cód. equipo" },
+        { campo: "descEquipoManiobrado", soloValor: true },
+        { campo: "cadenaElectricaAguasArriba", chipLabel: "Cadena" },
+        { campo: "alimentadorMT", chipLabel: "Alim. MT" },
+        { campo: "cantidadClientesBt", chipLabel: "Clientes BT" },
+        { campo: "ctMtBtManiobrado", chipLabel: "CT" },
+      ],
+    },
     secciones: [
       {
         titulo: "Identificación",
@@ -239,10 +245,11 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultado: [
-      { key: "referencia", label: "Referencia", mono: true },
-      { key: "fase", label: "Fase" },
+    columnasResultadoBarra: [
+      { key: "referencia", label: "Código de interrupción", mono: true },
       { key: "fecha", label: "Fecha" },
+      { key: "fase", label: "Fase de reposición" },
+      { key: "alimentadorMT", label: "Alimentador MT" },
     ],
     mapeoFilaACampos: {
       referencia: "codigoInterrupcion",
@@ -279,6 +286,17 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     nombre: "Tabla 5",
     titulo: "Trafos MT/BT repuestos en interrupciones MT y AT",
     hasInsertar: true,
+    campoId: "codigoInterrupcion",
+    filtrosBarra: {
+      fijos: [],
+      agregables: [
+        { campo: "faseReposicion", chipLabel: "Fase rep." },
+        { campo: "cadenaElectrica", chipLabel: "Cadena" },
+        { campo: "potenciaKva", chipLabel: "Potencia" },
+        { campo: "faseElectrica", chipLabel: "Fase eléc." },
+        { campo: "cantidadClientesBt", chipLabel: "Clientes BT" },
+      ],
+    },
     secciones: [
       {
         titulo: "Identificación",
@@ -301,10 +319,11 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultado: [
-      { key: "ref", label: "Ref", mono: true },
-      { key: "f", label: "F" },
-      { key: "cadena", label: "Cadena" },
+    columnasResultadoBarra: [
+      { key: "ref", label: "Código de interrupción", mono: true },
+      { key: "f", label: "Fase de reposición" },
+      { key: "cadena", label: "Cadena eléctrica del trafo repuesto", mono: true },
+      { key: "potenciaKva", label: "Potencia en KVA del trafo" },
     ],
     mapeoFilaACampos: {
       ref: "codigoInterrupcion",
@@ -336,6 +355,20 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     nombre: "Tabla 6",
     titulo: "Clientes AT/MT afectados en interrupciones MT/AT",
     hasInsertar: true,
+    campoId: "codigoInterrupcion",
+    filtrosBarra: {
+      fijos: [],
+      agregables: [
+        { campo: "fase", chipLabel: "Fase" },
+        { campo: "idComercialCliente", chipLabel: "Cliente" },
+        { campo: "consumo", chipLabel: "Consumo" },
+        { campo: "ctTabla9", chipLabel: "CT T9" },
+        { campo: "ctTabla10", chipLabel: "CT T10" },
+        { campo: "demandaMedia", chipLabel: "Demanda" },
+        { campo: "tarifa", chipLabel: "Tarifa" },
+        { campo: "nivelTension", chipLabel: "Nivel" },
+      ],
+    },
     secciones: [
       {
         titulo: "Identificación",
@@ -361,10 +394,11 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultado: [
-      { key: "ref", label: "Ref", mono: true },
+    columnasResultadoBarra: [
+      { key: "ref", label: "Código de interrupción", mono: true },
       { key: "fase", label: "Fase" },
-      { key: "cliente", label: "Cliente", mono: true },
+      { key: "cliente", label: "Id. comercial del cliente", mono: true },
+      { key: "tarifa", label: "Tarifa" },
     ],
     mapeoFilaACampos: {
       ref: "codigoInterrupcion",
@@ -410,6 +444,21 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     nombre: "Tabla 7",
     titulo: "Instalaciones MT",
     hasInsertar: true,
+    campoId: "alimentadorMT",
+    filtrosBarra: {
+      fijos: [{ campo: "zona", chipLabel: "Zona" }],
+      agregables: [
+        { campo: "subestacion", chipLabel: "Subest." },
+        { campo: "cantClientes", chipLabel: "Clientes" },
+        { campo: "cantTrafos", chipLabel: "Trafos" },
+        { campo: "sumaPotenciaTrafos", chipLabel: "Pot. trafos" },
+        { campo: "demandaMaxima", chipLabel: "Dem. máx." },
+        { campo: "sumaPotenciaClientesMT", chipLabel: "Pot. MT" },
+        { campo: "capacidadAlimentador", chipLabel: "Capacidad" },
+        { campo: "tensionAlimentador", chipLabel: "Tensión" },
+        { campo: "longitudAlimentador", chipLabel: "Longitud" },
+      ],
+    },
     secciones: [
       {
         titulo: "Identificación",
@@ -443,10 +492,11 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultado: [
-      { key: "alim", label: "Alim", mono: true },
+    columnasResultadoBarra: [
+      { key: "alim", label: "Alimentador MT", mono: true },
       { key: "zona", label: "Zona" },
-      { key: "ssee", label: "SSEE" },
+      { key: "ssee", label: "Subestación" },
+      { key: "cantClientes", label: "Cantidad de clientes del alimentador" },
     ],
     mapeoFilaACampos: {
       alim: "alimentadorMT",
@@ -487,6 +537,25 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     nombre: "Tabla 8",
     titulo: "Reclamos de clientes",
     hasInsertar: false,
+    campoId: "idReclamo",
+    filtrosBarra: {
+      fijos: [
+        { campo: "fechaReclamo", chipLabel: "Fecha" },
+        { campo: "partido", chipLabel: "Partido" },
+        { campo: "localidad", chipLabel: "Localidad" },
+      ],
+      agregables: [
+        { campo: "interrupcion", chipLabel: "Interrupción" },
+        { campo: "codigoFalla", chipLabel: "Cód. falla" },
+        { campo: "nroPoliza", chipLabel: "Póliza" },
+        { campo: "nombre", soloValor: true },
+        { campo: "tarifa", chipLabel: "Tarifa" },
+        { campo: "calle", chipLabel: "Calle" },
+        { campo: "nro", chipLabel: "Nro" },
+        { campo: "piso", chipLabel: "Piso" },
+        { campo: "depto", chipLabel: "Depto." },
+      ],
+    },
     secciones: [
       {
         titulo: "Reclamo",
@@ -523,9 +592,12 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultado: [
-      { key: "rec", label: "Rec", mono: true },
-      { key: "ref", label: "Ref", mono: true },
+    columnasResultadoBarra: [
+      { key: "rec", label: "Identificador del reclamo", mono: true },
+      { key: "fechaReclamo", label: "Fecha reclamo" },
+      { key: "partido", label: "Partido" },
+      { key: "localidad", label: "Localidad" },
+      { key: "ref", label: "Interrupción", mono: true },
     ],
     mapeoFilaACampos: {
       rec: "idReclamo",
@@ -576,6 +648,15 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     nombre: "Tabla 9",
     titulo: "Interrupciones por cliente",
     hasInsertar: true,
+    campoId: "codigoInterrupcion",
+    filtrosBarra: {
+      fijos: [{ campo: "tarifa", chipLabel: "Tarifa" }],
+      agregables: [
+        { campo: "fase", chipLabel: "Fase" },
+        { campo: "cliente", chipLabel: "Cliente" },
+        { campo: "ct", chipLabel: "CT" },
+      ],
+    },
     secciones: [
       {
         titulo: "Identificación",
@@ -592,9 +673,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultado: [
-      { key: "ref", label: "Ref", mono: true },
-      { key: "f", label: "F" },
+    columnasResultadoBarra: [
+      { key: "ref", label: "Código de interrupción", mono: true },
+      { key: "tarifa", label: "Tarifa" },
+      { key: "f", label: "Fase" },
       { key: "cliente", label: "Cliente", mono: true },
     ],
     mapeoFilaACampos: { ref: "codigoInterrupcion", f: "fase", cliente: "cliente", tarifa: "tarifa", ct: "ct" },
@@ -626,6 +708,15 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     nombre: "Tabla 9 NM",
     titulo: "Interrupciones por cliente NM",
     hasInsertar: true,
+    campoId: "codigoInterrupcion",
+    filtrosBarra: {
+      fijos: [{ campo: "tarifa", chipLabel: "Tarifa" }],
+      // Sin CT: la tabla no tiene ese campo.
+      agregables: [
+        { campo: "fase", chipLabel: "Fase" },
+        { campo: "cliente", chipLabel: "Cliente" },
+      ],
+    },
     secciones: [
       {
         titulo: "Identificación",
@@ -641,9 +732,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultado: [
-      { key: "ref", label: "Ref", mono: true },
-      { key: "f", label: "F" },
+    columnasResultadoBarra: [
+      { key: "ref", label: "Código de interrupción", mono: true },
+      { key: "tarifa", label: "Tarifa" },
+      { key: "f", label: "Fase" },
       { key: "cliente", label: "Cliente", mono: true },
     ],
     mapeoFilaACampos: { ref: "codigoInterrupcion", f: "fase", cliente: "cliente", tarifa: "tarifa" },

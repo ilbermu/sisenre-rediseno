@@ -14,8 +14,7 @@ import {
 import { labelDeValor } from "@/features/abm/labelDeValor";
 import { AbmMode, CampoBusqueda } from "@/data/types";
 
-function estadoDeCampo(campo: CampoBusqueda, mode: AbmMode, consultando: boolean, lockedEnModificar: boolean): CampoEstado {
-  if (consultando) return "placeholder";
+function estadoDeCampo(campo: CampoBusqueda, mode: AbmMode, lockedEnModificar: boolean): CampoEstado {
   if (mode === "modificar" && (campo.tipo === "readonly" || lockedEnModificar)) return "disabled";
   if (mode === "buscar") return "empty";
   return "enabled"; // alta, o modificar sobre un campo editable
@@ -31,7 +30,6 @@ export default function AbmCampo({
   value,
   onChange,
   lockedEnModificar,
-  consultando,
   valoresFormulario,
   readOnly = false,
   intrinseco = false,
@@ -44,12 +42,6 @@ export default function AbmCampo({
   // Campo bloqueado específicamente en modo Modificar (config por tabla),
   // independiente de si el campo es editable al buscar/insertar.
   lockedEnModificar?: boolean;
-  // Hay una fila seleccionada en Resultados mientras se sigue en modo
-  // buscar — el campo muestra el dato de esa fila (si lo tiene) pero
-  // conserva su widget natural (select/toggle/fecha/texto), solo que en
-  // estado "placeholder" (ver CampoEstado). No es lo mismo que "modificar":
-  // no cambia título ni botones del panel, es una vista de consulta nomás.
-  consultando?: boolean;
   // Formulario completo (todos los `valores` del panel de Búsqueda/Alta),
   // no solo el de este campo — lo necesita `campo.opciones` cuando es
   // función, para resolver opciones en cascada según otro campo (ej.
@@ -86,7 +78,7 @@ export default function AbmCampo({
       </div>
     );
   }
-  const estado = estadoDeCampo(campo, mode, !!consultando, !!lockedEnModificar);
+  const estado = estadoDeCampo(campo, mode, !!lockedEnModificar);
   const isDisabled = estado === "placeholder" || estado === "disabled";
   const controlled = estado !== "empty";
   const estadoCls = ESTADO_CLASES[estado];

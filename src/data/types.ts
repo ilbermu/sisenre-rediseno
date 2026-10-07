@@ -1,5 +1,3 @@
-import type { ChipFiltroDef } from "@/components/ui/ChipFilterBar";
-
 export type FaseRow = { fase: number; fecha: string; idElemento: string; tipoElemento: string; cadena: string; cliente: number };
 
 // Fila de la lista de Reposiciones (Tabla 4/CDS4) — campos con nombre en vez
@@ -42,7 +40,7 @@ export type AbmMode = "buscar" | "alta" | "modificar";
 export type AbmDeepLink = {
   tableKey: AbmTableKey;
   campo: string; // nombre del campo de camposBusqueda a precargar
-  columna: string; // key de columnasResultado usada para encontrar la fila a seleccionar
+  columna: string; // columna de `rows` usada para encontrar la fila a seleccionar
   valor: string;
   modo: "buscar" | "alta";
   // Tab del modal "Tablas relacionadas" desde el que se disparó el
@@ -115,30 +113,30 @@ type ColumnaResultado = {
   campo?: string;
 };
 
-// Layout del ABM:
-//   "split" (default) → panel de Búsqueda/formulario a la izquierda +
-//                       panel de Resultados a la derecha.
-//   "barra" (en prueba, solo CDS2) → barra de filtros híbrida
-//                       (ChipFilterBar, ver filtrosBarra) apoyada en el fondo
-//                       + una sola card de Resultados a ancho completo;
-//                       Modificar se abre en un modal.
-export type AbmLayout = "split" | "barra";
-
-export type AbmBarraBusqueda = {
-  // Título del modal de Modificar (en este layout, Modificar es un modal).
-  tituloModificar: string;
+// Un filtro de la barra de filtros del ABM (ChipFilterBar): el campo
+// (`nombre` de `secciones`) y cómo se presenta su chip. El editor, las
+// opciones y las dependencias salen del campo, sin cambios: texto/readonly
+// → texto ("contiene"); toggle/select → lista; combobox → lista con
+// búsqueda; fecha → rango con hora.
+export type AbmFiltroBarra = {
+  campo: string;
+  // Nombre completo (menú "Agregar filtro", editor, title del chip). Default:
+  // el label del campo.
+  label?: string;
+  // Nombre corto del chip (máx. ~10 caracteres). Default: `label`.
+  chipLabel?: string;
+  // El chip muestra solo el valor (valores que se explican solos).
+  soloValor?: boolean;
 };
 
-// Filtros de la barra híbrida (ChipFilterBar) del layout "barra". `campo` de
-// cada filtro = columna de `rows`. Cómo filtra cada uno sale de su editor
-// (ver ChipFiltroDef).
 export type AbmFiltrosBarra = {
-  // Input de ID: busca "contiene" sobre esta columna.
-  id: { columna: string; placeholder: string };
-  // Chips siempre visibles.
-  fijos: ChipFiltroDef[];
-  // Campos que se suman con "Agregar filtro".
-  agregables: ChipFiltroDef[];
+  // Placeholder del input de ID. Default: el label de `campoId`.
+  idPlaceholder?: string;
+  // Chips siempre visibles: la fecha (si la tabla tiene) y los campos de
+  // lista cerrada (toggle, select).
+  fijos: AbmFiltroBarra[];
+  // El resto, con "Agregar filtro".
+  agregables: AbmFiltroBarra[];
 };
 
 export type AbmTableConfig = {
@@ -151,16 +149,18 @@ export type AbmTableConfig = {
   nombre: string;
   titulo: string;
   hasInsertar: boolean;
-  // Default "split". Ver AbmLayout.
-  layout?: AbmLayout;
-  // Solo layout "barra".
-  barraBusqueda?: AbmBarraBusqueda;
-  filtrosBarra?: AbmFiltrosBarra;
+  // Título del modal de Modificar. Default "Modificar en {nombre}".
+  tituloModificar?: string;
+  // Campo (`nombre` de `secciones`) que identifica el registro: va en el
+  // input de ID de la barra ("contiene") y, si está bloqueado en Modificar,
+  // en el modal lleva botón copiar.
+  campoId: string;
+  filtrosBarra: AbmFiltrosBarra;
   secciones: SeccionBusqueda[];
-  columnasResultado: ColumnaResultado[];
-  // Columnas de Resultados en layout "barra" (card a ancho completo, entran
-  // más columnas). Sin esto se usan las de columnasResultado.
-  columnasResultadoBarra?: ColumnaResultado[];
+  // Columnas de Resultados (tabla a ancho completo): campoId primero (mono),
+  // la fecha si hay, los campos de los chips fijos y 1 o 2 de contexto.
+  // Una columna con `campo` muestra la etiqueta de la opción.
+  columnasResultadoBarra: ColumnaResultado[];
   rows: Record<string, string>[];
   totalRegistros: number;
   exportFilename: string;
@@ -171,12 +171,9 @@ export type AbmTableConfig = {
   // código de interrupción es editable al buscar pero se bloquea al
   // modificar).
   camposReadonlyEnModificar?: string[];
-  // Mapeo de key de columnasResultado → nombre de campo de camposBusqueda,
-  // usado por el estado "consultando" (fila seleccionada en Resultados
-  // mientras se sigue en modo buscar): al seleccionar una fila, sus
-  // valores se vuelcan en los campos mapeados y el formulario entero pasa
-  // a solo-lectura. Los campos sin mapeo (la fila no trae ese dato) quedan
-  // igual de no-editables, solo que en blanco.
+  // Mapeo columna de `rows` → nombre de campo de `secciones`: precarga el
+  // modal de Modificar, traduce los filtros de la barra a columnas y arma
+  // la fila nueva de Insertar.
   mapeoFilaACampos: Record<string, string>;
 };
 
