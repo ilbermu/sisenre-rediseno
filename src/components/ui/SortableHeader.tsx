@@ -13,8 +13,10 @@ function SortIndicator({ dir }: { dir: SortDir }) {
 
 // Encabezado clickeable para tablas armadas con divs (flex/grid) — también
 // lo usa el <th> de la tabla del ABM. `hint` (opcional): el nombre real de
-// la columna en la base, como ColumnHeaderHint (subrayado punteado + tag
-// con hover o foco); el botón de orden es el disparador.
+// la columna en la base, como ColumnHeaderHint (tag arriba del título con
+// hover o foco); el botón de orden es el disparador. Con hint, el título
+// pasa a text-secondary con hover o foco (para que se note que tiene info,
+// sin decoración); sin hint, el hover es el de siempre.
 export function SortableHeaderCell({
   label,
   active,
@@ -32,16 +34,16 @@ export function SortableHeaderCell({
 }) {
   return (
     <ColumnHeaderHint hint={hint}>
-      {(trigger, subrayadoCls) => (
+      {(trigger) => (
         <button
           type="button"
           onClick={onClick}
           {...trigger}
-          className={`flex items-center gap-1 text-heading-xs uppercase select-none cursor-pointer transition-colors hover:text-text ${
-            active ? "text-secondary" : "text-text-muted"
-          } ${className}`}
+          className={`flex items-center gap-1 text-heading-xs uppercase select-none cursor-pointer transition-colors ${
+            hint ? "hover:text-secondary focus-visible:text-secondary" : "hover:text-text"
+          } ${active ? "text-secondary" : "text-text-muted"} ${className}`}
         >
-          <span className={`truncate ${subrayadoCls}`}>{label}</span>
+          <span className="truncate">{label}</span>
           {active && <SortIndicator dir={dir} />}
         </button>
       )}
