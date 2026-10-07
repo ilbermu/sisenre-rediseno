@@ -15,6 +15,7 @@ import {
   modalNeutralBtnCls,
   modalPrimaryBtnCls,
   PeriodSelector,
+  READONLY_FIELD_CLS,
   SectionDivider,
   SelectionActionBar,
   SortableHeaderCell,
@@ -895,15 +896,17 @@ export default function AbmScreen({
   );
 
   // Modal de edición (layout "barra"): el identificador del registro (el
-  // campo de la primera columna de Resultados) va como label de contexto
-  // arriba del título y no aparece en el body; los demás campos no
-  // editables (camposReadonlyEnModificar y tipo "readonly") quedan en su
-  // sección en estado read-only (AbmCampo `readOnly`), nunca disabled.
+  // campo de la primera columna de Resultados) es el primer campo del
+  // formulario, de solo lectura con copiar; el header lleva solo título y
+  // paso. Los demás campos no editables (camposReadonlyEnModificar y tipo
+  // "readonly") quedan en estado de solo lectura (AbmCampo `readOnly`),
+  // nunca disabled.
   const campoReferencia = config.mapeoFilaACampos[columnKeys[0]];
+  const labelReferencia = camposTabla.find((c) => c.nombre === campoReferencia)?.label ?? columnas[0].label;
   const esNoEditable = (c: (typeof camposTabla)[number]) => c.tipo === "readonly" || camposLocked.includes(c.nombre);
-  // Formulario horizontal en filas (FormRow): una lista continua con los
-  // campos de la config en su orden (sin títulos de sección), sin el de la
-  // referencia.
+  // Formulario horizontal en filas (FormRow): una lista continua — la
+  // referencia primero, después los campos de la config en su orden (sin
+  // títulos de sección).
   const camposModificar = camposTabla.filter((c) => c.nombre !== campoReferencia);
   const referenciaModificar = selectedRow !== null ? config.rows[selectedRow][columnKeys[0]] : "";
 
@@ -1048,12 +1051,6 @@ export default function AbmScreen({
           open={mode === "modificar"}
           onClose={handleCancelarModificar}
           paso={{ actual: pasoModificar, total: 2 }}
-          label={
-            <>
-              <span className="min-w-0 truncate text-code font-mono tabular-nums text-text-muted">{referenciaModificar}</span>
-              <CopyButton value={referenciaModificar} label={columnas[0].label.toLowerCase()} size="xs" />
-            </>
-          }
           footer={
             pasoModificar === 1 ? (
               <>
@@ -1071,6 +1068,27 @@ export default function AbmScreen({
           <div ref={bodyModificarRef}>
             {pasoModificar === 1 ? (
               <div>
+                {/* Identificador del registro: primer campo, de solo lectura
+                    (seleccionable) con copiar adentro, a la derecha. No se
+                    edita, así que nunca entra en "Revisar cambios". */}
+                <FormRow
+                  label={labelReferencia}
+                  labelId="modificar-referencia-label"
+                  htmlFor="modificar-referencia"
+                  readOnly
+                >
+                  <div className="relative">
+                    <input
+                      id="modificar-referencia"
+                      readOnly
+                      value={referenciaModificar}
+                      className={`${READONLY_FIELD_CLS} text-code! font-mono tabular-nums pr-8`}
+                    />
+                    <div className="absolute inset-y-0 right-1.5 flex items-center">
+                      <CopyButton value={referenciaModificar} label={columnas[0].label.toLowerCase()} size="xs" />
+                    </div>
+                  </div>
+                </FormRow>
                 {camposModificar.map((c) => {
                   const controlId = `modificar-${c.nombre}`;
                   const labelId = `${controlId}-label`;

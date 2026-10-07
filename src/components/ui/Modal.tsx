@@ -20,7 +20,6 @@ export default function Modal({
   footer,
   children,
   headerExtra,
-  label,
   paso,
   bodyPadding = true,
   bodyOverflow = "auto",
@@ -35,12 +34,6 @@ export default function Modal({
   size?: "sm" | "form" | "lg" | "xl";
   footer?: React.ReactNode;
   children: React.ReactNode;
-  // Label de contexto ARRIBA del título (Carbon "modal label"): el registro
-  // sobre el que actúa el modal (ej. la referencia + CopyButton xs), ver
-  // "Modal de edición de registro". Con label, el header pasa a dos líneas
-  // (label + título) con ✕ centrado en el bloque — la excepción documentada
-  // a la regla de header de una línea. Sin label, el header es el de siempre.
-  label?: React.ReactNode;
   // Modal de varios pasos (ej. Editar → Revisar): indicador "Paso N de M"
   // junto al título, en text-body-sm text-text-muted. Nunca se abre un modal
   // desde otro modal: un paso extra es un paso del mismo modal.
@@ -136,16 +129,7 @@ export default function Modal({
             entre las dos líneas. */}
         <DentroDeModalContext.Provider value={true}>
         <div className="border-b border-border shrink-0">
-          <div className={`flex items-center justify-between gap-3 ${headerExtra ? "px-5 pt-3.5 pb-0" : label ? "px-(--card-px) py-3" : "h-(--card-header-h) px-(--card-px)"}`}>
-            {label ? (
-              <div className="min-w-0 flex-1 flex flex-col">
-                <div className="min-w-0 flex items-center gap-1">{label}</div>
-                <div className="min-w-0 flex items-baseline gap-2">
-                  <p className="min-w-0 truncate text-heading-md text-text">{title}</p>
-                  {pasoIndicador}
-                </div>
-              </div>
-            ) : (
+          <div className={`flex items-center justify-between gap-3 ${headerExtra ? "px-5 pt-3.5 pb-0" : "h-(--card-header-h) px-(--card-px)"}`}>
             <p className={`min-w-0 truncate text-heading-md text-text`}>
               {title}
               {paso && <span className="ml-2">{pasoIndicador}</span>}
@@ -157,7 +141,6 @@ export default function Modal({
                 </span>
               )}
             </p>
-            )}
             <button
               type="button"
               onClick={onClose}
