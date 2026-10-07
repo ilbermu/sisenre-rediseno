@@ -78,6 +78,9 @@ const ATAJOS_FECHA: AtajoRango[] = [
 ];
 
 const ID_DEBOUNCE_MS = 500;
+// Ancho máximo de un chip: el valor trunca con "…" y el texto completo va
+// en el `title` del chip.
+const CHIP_MAX = 200;
 
 // Ítem de menú/lista de los popovers — el de la lista de FilterTrigger.
 const itemCls = (sel: boolean) =>
@@ -281,6 +284,7 @@ export default function ChipFilterBar({
   }
   const hayAlgo = !!id || !!borradorId || [...defs.keys()].some((c) => valores[c]);
 
+  const chipMax = CHIP_MAX;
   const chip = (def: ChipFiltroDef, agregado: boolean) => {
     const v = valores[def.campo] ?? "";
     return (
@@ -293,6 +297,7 @@ export default function ChipFilterBar({
           onToggle={() => (abierto?.campo === def.campo ? cerrarEditor() : setAbierto({ campo: def.campo, ancla: "chip" }))}
           onClear={() => quitar(def.campo)}
           size="md"
+          maxWidth={chipMax}
           valorDestacado
           quitarSiempre={agregado}
           haspopup={def.editor === "lista" || def.editor === "busqueda" ? "listbox" : "dialog"}
