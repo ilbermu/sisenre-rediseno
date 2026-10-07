@@ -24,8 +24,9 @@ export function useMotivoCambio() {
   };
 }
 
-// Contenido de "revisar cambios" — Resumen de cambios (anterior → nuevo) +
-// Motivo (NOTA_OPCIONES u "Otra (especificar)"). Sin modal propio: lo usan
+// Contenido de "revisar cambios" — dos secciones (sin cajas de color):
+// Resumen de cambios (anterior → nuevo) + Motivo (NOTA_OPCIONES u "Otra
+// (especificar)"). Sin modal propio: lo usan
 // ConfirmarModificarModal (layout split del ABM) y el paso 2 del modal de
 // edición de registro (layout barra), con el mismo aspecto.
 export default function RevisarCambiosContent({
@@ -56,8 +57,14 @@ export default function RevisarCambiosContent({
         )}
       </div>
 
-      <div className="rounded-md border border-primary bg-primary-tint p-4">
-        <p className="text-heading-xs uppercase text-secondary mb-1">Motivo</p>
+      {/* Motivo: una sección más del modal, como Resumen de cambios —
+          separada por border-t, sin fondo, borde ni radio propios. Título
+          un escalón más fuerte que el overline de Resumen. */}
+      <div className="border-t border-border pt-5">
+        <p className="mb-1">
+          <span className="text-heading-sm text-text">Motivo</span>
+          <span className="text-body-sm text-text-muted"> · obligatorio</span>
+        </p>
         <p className="text-body-sm text-text-muted mb-3">
           Seleccioná una nota o ingresá una manual para justificar este cambio.
         </p>
