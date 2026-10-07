@@ -68,12 +68,12 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         { campo: "tipo", chipLabel: "Tipo" },
       ],
       agregables: [
-        { campo: "codigoEquipoOperado", label: "Código equipo", chipLabel: "Cód. equipo" },
+        { campo: "codigoEquipoOperado", chipLabel: "Código equipo" },
         { campo: "descEquipoOperado", soloValor: true },
-        { campo: "divisionRedNormal", label: "División red normal", chipLabel: "División" },
-        { campo: "cadenaElectricaAguasArriba", label: "Cadena eléctrica", chipLabel: "Cadena" },
+        { campo: "divisionRedNormal", chipLabel: "División red normal" },
+        { campo: "cadenaElectricaAguasArriba", chipLabel: "Cadena eléctrica" },
         { campo: "alimentadorMT", chipLabel: "Alim. MT" },
-        { campo: "ctMtBtEquipoOperado", label: "CT MT/BT", chipLabel: "CT" },
+        { campo: "ctMtBtEquipoOperado", chipLabel: "CT MT/BT" },
       ],
     },
     secciones: [
@@ -101,16 +101,16 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Datos de red",
         filas: [
           [
-            { nombre: "codigoEquipoOperado", nombreReal: "ID_ELEM", label: "Código de equipo operado", tipo: "texto" },
-            { nombre: "descEquipoOperado", nombreReal: "TIPO_ELE", label: "Descripción equipo operado", tipo: "combobox", opciones: DESCRIPCIONES_EQUIPO_OPERADO, listaLarga: true },
+            { nombre: "codigoEquipoOperado", nombreReal: "ID_ELEM", labelColumna: "Código equipo", label: "Código de equipo operado", tipo: "texto" },
+            { nombre: "descEquipoOperado", nombreReal: "TIPO_ELE", labelColumna: "Descripción equipo", label: "Descripción equipo operado", tipo: "combobox", opciones: DESCRIPCIONES_EQUIPO_OPERADO, listaLarga: true },
           ],
           [
-            { nombre: "divisionRedNormal", nombreReal: "DIVI_RED", label: "División red normal?", tipo: "toggle", opciones: ["Sí", "No"] },
-            { nombre: "cadenaElectricaAguasArriba", nombreReal: "SSEE", label: "Cadena eléctrica aguas arriba", tipo: "texto" },
+            { nombre: "divisionRedNormal", nombreReal: "DIVI_RED", labelColumna: "División red normal", label: "División red normal?", tipo: "toggle", opciones: ["Sí", "No"] },
+            { nombre: "cadenaElectricaAguasArriba", nombreReal: "SSEE", labelColumna: "Cadena eléctrica", label: "Cadena eléctrica aguas arriba", tipo: "texto" },
           ],
           [
             { nombre: "alimentadorMT", nombreReal: "ALIM", label: "Alimentador MT", tipo: "texto" },
-            { nombre: "ctMtBtEquipoOperado", nombreReal: "CMTBT", label: "CT MT/BT del equipo operado", tipo: "texto" },
+            { nombre: "ctMtBtEquipoOperado", nombreReal: "CMTBT", labelColumna: "CT MT/BT", label: "CT MT/BT del equipo operado", tipo: "texto" },
           ],
         ],
       },
@@ -210,14 +210,14 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         { campo: "fecha", chipLabel: "Fecha" },
         { campo: "faseReposicion", chipLabel: "Fase rep." },
         { campo: "faseElectrica", chipLabel: "Fase eléc." },
-        { campo: "codigoEquipoManiobrado", chipLabel: "Cód. equipo" },
+        { campo: "codigoEquipoManiobrado", chipLabel: "Código equipo" },
         { campo: "descEquipoManiobrado", soloValor: true },
       ],
       agregables: [
-        { campo: "cadenaElectricaAguasArriba", chipLabel: "Cadena" },
+        { campo: "cadenaElectricaAguasArriba", chipLabel: "Cadena eléctrica" },
         { campo: "alimentadorMT", chipLabel: "Alim. MT" },
-        { campo: "cantidadClientesBt", chipLabel: "Clientes BT" },
-        { campo: "ctMtBtManiobrado", chipLabel: "CT" },
+        { campo: "cantidadClientesBt", chipLabel: "Cant. clientes" },
+        { campo: "ctMtBtManiobrado", chipLabel: "CT MT/BT" },
       ],
     },
     secciones: [
@@ -237,15 +237,15 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       {
         titulo: "Datos de red",
         filas: [
-          [{ nombre: "codigoEquipoManiobrado", nombreReal: "ID_ELEM", label: "Código del equipo maniobrado", tipo: "texto", placeholder: "@47309278" }],
-          [{ nombre: "descEquipoManiobrado", nombreReal: "TIPO_ELE", label: "Descripción del equipo maniobrado", tipo: "texto", placeholder: "PROTECCION DE TOMA/ACOMETIDA" }],
+          [{ nombre: "codigoEquipoManiobrado", nombreReal: "ID_ELEM", labelColumna: "Código equipo", label: "Código del equipo maniobrado", tipo: "texto", placeholder: "@47309278" }],
+          [{ nombre: "descEquipoManiobrado", nombreReal: "TIPO_ELE", labelColumna: "Descripción equipo", label: "Descripción del equipo maniobrado", tipo: "texto", placeholder: "PROTECCION DE TOMA/ACOMETIDA" }],
           [
-            { nombre: "cadenaElectricaAguasArriba", nombreReal: "SSEE", label: "Cadena eléctrica aguas arriba", tipo: "texto", placeholder: "NCBT" },
+            { nombre: "cadenaElectricaAguasArriba", nombreReal: "SSEE", labelColumna: "Cadena eléctrica", label: "Cadena eléctrica aguas arriba", tipo: "texto", placeholder: "NCBT" },
             { nombre: "alimentadorMT", nombreReal: "ALIM", label: "Alimentador MT", tipo: "texto", placeholder: "NCBT" },
           ],
           [
-            { nombre: "cantidadClientesBt", nombreReal: "CLI", label: "Cantidad de clientes BT repuestos", tipo: "texto", placeholder: "1" },
-            { nombre: "ctMtBtManiobrado", nombreReal: "CMTBT", label: "CT MT/BT maniobrado", tipo: "texto", placeholder: "NCBT" },
+            { nombre: "cantidadClientesBt", nombreReal: "CLI", labelColumna: "Cant. clientes", label: "Cantidad de clientes BT repuestos", tipo: "texto", placeholder: "1" },
+            { nombre: "ctMtBtManiobrado", nombreReal: "CMTBT", labelColumna: "CT MT/BT", label: "CT MT/BT maniobrado", tipo: "texto", placeholder: "NCBT" },
           ],
         ],
       },
@@ -294,10 +294,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       // 5 filtros (≤ 5): todos visibles, sin "Agregar filtro".
       visibles: [
         { campo: "faseReposicion", chipLabel: "Fase rep." },
-        { campo: "cadenaElectrica", chipLabel: "Cadena" },
+        { campo: "cadenaElectrica", chipLabel: "Cadena eléctrica" },
         { campo: "potenciaKva", chipLabel: "Potencia" },
         { campo: "faseElectrica", chipLabel: "Fase eléc." },
-        { campo: "cantidadClientesBt", chipLabel: "Clientes BT" },
+        { campo: "cantidadClientesBt", chipLabel: "Cant. clientes" },
       ],
       agregables: [],
     },
@@ -313,12 +313,12 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Datos del trafo",
         filas: [
           [
-            { nombre: "cadenaElectrica", nombreReal: "CADENA", label: "Cadena eléctrica del trafo repuesto", tipo: "texto", placeholder: "50006#B1#50006-TR1" },
-            { nombre: "potenciaKva", nombreReal: "POT", label: "Potencia en KVA del trafo", tipo: "texto", placeholder: "800" },
+            { nombre: "cadenaElectrica", nombreReal: "CADENA", labelColumna: "Cadena eléctrica", label: "Cadena eléctrica del trafo repuesto", tipo: "texto", placeholder: "50006#B1#50006-TR1" },
+            { nombre: "potenciaKva", nombreReal: "POT", labelColumna: "Potencia", label: "Potencia en KVA del trafo", tipo: "texto", placeholder: "800" },
           ],
           [
             { nombre: "faseElectrica", nombreReal: "FAS", label: "Fase eléctrica", tipo: "texto", placeholder: "RST" },
-            { nombre: "cantidadClientesBt", nombreReal: "CLI", label: "Cantidad de clientes BT repuestos", tipo: "texto", placeholder: "753" },
+            { nombre: "cantidadClientesBt", nombreReal: "CLI", labelColumna: "Cant. clientes", label: "Cantidad de clientes BT repuestos", tipo: "texto", placeholder: "753" },
           ],
         ],
       },
@@ -362,14 +362,14 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       // 8 filtros: los 5 primeros del formulario (sin fecha ni listas
       // cerradas); el resto en "Agregar filtro".
       visibles: [
-        { campo: "fase", chipLabel: "Fase" },
+        { campo: "fase", chipLabel: "Fase de reposición" },
         { campo: "idComercialCliente", chipLabel: "Cliente" },
         { campo: "consumo", chipLabel: "Consumo" },
         { campo: "ctTabla9", chipLabel: "CT T9" },
         { campo: "ctTabla10", chipLabel: "CT T10" },
       ],
       agregables: [
-        { campo: "demandaMedia", chipLabel: "Demanda" },
+        { campo: "demandaMedia", chipLabel: "Potencia" },
         { campo: "tarifa", chipLabel: "Tarifa" },
         { campo: "nivelTension", chipLabel: "Nivel" },
       ],
@@ -379,7 +379,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Identificación",
         filas: [[
           { nombre: "codigoInterrupcion", nombreReal: "REF", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MPR202401004095" },
-          { nombre: "fase", nombreReal: "F", label: "Fase", tipo: "readonly", placeholder: "1" },
+          { nombre: "fase", nombreReal: "F", labelColumna: "Fase de reposición", label: "Fase", tipo: "readonly", placeholder: "1" },
         ]],
       },
       {
@@ -392,7 +392,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
             { nombre: "ctTabla10", label: "CT (Tabla 10)", tipo: "readonly", placeholder: "50006#B1#50006-TR1" },
           ],
           [
-            { nombre: "demandaMedia", nombreReal: "POTENCIA", label: "Demanda media del cliente (KW)", tipo: "texto", placeholder: "290" },
+            { nombre: "demandaMedia", nombreReal: "POTENCIA", labelColumna: "Potencia", label: "Demanda media del cliente (KW)", tipo: "texto", placeholder: "290" },
             { nombre: "tarifa", nombreReal: "TARIFA", label: "Tarifa", tipo: "texto", placeholder: "3MT" },
             { nombre: "nivelTension", nombreReal: "TE", label: "Nivel de tensión", tipo: "texto", placeholder: "MT" },
           ],
@@ -453,14 +453,14 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       // el resto en "Agregar filtro".
       visibles: [
         { campo: "zona", chipLabel: "Zona" },
-        { campo: "subestacion", chipLabel: "Subest." },
-        { campo: "cantClientes", chipLabel: "Clientes" },
-        { campo: "cantTrafos", chipLabel: "Trafos" },
-        { campo: "sumaPotenciaTrafos", chipLabel: "Pot. trafos" },
+        { campo: "subestacion", chipLabel: "Subestación" },
+        { campo: "cantClientes", chipLabel: "Cant. clientes" },
+        { campo: "cantTrafos", chipLabel: "Cant. trafos MT/BT" },
+        { campo: "sumaPotenciaTrafos", chipLabel: "Potencia trafos" },
       ],
       agregables: [
         { campo: "demandaMaxima", chipLabel: "Dem. máx." },
-        { campo: "sumaPotenciaClientesMT", chipLabel: "Pot. MT" },
+        { campo: "sumaPotenciaClientesMT", chipLabel: "Potencia clientes MT" },
         { campo: "capacidadAlimentador", chipLabel: "Capacidad" },
         { campo: "tensionAlimentador", chipLabel: "Tensión" },
         { campo: "longitudAlimentador", chipLabel: "Longitud" },
@@ -472,7 +472,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         filas: [
           [
             { nombre: "alimentadorMT", nombreReal: "ALIM", label: "Alimentador MT", tipo: "texto", placeholder: "NCBT" },
-            { nombre: "subestacion", nombreReal: "SSEE", label: "Subestación", tipo: "texto", placeholder: "SE NORTE" },
+            { nombre: "subestacion", nombreReal: "SSEE", labelColumna: "Subestación", label: "Subestación", tipo: "texto", placeholder: "SE NORTE" },
           ],
           [{ nombre: "zona", nombreReal: "ZONA", label: "Zona", tipo: "toggle", opciones: ZONAS_CDS7, expandirBotones: true }],
         ],
@@ -481,20 +481,20 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Datos del alimentador",
         filas: [
           [
-            { nombre: "cantClientes", nombreReal: "CLI", label: "Cantidad de clientes del alimentador", tipo: "texto", placeholder: "1250" },
-            { nombre: "cantTrafos", nombreReal: "TRAFOS", label: "Cantidad de trafos MT/BT del alimentador", tipo: "texto", placeholder: "48" },
+            { nombre: "cantClientes", nombreReal: "CLI", labelColumna: "Cant. clientes", label: "Cantidad de clientes del alimentador", tipo: "texto", placeholder: "1250" },
+            { nombre: "cantTrafos", nombreReal: "TRAFOS", labelColumna: "Cant. trafos MT/BT", label: "Cantidad de trafos MT/BT del alimentador", tipo: "texto", placeholder: "48" },
           ],
           [
-            { nombre: "sumaPotenciaTrafos", nombreReal: "POT", label: "Suma potencia media trafos MT/BT del alimentador", tipo: "texto", placeholder: "3200" },
+            { nombre: "sumaPotenciaTrafos", nombreReal: "POT", labelColumna: "Potencia trafos", label: "Suma potencia media trafos MT/BT del alimentador", tipo: "texto", placeholder: "3200" },
             { nombre: "demandaMaxima", nombreReal: "DEM_MAX", label: "Demanda máxima", tipo: "texto", placeholder: "2800" },
           ],
           [
-            { nombre: "sumaPotenciaClientesMT", nombreReal: "POTENCIA", label: "Suma potencia media clientes MT del alimentador", tipo: "texto", placeholder: "450" },
-            { nombre: "capacidadAlimentador", nombreReal: "CAP_ALIM", label: "Capacidad del alimentador", tipo: "texto", placeholder: "4000" },
+            { nombre: "sumaPotenciaClientesMT", nombreReal: "POTENCIA", labelColumna: "Potencia clientes MT", label: "Suma potencia media clientes MT del alimentador", tipo: "texto", placeholder: "450" },
+            { nombre: "capacidadAlimentador", nombreReal: "CAP_ALIM", labelColumna: "Capacidad", label: "Capacidad del alimentador", tipo: "texto", placeholder: "4000" },
           ],
           [
-            { nombre: "tensionAlimentador", nombreReal: "TENSION", label: "Tensión del alimentador", tipo: "texto", placeholder: "13.2" },
-            { nombre: "longitudAlimentador", nombreReal: "LONG_ALIM", label: "Longitud del alimentador", tipo: "texto", placeholder: "28.4" },
+            { nombre: "tensionAlimentador", nombreReal: "TENSION", labelColumna: "Tensión", label: "Tensión del alimentador", tipo: "texto", placeholder: "13.2" },
+            { nombre: "longitudAlimentador", nombreReal: "LONG_ALIM", labelColumna: "Longitud", label: "Longitud del alimentador", tipo: "texto", placeholder: "28.4" },
           ],
         ],
       },
@@ -550,7 +550,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         { campo: "fechaReclamo", chipLabel: "Fecha" },
         { campo: "partido", chipLabel: "Partido" },
         { campo: "localidad", chipLabel: "Localidad" },
-        { campo: "interrupcion", chipLabel: "Interrupción" },
+        { campo: "interrupcion", chipLabel: "Código de interrupción" },
         { campo: "reclamos", chipLabel: "Reclamos" },
       ],
       agregables: [
@@ -569,12 +569,12 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Reclamo",
         filas: [
           [
-            { nombre: "idReclamo", nombreReal: "REC", label: "Identificador del reclamo", tipo: "readonly", placeholder: "R-2024-01-00001" },
-            { nombre: "interrupcion", nombreReal: "REF", label: "Interrupción", tipo: "texto", placeholder: "MFZ202401001496" },
+            { nombre: "idReclamo", nombreReal: "REC", labelColumna: "Nro. reclamo", label: "Identificador del reclamo", tipo: "readonly", placeholder: "R-2024-01-00001" },
+            { nombre: "interrupcion", nombreReal: "REF", labelColumna: "Código de interrupción", label: "Interrupción", tipo: "texto", placeholder: "MFZ202401001496" },
             { nombre: "reclamos", label: "Reclamos", tipo: "readonly", placeholder: "3" },
           ],
           [
-            { nombre: "fechaReclamo", nombreReal: "FECHA", label: "Fecha reclamo", tipo: "fecha" },
+            { nombre: "fechaReclamo", nombreReal: "FECHA", labelColumna: "Fecha", label: "Fecha reclamo", tipo: "fecha" },
             { nombre: "codigoFalla", nombreReal: "COD_FALLA", label: "Código falla", tipo: "texto", placeholder: "Otros" },
           ],
         ],
@@ -659,7 +659,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       // primero (lista cerrada), después el orden del formulario.
       visibles: [
         { campo: "tarifa", chipLabel: "Tarifa" },
-        { campo: "fase", chipLabel: "Fase" },
+        { campo: "fase", chipLabel: "Fase de reposición" },
         { campo: "cliente", chipLabel: "Cliente" },
         { campo: "ct", chipLabel: "CT" },
       ],
@@ -671,7 +671,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         filas: [
           [
             { nombre: "codigoInterrupcion", nombreReal: "REF", label: "Código de interrupción", tipo: "readonly", placeholder: "Ej: MFZ202401001157" },
-            { nombre: "fase", nombreReal: "F", label: "Fase", tipo: "readonly", placeholder: "1" },
+            { nombre: "fase", nombreReal: "F", labelColumna: "Fase de reposición", label: "Fase", tipo: "readonly", placeholder: "1" },
           ],
           [
             { nombre: "cliente", nombreReal: "POL", labelColumna: "Nro. cuenta", label: "Cliente", tipo: "readonly", placeholder: "3190897997" },
@@ -722,7 +722,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       // tabla no tiene ese campo.
       visibles: [
         { campo: "tarifa", chipLabel: "Tarifa" },
-        { campo: "fase", chipLabel: "Fase" },
+        { campo: "fase", chipLabel: "Fase de reposición" },
         { campo: "cliente", chipLabel: "Cliente" },
       ],
       agregables: [],
@@ -733,7 +733,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         filas: [
           [
             { nombre: "codigoInterrupcion", nombreReal: "REF", label: "Código de interrupción", tipo: "texto", placeholder: "Ej: BFZ202607056849" },
-            { nombre: "fase", nombreReal: "F", label: "Fase", tipo: "texto", placeholder: "1" },
+            { nombre: "fase", nombreReal: "F", labelColumna: "Fase de reposición", label: "Fase", tipo: "texto", placeholder: "1" },
           ],
           [
             { nombre: "cliente", nombreReal: "POL", labelColumna: "Nro. cuenta", label: "Cliente", tipo: "texto", placeholder: "0932073585" },

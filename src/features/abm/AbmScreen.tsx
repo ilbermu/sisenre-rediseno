@@ -22,7 +22,7 @@ import {
   useTableToolbar,
 } from "@/components/ui";
 import TopBar from "@/components/layout/TopBar";
-import { columnasDeResultados } from "@/features/abm/columnasDeResultados";
+import { columnasDeResultados, encabezadosInconsistentes } from "@/features/abm/columnasDeResultados";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { PERIODS } from "@/data/dominio";
 import { AbmDeepLink, AbmFiltroBarra, AbmMode, AbmTableKey, CampoBusqueda } from "@/data/types";
@@ -33,6 +33,13 @@ import { filtrarFilas, FiltroFila, modoDeEditor } from "@/features/abm/filtrarFi
 import RevisarCambiosContent, { ResumenValoresContent, useMotivoCambio } from "@/features/abm/RevisarCambiosContent";
 import { labelDeValor } from "@/features/abm/labelDeValor";
 import { formatNumero } from "@/lib/format";
+
+// Verificación de desarrollo: mismo nombre real = mismo encabezado en todas
+// las tablas (salvo las excepciones declaradas). Si falla, lo reporta.
+if (import.meta.env.DEV) {
+  const problemas = encabezadosInconsistentes(ABM_TABLE_CONFIGS);
+  if (problemas.length) console.error("[ABM] Encabezados de columna inconsistentes:\n" + problemas.join("\n"));
+}
 
 // Vuelca los datos de una fila de resultados en `valores` del formulario,
 // según el mapeo columna→campo de la tabla (config.mapeoFilaACampos) — el

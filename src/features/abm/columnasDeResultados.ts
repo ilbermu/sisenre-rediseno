@@ -22,3 +22,42 @@ export function columnasDeResultados(config: AbmTableConfig): ColumnaResultado[]
     return key ? [{ key, label: c.labelColumna ?? c.label, campo: c, nombreReal: c.nombreReal }] : [];
   });
 }
+
+// Excepciones declaradas a "mismo nombre real = mismo encabezado" (ver
+// DESIGN_SYSTEM.md, Patrones → "ABM"): { tabla, nombreReal } cuyo encabezado
+// puede diferir. SSEE de Tabla 7 es otro dato (la subestación, no la cadena
+// eléctrica); POT y POTENCIA de Tabla 7 se distinguen entre sí
+// ("Potencia trafos" / "Potencia clientes MT").
+const EXCEPCIONES: { tabla: string; nombreReal: string }[] = [
+  { tabla: "cds7", nombreReal: "SSEE" },
+  { tabla: "cds7", nombreReal: "POT" },
+  { tabla: "cds7", nombreReal: "POTENCIA" },
+];
+
+// Verificación de consistencia de encabezados: agrupando por nombreReal,
+// todas las columnas de todas las tablas llevan el mismo encabezado (salvo
+// las EXCEPCIONES), y ninguna tabla repite un encabezado. Devuelve la lista
+// de problemas (vacía = ok); AbmScreen la reporta en desarrollo.
+export function encabezadosInconsistentes(configs: Record<string, AbmTableConfig>): string[] {
+  const problemas: string[] = [];
+  const porReal = new Map<string, Map<string, string[]>>();
+  for (const [tabla, config] of Object.entries(configs)) {
+    const columnas = columnasDeResultados(config);
+    const vistos = new Map<string, string>();
+    for (const c of columnas) {
+      const previo = vistos.get(c.label);
+      if (previo) problemas.push(`${tabla}: "${c.label}" repetido (${previo} y ${c.nombreReal})`);
+      vistos.set(c.label, c.nombreReal ?? c.campo.nombre);
+      if (!c.nombreReal || EXCEPCIONES.some((e) => e.tabla === tabla && e.nombreReal === c.nombreReal)) continue;
+      const grupo = porReal.get(c.nombreReal) ?? new Map<string, string[]>();
+      grupo.set(c.label, [...(grupo.get(c.label) ?? []), tabla]);
+      porReal.set(c.nombreReal, grupo);
+    }
+  }
+  for (const [real, titulos] of porReal) {
+    if (titulos.size > 1) {
+      problemas.push(`${real}: encabezados distintos — ${[...titulos].map(([t, tablas]) => `"${t}" (${tablas.join(", ")})`).join(" vs ")}`);
+    }
+  }
+  return problemas;
+}
