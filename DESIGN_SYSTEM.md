@@ -253,6 +253,13 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **ABM, variante barra — buscar y refinar:** Buscar filtra de verdad las
+  filas de muestra (`filtrarFilas`); Enter en un input y Aplicar del flyout
+  ejecutan la búsqueda; estado vacío "No hay registros con estos filtros" +
+  "Limpiar filtros". `FilterBar` nunca se bloquea por haber resultados
+  (Buscar siempre habilitado, Origen/Tipo ya no quedan fijos); Consultas
+  conserva solo el bloqueo por interrupción seleccionada.
+
 - **Fase eléctrica vuelve a dropdown:** se elimina el tipo de campo
   `"fase"` (botones R/S/T de selección múltiple) y su sección del DS;
   `faseElectrica` de CDS2 es un select con R, S, T, RS, RT, ST, RST, también
@@ -1187,7 +1194,8 @@ FILTROS APLICADOS: (Cadena eléctrica: NCBT ×) (División red normal: Sí ×)  
   Código equipo (texto) · Descripción equipo operado (combobox,
   `ValuePicker` `searchable` + `modal`, lista completa en modal, opciones
   por `opcionesDescEquipo`) · División red normal (toggle Sí / No de igual
-  ancho; sin selección = sin filtro). Pie: Limpiar filtros (link) · Cerrar
+  ancho; sin selección = sin filtro). Pie: Limpiar filtros (link, solo
+  vacía el flyout) · Cerrar
   · Aplicar.
 - **Chips de filtros aplicados:** franja `bg-fill-subtle` con borde debajo
   de la barra, un chip removible por filtro del flyout con valor
@@ -1203,12 +1211,16 @@ de ninguna pantalla adentro: si el dato de la pantalla es otro (ABM: "I" /
 "E"), traduce la pantalla.
 
 **Estados:**
-- `buscado`: Buscar deshabilitado, Limpiar habilitado, y Origen / Tipo
-  fijos hasta Limpiar.
-- `disabled` (Consultas con una interrupción seleccionada): toda la fila no
-  editable con los valores a contraste completo (`!bg-fill-subtle
-  !text-text`). El flyout no se deshabilita.
-- Botones deshabilitados con `opacity-40`.
+- **Nunca se bloquea por haber resultados:** con resultados en pantalla
+  todos los campos y Buscar siguen habilitados (la barra busca y refina).
+  `buscado` solo habilita Limpiar.
+- `disabled`: solo por un motivo propio de la pantalla (Consultas con una
+  interrupción seleccionada) — toda la fila no editable con los valores a
+  contraste completo (`!bg-fill-subtle !text-text`). El flyout no se
+  deshabilita.
+- **Enter** en un input de la barra busca; en un input del flyout, igual
+  que **Aplicar**: cierra el flyout y busca.
+- Limpiar deshabilitado (sin resultados) con `opacity-40`.
 
 **Tier 760px:** la fila hace wrap; código a 112px y fecha a 128px; Origen
 y Tipo pasan de toggles con label a `ValuePicker` ("Origen" 92px, "Tipo"
@@ -1845,8 +1857,20 @@ período) es el mismo en los dos.
   tiene opciones `{value, label}`, `AbmScreen` traduce (Interno/Externo ↔
   I/E, Forzado/Programado ↔ F/P). El placeholder del código y la lista de
   descripciones salen de la config del campo.
-- **Diferencia con Consultas y con el split:** seleccionar una fila **no**
-  deshabilita la barra ni le vuelca datos (no hay estado "consultando").
+- **La barra busca y refina:** Buscar (botón, Enter en un input o Aplicar
+  del flyout) aplica los valores actuales sobre **todas** las filas de
+  muestra, nunca sobre el resultado anterior (`filtrarFilas`, en
+  `src/features/abm/filtrarFilas.ts`): todos los filtros con valor en AND;
+  código, cadena eléctrica, alimentador MT, centro de transformación y
+  código equipo por "contiene" sin distinguir mayúsculas; fecha por mismo
+  día (la hora cuenta solo si se cargó una); nivel, fase, origen, tipo,
+  descripción y división red normal por igualdad. Sin filtros trae todo.
+  Vuelve a la página 1 y actualiza "N de M registros"; si el registro
+  seleccionado no queda en el resultado, se deselecciona. Limpiar vacía
+  todo y vuelve al estado previo a buscar.
+- **Nunca se bloquea:** ni por tener resultados ni por tener un registro
+  seleccionado (no hay estado "consultando": seleccionar una fila no le
+  vuelca datos).
 - **Sin card de Resultados:** no hay card ni `CardHeader` "Resultados".
   Debajo de la barra de búsqueda (`gap-(--page-gap)`), en la misma vertical
   (`--page-px`):
@@ -1871,6 +1895,12 @@ período) es el mismo en los dos.
     nunca de la página.
   - **Estado vacío** antes de buscar: el de Interrupciones en Consultas
     ("Completá los filtros y presioná Buscar"), centrado dentro de la caja.
+  - **Sin resultados:** si la búsqueda no trae filas, dentro de la caja
+    "No hay registros con estos filtros" + link "Limpiar filtros"
+    (`text-label text-secondary hover:underline`, hace lo mismo que
+    Limpiar), sin pie de paginación; el contador dice "0 registros".
+  - **Pie:** "Registros encontrados" cuenta las filas encontradas cuando
+    hay algún filtro aplicado (sin filtros, el total de la tabla).
   - Columnas propias (`columnasResultadoBarra`); una columna con `campo`
     muestra la etiqueta de la opción (Interno/Externo, Forzado/Programado),
     también para buscar y ordenar. Se atenúa con el flyout abierto.

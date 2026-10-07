@@ -71,11 +71,12 @@ export default function FilterBar({
   onChange: (cambios: Partial<FilterBarValores>) => void;
   onBuscar: () => void;
   onLimpiar: () => void;
-  // Hay resultados en pantalla: Buscar se deshabilita, Limpiar se habilita
-  // y Origen/Tipo quedan fijos hasta Limpiar.
+  // Hay resultados en pantalla: habilita Limpiar. Nunca bloquea campos ni
+  // Buscar — con resultados, la barra sirve para refinar.
   buscado: boolean;
-  // Toda la fila no editable, con los valores a contraste completo (ej.
-  // Consultas mientras hay una interrupción seleccionada).
+  // Toda la fila no editable, con los valores a contraste completo. Solo
+  // por un motivo propio de la pantalla (ej. Consultas mientras hay una
+  // interrupción seleccionada), nunca por tener resultados.
   disabled?: boolean;
   placeholderCodigo: string;
   // Lista de "Descripción equipo operado" (dato de dominio, lo pasa la
@@ -88,7 +89,15 @@ export default function FilterBar({
 }) {
   const activos = FLYOUT_FIELDS.filter((f) => valores[f.key].trim() !== "");
   const fijoCls = disabled ? " !bg-fill-subtle !text-text" : "";
-  const origenTipoBloqueado = buscado || disabled;
+  // Enter en un input de la barra o del flyout busca (en el flyout, como
+  // Aplicar: cierra y busca).
+  const buscarConEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") onBuscar();
+  };
+  const aplicar = () => {
+    onFlyoutAbiertoChange(false);
+    onBuscar();
+  };
   const alternar = (campo: "origen" | "tipo", opt: string) => onChange({ [campo]: valores[campo] === opt ? "" : opt });
 
   return (
@@ -107,6 +116,7 @@ export default function FilterBar({
             style={{ width: 190, flexShrink: 0 }}
             value={valores.codigo}
             onChange={(e) => onChange({ codigo: e.target.value })}
+            onKeyDown={buscarConEnter}
           />
 
           <DateTimeField
@@ -149,7 +159,7 @@ export default function FilterBar({
               options={["Interno", "Externo"]}
               selected={valores.origen ? [valores.origen] : []}
               onToggle={(opt) => alternar("origen", opt)}
-              disabled={origenTipoBloqueado}
+              disabled={disabled}
               sizeCls={BTN_SEG_MD}
             />
 
@@ -158,13 +168,13 @@ export default function FilterBar({
               options={["Forzado", "Programado"]}
               selected={valores.tipo ? [valores.tipo] : []}
               onToggle={(opt) => alternar("tipo", opt)}
-              disabled={origenTipoBloqueado}
+              disabled={disabled}
               sizeCls={BTN_SEG_MD}
             />
           </div>
 
           <ValuePicker
-            isDisabled={origenTipoBloqueado}
+            isDisabled={disabled}
             value={valores.origen}
             onChange={(v) => onChange({ origen: v })}
             opts={["Interno", "Externo"]}
@@ -173,7 +183,7 @@ export default function FilterBar({
           />
 
           <ValuePicker
-            isDisabled={origenTipoBloqueado}
+            isDisabled={disabled}
             value={valores.tipo}
             onChange={(v) => onChange({ tipo: v })}
             opts={["Forzado", "Programado"]}
@@ -211,8 +221,7 @@ export default function FilterBar({
             <button
               type="button"
               onClick={onBuscar}
-              disabled={buscado}
-              className={`${BTN_MD} text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] bg-primary-strong hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
+              className={`${BTN_MD} text-white transition-[color,background-color,border-color,transform] duration-(--duration-base) active:scale-[0.99] bg-primary-strong hover:bg-primary-hover`}
             >Buscar</button>
           </div>
         </div>
@@ -274,6 +283,7 @@ export default function FilterBar({
                       placeholder={f.placeholder}
                       value={valores[f.key]}
                       onChange={(e) => onChange({ [f.key]: e.target.value })}
+                      onKeyDown={(e) => e.key === "Enter" && aplicar()}
                       className={MOD_FIELD_CLS}
                     />
                   </div>
@@ -298,7 +308,7 @@ export default function FilterBar({
                 </button>
                 <button
                   type="button"
-                  onClick={() => onFlyoutAbiertoChange(false)}
+                  onClick={aplicar}
                   className={`${BTN_MD} text-white bg-primary-strong hover:bg-primary-hover transition-colors`}
                 >
                   Aplicar

@@ -31,6 +31,7 @@ import AbmFila from "@/features/abm/AbmFila";
 import AbmTableSelector from "@/features/abm/AbmTableSelector";
 import ConfirmarBorrarModal from "@/features/abm/ConfirmarBorrarModal";
 import ConfirmarModificarModal from "@/features/abm/ConfirmarModificarModal";
+import { filtrarFilas, FiltroFila, MODO_FILTRO } from "@/features/abm/filtrarFilas";
 import RevisarCambiosContent, { useMotivoCambio } from "@/features/abm/RevisarCambiosContent";
 import { labelDeValor } from "@/features/abm/labelDeValor";
 import { formatNumero } from "@/lib/format";
@@ -126,6 +127,11 @@ export default function AbmScreen({
   // (`valores` / setValor) que el panel de Búsqueda del layout "split".
   const esBarra = config.layout === "barra";
   const [flyoutOpen, setFlyoutOpen] = useState(false);
+  // Layout "barra": foto de `valores` tomada en la última búsqueda — las
+  // filas de Resultados salen de aplicar estos filtros sobre config.rows
+  // (todas las filas de muestra, nunca sobre el resultado anterior). null =
+  // todavía no se buscó (o se limpió).
+  const [valoresBuscados, setValoresBuscados] = useState<Record<string, string> | null>(null);
   // Modal de edición de registro (layout "barra"): un solo modal con dos
   // pasos — 1 Editar, 2 Revisar (Resumen de cambios + Motivo). Nunca se abre
   // ConfirmarModificarModal encima: el paso 2 es el mismo modal.
@@ -142,6 +148,7 @@ export default function AbmScreen({
     setValoresOriginales({});
     setFilasBorradas(new Set());
     setFlyoutOpen(false);
+    setValoresBuscados(null);
   }, [tableKey]);
 
   // Aplica un deep-link pendiente para ESTA tabla — corre después del
@@ -158,6 +165,7 @@ export default function AbmScreen({
     } else {
       setMode("buscar");
       setValores({ [deepLink.campo]: deepLink.valor });
+      setValoresBuscados({ [deepLink.campo]: deepLink.valor });
       setShowData(true);
       const idx = config.rows.findIndex((r) => r[deepLink.columna] === deepLink.valor);
       setSelectedRow(idx >= 0 ? idx : null);
@@ -224,6 +232,15 @@ export default function AbmScreen({
       const nombre = camposBarra[filtro as keyof FilterBarValores];
       setValor(nombre, traducir(nombre, v ?? "", "value"));
     }
+  }
+  // Filtros de la barra → filtros por columna de config.rows: cada filtro
+  // va contra la columna que mapeoFilaACampos asocia a su campo.
+  function filtrosDeValores(v: Record<string, string>): FiltroFila[] {
+    if (!camposBarra) return [];
+    return Object.entries(camposBarra).flatMap(([filtro, nombre]) => {
+      const columna = Object.keys(config.mapeoFilaACampos).find((k) => config.mapeoFilaACampos[k] === nombre);
+      return columna ? [{ columna, valor: v[nombre] ?? "", modo: MODO_FILTRO[filtro as keyof FilterBarValores] }] : [];
+    });
   }
 
   // Secciones del formulario del panel de Búsqueda del layout "split"
@@ -310,7 +327,10 @@ export default function AbmScreen({
   // export, conteo) sin renumerar nada — los índices que quedan siguen
   // siendo los mismos de config.rows, que es lo que usan selectedRow,
   // mapeoFilaACampos y el resto del formulario.
-  const visibleIndices = visibleIndicesConBorradas.filter((i) => !filasBorradas.has(i));
+  // Layout "barra": además, solo las filas que pasan los filtros de la
+  // última búsqueda.
+  const indicesBuscados = esBarra && valoresBuscados ? new Set(filtrarFilas(config.rows, filtrosDeValores(valoresBuscados))) : null;
+  const visibleIndices = visibleIndicesConBorradas.filter((i) => !filasBorradas.has(i) && (!indicesBuscados || indicesBuscados.has(i)));
 
   // Navegación por teclado en Resultados: flecha abajo/arriba mueve la
   // selección entre filas visibles y autocompleta Búsqueda en vivo (mismo
@@ -357,10 +377,20 @@ export default function AbmScreen({
     setShowData(false);
     setSelectedRow(null);
     setValores({});
+    setValoresBuscados(null);
   }
   function handleBuscar() {
     setShowData(true);
-    setSelectedRow(null);
+    if (!esBarra) {
+      setSelectedRow(null);
+      return;
+    }
+    // Layout "barra": la barra busca y refina — aplica los valores actuales
+    // sobre todas las filas de muestra. Si el registro seleccionado no queda
+    // en el resultado, se deselecciona.
+    const foto = { ...valores };
+    setValoresBuscados(foto);
+    if (selectedRow !== null && !filtrarFilas(config.rows, filtrosDeValores(foto)).includes(selectedRow)) setSelectedRow(null);
   }
   function handleAbrirAlta() {
     // No toca showData/selectedRow — el panel de Resultados sigue
@@ -717,6 +747,12 @@ export default function AbmScreen({
   // Se atenúa con el flyout "Más filtros" abierto, como las cards de
   // Consultas de interrupción.
   const registrosVisibles = config.rows.length - filasBorradas.size;
+  const hayResultados = showData && visibleIndices.length > 0;
+  // Con algún filtro aplicado, el pie cuenta las filas encontradas; sin
+  // filtros, el total de la tabla (como el split).
+  const hayFiltrosBuscados = !!valoresBuscados && filtrosDeValores(valoresBuscados).some((f) => f.valor.trim() !== "");
+  const registrosEncontrados = hayFiltrosBuscados ? visibleIndices.length : config.totalRegistros;
+  const paginasBarra = Math.max(1, Math.ceil(registrosEncontrados / 25));
   const resultadosBarra = (
     <div
       className={`flex-1 min-h-0 flex flex-col gap-2 transition-opacity duration-(--duration-base) ${
@@ -777,7 +813,7 @@ export default function AbmScreen({
           ref={resultadosListRef}
           tabIndex={showData ? 0 : -1}
           onKeyDown={handleResultadosKeyDown}
-          className={`flex-1 min-h-0 overflow-y-auto rounded-t-md ${showData ? "" : "rounded-b-md"} ${FOCUS_RING_INSET}`}
+          className={`flex-1 min-h-0 overflow-y-auto rounded-t-md ${hayResultados ? "" : "rounded-b-md"} ${FOCUS_RING_INSET}`}
         >
           {!showData ? (
             // Mismo estado vacío que la tabla de Interrupciones en Consultas
@@ -786,6 +822,16 @@ export default function AbmScreen({
               <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
               <p className="text-label text-text-muted">Sin resultados</p>
               <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
+            </div>
+          ) : visibleIndices.length === 0 ? (
+            // La búsqueda no trajo filas — "Limpiar filtros" hace lo mismo
+            // que Limpiar de la barra.
+            <div className="h-full flex flex-col items-center justify-center gap-2 text-center px-8">
+              <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
+              <p className="text-label text-text-muted">No hay registros con estos filtros</p>
+              <button type="button" onClick={handleLimpiar} className="text-label text-secondary hover:underline">
+                Limpiar filtros
+              </button>
             </div>
           ) : (
             <table className="w-full border-collapse">
@@ -848,12 +894,12 @@ export default function AbmScreen({
         </div>
 
         {/* Paginación — al pie, dentro de la caja. */}
-        {showData && (
+        {hayResultados && (
           <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-md shrink-0 flex items-center justify-between">
             <span className="text-body-sm text-text">
               Registros encontrados:{" "}
               <span className="font-semibold text-secondary">
-                {formatNumero(config.totalRegistros)}
+                {formatNumero(registrosEncontrados)}
               </span>
             </span>
             <div className="flex items-center gap-2 text-body-sm text-text-muted">
@@ -862,11 +908,11 @@ export default function AbmScreen({
               </button>
               <span>
                 Pág. <span className="font-medium text-text">1</span> de{" "}
-                <span className="font-medium text-text">{formatNumero(totalPages)}</span>
+                <span className="font-medium text-text">{formatNumero(paginasBarra)}</span>
               </span>
               <button
                 className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`}
-                disabled={totalPages <= 1}
+                disabled={paginasBarra <= 1}
               >
                 Siguiente
               </button>
