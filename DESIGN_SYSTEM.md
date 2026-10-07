@@ -251,6 +251,21 @@ Vigesimosexta pasada (también 06/10/2026):
   R/S/T/RST de `faseElectrica` en CDS2. Regla: un campo de pocas opciones
   cortas se resuelve con botones, no con un dropdown.
 
+**07/10/2026**
+
+- **`FilterBar`** (nuevo, `components/ui`): la barra de búsqueda general
+  de Consultas de interrupción sale de `ModificarContent` a un componente
+  controlado por la pantalla. Regla: toda pantalla con barra de búsqueda
+  general usa `FilterBar`; nunca se copia el markup.
+- **Flyout "Más filtros":** Descripción equipo operado pasa a combobox con
+  la lista completa en modal (`ValuePicker` `searchable` + `modal`) y
+  División red normal a toggle Sí / No de igual ancho.
+- **ABM, variante barra:** Tabla 2 deja `AbmBarraBusqueda` (campos de la
+  config renderizados con `AbmCampo`) y usa `FilterBar`, idéntica a la de
+  Consultas. `barraBusqueda` pasa a ser un mapeo filtro → campo
+  (`campos`); se eliminan `seccionesBarra`, `seccionesMasFiltros`, `anchos`
+  y la prop `controlado` de `AbmCampo`.
+
 ## Índice
 
 **1. Fundamentos**
@@ -280,6 +295,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [FieldLabel](#fieldlabel) ·
 [FloatingPanel](#floatingpanel) ·
 [FormRow](#formrow) ·
+[FilterBar](#filterbar) ·
 [FilterTrigger](#filtertrigger) ·
 [ListBox](#listbox) ·
 [Modal](#modal) ·
@@ -673,7 +689,7 @@ Tokens de z-index por rol, `z-(--z-…)`:
 |---|---|---|
 | `--z-sticky` | 10 | `th` sticky de tablas, contenido sobre el pill del sidebar |
 | `--z-dismiss` | 15 | backdrops que cierran un panel con clic afuera sin tapar la barra que lo abrió (flyout "Más filtros") |
-| `--z-raised` | 20 | filter bar de Consultas de interrupción |
+| `--z-raised` | 20 | barra de `FilterBar` |
 | `--z-dropdown` | 30 | dropdowns, popovers, flyouts (el menú del sidebar colapsado queda siempre sobre el filter bar) |
 | `--z-overlay` | 40 | scrim de modales |
 | `--z-modal` | 50 | panel de modal |
@@ -1158,6 +1174,76 @@ controles de anchos distintos en la columna derecha; más de un campo por
 fila.
 
 **Archivo:** `src/components/ui/FormRow.tsx`.
+
+## FilterBar
+
+**Para qué:** la barra de búsqueda general de una pantalla (Consultas de
+interrupción, ABM Tabla 2 en layout barra). **Regla:** toda pantalla con
+barra de búsqueda general usa `FilterBar`; los campos cambian por
+configuración (props, mapeo de la pantalla), nunca se copia el markup.
+
+**Anatomía:** fila única sin contenedor, apoyada en el fondo de la página
+(`relative z-(--z-raised)`, `flex items-center gap-2`):
+
+```
+[Ej: BFZ…      ] [dd/mm/aaaa hh:mm 📅] [Nivel ▾] [Fase ▾] │ ORIGEN [Interno|Externo] TIPO [Forzado|Programado]   [⚲ Más filtros (2)] [Limpiar] [Buscar]
+FILTROS APLICADOS: (Cadena eléctrica: NCBT ×) (División red normal: Sí ×)      ← solo con filtros del flyout
+```
+
+- **Código:** input `MOD_FIELD_CLS` en mono (`text-code`), 190px fijo,
+  placeholder "Ej: …" (`placeholderCodigo`).
+- **Fecha:** `DateTimeField`.
+- **Nivel** (BT/MT/AT, 88px; el valor elegido en semibold) y **Fase**
+  (R/S/T/RS/RT/ST/RST, 84px): `ValuePicker` sin label, el placeholder hace
+  de label. Excepción a la regla de [Fase (R/S/T)](#fase-rst): en la barra
+  la fase es un dropdown, por ancho. El campo Fase de un formulario de
+  edición sigue con botones.
+- **Divisor** vertical (`w-px h-5 bg-border`).
+- **Origen y Tipo:** label inline (`text-heading-xs` uppercase,
+  `text-text-muted`) + `ButtonSelectGroup` `BTN_SEG_MD`, selección única
+  que se apaga con un segundo clic.
+- **A la derecha** (`ml-auto`): Más filtros (outline `md`, ícono `Filter`,
+  badge `primary-strong` con la cantidad de filtros del flyout con valor;
+  con alguno activo queda pintado `primary-tint`) · Limpiar · Buscar
+  (primario, último).
+- **Flyout "Más filtros":** anclado a la derecha, 520px, a 6px de la barra
+  (`--z-dropdown`), con backdrop no bloqueante en `--z-dismiss` (debajo de
+  la barra: los controles siguen clickeables). Título + ✕, grilla de 2
+  columnas: Cadena eléctrica · Alimentador MT · Centro de transformación ·
+  Código equipo (texto) · Descripción equipo operado (combobox,
+  `ValuePicker` `searchable` + `modal`, lista completa en modal, opciones
+  por `opcionesDescEquipo`) · División red normal (toggle Sí / No de igual
+  ancho; sin selección = sin filtro). Pie: Limpiar filtros (link) · Cerrar
+  · Aplicar.
+- **Chips de filtros aplicados:** franja `bg-fill-subtle` con borde debajo
+  de la barra, un chip removible por filtro del flyout con valor
+  ("`{label}: {valor}`" + ×).
+
+**Props:** `valores` (`FilterBarValores`, todos string, `""` = sin filtro;
+Origen y Tipo con su etiqueta), `onChange(cambios)` (solo los campos que
+cambiaron), `onBuscar`, `onLimpiar`, `buscado`, `disabled?`,
+`placeholderCodigo`, `opcionesDescEquipo`, `flyoutAbierto` y
+`onFlyoutAbiertoChange` (la pantalla atenúa su contenido con el flyout
+abierto). `FILTER_BAR_VACIO` es el estado en blanco. Sin lógica de negocio
+de ninguna pantalla adentro: si el dato de la pantalla es otro (ABM: "I" /
+"E"), traduce la pantalla.
+
+**Estados:**
+- `buscado`: Buscar deshabilitado, Limpiar habilitado, y Origen / Tipo
+  fijos hasta Limpiar.
+- `disabled` (Consultas con una interrupción seleccionada): toda la fila no
+  editable con los valores a contraste completo (`!bg-fill-subtle
+  !text-text`). El flyout no se deshabilita.
+- Botones deshabilitados con `opacity-40`.
+
+**Tier 760px:** la fila hace wrap; código a 112px y fecha a 128px; Origen
+y Tipo pasan de toggles con label a `ValuePicker` ("Origen" 92px, "Tipo"
+112px).
+
+**Qué no hacer:** copiar el markup de la barra en una pantalla; agregarle
+labels arriba (`FieldLabel`); importar desde `features/`.
+
+**Archivo:** `src/components/ui/FilterBar.tsx`.
 
 ## FilterTrigger
 
@@ -1753,14 +1839,13 @@ período) es el mismo en los dos.
   derecha. Seleccionar una fila vuelca sus datos en el formulario
   ("consultando"); Insertar y Modificar usan el mismo panel de la izquierda
   y atenúan Resultados.
-- **`barra`** (en prueba, solo CDS2): el formato de la búsqueda de
-  Consultas de interrupción con los campos de la tabla.
+- **`barra`** (en prueba, solo CDS2): la barra de búsqueda de Consultas de
+  interrupción ([`FilterBar`](#filterbar)) + Resultados a ancho completo.
 
 ```
 ┌ masthead: [Tabla 2 · CDS2 ▾]                                [Período ▾] ┐
 │                                                                         │
-│ Código de interrupción  Fecha     Nivel de tensión  Fase eléctrica  Origen              Tipo                      │  labels (FieldLabel)
-│ [               ]       [      ]  [BT|MT|AT]        [     ▾]        [Interno|Externo]   [Forzado|Programado]  [Más filtros] [Limpiar] [Buscar] │  barra, sin contenedor
+│ [Ej: BFZ…  ] [fecha 📅] [Nivel ▾] [Fase ▾] │ ORIGEN [Interno|Externo] TIPO [Forzado|Programado]  [Más filtros] [Limpiar] [Buscar] │  FilterBar
 │ FILTROS APLICADOS: (chip ×) (chip ×)                                     │  solo si hay filtros del flyout
 │                                                                (gap --page-gap)
 │ 40 de 40 registros                                                     │  barra de herramientas, sobre el fondo (sin selección)
@@ -1773,28 +1858,19 @@ período) es el mismo en los dos.
 │ └───────────────────────────────────────────────────────────────────┘   │
 ```
 
-- **Formato compartido con Consultas, campos de la tabla.** De Consultas se
-  copia solo el formato (`AbmBarraBusqueda`): fila única apoyada en el
-  fondo (`--z-raised`), "Más filtros" con badge y flyout anclado a la
-  derecha (`--z-dropdown`, backdrop en `--z-dismiss`), chips de filtros
-  aplicados, y Limpiar + Buscar a la derecha (`ml-auto`, Buscar primario
-  último). Los campos y controles salen **siempre** de la config de la
-  tabla: cada uno se renderiza con `AbmCampo` — mismo label (`FieldLabel`
-  arriba), control, opciones, placeholder y estado (`valores` / `setValor`)
-  que en el panel de Búsqueda del split.
-  - **Fila:** las secciones de identificación y clasificación
-    (`barraBusqueda.seccionesBarra`; en CDS2, "Identificación" y
-    "Clasificación"), en su orden.
-  - **"Más filtros":** el resto (`seccionesMasFiltros`; en CDS2, "Datos de
-    red"). El badge cuenta esos campos con valor.
-  - **Alineación y anchos:** la fila alinea por la base (`items-end`): los
-    botones quedan a la altura de los controles, no de los labels. Cada
-    campo tiene ancho fijo acorde a su contenido (`barraBusqueda.anchos`;
-    los toggles, el de sus opciones) y no se estira. En el tier de 760px la
-    fila hace wrap; los toggles no se reemplazan por selects.
-  - **Controlados:** los inputs de texto van controlados también en modo
-    buscar (`AbmCampo` con `controlado`), así el badge y los chips cuentan
-    sus valores y Limpiar los vacía.
+- **La barra es `FilterBar`**, idéntica a la de Consultas (sin labels
+  arriba, Nivel y Fase como dropdown, Origen/Tipo con label inline, mismo
+  flyout). `config.barraBusqueda.campos` dice a qué campo de la tabla
+  corresponde cada filtro (CDS2: código → `codigoInterrupcion`, fecha →
+  `fecha`, nivel → `nivelTension`, fase → `faseElectrica`, origen/tipo →
+  `origen`/`tipo`, cadena eléctrica → `cadenaElectricaAguasArriba`,
+  alimentador → `alimentadorMT`, centro de transformación →
+  `ctMtBtEquipoOperado`, código equipo → `codigoEquipoOperado`,
+  descripción → `descEquipoOperado`, división red normal →
+  `divisionRedNormal`). Los valores viven en `valores` del ABM; si el campo
+  tiene opciones `{value, label}`, `AbmScreen` traduce (Interno/Externo ↔
+  I/E, Forzado/Programado ↔ F/P). El placeholder del código y la lista de
+  descripciones salen de la config del campo.
 - **Diferencia con Consultas y con el split:** seleccionar una fila **no**
   deshabilita la barra ni le vuelca datos (no hay estado "consultando").
 - **Sin card de Resultados:** no hay card ni `CardHeader` "Resultados".
