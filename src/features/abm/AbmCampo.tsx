@@ -5,11 +5,10 @@ import {
   DateTimeField,
   ESTADO_CLASES,
   FieldLabel,
-  FOCUS_RING,
   ICON,
   MOD_FIELD_CLS,
   READONLY_FIELD_CLS,
-  readonlyOpcionCls,
+  SegmentadoSoloLectura,
   ValuePicker,
 } from "@/components/ui";
 import { labelDeValor } from "@/features/abm/labelDeValor";
@@ -58,7 +57,7 @@ export default function AbmCampo({
   valoresFormulario?: Record<string, string>;
   // Dato fijo (solo lectura), distinto de disabled (ver DESIGN_SYSTEM.md,
   // "Estados: editable, solo lectura, deshabilitado"): un toggle muestra sus
-  // opciones con readonlyOpcionCls, sin hover y sin responder a clic ni
+  // como SegmentadoSoloLectura, sin hover y sin responder a clic ni
   // teclado, con un candado junto al label; cualquier otro tipo de campo,
   // como campo de solo lectura (READONLY_FIELD_CLS). Lo usa el modal de
   // edición de registro.
@@ -104,9 +103,7 @@ export default function AbmCampo({
     const toggleOpts = opts.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
     const v = value ?? "";
     if (readOnly) {
-      // Read-only: grupo enfocable una sola vez (lector de pantalla lee el
-      // valor), opciones no tabulables ni clickeables.
-      const seleccionada = toggleOpts.find((o) => o.value === v);
+      // Solo lectura: segmentado estático (una caja, sin forma de botón).
       return (
         <div>
           {!labelExterno && (
@@ -119,28 +116,7 @@ export default function AbmCampo({
               </span>
             </FieldLabel>
           )}
-          <div
-            id={labelExterno?.controlId}
-            role="radiogroup"
-            aria-readonly="true"
-            aria-label={`${campo.label}: ${seleccionada?.label ?? "sin valor"}`}
-            tabIndex={0}
-            className={`inline-grid grid-flow-col auto-cols-fr gap-2 ${labelExterno ? "" : "mt-0.5"} rounded-sm ${FOCUS_RING}`}
-          >
-            {toggleOpts.map((opt) => {
-              const active = v === opt.value;
-              return (
-                <span
-                  key={opt.value}
-                  role="radio"
-                  aria-checked={active}
-                  className={`${BTN_SEG_MD} w-full flex items-center justify-center border select-none cursor-default ${readonlyOpcionCls(active)}`}
-                >
-                  {opt.label}
-                </span>
-              );
-            })}
-          </div>
+          <SegmentadoSoloLectura opciones={toggleOpts} valor={v} ariaLabel={campo.label} id={labelExterno?.controlId} />
         </div>
       );
     }

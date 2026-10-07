@@ -101,14 +101,6 @@ export const MOD_FIELD_CLS =
 export const READONLY_FIELD_CLS =
   "w-full h-(--control-md) px-2.5 text-body bg-fill-subtle border border-border rounded-sm text-text cursor-default " + FOCUS_RING;
 
-// Opción de un toggle en solo lectura (mismo criterio que READONLY_FIELD_CLS):
-// la seleccionada en tint con border-chip-border (no border-primary, que es
-// el de un control activo); las demás en fill-subtle + border + text-muted.
-// Sin hover, cursor-default (lo suma quien la usa).
-export function readonlyOpcionCls(seleccionada: boolean): string {
-  return seleccionada ? "bg-primary-tint border-chip-border text-secondary" : "bg-fill-subtle border-border text-text-muted";
-}
-
 export const MOD_SELECT_CLS =
   "h-(--control-md) px-2.5 pr-7 text-body bg-surface border border-border-strong rounded-sm text-text appearance-none " +
   "cursor-pointer " + FIELD_FOCUS + " transition-[border-color,box-shadow,background-color] duration-(--duration-base) shrink-0";
