@@ -54,6 +54,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     hasInsertar: false,
     tituloModificar: "Modificar interrupción",
     campoId: "codigoInterrupcion",
+    // Orden de las columnas de la tabla real (nombreReal de cada campo): de
+    // acá se derivan las columnas de Resultados (columnasDeResultados). El
+    // campoId va siempre primero.
+    ordenTablaReal: ["REF", "TE", "ORIGEN", "TIPO", "FECHA", "FAS", "DIVI_RED", "ID_ELEM", "TIPO_ELE", "SSEE", "ALIM", "CMTBT"],
     filtrosBarra: {
       idPlaceholder: "ID de interrupción",
       visibles: [
@@ -111,16 +115,6 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultadoBarra: [
-      { key: "referencia", label: "Código de interrupción" },
-      { key: "fecha", label: "Fecha" },
-      { key: "nivel", label: "Nivel de tensión" },
-      { key: "faseElectrica", label: "Fase eléctrica" },
-      { key: "origen", label: "Origen", campo: "origen" },
-      { key: "tipo", label: "Tipo", campo: "tipo" },
-      { key: "codigoEquipoOperado", label: "Código de equipo operado" },
-      { key: "alimentadorMT", label: "Alimentador MT" },
-    ],
     mapeoFilaACampos: {
       referencia: "codigoInterrupcion",
       fecha: "fecha",
@@ -164,6 +158,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     titulo: "Interrupciones no computables",
     hasInsertar: true,
     campoId: "codigoInterrupcion",
+    // Orden de las columnas de la tabla real (nombreReal de cada campo): de
+    // acá se derivan las columnas de Resultados (columnasDeResultados). El
+    // campoId va siempre primero.
+    ordenTablaReal: ["REF", "F", "CAUSA"],
     filtrosBarra: {
       // 2 filtros (≤ 5): todos visibles, sin "Agregar filtro".
       visibles: [
@@ -187,11 +185,6 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         filas: [[{ nombre: "causa", nombreReal: "CAUSA", label: "Causa", tipo: "toggle", opciones: CAUSAS_NC, expandirBotones: true }]],
       },
     ],
-    columnasResultadoBarra: [
-      { key: "referencia", label: "Código de interrupción" },
-      { key: "causa", label: "Causa" },
-      { key: "fase", label: "Fase de reposición" },
-    ],
     mapeoFilaACampos: { referencia: "codigoInterrupcion", fase: "faseReposicion", causa: "causa" },
     rows: CDS3_ROWS.map((r) => ({ referencia: r.referencia, fase: r.fase, causa: r.causa })),
     totalRegistros: CDS3_TOTAL,
@@ -206,6 +199,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     titulo: "Reposiciones",
     hasInsertar: true,
     campoId: "codigoInterrupcion",
+    // Orden de las columnas de la tabla real (nombreReal de cada campo): de
+    // acá se derivan las columnas de Resultados (columnasDeResultados). El
+    // campoId va siempre primero.
+    ordenTablaReal: ["REF", "F", "FEC", "FAS", "ID_ELEM", "TIPO_ELE", "SSEE", "ALIM", "CMTBT", "CLI"],
     filtrosBarra: {
       // 9 filtros: fecha + los 4 primeros del formulario (no hay listas
       // cerradas); el resto en "Agregar filtro".
@@ -253,14 +250,6 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultadoBarra: [
-      { key: "referencia", label: "Código de interrupción" },
-      { key: "fecha", label: "Fecha" },
-      { key: "fase", label: "Fase de reposición" },
-      { key: "faseElectrica", label: "Fase eléctrica" },
-      { key: "codigoEquipoManiobrado", label: "Código del equipo maniobrado" },
-      { key: "descEquipoManiobrado", label: "Descripción del equipo maniobrado" },
-    ],
     mapeoFilaACampos: {
       referencia: "codigoInterrupcion",
       fase: "faseReposicion",
@@ -297,6 +286,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     titulo: "Trafos MT/BT repuestos en interrupciones MT y AT",
     hasInsertar: true,
     campoId: "codigoInterrupcion",
+    // Orden de las columnas de la tabla real (nombreReal de cada campo): de
+    // acá se derivan las columnas de Resultados (columnasDeResultados). El
+    // campoId va siempre primero.
+    ordenTablaReal: ["REF", "F", "CADENA", "POT", "FAS", "CLI"],
     filtrosBarra: {
       // 5 filtros (≤ 5): todos visibles, sin "Agregar filtro".
       visibles: [
@@ -330,14 +323,6 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultadoBarra: [
-      { key: "ref", label: "Código de interrupción" },
-      { key: "f", label: "Fase de reposición" },
-      { key: "cadena", label: "Cadena eléctrica del trafo repuesto" },
-      { key: "potenciaKva", label: "Potencia en KVA del trafo" },
-      { key: "faseElectrica", label: "Fase eléctrica" },
-      { key: "cantidadClientesBt", label: "Cantidad de clientes BT repuestos" },
-    ],
     mapeoFilaACampos: {
       ref: "codigoInterrupcion",
       f: "faseReposicion",
@@ -369,6 +354,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     titulo: "Clientes AT/MT afectados en interrupciones MT/AT",
     hasInsertar: true,
     campoId: "codigoInterrupcion",
+    // Orden de las columnas de la tabla real (nombreReal de cada campo): de
+    // acá se derivan las columnas de Resultados (columnasDeResultados). El
+    // campoId va siempre primero.
+    ordenTablaReal: ["REF", "F", "CUENTA", "POTENCIA", "TE", "TARIFA"],
     filtrosBarra: {
       // 8 filtros: los 5 primeros del formulario (sin fecha ni listas
       // cerradas); el resto en "Agregar filtro".
@@ -397,7 +386,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Cliente",
         filas: [
           [
-            { nombre: "idComercialCliente", nombreReal: "CUENTA", label: "Id. comercial del cliente", tipo: "texto", placeholder: "9933000000" },
+            { nombre: "idComercialCliente", nombreReal: "CUENTA", labelColumna: "Nro. cuenta", label: "Id. comercial del cliente", tipo: "texto", placeholder: "9933000000" },
             { nombre: "consumo", label: "Consumo", tipo: "readonly", placeholder: "1240" },
             { nombre: "ctTabla9", label: "CT (Tabla 9)", tipo: "readonly", placeholder: "50006#B1#50006-TR1" },
             { nombre: "ctTabla10", label: "CT (Tabla 10)", tipo: "readonly", placeholder: "50006#B1#50006-TR1" },
@@ -409,14 +398,6 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
           ],
         ],
       },
-    ],
-    columnasResultadoBarra: [
-      { key: "ref", label: "Código de interrupción" },
-      { key: "fase", label: "Fase" },
-      { key: "cliente", label: "Id. comercial del cliente" },
-      { key: "consumo", label: "Consumo" },
-      { key: "ctTabla9", label: "CT (Tabla 9)" },
-      { key: "ctTabla10", label: "CT (Tabla 10)" },
     ],
     mapeoFilaACampos: {
       ref: "codigoInterrupcion",
@@ -463,6 +444,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     titulo: "Instalaciones MT",
     hasInsertar: true,
     campoId: "alimentadorMT",
+    // Orden de las columnas de la tabla real (nombreReal de cada campo): de
+    // acá se derivan las columnas de Resultados (columnasDeResultados). El
+    // campoId va siempre primero.
+    ordenTablaReal: ["ALIM", "ZONA", "SSEE", "TRAFOS", "POT", "CLI", "POTENCIA", "TENSION", "CAP_ALIM", "DEM_MAX", "LONG_ALIM"],
     filtrosBarra: {
       // 10 filtros: Zona (lista cerrada) + los 4 primeros del formulario;
       // el resto en "Agregar filtro".
@@ -514,14 +499,6 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         ],
       },
     ],
-    columnasResultadoBarra: [
-      { key: "alim", label: "Alimentador MT" },
-      { key: "zona", label: "Zona" },
-      { key: "ssee", label: "Subestación" },
-      { key: "cantClientes", label: "Cantidad de clientes del alimentador" },
-      { key: "cantTrafos", label: "Cantidad de trafos MT/BT del alimentador" },
-      { key: "sumaPotenciaTrafos", label: "Suma potencia media trafos MT/BT del alimentador" },
-    ],
     mapeoFilaACampos: {
       alim: "alimentadorMT",
       zona: "zona",
@@ -562,6 +539,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     titulo: "Reclamos de clientes",
     hasInsertar: false,
     campoId: "idReclamo",
+    // Orden de las columnas de la tabla real (nombreReal de cada campo): de
+    // acá se derivan las columnas de Resultados (columnasDeResultados). El
+    // campoId va siempre primero.
+    ordenTablaReal: ["REC", "POL", "NOMBRE", "PARTIDO", "FECHA", "REF", "TARIFA", "COD_FALLA", "CALLE", "NUMERO", "PISO", "DPTO", "LOCALIDAD"],
     filtrosBarra: {
       // 13 filtros: fecha + Partido y Localidad (listas cerradas) + los 2
       // primeros del formulario; el resto en "Agregar filtro".
@@ -602,7 +583,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         titulo: "Cliente",
         filas: [
           [
-            { nombre: "nroPoliza", nombreReal: "POL", label: "Nro póliza", tipo: "readonly", placeholder: "123456" },
+            { nombre: "nroPoliza", nombreReal: "POL", labelColumna: "Nro. cuenta", label: "Nro póliza", tipo: "readonly", placeholder: "123456" },
             { nombre: "nombre", nombreReal: "NOMBRE", label: "Nombre", tipo: "texto", placeholder: "MENDEZ MONICA ISABEL" },
             { nombre: "tarifa", nombreReal: "TARIFA", label: "Tarifa", tipo: "texto", placeholder: "1R" },
           ],
@@ -618,14 +599,6 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
           ],
         ],
       },
-    ],
-    columnasResultadoBarra: [
-      { key: "rec", label: "Identificador del reclamo" },
-      { key: "fechaReclamo", label: "Fecha reclamo" },
-      { key: "partido", label: "Partido" },
-      { key: "localidad", label: "Localidad" },
-      { key: "ref", label: "Interrupción" },
-      { key: "reclamos", label: "Reclamos" },
     ],
     mapeoFilaACampos: {
       rec: "idReclamo",
@@ -677,6 +650,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     titulo: "Interrupciones por cliente",
     hasInsertar: true,
     campoId: "codigoInterrupcion",
+    // Orden de las columnas de la tabla real (nombreReal de cada campo): de
+    // acá se derivan las columnas de Resultados (columnasDeResultados). El
+    // campoId va siempre primero.
+    ordenTablaReal: ["REF", "POL", "F", "CT", "TARIFA"],
     filtrosBarra: {
       // 4 filtros (≤ 5): todos visibles, sin "Agregar filtro". Tarifa
       // primero (lista cerrada), después el orden del formulario.
@@ -697,19 +674,12 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
             { nombre: "fase", nombreReal: "F", label: "Fase", tipo: "readonly", placeholder: "1" },
           ],
           [
-            { nombre: "cliente", nombreReal: "POL", label: "Cliente", tipo: "readonly", placeholder: "3190897997" },
+            { nombre: "cliente", nombreReal: "POL", labelColumna: "Nro. cuenta", label: "Cliente", tipo: "readonly", placeholder: "3190897997" },
             { nombre: "tarifa", nombreReal: "TARIFA", label: "Tarifa", tipo: "select", opciones: ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"] },
           ],
           [{ nombre: "ct", nombreReal: "CT", label: "CT", tipo: "texto", placeholder: "19649#B1#19649-TR1" }],
         ],
       },
-    ],
-    columnasResultadoBarra: [
-      { key: "ref", label: "Código de interrupción" },
-      { key: "tarifa", label: "Tarifa" },
-      { key: "f", label: "Fase" },
-      { key: "cliente", label: "Cliente" },
-      { key: "ct", label: "CT" },
     ],
     mapeoFilaACampos: { ref: "codigoInterrupcion", f: "fase", cliente: "cliente", tarifa: "tarifa", ct: "ct" },
     rows: (() => {
@@ -741,6 +711,12 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     titulo: "Interrupciones por cliente NM",
     hasInsertar: true,
     campoId: "codigoInterrupcion",
+    // Orden de las columnas de la tabla real (nombreReal de cada campo): de
+    // acá se derivan las columnas de Resultados (columnasDeResultados). El
+    // campoId va siempre primero.
+    // La tabla real también tiene CT; el formulario (y por eso la columna)
+    // no lo tiene.
+    ordenTablaReal: ["REF", "POL", "F", "TARIFA"],
     filtrosBarra: {
       // 3 filtros (≤ 5): todos visibles, sin "Agregar filtro". Sin CT: la
       // tabla no tiene ese campo.
@@ -760,17 +736,11 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
             { nombre: "fase", nombreReal: "F", label: "Fase", tipo: "texto", placeholder: "1" },
           ],
           [
-            { nombre: "cliente", nombreReal: "POL", label: "Cliente", tipo: "texto", placeholder: "0932073585" },
+            { nombre: "cliente", nombreReal: "POL", labelColumna: "Nro. cuenta", label: "Cliente", tipo: "texto", placeholder: "0932073585" },
             { nombre: "tarifa", nombreReal: "TARIFA", label: "Tarifa", tipo: "select", opciones: ["1AP", "1G", "1R", "2", "3AT", "3BT", "3MT"] },
           ],
         ],
       },
-    ],
-    columnasResultadoBarra: [
-      { key: "ref", label: "Código de interrupción" },
-      { key: "tarifa", label: "Tarifa" },
-      { key: "f", label: "Fase" },
-      { key: "cliente", label: "Cliente" },
     ],
     mapeoFilaACampos: { ref: "codigoInterrupcion", f: "fase", cliente: "cliente", tarifa: "tarifa" },
     rows: (() => {

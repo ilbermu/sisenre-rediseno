@@ -22,6 +22,7 @@ import {
   useTableToolbar,
 } from "@/components/ui";
 import TopBar from "@/components/layout/TopBar";
+import { columnasDeResultados } from "@/features/abm/columnasDeResultados";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { PERIODS } from "@/data/dominio";
 import { AbmDeepLink, AbmFiltroBarra, AbmMode, AbmTableKey, CampoBusqueda } from "@/data/types";
@@ -214,18 +215,18 @@ export default function AbmScreen({
 
   // ── Resultados ──────────────────────────────────────────────────────────
   const hasSelection = selectedRow !== null;
-  // Una columna con `campo` muestra la etiqueta de la opción ("Interno") en
-  // vez del value ("I") — también para ordenar.
-  const columnas = config.columnasResultadoBarra;
-  const celda = (row: Record<string, string>, c: (typeof columnas)[number]) => {
-    const valor = row[c.key] ?? "";
-    const campoDef = c.campo ? campoDe(c.campo) : undefined;
-    return campoDef ? labelDeValor(campoDef, valor, row) : valor;
-  };
+  // Columnas derivadas de la config (columnasDeResultados): los campos con
+  // nombreReal, en el orden de la tabla real, con el campoId primero y fijo.
+  // Una columna de toggle/select/combobox muestra la etiqueta de la opción
+  // ("Interno") en vez del value ("I") — también para ordenar.
+  const columnas = useMemo(() => columnasDeResultados(config), [config]);
+  const celda = (row: Record<string, string>, c: (typeof columnas)[number]) =>
+    labelDeValor(c.campo, row[c.key] ?? "", row);
   const columnKeys = columnas.map((c) => c.key);
-  // Columna del identificador del registro (la del campoId): la única en
-  // font-mono.
-  const columnaId = columnaDe(config.campoId);
+  // Scroll horizontal dentro de la caja: con contenido desplazado a la
+  // izquierda, la columna fija del ID muestra un borde que marca la
+  // superposición (sin scroll, sin borde).
+  const [desplazado, setDesplazado] = useState(false);
   const getCells = (row: Record<string, string>) => columnas.map((c) => celda(row, c));
   // Sin buscador propio (la barra de filtros es el único): useTableToolbar
   // aporta solo el orden por columna.
@@ -430,12 +431,13 @@ export default function AbmScreen({
       </div>
 
       {/* Caja de la tabla. */}
-      <div className="shadow-sm flex-1 min-h-0 flex flex-col border border-border rounded-md bg-surface">
+      <div className="shadow-sm flex-1 min-h-0 min-w-0 flex flex-col border border-border rounded-md bg-surface">
         <div
           ref={resultadosListRef}
           tabIndex={0}
           onKeyDown={handleResultadosKeyDown}
-          className={`flex-1 min-h-0 overflow-y-auto rounded-t-md ${hayResultados ? "" : "rounded-b-md"} ${FOCUS_RING_INSET}`}
+          onScroll={(e) => setDesplazado(e.currentTarget.scrollLeft > 0)}
+          className={`flex-1 min-h-0 overflow-auto rounded-t-md ${hayResultados ? "" : "rounded-b-md"} ${FOCUS_RING_INSET}`}
         >
           {!hayResultados ? (
             // Los filtros no dejan filas — "Limpiar filtros" hace lo mismo
@@ -448,22 +450,35 @@ export default function AbmScreen({
               </button>
             </div>
           ) : (
-            <table className="w-full border-collapse">
+            // border-separate (spacing 0): bajo border-collapse los bordes de
+            // una celda sticky quedan en la capa de la tabla y se pintan
+            // encima o debajo mal al scrollear. Celdas y encabezados en
+            // nowrap: ningún valor se trunca; si no entran, scroll
+            // horizontal adentro de la caja (la paginación queda fuera).
+            <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
               <thead>
-                <tr className="border-b border-border">
+                <tr>
                   {columnas.map((c, ci) => (
-                    <th key={c.key} className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left">
+                    <th
+                      key={c.key}
+                      className={`sticky top-0 bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left border-b border-border ${
+                        ci === 0 ? `left-0 border-r ${desplazado ? "border-r-border" : "border-r-transparent"}` : "z-(--z-sticky)"
+                      }`}
+                      // Esquina (ID fijo + encabezado fijo): sobre las demás
+                      // celdas sticky.
+                      style={ci === 0 ? { zIndex: "calc(var(--z-sticky) + 1)" } : undefined}
+                    >
                       <SortableHeaderCell
                         label={c.label}
                         active={sortIdx === ci}
                         dir={sortDir}
                         onClick={() => toggleSort(ci)}
-                        hint={campoDe(config.mapeoFilaACampos[c.key] ?? "")?.nombreReal}
+                        hint={c.nombreReal}
                       />
                     </th>
                   ))}
                   {/* Spacer — absorbe el sobrante de la fila. */}
-                  <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid" />
+                  <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid border-b border-border" />
                 </tr>
               </thead>
               <tbody>
@@ -471,6 +486,7 @@ export default function AbmScreen({
                   const row = rows[i];
                   const isSelected = selectedRow === i;
                   const isHovered = hoveredRow === i;
+                  const fondoFila = isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined;
                   return (
                     <tr
                       key={i}
@@ -478,29 +494,43 @@ export default function AbmScreen({
                       onClick={() => setSelectedRow(isSelected ? null : i)}
                       onMouseEnter={() => setHoveredRow(i)}
                       onMouseLeave={() => setHoveredRow(null)}
-                      className="border-b border-border-subtle cursor-pointer transition-colors duration-(--duration-fast)"
-                      style={{ backgroundColor: isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined }}
+                      className="cursor-pointer transition-colors duration-(--duration-fast)"
+                      style={{ backgroundColor: fondoFila }}
                     >
                       {columnas.map((c, ci) => {
                         // Mono SOLO en el valor del identificador del
                         // registro (la columna del campoId); el resto, fuente
                         // de texto. Todas con tabular-nums: las cifras
                         // (números, fechas, horas) alinean en columna.
-                        const esId = c.key === columnaId;
+                        const esId = c.campo.nombre === config.campoId;
                         return (
                           <td
                             key={c.key}
-                            className={`w-[1%] whitespace-nowrap px-4 py-2.5 tabular-nums ${
+                            className={`w-[1%] whitespace-nowrap px-4 py-2.5 tabular-nums border-b border-border-subtle ${
                               esId ? "text-code font-mono" : "text-body"
                             } ${isSelected ? `text-secondary ${esId ? "font-semibold" : "font-medium"}` : "text-text"} ${
-                              ci === 0 && isSelected ? "inset-shadow-row-selected" : ""
+                              ci === 0
+                                ? `sticky left-0 z-(--z-sticky) border-r ${desplazado ? "border-r-border" : "border-r-transparent"} ${isSelected ? "inset-shadow-row-selected" : ""}`
+                                : ""
                             }`}
+                            // La celda fija necesita fondo OPACO (la fila
+                            // pasa por detrás al scrollear): surface + el
+                            // color de hover o selección encima (fill-muted
+                            // es translúcido).
+                            style={
+                              ci === 0
+                                ? {
+                                    backgroundColor: isSelected ? "var(--color-primary-tint)" : "var(--color-surface)",
+                                    backgroundImage: !isSelected && isHovered ? "linear-gradient(var(--color-fill-muted), var(--color-fill-muted))" : undefined,
+                                  }
+                                : undefined
+                            }
                           >
                             {celda(row, c)}
                           </td>
                         );
                       })}
-                      <td />
+                      <td className="border-b border-border-subtle" />
                     </tr>
                   );
                 })}

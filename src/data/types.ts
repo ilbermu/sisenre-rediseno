@@ -61,6 +61,10 @@ export type CampoTipo = "texto" | "select" | "fecha" | "readonly" | "toggle" | "
 
 export type CampoBusqueda = {
   nombre: string;
+  // Encabezado de la columna de Resultados si difiere del label del
+  // formulario (solo POL / CUENTA: "Nro. cuenta"). No cambia el label del
+  // formulario.
+  labelColumna?: string;
   // Nombre de la columna en la tabla real de la base (exportes del período
   // 202608): REF, F, FAS… Se muestra como pista en el encabezado de la
   // columna de Resultados (ColumnHeaderHint). Sin nombreReal, sin pista.
@@ -104,17 +108,20 @@ type SeccionBusqueda = {
   filas: CampoBusqueda[][];
 };
 
-type ColumnaResultado = {
+// Columna de la tabla de Resultados — se DERIVA de la config
+// (columnasDeResultados), no se declara por tabla. Sin width/align: cada
+// columna se ajusta a su contenido (nowrap, sin truncar) y la tabla hace
+// scroll horizontal si no entran. Sin `mono`: el font-mono lo lleva solo la
+// columna del campoId.
+export type ColumnaResultado = {
+  // Columna de `rows` (la que mapeoFilaACampos asocia al campo).
   key: string;
+  // Encabezado: el label del campo (o su `labelColumna`).
   label: string;
-  // Sin width/align: la tabla de Resultados es un <table> real donde cada
-  // columna siempre se ajusta a su propio contenido (shrink-to-fit,
-  // alineada a la izquierda) — ver AbmScreen. Sin `mono`: el font-mono se
-  // deriva (solo la columna del campoId).
-  // Nombre de un campo del formulario cuyas `opciones` traducen el value
-  // crudo de la fila a su etiqueta (ej. origen "I" → "Interno"). Sin esto,
-  // la celda muestra el value tal cual.
-  campo?: string;
+  // Campo del formulario de esta columna.
+  campo: CampoBusqueda;
+  // Nombre real de la columna en la base (tag de ColumnHeaderHint).
+  nombreReal?: string;
 };
 
 // Un filtro de la barra de filtros del ABM (ChipFilterBar): el campo
@@ -164,12 +171,11 @@ export type AbmTableConfig = {
   campoId: string;
   filtrosBarra: AbmFiltrosBarra;
   secciones: SeccionBusqueda[];
-  // Columnas de Resultados (tabla a ancho completo): campoId primero,
-  // la fecha si hay y los campos de los chips visibles (máximo 7). El label
-  // es SIEMPRE el del campo en el formulario; el nombre corto de la base va
-  // en la pista del encabezado (nombreReal del campo).
-  // Una columna con `campo` muestra la etiqueta de la opción.
-  columnasResultadoBarra: ColumnaResultado[];
+  // Orden de las columnas de la tabla real (nombreReal de cada campo). Las
+  // columnas de Resultados (columnasDeResultados) son los campos con
+  // nombreReal, en este orden, con el campoId siempre primero; los campos sin
+  // nombreReal (no existen en la tabla real) quedan solo en el modal.
+  ordenTablaReal: string[];
   rows: Record<string, string>[];
   totalRegistros: number;
   exportFilename: string;
