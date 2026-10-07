@@ -2,9 +2,9 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Plus, Search, X } from "lucide-react";
 import AnchoredPopover from "@/components/ui/AnchoredPopover";
 import FieldLabel from "@/components/ui/FieldLabel";
-import { AtajoRango, FilterTriggerButton, RANGO_TEXTO_VACIO, RangoFechaEditor, RangoTexto } from "@/components/ui/FilterTrigger";
+import { FilterTriggerButton, RANGO_TEXTO_VACIO, RangoTexto } from "@/components/ui/FilterTrigger";
+import RangoFechaCalendario, { rangoDePeriodo } from "@/components/ui/RangoFechaCalendario";
 import { FOCUS_RING, ghostBtnCls, ICON, ICON_BTN_MD, ICON_BTN_XS, MOD_FIELD_CLS } from "@/components/ui/tokens";
-import { ceros } from "@/lib/format";
 
 // ─── Tipos y helpers ──────────────────────────────────────────────────────────
 
@@ -31,10 +31,15 @@ export type ChipFiltroDef = {
 };
 
 // El valor de un filtro "fecha" viaja como string (todos los valores de la
-// barra son string, "" = sin filtro): "desdeFecha|desdeHora|hastaFecha|hastaHora".
-export function valorDeRango(r: RangoTexto): string {
-  return r.desdeFecha || r.hastaFecha ? [r.desdeFecha, r.desdeHora, r.hastaFecha, r.hastaHora].join("|") : "";
+// barra son string, "" = sin filtro): "desdeFecha|desdeHora|hastaFecha|hastaHora",
+// más "|periodo" si vino del atajo "Período completo" (la barra lo
+// actualiza al cambiar de período).
+const MARCA_PERIODO = "periodo";
+export function valorDeRango(r: RangoTexto, esPeriodo = false): string {
+  if (!r.desdeFecha && !r.hastaFecha) return "";
+  return [r.desdeFecha, r.desdeHora, r.hastaFecha, r.hastaHora, ...(esPeriodo ? [MARCA_PERIODO] : [])].join("|");
 }
+export const esRangoDePeriodo = (v: string) => v.split("|")[4] === MARCA_PERIODO;
 export function rangoDeValor(v: string): RangoTexto {
   if (!v) return RANGO_TEXTO_VACIO;
   const [desdeFecha = "", desdeHora = "", hastaFecha = "", hastaHora = ""] = v.split("|");
@@ -61,28 +66,6 @@ function textoValor(def: ChipFiltroDef, v: string): string {
   if (def.editor === "fecha") return textoRango(v);
   return (def.opciones ?? []).map(normalizar).find((o) => o.value === v)?.label ?? v;
 }
-
-const aFechaInput = (d: Date) => `${d.getFullYear()}-${ceros(d.getMonth() + 1, 2)}-${ceros(d.getDate(), 2)}`;
-
-const ATAJOS_FECHA: AtajoRango[] = [
-  {
-    label: "Hoy",
-    rango: () => {
-      const f = aFechaInput(new Date());
-      return { desdeFecha: f, desdeHora: "", hastaFecha: f, hastaHora: "" };
-    },
-  },
-  {
-    label: "Últimos 7 días",
-    rango: () => {
-      const n = new Date();
-      const d = new Date(n.getFullYear(), n.getMonth(), n.getDate() - 6);
-      return { desdeFecha: aFechaInput(d), desdeHora: "", hastaFecha: aFechaInput(n), hastaHora: "" };
-    },
-  },
-  // Sin límites = todo el período elegido en el masthead.
-  { label: "Período completo", rango: () => RANGO_TEXTO_VACIO },
-];
 
 const ID_DEBOUNCE_MS = 500;
 // Ancho máximo de un chip: el valor trunca con "…" y el texto completo va
@@ -201,6 +184,7 @@ export default function ChipFilterBar({
   valores,
   onChange,
   onLimpiar,
+  periodo,
 }: {
   id: string;
   onIdChange: (v: string) => void;
@@ -211,6 +195,9 @@ export default function ChipFilterBar({
   onChange: (campo: string, valor: string) => void;
   // Limpia el ID y todos los filtros (la barra ya vacía sus agregados).
   onLimpiar: () => void;
+  // Período del PeriodSelector de la pantalla (ej. "Agosto 2026"): el atajo
+  // "Período completo" del editor de fecha.
+  periodo?: string;
 }) {
   // ── ID: aplica con Enter o a los 500 ms de dejar de tipear.
   const [borradorId, setBorradorId] = useState(id);
@@ -221,6 +208,20 @@ export default function ChipFilterBar({
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [borradorId]);
+
+  // ── Un filtro de fecha aplicado con "Período completo" sigue al período:
+  // si cambia, se actualiza al nuevo.
+  useEffect(() => {
+    const rango = periodo ? rangoDePeriodo(periodo) : null;
+    if (!rango) return;
+    for (const d of [...fijos, ...agregables]) {
+      const v = valores[d.campo] ?? "";
+      if (d.editor !== "fecha" || !esRangoDePeriodo(v)) continue;
+      const nuevo = valorDeRango(rango, true);
+      if (nuevo !== v) onChange(d.campo, nuevo);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo]);
 
   // ── Chips agregados (en orden de alta).
   const [agregados, setAgregados] = useState<string[]>(() => agregables.filter((d) => valores[d.campo]).map((d) => d.campo));
@@ -546,11 +547,12 @@ export default function ChipFilterBar({
         {defAbierto?.editor === "busqueda" && <EditorBusqueda def={defAbierto} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
         {defAbierto?.editor === "texto" && <EditorTexto def={defAbierto} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
         {defAbierto?.editor === "fecha" && (
-          <RangoFechaEditor
+          <RangoFechaCalendario
             label={defAbierto.label}
             inicial={rangoDeValor(valorAbierto)}
-            atajos={ATAJOS_FECHA}
-            onApply={(r) => aplicar(defAbierto.campo, r ? valorDeRango(r) : "")}
+            inicialPeriodo={esRangoDePeriodo(valorAbierto)}
+            periodo={periodo}
+            onApply={(r, esPeriodo) => aplicar(defAbierto.campo, r ? valorDeRango(r, esPeriodo) : "")}
           />
         )}
       </AnchoredPopover>

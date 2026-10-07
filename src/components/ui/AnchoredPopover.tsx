@@ -16,7 +16,7 @@ const MARGEN_VIEWPORT = 8;
 // Se recalcula con scroll, resize y cambios de tamaño del propio panel.
 // Clic afuera (fuera del panel y del disparador) cierra. Escape cierra, corta
 // la propagación (no cierra un Modal ni deselecciona nada detrás) y
-// devuelve el foco al disparador.
+// devuelve el foco al disparador — salvo dentro de [data-escape-local].
 export default function AnchoredPopover({
   anchorRef,
   open,
@@ -90,6 +90,10 @@ export default function AnchoredPopover({
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      // Un control con su propia lista abierta adentro del popover (ej.
+      // HoraCombobox) marca su contenedor con data-escape-local: Escape
+      // cierra esa lista, no el popover.
+      if ((e.target as Element | null)?.closest?.("[data-escape-local]")) return;
       e.stopPropagation();
       onCloseRef.current();
       anchorRef.current?.focus();

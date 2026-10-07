@@ -6,9 +6,16 @@ import { PERIODS } from "@/data/dominio";
 
 // ─── Period dropdown ──────────────────────────────────────────────────────────
 
-export default function PeriodSelector() {
+// Controlado (value/onChange) cuando la pantalla necesita el período (ej.
+// el atajo "Período completo" de ChipFilterBar); sin props, estado propio.
+export default function PeriodSelector({ value, onChange }: { value?: string; onChange?: (periodo: string) => void } = {}) {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(PERIODS[0]);
+  const [interno, setInterno] = useState(PERIODS[0]);
+  const selected = value ?? interno;
+  const setSelected = (p: string) => {
+    if (value === undefined) setInterno(p);
+    onChange?.(p);
+  };
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };

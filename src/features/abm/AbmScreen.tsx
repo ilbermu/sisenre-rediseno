@@ -23,7 +23,7 @@ import {
   useTableToolbar,
 } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
-import { ABM_ITEMS } from "@/data/dominio";
+import { ABM_ITEMS, PERIODS } from "@/data/dominio";
 import { AbmDeepLink, AbmMode, AbmTableKey } from "@/data/types";
 import AbmCampo from "@/features/abm/AbmCampo";
 import AbmFila from "@/features/abm/AbmFila";
@@ -128,6 +128,9 @@ export default function AbmScreen({
   const esBarra = config.layout === "barra";
   const [idBarra, setIdBarra] = useState("");
   const [filtrosBarraValores, setFiltrosBarraValores] = useState<Record<string, string>>({});
+  // Período del masthead — lo usa el atajo "Período completo" del filtro de
+  // fecha de la barra.
+  const [periodo, setPeriodo] = useState(PERIODS[0]);
   // Modal de edición de registro (layout "barra"): un solo modal con dos
   // pasos — 1 Editar, 2 Revisar (Resumen de cambios + Motivo). Nunca se abre
   // ConfirmarModificarModal encima: el paso 2 es el mismo modal.
@@ -928,7 +931,7 @@ export default function AbmScreen({
         <div className="flex-1 min-w-0">
           <AbmTableSelector value={tableKey} onChange={onChangeTable} />
         </div>
-        <PeriodSelector />
+        <PeriodSelector value={periodo} onChange={setPeriodo} />
       </header>
 
       {/* Content */}
@@ -948,6 +951,7 @@ export default function AbmScreen({
                 valores={filtrosBarraValores}
                 onChange={(campo, v) => setFiltrosBarraValores((prev) => ({ ...prev, [campo]: v }))}
                 onLimpiar={handleLimpiarFiltrosBarra}
+                periodo={periodo}
               />
             )}
             {resultadosBarra}

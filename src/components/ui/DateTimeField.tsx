@@ -45,7 +45,7 @@ export const DAY_PICKER_CLASSNAMES = {
   outside: "text-text-faint",
 };
 
-const MESES_ES = [
+export const MESES_ES = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
 ];
