@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
+import ColumnHeaderHint from "@/components/ui/ColumnHeaderHint";
 import { ICON } from "@/components/ui/tokens";
 import { SortDir } from "@/components/ui/useTableToolbar";
 
@@ -10,31 +11,41 @@ function SortIndicator({ dir }: { dir: SortDir }) {
   );
 }
 
-// Encabezado clickeable para tablas armadas con divs (flex/grid).
+// Encabezado clickeable para tablas armadas con divs (flex/grid) — también
+// lo usa el <th> de la tabla del ABM. `hint` (opcional): el nombre real de
+// la columna en la base, como ColumnHeaderHint (subrayado punteado + tag
+// con hover o foco); el botón de orden es el disparador.
 export function SortableHeaderCell({
   label,
   active,
   dir,
   onClick,
   className = "",
+  hint,
 }: {
   label: string;
   active: boolean;
   dir: SortDir;
   onClick: () => void;
   className?: string;
+  hint?: string;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-center gap-1 text-heading-xs uppercase select-none cursor-pointer transition-colors hover:text-text ${
-        active ? "text-secondary" : "text-text-muted"
-      } ${className}`}
-    >
-      <span className="truncate">{label}</span>
-      {active && <SortIndicator dir={dir} />}
-    </button>
+    <ColumnHeaderHint hint={hint}>
+      {(trigger, subrayadoCls) => (
+        <button
+          type="button"
+          onClick={onClick}
+          {...trigger}
+          className={`flex items-center gap-1 text-heading-xs uppercase select-none cursor-pointer transition-colors hover:text-text ${
+            active ? "text-secondary" : "text-text-muted"
+          } ${className}`}
+        >
+          <span className={`truncate ${subrayadoCls}`}>{label}</span>
+          {active && <SortIndicator dir={dir} />}
+        </button>
+      )}
+    </ColumnHeaderHint>
   );
 }
 
