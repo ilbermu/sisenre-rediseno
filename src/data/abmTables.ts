@@ -39,6 +39,12 @@ export function isAbmTableKey(s: string): s is AbmTableKey {
   return (ABM_TABLE_ORDER as string[]).includes(s);
 }
 
+// Opciones de CDS2 compartidas entre el formulario y los filtros de la barra.
+const OPCIONES_NIVEL = ["BT", "MT", "AT"];
+const OPCIONES_FASE = ["R", "S", "T", "RS", "RT", "ST", "RST"];
+const OPCIONES_ORIGEN = [{ value: "I", label: "Interno" }, { value: "E", label: "Externo" }];
+const OPCIONES_TIPO = [{ value: "F", label: "Forzado" }, { value: "P", label: "Programado" }];
+
 export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
   cds2: {
     key: "cds2",
@@ -48,21 +54,25 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     // PRUEBA de layout — solo esta tabla. Ver AbmLayout.
     layout: "barra",
     barraBusqueda: {
-      campos: {
-        codigo: "codigoInterrupcion",
-        fecha: "fecha",
-        nivel: "nivelTension",
-        fase: "faseElectrica",
-        origen: "origen",
-        tipo: "tipo",
-        cadenaElectrica: "cadenaElectricaAguasArriba",
-        alimentadorMT: "alimentadorMT",
-        centroTransf: "ctMtBtEquipoOperado",
-        codigoEquipo: "codigoEquipoOperado",
-        descEquipo: "descEquipoOperado",
-        divisionRed: "divisionRedNormal",
-      },
       tituloModificar: "Modificar interrupción",
+    },
+    filtrosBarra: {
+      id: { columna: "referencia", placeholder: "ID de interrupción" },
+      fijos: [
+        { campo: "fecha", label: "Fecha", editor: "fecha" },
+        { campo: "nivel", label: "Nivel", editor: "lista", opciones: OPCIONES_NIVEL },
+        { campo: "faseElectrica", label: "Fase", editor: "lista", opciones: OPCIONES_FASE },
+        { campo: "origen", label: "Origen", editor: "lista", opciones: OPCIONES_ORIGEN },
+        { campo: "tipo", label: "Tipo", editor: "lista", opciones: OPCIONES_TIPO },
+      ],
+      agregables: [
+        { campo: "codigoEquipoOperado", label: "Código equipo", editor: "texto" },
+        { campo: "descEquipoOperado", label: "Descripción equipo operado", editor: "busqueda", opciones: DESCRIPCIONES_EQUIPO_OPERADO },
+        { campo: "divisionRedNormal", label: "División red normal", editor: "lista", opciones: ["Sí", "No"] },
+        { campo: "cadenaElectricaAguasArriba", label: "Cadena eléctrica", editor: "texto" },
+        { campo: "alimentadorMT", label: "Alimentador MT", editor: "texto" },
+        { campo: "ctMtBtEquipoOperado", label: "CT MT/BT", editor: "texto" },
+      ],
     },
     secciones: [
       {
@@ -85,10 +95,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         // y (Tipo+Fase).
         filas: [
           [
-            { nombre: "nivelTension", label: "Nivel de tensión", tipo: "toggle", opciones: ["BT", "MT", "AT"] },
-            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "select", opciones: ["R", "S", "T", "RS", "RT", "ST", "RST"] },
-            { nombre: "origen", label: "Origen", tipo: "toggle", opciones: [{ value: "I", label: "Interno" }, { value: "E", label: "Externo" }] },
-            { nombre: "tipo", label: "Tipo", tipo: "toggle", opciones: [{ value: "F", label: "Forzado" }, { value: "P", label: "Programado" }] },
+            { nombre: "nivelTension", label: "Nivel de tensión", tipo: "toggle", opciones: OPCIONES_NIVEL },
+            { nombre: "faseElectrica", label: "Fase eléctrica", tipo: "select", opciones: OPCIONES_FASE },
+            { nombre: "origen", label: "Origen", tipo: "toggle", opciones: OPCIONES_ORIGEN },
+            { nombre: "tipo", label: "Tipo", tipo: "toggle", opciones: OPCIONES_TIPO },
           ],
         ],
       },

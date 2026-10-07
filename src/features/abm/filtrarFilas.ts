@@ -1,42 +1,36 @@
-import { FilterBarValores, parseDateTimeStr } from "@/components/ui";
+import { ChipFiltroDef, fechaDeExtremo, parseDateTimeStr, rangoDeValor } from "@/components/ui";
 
-// Cómo compara cada filtro de la barra de búsqueda (FilterBar) contra la
-// columna de la fila:
+// Cómo compara un filtro contra la columna de la fila:
 //   "contiene" → la columna contiene el valor, sin distinguir mayúsculas;
 //   "igual"    → igualdad exacta;
-//   "fecha"    → mismo día; la hora solo cuenta si se cargó una (DateTimeField
-//                completa "00:00" cuando no se elige hora, así que "00:00"
-//                se toma como "sin hora").
-export type ModoFiltro = "contiene" | "igual" | "fecha";
-
-export const MODO_FILTRO: Record<keyof FilterBarValores, ModoFiltro> = {
-  codigo: "contiene",
-  fecha: "fecha",
-  nivel: "igual",
-  fase: "igual",
-  origen: "igual",
-  tipo: "igual",
-  cadenaElectrica: "contiene",
-  alimentadorMT: "contiene",
-  centroTransf: "contiene",
-  codigoEquipo: "contiene",
-  descEquipo: "igual",
-  divisionRed: "igual",
-};
+//   "rango"    → la fecha de la columna ("dd/mm/aaaa hh:mm") cae dentro del
+//                rango (valor de ChipFilterBar, ver valorDeRango); extremos
+//                inclusivos, sin hora = día completo.
+export type ModoFiltro = "contiene" | "igual" | "rango";
 
 export type FiltroFila = { columna: string; valor: string; modo: ModoFiltro };
 
-function mismaFecha(celda: string, filtro: string): boolean {
-  const f = parseDateTimeStr(filtro);
-  const c = parseDateTimeStr(celda);
-  if (!f.date || !c.date) return false;
-  if (f.date.getTime() !== c.date.getTime()) return false;
-  return !f.time || f.time === "00:00" || f.time === c.time;
+// Modo de un filtro de ChipFilterBar según su editor.
+export function modoDeEditor(editor: ChipFiltroDef["editor"]): ModoFiltro {
+  if (editor === "texto") return "contiene";
+  if (editor === "fecha") return "rango";
+  return "igual";
+}
+
+function enRango(celda: string, valor: string): boolean {
+  const { date, time } = parseDateTimeStr(celda);
+  if (!date) return false;
+  const [hh, mm] = (time || "00:00").split(":").map(Number);
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hh, mm);
+  const r = rangoDeValor(valor);
+  const desde = fechaDeExtremo(r.desdeFecha, r.desdeHora, false);
+  const hasta = fechaDeExtremo(r.hastaFecha, r.hastaHora, true);
+  return (!desde || d >= desde) && (!hasta || d <= hasta);
 }
 
 function cumple(celda: string, { valor, modo }: FiltroFila): boolean {
   if (modo === "igual") return celda === valor;
-  if (modo === "fecha") return mismaFecha(celda, valor);
+  if (modo === "rango") return enRango(celda, valor);
   return celda.toLowerCase().includes(valor.trim().toLowerCase());
 }
 

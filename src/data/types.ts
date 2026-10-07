@@ -1,4 +1,4 @@
-import type { FilterBarValores } from "@/components/ui/FilterBar";
+import type { ChipFiltroDef } from "@/components/ui/ChipFilterBar";
 
 export type FaseRow = { fase: number; fecha: string; idElemento: string; tipoElemento: string; cadena: string; cliente: number };
 
@@ -118,20 +118,27 @@ type ColumnaResultado = {
 // Layout del ABM:
 //   "split" (default) → panel de Búsqueda/formulario a la izquierda +
 //                       panel de Resultados a la derecha.
-//   "barra" (en prueba, solo CDS2) → barra de búsqueda general (FilterBar,
-//                       la misma de Consultas de interrupción) apoyada en el
-//                       fondo + una sola card de Resultados a ancho completo;
+//   "barra" (en prueba, solo CDS2) → barra de filtros híbrida
+//                       (ChipFilterBar, ver filtrosBarra) apoyada en el fondo
+//                       + una sola card de Resultados a ancho completo;
 //                       Modificar se abre en un modal.
 export type AbmLayout = "split" | "barra";
 
-// Barra de búsqueda del layout "barra" (FilterBar): a qué campo de la tabla
-// (`nombre` de `secciones`) corresponde cada filtro de la barra. Si el campo
-// tiene opciones {value,label}, la barra trabaja con la etiqueta y AbmScreen
-// traduce (ej. Origen "Interno" ↔ "I").
 export type AbmBarraBusqueda = {
-  campos: Record<keyof FilterBarValores, string>;
   // Título del modal de Modificar (en este layout, Modificar es un modal).
   tituloModificar: string;
+};
+
+// Filtros de la barra híbrida (ChipFilterBar) del layout "barra". `campo` de
+// cada filtro = columna de `rows`. Cómo filtra cada uno sale de su editor
+// (ver ChipFiltroDef).
+export type AbmFiltrosBarra = {
+  // Input de ID: busca "contiene" sobre esta columna.
+  id: { columna: string; placeholder: string };
+  // Chips siempre visibles.
+  fijos: ChipFiltroDef[];
+  // Campos que se suman con "Agregar filtro".
+  agregables: ChipFiltroDef[];
 };
 
 export type AbmTableConfig = {
@@ -143,6 +150,7 @@ export type AbmTableConfig = {
   layout?: AbmLayout;
   // Solo layout "barra".
   barraBusqueda?: AbmBarraBusqueda;
+  filtrosBarra?: AbmFiltrosBarra;
   secciones: SeccionBusqueda[];
   columnasResultado: ColumnaResultado[];
   // Columnas de Resultados en layout "barra" (card a ancho completo, entran

@@ -5,8 +5,7 @@ import {
   BTN_SM,
   CardHeader,
   CopyButton,
-  FilterBar,
-  FilterBarValores,
+  ChipFilterBar,
   FOCUS_RING_INSET,
   FormRow,
   ghostBtnCls,
@@ -25,13 +24,13 @@ import {
 } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { ABM_ITEMS } from "@/data/dominio";
-import { AbmDeepLink, AbmMode, AbmTableKey, CampoOpcion } from "@/data/types";
+import { AbmDeepLink, AbmMode, AbmTableKey } from "@/data/types";
 import AbmCampo from "@/features/abm/AbmCampo";
 import AbmFila from "@/features/abm/AbmFila";
 import AbmTableSelector from "@/features/abm/AbmTableSelector";
 import ConfirmarBorrarModal from "@/features/abm/ConfirmarBorrarModal";
 import ConfirmarModificarModal from "@/features/abm/ConfirmarModificarModal";
-import { filtrarFilas, FiltroFila, MODO_FILTRO } from "@/features/abm/filtrarFilas";
+import { filtrarFilas, FiltroFila, modoDeEditor } from "@/features/abm/filtrarFilas";
 import RevisarCambiosContent, { useMotivoCambio } from "@/features/abm/RevisarCambiosContent";
 import { labelDeValor } from "@/features/abm/labelDeValor";
 import { formatNumero } from "@/lib/format";
@@ -123,15 +122,12 @@ export default function AbmScreen({
   const [filasBorradas, setFilasBorradas] = useState<Set<number>>(new Set());
   const camposLocked = config.camposReadonlyEnModificar ?? [];
   // Layout "barra" (PRUEBA, solo CDS2 — ver AbmLayout): la búsqueda vive en
-  // la barra de búsqueda general (FilterBar), con el mismo estado
-  // (`valores` / setValor) que el panel de Búsqueda del layout "split".
+  // la barra de filtros híbrida (ChipFilterBar, config.filtrosBarra), con
+  // estado propio — no comparte `valores` con el modal de Modificar. Cada
+  // cambio filtra al instante sobre todas las filas de muestra.
   const esBarra = config.layout === "barra";
-  const [flyoutOpen, setFlyoutOpen] = useState(false);
-  // Layout "barra": foto de `valores` tomada en la última búsqueda — las
-  // filas de Resultados salen de aplicar estos filtros sobre config.rows
-  // (todas las filas de muestra, nunca sobre el resultado anterior). null =
-  // todavía no se buscó (o se limpió).
-  const [valoresBuscados, setValoresBuscados] = useState<Record<string, string> | null>(null);
+  const [idBarra, setIdBarra] = useState("");
+  const [filtrosBarraValores, setFiltrosBarraValores] = useState<Record<string, string>>({});
   // Modal de edición de registro (layout "barra"): un solo modal con dos
   // pasos — 1 Editar, 2 Revisar (Resumen de cambios + Motivo). Nunca se abre
   // ConfirmarModificarModal encima: el paso 2 es el mismo modal.
@@ -147,8 +143,10 @@ export default function AbmScreen({
     setValores({});
     setValoresOriginales({});
     setFilasBorradas(new Set());
-    setFlyoutOpen(false);
-    setValoresBuscados(null);
+    setIdBarra("");
+    setFiltrosBarraValores({});
+    // Layout "barra": sin filtros se ven todos los registros del período.
+    if (config.layout === "barra") setShowData(true);
   }, [tableKey]);
 
   // Aplica un deep-link pendiente para ESTA tabla — corre después del
@@ -165,7 +163,12 @@ export default function AbmScreen({
     } else {
       setMode("buscar");
       setValores({ [deepLink.campo]: deepLink.valor });
-      setValoresBuscados({ [deepLink.campo]: deepLink.valor });
+      // Layout "barra": el valor del deep-link va al ID o al chip de esa
+      // columna.
+      if (config.filtrosBarra?.id.columna === deepLink.columna) setIdBarra(deepLink.valor);
+      else if ([...(config.filtrosBarra?.fijos ?? []), ...(config.filtrosBarra?.agregables ?? [])].some((d) => d.campo === deepLink.columna)) {
+        setFiltrosBarraValores({ [deepLink.columna]: deepLink.valor });
+      }
       setShowData(true);
       const idx = config.rows.findIndex((r) => r[deepLink.columna] === deepLink.valor);
       setSelectedRow(idx >= 0 ? idx : null);
@@ -207,41 +210,21 @@ export default function AbmScreen({
     });
   }
 
-  // FilterBar (layout "barra") ↔ `valores`: cada filtro de la barra lee y
-  // escribe el campo que indica config.barraBusqueda.campos. Si ese campo
-  // tiene opciones {value,label} (Origen I/E, Tipo F/P), la barra trabaja
-  // con la etiqueta y acá se traduce en los dos sentidos.
   const camposTabla = config.secciones.flatMap((s) => s.filas.flat());
-  const opcionesDe = (nombre: string): CampoOpcion[] => {
-    const opciones = camposTabla.find((c) => c.nombre === nombre)?.opciones;
-    return Array.isArray(opciones) ? opciones : [];
-  };
-  const traducir = (nombre: string, v: string, a: "label" | "value") => {
-    const o = opcionesDe(nombre).find((o) => typeof o !== "string" && o[a === "label" ? "value" : "label"] === v);
-    return o && typeof o !== "string" ? o[a] : v;
-  };
-  const camposBarra = config.barraBusqueda?.campos;
-  const filtrosBarra = camposBarra
-    ? (Object.fromEntries(
-        Object.entries(camposBarra).map(([filtro, nombre]) => [filtro, traducir(nombre, valores[nombre] ?? "", "label")]),
-      ) as FilterBarValores)
-    : null;
-  function cambiarFiltrosBarra(cambios: Partial<FilterBarValores>) {
-    if (!camposBarra) return;
-    for (const [filtro, v] of Object.entries(cambios)) {
-      const nombre = camposBarra[filtro as keyof FilterBarValores];
-      setValor(nombre, traducir(nombre, v ?? "", "value"));
-    }
-  }
-  // Filtros de la barra → filtros por columna de config.rows: cada filtro
-  // va contra la columna que mapeoFilaACampos asocia a su campo.
-  function filtrosDeValores(v: Record<string, string>): FiltroFila[] {
-    if (!camposBarra) return [];
-    return Object.entries(camposBarra).flatMap(([filtro, nombre]) => {
-      const columna = Object.keys(config.mapeoFilaACampos).find((k) => config.mapeoFilaACampos[k] === nombre);
-      return columna ? [{ columna, valor: v[nombre] ?? "", modo: MODO_FILTRO[filtro as keyof FilterBarValores] }] : [];
-    });
-  }
+  // Filtros de la barra (layout "barra") → filtros por columna de
+  // config.rows: el ID por "contiene"; cada chip según su editor.
+  const filtrosBarra = config.filtrosBarra;
+  const filtrosFila: FiltroFila[] = filtrosBarra
+    ? [
+        { columna: filtrosBarra.id.columna, valor: idBarra, modo: "contiene" },
+        ...[...filtrosBarra.fijos, ...filtrosBarra.agregables].map((d) => ({
+          columna: d.campo,
+          valor: filtrosBarraValores[d.campo] ?? "",
+          modo: modoDeEditor(d.editor),
+        })),
+      ]
+    : [];
+  const hayFiltrosBarra = filtrosFila.some((f) => f.valor.trim() !== "");
 
   // Secciones del formulario del panel de Búsqueda del layout "split"
   // (separador + filas de AbmFila; en tier 760px, grilla plana).
@@ -327,9 +310,8 @@ export default function AbmScreen({
   // export, conteo) sin renumerar nada — los índices que quedan siguen
   // siendo los mismos de config.rows, que es lo que usan selectedRow,
   // mapeoFilaACampos y el resto del formulario.
-  // Layout "barra": además, solo las filas que pasan los filtros de la
-  // última búsqueda.
-  const indicesBuscados = esBarra && valoresBuscados ? new Set(filtrarFilas(config.rows, filtrosDeValores(valoresBuscados))) : null;
+  // Layout "barra": además, solo las filas que pasan los filtros de la barra.
+  const indicesBuscados = esBarra && hayFiltrosBarra ? new Set(filtrarFilas(config.rows, filtrosFila)) : null;
   const visibleIndices = visibleIndicesConBorradas.filter((i) => !filasBorradas.has(i) && (!indicesBuscados || indicesBuscados.has(i)));
 
   // Navegación por teclado en Resultados: flecha abajo/arriba mueve la
@@ -373,24 +355,27 @@ export default function AbmScreen({
     setSelectedRow(visibleIndices[Math.max(nextPos, 0)]);
   }
 
+  // Layout "barra": si un cambio de filtro deja afuera al registro
+  // seleccionado, se deselecciona. (La paginación es fija: siempre página 1.)
+  useEffect(() => {
+    if (esBarra && selectedRow !== null && indicesBuscados && !indicesBuscados.has(selectedRow)) setSelectedRow(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idBarra, filtrosBarraValores]);
+
   function handleLimpiar() {
     setShowData(false);
     setSelectedRow(null);
     setValores({});
-    setValoresBuscados(null);
   }
   function handleBuscar() {
     setShowData(true);
-    if (!esBarra) {
-      setSelectedRow(null);
-      return;
-    }
-    // Layout "barra": la barra busca y refina — aplica los valores actuales
-    // sobre todas las filas de muestra. Si el registro seleccionado no queda
-    // en el resultado, se deselecciona.
-    const foto = { ...valores };
-    setValoresBuscados(foto);
-    if (selectedRow !== null && !filtrarFilas(config.rows, filtrosDeValores(foto)).includes(selectedRow)) setSelectedRow(null);
+    setSelectedRow(null);
+  }
+  // Layout "barra": quita el ID y todos los filtros; vuelve a mostrar todos
+  // los registros.
+  function handleLimpiarFiltrosBarra() {
+    setIdBarra("");
+    setFiltrosBarraValores({});
   }
   function handleAbrirAlta() {
     // No toca showData/selectedRow — el panel de Resultados sigue
@@ -744,21 +729,14 @@ export default function AbmScreen({
   // columna de acciones por fila. Auditoría y Exportar: DEPRECADO en layout
   // barra — pendiente de reubicar (su código y handlers siguen en
   // resultadosCard, que usa el layout "split").
-  // Se atenúa con el flyout "Más filtros" abierto, como las cards de
-  // Consultas de interrupción.
   const registrosVisibles = config.rows.length - filasBorradas.size;
   const hayResultados = showData && visibleIndices.length > 0;
   // Con algún filtro aplicado, el pie cuenta las filas encontradas; sin
   // filtros, el total de la tabla (como el split).
-  const hayFiltrosBuscados = !!valoresBuscados && filtrosDeValores(valoresBuscados).some((f) => f.valor.trim() !== "");
-  const registrosEncontrados = hayFiltrosBuscados ? visibleIndices.length : config.totalRegistros;
+  const registrosEncontrados = hayFiltrosBarra ? visibleIndices.length : config.totalRegistros;
   const paginasBarra = Math.max(1, Math.ceil(registrosEncontrados / 25));
   const resultadosBarra = (
-    <div
-      className={`flex-1 min-h-0 flex flex-col gap-2 transition-opacity duration-(--duration-base) ${
-        flyoutOpen ? "opacity-50 pointer-events-none" : ""
-      }`}
-    >
+    <div className="flex-1 min-h-0 flex flex-col gap-2">
       {/* Barra de herramientas — afuera de la caja, alto fijo. */}
       <div className="shrink-0 h-(--control-md) flex items-center gap-3">
         {hasSelection ? (
@@ -767,8 +745,8 @@ export default function AbmScreen({
             recordLabel={config.rows[selectedRow!][columnKeys[0]]}
             actions={
               <>
-                {/* Acciones de registro: sm, ghost (no compiten con Más
-                    filtros / Limpiar / Buscar, que son acciones de página). */}
+                {/* Acciones de registro: sm, ghost (no compiten con la
+                    barra de filtros, que es de página). */}
                 <button type="button" onClick={() => handleAbrirModificar(selectedRow!)} className={ghostBtnCls("neutral")}>
                   Modificar
                 </button>
@@ -789,15 +767,13 @@ export default function AbmScreen({
             }
           />
         ) : (
-          // Un solo buscador: la pantalla ya tiene la barra de búsqueda
-          // general, así que la tabla no lleva buscador ni filtros propios —
-          // solo el contador. Sin el input, el `search` de useTableToolbar
-          // queda vacío (se resetea al cambiar de tabla), así que no filtra
-          // filas: las visibles salen solo de Buscar. El orden por columna
-          // se mantiene.
-          // Antes de la primera búsqueda (y después de Limpiar) la barra queda
-          // vacía, con su alto fijo; después de Buscar, "N de M registros", o
-          // "0 registros" si la búsqueda no trajo resultados.
+          // Un solo buscador: la pantalla ya tiene la barra de filtros, así
+          // que la tabla no lleva buscador ni filtros propios — solo el
+          // contador. Sin el input, el `search` de useTableToolbar queda
+          // vacío (se resetea al cambiar de tabla), así que no filtra filas:
+          // las visibles salen solo de la barra. El orden por columna se
+          // mantiene. "N de M registros", o "0 registros" si los filtros no
+          // dejan ninguno.
           <div className="shrink-0">
             {showData &&
               (visibleIndices.length > 0
@@ -815,21 +791,13 @@ export default function AbmScreen({
           onKeyDown={handleResultadosKeyDown}
           className={`flex-1 min-h-0 overflow-y-auto rounded-t-md ${hayResultados ? "" : "rounded-b-md"} ${FOCUS_RING_INSET}`}
         >
-          {!showData ? (
-            // Mismo estado vacío que la tabla de Interrupciones en Consultas
-            // de interrupción, centrado dentro de la caja.
-            <div className="h-full flex flex-col items-center justify-center gap-2 text-center px-8">
-              <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
-              <p className="text-label text-text-muted">Sin resultados</p>
-              <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
-            </div>
-          ) : visibleIndices.length === 0 ? (
-            // La búsqueda no trajo filas — "Limpiar filtros" hace lo mismo
-            // que Limpiar de la barra.
+          {visibleIndices.length === 0 ? (
+            // Los filtros no dejan filas — "Limpiar filtros" hace lo mismo
+            // que el de la barra.
             <div className="h-full flex flex-col items-center justify-center gap-2 text-center px-8">
               <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
               <p className="text-label text-text-muted">No hay registros con estos filtros</p>
-              <button type="button" onClick={handleLimpiar} className="text-label text-secondary hover:underline">
+              <button type="button" onClick={handleLimpiarFiltrosBarra} className="text-label text-secondary hover:underline">
                 Limpiar filtros
               </button>
             </div>
@@ -965,22 +933,21 @@ export default function AbmScreen({
 
       {/* Content */}
       {esBarra ? (
-        // Layout "barra" (PRUEBA, solo CDS2): barra de búsqueda apoyada en el
-        // fondo + una sola card de Resultados a ancho completo — mismo
-        // padding y gap de página que Consultas de interrupción.
+        // Layout "barra" (PRUEBA, solo CDS2): barra de filtros híbrida
+        // apoyada en el fondo + Resultados a ancho completo — mismo padding
+        // y gap de página que Consultas de interrupción.
         <div className="flex-1 min-h-0 flex flex-col px-(--page-px) pt-(--page-pt) pb-(--page-pt) relative overflow-hidden">
           <div className="flex-1 min-h-0 flex flex-col gap-(--page-gap)">
             {filtrosBarra && (
-              <FilterBar
-                valores={filtrosBarra}
-                onChange={cambiarFiltrosBarra}
-                onBuscar={handleBuscar}
-                onLimpiar={handleLimpiar}
-                buscado={showData}
-                placeholderCodigo={camposTabla.find((c) => c.nombre === camposBarra!.codigo)?.placeholder ?? ""}
-                opcionesDescEquipo={opcionesDe(camposBarra!.descEquipo).map((o) => (typeof o === "string" ? o : o.label))}
-                flyoutAbierto={flyoutOpen}
-                onFlyoutAbiertoChange={setFlyoutOpen}
+              <ChipFilterBar
+                id={idBarra}
+                onIdChange={setIdBarra}
+                idPlaceholder={filtrosBarra.id.placeholder}
+                fijos={filtrosBarra.fijos}
+                agregables={filtrosBarra.agregables}
+                valores={filtrosBarraValores}
+                onChange={(campo, v) => setFiltrosBarraValores((prev) => ({ ...prev, [campo]: v }))}
+                onLimpiar={handleLimpiarFiltrosBarra}
               />
             )}
             {resultadosBarra}
