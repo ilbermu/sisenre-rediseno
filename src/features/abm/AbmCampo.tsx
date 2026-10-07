@@ -9,6 +9,7 @@ import {
   ICON,
   MOD_FIELD_CLS,
   READONLY_FIELD_CLS,
+  readonlyOpcionCls,
   ValuePicker,
 } from "@/components/ui";
 import { labelDeValor } from "@/features/abm/labelDeValor";
@@ -55,9 +56,9 @@ export default function AbmCampo({
   // función, para resolver opciones en cascada según otro campo (ej.
   // Localidad según Partido) sin acoplar acá el nombre de ningún campo.
   valoresFormulario?: Record<string, string>;
-  // Dato fijo (read-only), distinto de disabled (ver DESIGN_SYSTEM.md,
-  // "Estados: disabled vs read-only"): un toggle se muestra con su valor
-  // marcado, a contraste completo, sin hover y sin responder a clic ni
+  // Dato fijo (solo lectura), distinto de disabled (ver DESIGN_SYSTEM.md,
+  // "Estados: editable, solo lectura, deshabilitado"): un toggle muestra sus
+  // opciones con readonlyOpcionCls, sin hover y sin responder a clic ni
   // teclado, con un candado junto al label; cualquier otro tipo de campo,
   // como campo de solo lectura (READONLY_FIELD_CLS). Lo usa el modal de
   // edición de registro.
@@ -133,9 +134,7 @@ export default function AbmCampo({
                   key={opt.value}
                   role="radio"
                   aria-checked={active}
-                  className={`${BTN_SEG_MD} w-full flex items-center justify-center border select-none cursor-default ${
-                    active ? "border-primary bg-primary-tint text-secondary" : "border-border-strong bg-surface text-text"
-                  }`}
+                  className={`${BTN_SEG_MD} w-full flex items-center justify-center border select-none cursor-default ${readonlyOpcionCls(active)}`}
                 >
                   {opt.label}
                 </span>

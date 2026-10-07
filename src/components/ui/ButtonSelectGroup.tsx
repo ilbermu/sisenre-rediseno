@@ -1,4 +1,4 @@
-import { BTN_SM, FOCUS_RING } from "@/components/ui/tokens";
+import { BTN_SM, FOCUS_RING, readonlyOpcionCls } from "@/components/ui/tokens";
 
 // Selector tipo botón (single-select) — usado en el formulario de Modificar
 // interrupción para Origen y Tipo. El estado seleccionado se marca con
@@ -6,8 +6,8 @@ import { BTN_SM, FOCUS_RING } from "@/components/ui/tokens";
 // AltaClientesModal), nunca el azul relleno reservado para botones de
 // acción primarios.
 // `readOnly`: dato fijo, distinto de `disabled` (ver DESIGN_SYSTEM.md,
-// "Estados: disabled vs read-only") — seleccionado y no seleccionados a
-// contraste completo, sin hover, sin responder a clic ni teclado; el grupo
+// "Estados: editable, solo lectura, deshabilitado") — opciones con
+// readonlyOpcionCls, sin hover, sin responder a clic ni teclado; el grupo
 // es enfocable una sola vez (aria-readonly) y las opciones no son
 // tabulables. `ariaLabel` nombra el grupo para el lector de pantalla.
 // Igual ancho (default): todas las opciones miden lo mismo, el ancho de la
@@ -46,9 +46,7 @@ export default function ButtonSelectGroup({
               key={opt}
               role="radio"
               aria-checked={isSel}
-              className={`${sizeCls} ${anchoOpcionCls} border shrink-0 inline-flex items-center justify-center select-none cursor-default ${
-                isSel ? "bg-primary-tint border-primary text-secondary" : "bg-surface border-border-strong text-text"
-              }`}
+              className={`${sizeCls} ${anchoOpcionCls} border shrink-0 inline-flex items-center justify-center select-none cursor-default ${readonlyOpcionCls(isSel)}`}
             >
               {opt}
             </span>
