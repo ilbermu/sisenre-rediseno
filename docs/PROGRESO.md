@@ -433,10 +433,17 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   Columnas: campoId, fecha y los campos de los chips visibles. Regla,
   filtros e ID verificados con un script contra la data sintética de las 9
   tablas.
+- **Nombre real de las columnas** (`eba2766`, `ab63a39`): `ColumnHeaderHint`
+  (nuevo, `components/ui`) y `SortableHeaderCell` `hint`; cada campo suma
+  `nombreReal` (exportes 202608). Encabezados de Resultados = label del
+  formulario en todas las tablas (Tabla 2: "Código de interrupción", "Nivel
+  de tensión", "Fase eléctrica"), con el nombre real como pista. Sin
+  nombreReal: Consumo, CT (Tabla 9), CT (Tabla 10) en Tabla 6 y Reclamos en
+  Tabla 8.
 - `DESIGN_SYSTEM.md`: Patrones → "ABM" (patrón único; el formulario y las
   reglas de edición son de cada tabla; regla de chips: hasta 5 visibles,
-  el resto en "Agregar filtro") y "Modal de edición de registro" con
-  Insertar.
+  el resto en "Agregar filtro"; labels de columna = label del form),
+  "Modal de edición de registro" con Insertar y `ColumnHeaderHint`.
 
 ### Pendientes abiertos
 
@@ -446,7 +453,10 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   el modal (Causa ≈ 323px, Zona ≈ 297px: más anchos que
   `--form-control-w`).
 - **Tabla 2 tiene 8 columnas** (la regla dice máximo 7): se dejó como
-  estaba porque Tabla 2 no tenía que cambiar.
+  estaba porque Tabla 2 no tenía que cambiar (salvo labels).
+- **Pista de nombre real sin probar:** el tag vive dentro del `th` sticky y
+  del contenedor con scroll de la tabla; en la última columna a la derecha
+  podría quedar recortado.
 - **Tabla 9 NM no tiene CT:** el pedido listaba CT como agregable; se
   omitió (el campo no existe en la config).
 - **Deep-link de alta a Tabla 8** ("Ir a Tabla 8 a insertar" desde Tablas

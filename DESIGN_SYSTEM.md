@@ -253,6 +253,12 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **`ColumnHeaderHint`** (nuevo): subrayado punteado + tag con el nombre
+  real de la columna (hover/foco, 300 ms). Los campos del ABM suman
+  `nombreReal`; los encabezados de Resultados usan el label del formulario
+  ("Código de interrupción" también en Tabla 2) y muestran el nombre real
+  como pista.
+
 - **ABM — regla de chips:** hasta 5 chips visibles (prioridad fecha →
   listas cerradas → orden del formulario); con 5 filtros o menos no hay
   "Agregar filtro". `filtrosBarra.fijos` pasa a `visibles`; columnas:
@@ -381,6 +387,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [CardHeader](#cardheader) ·
 [ChipFilterBar](#chipfilterbar) ·
 [CodeBadge](#codebadge) ·
+[ColumnHeaderHint](#columnheaderhint) ·
 [CopyButton](#copybutton) ·
 [DateTimeField](#datetimefield) ·
 [Dropdowns flotantes](#dropdowns-flotantes-dropdownts) ·
@@ -1239,6 +1246,37 @@ en la barra de contexto de registro.
 
 **Archivo:** `src/components/ui/CodeBadge.tsx`.
 
+## ColumnHeaderHint
+
+**Para qué:** dar una pista sobre el título de una columna sin ocupar
+lugar: hoy, el **nombre real** de la columna en la base (`nombreReal` del
+campo: REF, F, FAS…) en los encabezados de Resultados del ABM, cuyo título
+es el label del formulario. Patrón "definition tooltip" de Carbon. No es el
+Tooltip general de la app (queda para la fase de componentes nuevos), pero
+está pensado para evolucionar hacia él.
+
+**Anatomía:**
+- **Título** con subrayado punteado sutil (`underline decoration-dotted
+  decoration-neutral-400 underline-offset-3`), para que se note que tiene
+  información.
+- **Tag** debajo del título: `text-caption font-mono uppercase
+  text-text-muted`, `bg-fill-subtle`, `border-border`, `rounded-sm`, capa
+  `--z-tooltip`. Aparece con hover o foco tras **300 ms**; se va al
+  instante.
+
+**Props:** `hint?` y `children` como render-prop `(trigger, subrayadoCls)`:
+el título sigue siendo su propio elemento enfocable (ej. el botón de orden
+de `SortableHeaderCell`, que suma la prop `hint`) y recibe las props del
+disparador. **Sin `hint`: sin subrayado, sin tag y sin envoltorio.**
+
+**Accesibilidad:** el disparador es enfocable; el tag (`role="tooltip"`)
+se asocia con `aria-describedby`; Escape lo cierra.
+
+**Qué no hacer:** usarlo para texto largo o con contenido interactivo;
+subrayar un título sin pista.
+
+**Archivo:** `src/components/ui/ColumnHeaderHint.tsx`.
+
 ## CopyButton
 
 **Para qué:** copiar un valor al portapapeles (ej. la referencia de
@@ -1779,8 +1817,9 @@ tablas armadas con `div` (flex/grid); `SortableTh` para `<table>` (tabs de
 `text-secondary`), indicador de orden (`SortIndicator`). `SortableTh` es
 `sticky top-0 z-(--z-sticky)` con `bg-fill-subtle-solid` en el propio `th`.
 
-**Props:** `label`, `active`, `dir: SortDir`, `onClick`, `className?`
-(solo `SortableHeaderCell`).
+**Props:** `label`, `active`, `dir: SortDir`, `onClick`, `className?` y
+`hint?` (solo `SortableHeaderCell`; con `hint`, el título lleva la pista de
+[`ColumnHeaderHint`](#columnheaderhint)).
 
 **Estados:** reposo, hover (`text-text`), activo asc/desc.
 
@@ -2211,9 +2250,14 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   filtros", sin pie. Un solo buscador: la tabla no lleva `TableToolbar` ni
   `FilterTrigger`; el orden por columna se mantiene.
 - **Columnas** (`columnasResultadoBarra`): el `campoId` primero (mono), la
-  fecha si hay y los campos de los chips visibles (máximo 7 columnas), con
-  el **label completo del campo** (nada de "Ref", "F", "Alim"). Una columna con
-  `campo` muestra la etiqueta de la opción.
+  fecha si hay y los campos de los chips visibles (máximo 7 columnas).
+  **Labels de columna = label del campo en el formulario**, en todas las
+  tablas (la del código de interrupción es "Código de interrupción" en
+  todas; nada de "Referencia", "Ref", "F", "Alim", "Rec"). El nombre corto de
+  la base va en la pista del encabezado
+  ([`ColumnHeaderHint`](#columnheaderhint), `nombreReal` del campo); un
+  campo sin `nombreReal` no lleva pista. Una columna con `campo` muestra la
+  etiqueta de la opción.
 - **Auditoría y Exportar** no se renderizan (pendientes de reubicar).
 - **Borrar** abre `ConfirmarBorrarModal`.
 
