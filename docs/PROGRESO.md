@@ -425,16 +425,28 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
     `SectionDivider` y la prop `consultando` de `AbmCampo`.
   - `filtrarFilas` verificado contra la data sintética de las 9 tablas
     (ID, cada chip y valores de lista dentro de las opciones).
+- **ABM — regla de chips** (`bb58a3f`, `f958f5a`): hasta 5 chips visibles
+  por tabla (prioridad: fecha → listas cerradas → orden del formulario);
+  con 5 filtros o menos no hay "Agregar filtro" (Tablas 3, 5, 9 y 9 NM).
+  `filtrosBarra.fijos` pasa a `visibles` (también la prop de
+  `ChipFilterBar`, que ya no renderiza "Agregar filtro" sin agregables).
+  Columnas: campoId, fecha y los campos de los chips visibles. Regla,
+  filtros e ID verificados con un script contra la data sintética de las 9
+  tablas.
 - `DESIGN_SYSTEM.md`: Patrones → "ABM" (patrón único; el formulario y las
-  reglas de edición son de cada tabla; regla de chips fijos y agregables) y
-  "Modal de edición de registro" con Insertar.
+  reglas de edición son de cada tabla; regla de chips: hasta 5 visibles,
+  el resto en "Agregar filtro") y "Modal de edición de registro" con
+  Insertar.
 
 ### Pendientes abiertos
 
 - **Sin probar en el navegador:** las 8 tablas nuevas en el patrón,
-  Insertar, el desborde de la barra con muchos agregados (Tabla 4: 8,
-  Tabla 7: 9, Tabla 8: 9) y los toggles con `expandirBotones` en el modal
-  (Causa ≈ 323px, Zona ≈ 297px: más anchos que `--form-control-w`).
+  Insertar, el desborde de la barra con 5 chips de valores largos (Tabla
+  6: CTs; Tabla 7: chips numéricos) y los toggles con `expandirBotones` en
+  el modal (Causa ≈ 323px, Zona ≈ 297px: más anchos que
+  `--form-control-w`).
+- **Tabla 2 tiene 8 columnas** (la regla dice máximo 7): se dejó como
+  estaba porque Tabla 2 no tenía que cambiar.
 - **Tabla 9 NM no tiene CT:** el pedido listaba CT como agregable; se
   omitió (el campo no existe en la config).
 - **Deep-link de alta a Tabla 8** ("Ir a Tabla 8 a insertar" desde Tablas

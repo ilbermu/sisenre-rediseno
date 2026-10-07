@@ -253,6 +253,11 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **ABM — regla de chips:** hasta 5 chips visibles (prioridad fecha →
+  listas cerradas → orden del formulario); con 5 filtros o menos no hay
+  "Agregar filtro". `filtrosBarra.fijos` pasa a `visibles`; columnas:
+  campoId, fecha y los campos de los chips visibles (máximo 7).
+
 - **ABM — patrón único:** todas las tablas usan la pantalla y el modal de
   Tabla 2; el formulario y las reglas de edición siguen siendo de cada
   tabla. Config: `campoId`, `filtrosBarra` (regla de fijos y agregables;
@@ -1110,7 +1115,7 @@ todas las tablas del ABM.
    flexible: base 220px, mínimo 150px (es lo primero que se achica).
    Aplica con Enter o a los 500 ms de dejar de tipear; busca "contiene"
    sin distinguir mayúsculas.
-2. **Chips fijos** (siempre visibles): `FilterTriggerButton` `md`
+2. **Chips visibles** (siempre en la barra, hasta 5): `FilterTriggerButton` `md`
    (`chevronConValor={false}`). Vacío = trigger sin borde, **texto +
    chevron, sin ✕**; con valor = pintado (`primary-tint`, `border-primary`,
    `text-secondary`), "chipLabel: **valor**" (valor en semibold) o solo
@@ -1121,9 +1126,10 @@ todas las tablas del ABM.
    aspecto (un agregado vacío solo existe con su editor abierto).
 4. **"+N filtros"** (solo con desborde): chip pintado, mismo aspecto que un
    chip con valor.
-5. **"Agregar filtro":** `ghostBtnCls("neutral")` a `--control-md`, ícono +
-   y texto (sin borde punteado). Menú con los campos agregables que no
-   están en la barra. Elegir uno agrega su chip y abre su editor; si el
+5. **"Agregar filtro"** (solo si hay agregables; sin agregables no se
+   renderiza): `ghostBtnCls("neutral")` a `--control-md`, ícono + y texto
+   (sin borde punteado). Menú con los campos agregables que no están en la
+   barra. Elegir uno agrega su chip y abre su editor; si el
    editor se cierra sin valor, el chip se quita.
 6. **"Limpiar filtros":** link (`text-label text-secondary
    hover:underline`, `ml-auto`), solo con algún filtro o ID cargado. Limpia
@@ -1138,7 +1144,7 @@ el chip usa la etiqueta corta; solo-valor únicamente para campos cuyos
 valores se explican solos (descripciones, nombres) — nunca para Sí/No,
 códigos o números.
 
-**Props:** `id`, `onIdChange`, `idPlaceholder`, `fijos` y `agregables`
+**Props:** `id`, `onIdChange`, `idPlaceholder`, `visibles` y `agregables`
 (`ChipFiltroDef[]`: `campo`, `label`, `chipLabel?`, `soloValor?`,
 `editor`, `opciones?`), `valores` (campo → valor, `""` = sin filtro),
 `onChange(campo, valor)`, `onLimpiar`, `periodo?` (el del
@@ -1185,7 +1191,7 @@ el `title` del chip.
 **Desborde** (la barra nunca pasa de una línea). Si no entra todo, en este
 orden: (a) el ID se achica hasta 150px; (b) los chips agregados, de derecha
 a izquierda, pasan a "+N filtros"; (c) modo compacto: "Agregar filtro" solo
-ícono (`ICON_BTN_MD`, `aria-label`) y chips a 150px como máximo. Los fijos
+ícono (`ICON_BTN_MD`, `aria-label`) y chips a 150px como máximo. Los visibles
 nunca se ocultan. Los anchos naturales salen de una fila de medición
 invisible e inerte; se recalcula al agregar o quitar filtros y con el ancho
 de la barra (`ResizeObserver`).
@@ -2034,8 +2040,9 @@ consulta y se refina), con [`ChipFilterBar`](#chipfilterbar):
 
 - **ID directo:** el identificador se tipea en un input propio, sin abrir
   nada (es lo más buscado).
-- **Chips:** los filtros frecuentes, fijos y siempre visibles; el resto se
-  suma con "Agregar filtro". Cada chip abre su editor en un popover.
+- **Chips:** hasta 5 filtros visibles, siempre en la barra; el resto se
+  suma con "Agregar filtro" (si no hay más de 5, no hay "Agregar
+  filtro"). Cada chip abre su editor en un popover.
 - **Aplicar al instante:** cada cambio filtra en el momento, vuelve a la
   página 1 y deselecciona el registro si quedó afuera. **Sin botón
   Buscar** ni Limpiar: "Limpiar filtros" es un link, solo con filtros.
@@ -2204,20 +2211,26 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   filtros", sin pie. Un solo buscador: la tabla no lleva `TableToolbar` ni
   `FilterTrigger`; el orden por columna se mantiene.
 - **Columnas** (`columnasResultadoBarra`): el `campoId` primero (mono), la
-  fecha si hay, los campos de los chips fijos y 1 o 2 de contexto, con el
-  **label completo del campo** (nada de "Ref", "F", "Alim"). Una columna con
+  fecha si hay y los campos de los chips visibles (máximo 7 columnas), con
+  el **label completo del campo** (nada de "Ref", "F", "Alim"). Una columna con
   `campo` muestra la etiqueta de la opción.
 - **Auditoría y Exportar** no se renderizan (pendientes de reubicar).
 - **Borrar** abre `ConfirmarBorrarModal`.
 
 **Config de la barra (por tabla):**
 - `campoId`: el campo del input de ID ("contiene"). No se repite como chip.
-- `filtrosBarra.fijos` y `filtrosBarra.agregables` (`AbmFiltroBarra`:
-  `campo`, `label?`, `chipLabel?`, `soloValor?`). **Regla:** son **fijos**
-  la fecha (si la tabla tiene) y los campos que ya son de lista cerrada en
-  la config (toggle, select); el resto va a **"Agregar filtro"**. Una
-  tabla sin fijos muestra solo el ID + "Agregar filtro" (+ "Limpiar
-  filtros"), sin chips vacíos inventados.
+- `filtrosBarra.visibles` y `filtrosBarra.agregables` (`AbmFiltroBarra`:
+  `campo`, `label?`, `chipLabel?`, `soloValor?`).
+- **Regla de chips** (igual para todas las tablas):
+  - Se cuentan los campos filtrables de la tabla, **sin contar el
+    `campoId`**.
+  - **5 o menos:** todos son chips visibles y **no hay "Agregar filtro"**.
+  - **Más de 5:** se ven **5** y el resto va a **"Agregar filtro"**.
+  - **Prioridad** para elegir los visibles (y su orden): 1) la fecha; 2)
+    los campos de lista cerrada (toggle, select, combobox con opciones); 3)
+    el orden del formulario.
+  - El desborde responsive ("+N", modo compacto) sigue igual. Sin chips
+    vacíos ni placeholders inventados.
 - **El editor sale del tipo actual del campo:** texto / readonly → input
   "contiene"; toggle / select → lista; combobox → lista con búsqueda;
   fecha → rango con hora. Las opciones, el `emptyMessage` y las
@@ -2229,7 +2242,6 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
 el mismo para **Modificar** y para **Insertar**, recorriendo los campos de
 la tabla activa en su orden.
 
-## Formulario de edición
 ## Formulario de edición
 
 Formulario **horizontal en filas** (patrón de pantallas de configuración),
