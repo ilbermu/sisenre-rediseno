@@ -366,22 +366,21 @@ Sin cambios (ver entrada del 2026-09-23). Login del prototipo:
   Modificar (`src/components/ui/ValuePicker.tsx`, variante `modal`).
 - **Popovers de `FilterTrigger` dentro de "Tablas relacionadas"** no usan
   `FloatingPanel` (`src/components/ui/FilterTrigger.tsx`).
-- **Layout barra (Tabla 2)**: Buscar no filtra de verdad (muestra todas las
-  filas, igual que el split); no soporta Insertar; Auditoría y Exportar
-  pendientes de reubicar; la barra comparte `valores` con el modal de
-  Modificar, así que al cerrarlo se vacían los filtros
-  (`src/features/abm/AbmScreen.tsx`).
-- **Fase eléctrica como texto libre** en cds4 y cds5
-  (`src/data/abmTables.ts`): candidatas al tipo `"fase"`.
+- **ABM**: Auditoría y Exportar pendientes de reubicar (ver 2026-10-07; la
+  búsqueda filtra, hay Insertar y la barra tiene estado propio).
+- **Campos de texto que convendría cambiar de tipo** (no aplicado): Fase
+  eléctrica en Tablas 4 y 5 (select), Tarifa en Tablas 6 y 8 (select), Nivel
+  de tensión en Tabla 6 y Tensión en Tabla 7 (toggle), Código falla en
+  Tabla 8 (select/combobox); cantidades sin filtro por rango.
 - **Desalineaciones horizontales**: el título de `TopBar` (`px-6`) no
   coincide con `--page-px` del contenido de Consultas; en `Modal`, el header
   (`--card-px`) no coincide con el `p-5` del body.
-- **Código sin uso**: `ICON_BTN_MD` (`src/components/ui/tokens.ts`),
-  `--field-w-sm/md/lg` (`src/index.css`), `SubtituloEtiquetado`
+- **Código sin uso**: `--field-w-sm/md/lg` (`src/index.css`),
+  `SubtituloEtiquetado`
   (`src/features/consultas-interrupcion/SubtituloEtiquetado.tsx`) y
   `PersistentActionsBar` (ver pendientes del 2026-10-05).
-- **Archivos grandes** (candidatos a partir): `ModificarContent.tsx` (1.130
-  líneas), `AbmScreen.tsx` (1.077), `data/abmTables.ts` (633).
+- **Archivos grandes** (candidatos a partir): `ModificarContent.tsx` (~860
+  líneas), `AbmScreen.tsx` (~750), `data/abmTables.ts` (~750).
 - **Tailwind escanea los `.md`**: una clase mencionada en `DESIGN_SYSTEM.md`
   o en esta bitácora se genera en el CSS aunque la app no la use.
 - Siguen abiertos de días anteriores: herramientas sin conectar,
@@ -402,6 +401,22 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
 
 ### Qué se hizo
 
+- **Barra de búsqueda** (`b83c018` … `4dcb8a6`): `FilterBar` se extrae de
+  Consultas a `components/ui` (flyout con combobox de Descripción equipo
+  operado y toggle Sí/No) y se usa un tiempo en Tabla 2; después Tabla 2
+  pasa a la barra híbrida `ChipFilterBar` (ID directo + chips que aplican al
+  instante, popovers anclados con `AnchoredPopover`, desborde "+N" y modo
+  compacto, editor de fecha con calendario en rango y `HoraCombobox`;
+  `PeriodSelector` controlable). Consultas conserva `FilterBar`. El tipo de
+  campo "fase" (botones R/S/T) se creó y se eliminó el mismo día: Fase
+  eléctrica vuelve a dropdown (regla botones vs dropdown en el DS).
+- **Modal de edición de registro** (`5998cdd` … `b4dfea3`): estado de solo
+  lectura unificado (`READONLY_FIELD_CLS`, `SegmentadoSoloLectura` para
+  toggles), código de interrupción como primer campo con copiar, Motivo como
+  sección sin caja de color, `--modal-form-w` 704px.
+- **Nomenclatura y encabezado del ABM** (`8cf504c` … `c79f7a1`): "Tabla N" en
+  la UI (el código CDS queda interno), ABM con el `TopBar` común y
+  `AbmTableSelector` como título.
 - **ABM — patrón único de pantalla y modal** (`4c6bfb5`, `9758308`): las 9
   tablas usan el patrón aprobado en Tabla 2. Se adapta el patrón, no se
   copia el formulario: campos, tipos, opciones, dependencias,
@@ -430,14 +445,12 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   con 5 filtros o menos no hay "Agregar filtro" (Tablas 3, 5, 9 y 9 NM).
   `filtrosBarra.fijos` pasa a `visibles` (también la prop de
   `ChipFilterBar`, que ya no renderiza "Agregar filtro" sin agregables).
-  Columnas: campoId, fecha y los campos de los chips visibles. Regla,
-  filtros e ID verificados con un script contra la data sintética de las 9
-  tablas.
+  Regla, filtros e ID verificados con un script contra la data sintética
+  de las 9 tablas. (Las columnas de esta pasada se reemplazaron más tarde
+  por las de la tabla real, ver abajo.)
 - **Nombre real de las columnas** (`eba2766`, `ab63a39`): `ColumnHeaderHint`
   (nuevo, `components/ui`) y `SortableHeaderCell` `hint`; cada campo suma
-  `nombreReal` (exportes 202608). Encabezados de Resultados = label del
-  formulario en todas las tablas (Tabla 2: "Código de interrupción", "Nivel
-  de tensión", "Fase eléctrica"), con el nombre real como pista. Sin
+  `nombreReal` (exportes 202608), mostrado como pista del encabezado. Sin
   nombreReal: Consumo, CT (Tabla 9), CT (Tabla 10) en Tabla 6 y Reclamos en
   Tabla 8.
 - **`ColumnHeaderHint` ajustado y tipografía de tablas** (`fb03f82`,
@@ -477,14 +490,21 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   ver el ID fijo, su borde y el fondo en hover y selección.
 - **Piso y Depto. (Tabla 8)** tienen filas vacías en la data sintética
   (10 y 5 de 40): son valores legítimos (casa, sin depto), no se completaron.
-- **Tabla 9 NM:** la tabla real tiene CT pero el formulario no; sin columna.
+- **Tabla 9 NM:** la tabla real tiene CT pero el formulario no; sin columna
+  ni chip de CT.
+- **Chips con etiqueta larga:** con los encabezados unificados, algunos
+  chips superan los ~10 caracteres previstos ("Potencia clientes MT",
+  "Código de interrupción" en Tabla 8) y truncan a 200px.
+- **Chips y columnas con nombres distintos:** Tabla 8 (chip "Póliza" /
+  columna "Nro. cuenta"), Tablas 6 y 9 (chip "Cliente"), Tabla 6 (chip
+  "Potencia" / campo "Demanda media del cliente (KW)").
+- **Paginación del ABM fija** (siempre página 1) y filas nuevas de Insertar
+  solo en la sesión.
 - **Pista de nombre real sin probar:** el tag va en un portal (fixed), así
   que no se recorta; falta ver su posición real sobre el `th` sticky y el
   cierre con scroll.
 - **`font-mono` fuera de tablas** sin revisar: ver el listado del reporte
   del 2026-10-07 (modales, fichas, chips, inputs).
-- **Tabla 9 NM no tiene CT:** el pedido listaba CT como agregable; se
-  omitió (el campo no existe en la config).
 - **Deep-link de alta a Tabla 8** ("Ir a Tabla 8 a insertar" desde Tablas
   relacionadas): Tabla 8 no tiene Insertar, así que se aplica como
   búsqueda por Interrupción. Revisar si el link debería ocultarse.
