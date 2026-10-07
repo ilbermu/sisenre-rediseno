@@ -1,6 +1,7 @@
-// Badge de código de tabla (ej. "CDS2", "CDS6") — mismo componente en todo
-// lugar donde haga falta dejar explícito sobre qué tabla ABM se trabaja:
-// CardHeader (paneles de ABM) y la barra de búsqueda de Modificar interrupción.
+// Badge con el nombre de una tabla (ej. "Tabla 2", "Tabla 4" — el `nombre`
+// de su config, nunca el código CDS) — mismo componente en todo lugar donde
+// haga falta dejar explícito sobre qué tabla se trabaja: CardHeader
+// (paneles de ABM, cards de Consultas) y la ficha de la reposición.
 export default function CodeBadge({ code }: { code: string }) {
   return (
     <span

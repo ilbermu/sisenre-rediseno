@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Clock, Users, ClipboardList } from "lucide-r
 import { CodeBadge, FaseIndicador, FOCUS_RING, ICON, ICON_BTN_SM } from "@/components/ui";
 import { FaseReposicion } from "@/data/types";
 import { useMatchMedia } from "@/lib/useMatchMedia";
+import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 
 // Reposición activa — primer elemento del body del modal "Tablas
 // relacionadas", en fondo blanco arriba de UnderlineTabs (antes vivía en
@@ -76,7 +77,7 @@ export default function FaseReposicionFicha({
       >
       <div className="flex items-center flex-wrap gap-x-2 gap-y-1 min-w-0 text-body-sm">
         <span className="font-semibold text-text whitespace-nowrap">Reposición {fila.nro}</span>
-        <CodeBadge code="CDS4" />
+        <CodeBadge code={ABM_TABLE_CONFIGS.cds4.nombre} />
         {sep}
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
           <span className="text-icon"><Clock size={ICON.sm} strokeWidth={1.5} /></span>

@@ -28,6 +28,7 @@ export default function AbmTableSelector({ value, onChange }: { value: AbmTableK
     <div ref={ref} style={{ position: "relative" }} className="min-w-0">
       <button
         type="button"
+        title={`${current.nombre} · ${current.titulo} (${current.code})`}
         onClick={() => setOpen((v) => !v)}
         className="group flex items-center gap-2 h-(--control-md) pl-1.5 pr-2 -ml-1.5 rounded-sm min-w-0 transition-colors duration-(--duration-base) hover:bg-fill-muted"
       >
@@ -40,7 +41,7 @@ export default function AbmTableSelector({ value, onChange }: { value: AbmTableK
           className="px-1.5 py-0.5 text-caption font-mono rounded-xs border border-border-strong text-focus shrink-0"
           style={{ backgroundColor: "var(--color-fill-muted)" }}
         >
-          {current.code}
+          {current.nombre}
         </span>
         <span className={`shrink-0 text-icon transition-transform duration-(--duration-base) ${open ? "rotate-180" : ""}`}>
           <ChevronDown size={ICON.md} strokeWidth={1.5} />
@@ -72,7 +73,7 @@ export default function AbmTableSelector({ value, onChange }: { value: AbmTableK
                   <span
                     className={`text-caption font-mono shrink-0 tabular-nums ${isSel ? "text-secondary" : "text-text-muted"}`}
                   >
-                    {c.code}
+                    {c.nombre}
                   </span>
                 </button>
               );

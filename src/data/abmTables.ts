@@ -49,6 +49,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
   cds2: {
     key: "cds2",
     code: "CDS2",
+    nombre: "Tabla 2",
     titulo: "Interrupciones",
     hasInsertar: false,
     // PRUEBA de layout — solo esta tabla. Ver AbmLayout.
@@ -173,6 +174,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
   cds3: {
     key: "cds3",
     code: "CDS3",
+    nombre: "Tabla 3",
     titulo: "Interrupciones no computables",
     hasInsertar: true,
     secciones: [
@@ -204,6 +206,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
   cds4: {
     key: "cds4",
     code: "CDS4",
+    nombre: "Tabla 4",
     titulo: "Reposiciones",
     hasInsertar: true,
     secciones: [
@@ -273,6 +276,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
   cds5: {
     key: "cds5",
     code: "CDS5",
+    nombre: "Tabla 5",
     titulo: "Trafos MT/BT repuestos en interrupciones MT y AT",
     hasInsertar: true,
     secciones: [
@@ -329,6 +333,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
   cds6: {
     key: "cds6",
     code: "CDS6",
+    nombre: "Tabla 6",
     titulo: "Clientes AT/MT afectados en interrupciones MT/AT",
     hasInsertar: true,
     secciones: [
@@ -402,6 +407,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
   cds7: {
     key: "cds7",
     code: "CDS7",
+    nombre: "Tabla 7",
     titulo: "Instalaciones MT",
     hasInsertar: true,
     secciones: [
@@ -478,6 +484,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
   cds8: {
     key: "cds8",
     code: "CDS8",
+    nombre: "Tabla 8",
     titulo: "Reclamos de clientes",
     hasInsertar: false,
     secciones: [
@@ -566,6 +573,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
   cds9: {
     key: "cds9",
     code: "CDS9",
+    nombre: "Tabla 9",
     titulo: "Interrupciones por cliente",
     hasInsertar: true,
     secciones: [
@@ -615,6 +623,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
   cds9nm: {
     key: "cds9nm",
     code: "CDS9-NM",
+    nombre: "Tabla 9 NM",
     titulo: "Interrupciones por cliente NM",
     hasInsertar: true,
     secciones: [

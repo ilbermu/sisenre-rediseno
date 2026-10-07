@@ -365,7 +365,7 @@ export default function ModificarContent({
         {/* Header — sin subtítulo (el contador va en el toolbar). Sin
             acciones: "Datos de la interrupción" se abre desde la sección
             Reclamos. */}
-        <CardHeader title="Interrupciones" tag="CDS2" />
+        <CardHeader title="Interrupciones" tag={ABM_TABLE_CONFIGS.cds2.nombre} />
 
         {/* Toolbar de tabla — FUERA del contenedor de la tabla, sin fondo ni
             línea divisoria con la tabla (ver DESIGN_SYSTEM.md, "Patrones
@@ -501,7 +501,7 @@ export default function ModificarContent({
               línea superior de la lista. */}
           <CardHeader
             title="Reposiciones"
-            tag="CDS4"
+            tag={ABM_TABLE_CONFIGS.cds4.nombre}
             context={selectedRecord ? { label: "Interrupción", value: selectedRecord.referencia } : undefined}
           />
 
@@ -770,7 +770,7 @@ export default function ModificarContent({
                         }
                         className="mt-1 text-label text-secondary hover:underline"
                       >
-                        Ir a {ABM_TABLE_CONFIGS[abmMapping.tableKey].code} a insertar →
+                        Ir a {ABM_TABLE_CONFIGS[abmMapping.tableKey].nombre} a insertar →
                       </button>
                     )}
                   </div>

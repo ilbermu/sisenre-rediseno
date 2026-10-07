@@ -59,7 +59,7 @@ export const DRAWER_TABS = [
   },
   {
     key: "tabla5", label: "Tabla 5",
-    subtitle: "Transformadores MT/BT repuestos en interrupciones AT/MT (CDS5)",
+    subtitle: "Transformadores MT/BT repuestos en interrupciones AT/MT (Tabla 5)",
     cols: ["Interrupción", "Fase", "Cadena eléctrica", "Potencia (Kva)", "Fase eléctrica", "Cant. clientes BT"],
     // Columnas con FilterTrigger en el toolbar del modal (por nombre de `cols`).
     filtrables: ["Fase eléctrica"],
@@ -73,7 +73,7 @@ export const DRAWER_TABS = [
   },
   {
     key: "tabla6", label: "Tabla 6",
-    subtitle: "Clientes AT/MT afectados en interrupciones AT/MT (CDS6)",
+    subtitle: "Clientes AT/MT afectados en interrupciones AT/MT (Tabla 6)",
     cols: ["Interrupción", "Fase", "Cliente", "Consumo", "CT T9", "CT T10", "Tarifa", "Demanda media", "Tensión"],
     filtrables: ["Tarifa", "Tensión", "CT T9", "CT T10"],
     searchPlaceholder: "Buscar interrupción o cliente…",
@@ -82,7 +82,7 @@ export const DRAWER_TABS = [
   },
   {
     key: "tabla8", label: "Tabla 8",
-    subtitle: "Reclamos de clientes (CDS8)",
+    subtitle: "Reclamos de clientes (Tabla 8)",
     cols: ["Reclamo", "Fecha", "Cliente", "Nombre", "Tarifa", "Causa", "Piso", "Dpto", "Partido"],
     filtrables: ["Tarifa", "Causa", "Partido"],
     searchPlaceholder: "Buscar reclamo, cliente o nombre…",
@@ -91,7 +91,7 @@ export const DRAWER_TABS = [
   },
   {
     key: "tabla9", label: "Tabla 9",
-    subtitle: "Interrupciones por cliente (CDS9)",
+    subtitle: "Interrupciones por cliente (Tabla 9)",
     cols: ["Interrupción", "Fase", "Cliente", "Tarifa", "CT T9", "CT T10"],
     filtrables: ["Tarifa", "CT T9", "CT T10"],
     searchPlaceholder: "Buscar interrupción o cliente…",

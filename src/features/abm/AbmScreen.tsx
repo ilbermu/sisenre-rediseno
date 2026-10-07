@@ -506,7 +506,7 @@ export default function AbmScreen({
         >
           <CardHeader
             title="Resultados"
-            tag={config.code}
+            tag={config.nombre}
             actions={
               <div className="flex items-center gap-2">
                 {/* Auditoría y Exportar: DEPRECADO en layout barra — pendiente
@@ -976,7 +976,7 @@ export default function AbmScreen({
         >
           <CardHeader
             title={mode === "alta" ? "Insertando en" : mode === "modificar" ? "Modificando" : "Búsqueda"}
-            tag={config.code}
+            tag={config.nombre}
           />
           <div className="flex-1 overflow-y-auto px-(--card-px) py-5 flex flex-col gap-5">
             {renderSecciones(config.secciones)}

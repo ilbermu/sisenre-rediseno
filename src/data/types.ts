@@ -143,7 +143,12 @@ export type AbmFiltrosBarra = {
 
 export type AbmTableConfig = {
   key: AbmTableKey;
+  // Código interno de la tabla (CDS2…): datos, exportaciones, nombres de
+  // archivo y tooltip del selector. No se muestra como nombre en la UI.
   code: string;
+  // Nombre visible de la tabla ("Tabla 2"… "Tabla 9 NM", los del menú
+  // lateral, ABM_ITEMS): tags, badges, selector.
+  nombre: string;
   titulo: string;
   hasInsertar: boolean;
   // Default "split". Ver AbmLayout.
