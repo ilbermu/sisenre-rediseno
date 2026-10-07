@@ -225,7 +225,7 @@ export default function App() {
     setVolverA({ relTab: link.relTabOrigen ?? null, referencia: link.referenciaOrigen ?? null, reposicion: link.reposicionOrigen ?? null }); // ...y lo vuelve a armar
   }
 
-  // Botón "Volver a Consultas de interrupción" del masthead de AbmScreen —
+  // Botón "Volver a Consultas de interrupción" de AbmScreen (junto al selector de tabla) —
   // restaura la misma interrupción, el mismo tab del modal "Tablas
   // relacionadas" (si lo hay) y la misma reposición.
   function volverAConsultas() {

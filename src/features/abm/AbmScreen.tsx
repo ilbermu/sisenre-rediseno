@@ -6,6 +6,7 @@ import {
   CardHeader,
   CopyButton,
   ChipFilterBar,
+  FOCUS_RING,
   FOCUS_RING_INSET,
   FormRow,
   ghostBtnCls,
@@ -14,7 +15,6 @@ import {
   Modal,
   modalNeutralBtnCls,
   modalPrimaryBtnCls,
-  PeriodSelector,
   READONLY_FIELD_CLS,
   SectionDivider,
   SelectionActionBar,
@@ -35,6 +35,7 @@ import { filtrarFilas, FiltroFila, modoDeEditor } from "@/features/abm/filtrarFi
 import RevisarCambiosContent, { useMotivoCambio } from "@/features/abm/RevisarCambiosContent";
 import { labelDeValor } from "@/features/abm/labelDeValor";
 import { formatNumero } from "@/lib/format";
+import TopBar from "@/components/layout/TopBar";
 
 function exportRowsToCsv(filename: string, headers: string[], rows: string[][]) {
   const escape = (v: string) => (/[",\n;]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
@@ -84,7 +85,7 @@ export default function AbmScreen({
   deepLink?: AbmDeepLink | null;
   onDeepLinkConsumed?: () => void;
   // Se llegó acá por un deep-link (no por navegación normal del sidebar) —
-  // muestra el botón "←" (solo ícono) en el masthead.
+  // muestra el botón "←" (solo ícono) junto al selector de tabla.
   volverVisible?: boolean;
   onVolver?: () => void;
 }) {
@@ -129,7 +130,7 @@ export default function AbmScreen({
   const esBarra = config.layout === "barra";
   const [idBarra, setIdBarra] = useState("");
   const [filtrosBarraValores, setFiltrosBarraValores] = useState<Record<string, string>>({});
-  // Período del masthead — lo usa el atajo "Período completo" del filtro de
+  // Período del TopBar — lo usa el atajo "Período completo" del filtro de
   // fecha de la barra.
   const [periodo, setPeriodo] = useState(PERIODS[0]);
   // Modal de edición de registro (layout "barra"): un solo modal con dos
@@ -912,38 +913,34 @@ export default function AbmScreen({
 
   return (
     <>
-      {/* Masthead — selector de tabla (hace de título) a la izquierda, período
-          a la derecha. Único agregado condicional: el link "Volver" cuando
-          se llegó acá por un deep-link (ver AbmDeepLink) — nada de Insertar
-          ni dropdown genérico. */}
-      <header
-        className="flex items-center gap-3 px-6 border-b border-border bg-bg-app shrink-0"
-        style={{ minHeight: "var(--header-min-height, 60px)" }}
-      >
-        {volverVisible && (
-          <button
-            type="button"
-            onClick={onVolver}
-            title="Volver a Consultas de interrupción"
-            aria-label="Volver a Consultas de interrupción"
-            className={`flex items-center justify-center ${ICON_BTN_SM} -ml-1.5 rounded-sm text-icon hover:text-secondary hover:bg-fill-muted transition-colors shrink-0`}
-          >
-            ←
-          </button>
-        )}
-        <div className="flex-1 min-w-0">
+      {/* TopBar común a todas las pantallas: título de la sección del menú
+          + PeriodSelector (controlado: el período vive acá y también lo usa
+          el atajo "Período completo" de ChipFilterBar). */}
+      <TopBar title="Alta, baja y modificación" periodo={periodo} onPeriodoChange={setPeriodo} />
+
+      {/* Content — mismo padding y gap de página que Consultas de
+          interrupción, en los dos layouts. Primero el selector de tabla, que
+          hace de título de la vista (no hay otro título de tabla); el "←"
+          a su izquierda solo cuando se llegó por un deep-link. */}
+      <div className="flex-1 min-h-0 flex flex-col gap-(--page-gap) px-(--page-px) pt-(--page-pt) pb-(--page-pt) relative overflow-hidden">
+        <div className="shrink-0 flex items-center gap-2 min-w-0">
+          {volverVisible && (
+            <button
+              type="button"
+              onClick={onVolver}
+              title="Volver a Consultas de interrupción"
+              aria-label="Volver a Consultas de interrupción"
+              className={`flex items-center justify-center ${ICON_BTN_SM} rounded-sm text-icon hover:text-secondary hover:bg-fill-muted transition-colors shrink-0 ${FOCUS_RING}`}
+            >
+              ←
+            </button>
+          )}
           <AbmTableSelector value={tableKey} onChange={onChangeTable} />
         </div>
-        <PeriodSelector value={periodo} onChange={setPeriodo} />
-      </header>
-
-      {/* Content */}
       {esBarra ? (
         // Layout "barra" (PRUEBA, solo CDS2): barra de filtros híbrida
-        // apoyada en el fondo + Resultados a ancho completo — mismo padding
-        // y gap de página que Consultas de interrupción.
-        <div className="flex-1 min-h-0 flex flex-col px-(--page-px) pt-(--page-pt) pb-(--page-pt) relative overflow-hidden">
-          <div className="flex-1 min-h-0 flex flex-col gap-(--page-gap)">
+        // apoyada en el fondo + Resultados a ancho completo.
+        <>
             {filtrosBarra && (
               <ChipFilterBar
                 id={idBarra}
@@ -958,10 +955,11 @@ export default function AbmScreen({
               />
             )}
             {resultadosBarra}
-          </div>
-        </div>
+        </>
       ) : (
-      <div className="flex-1 flex overflow-hidden p-5 gap-5" key={mode}>
+      // Sin overflow-hidden en esta fila: recortaría la sombra de las cards
+      // (el padding de página lo pone el contenedor de arriba).
+      <div className="flex-1 min-h-0 flex gap-5" key={mode}>
 
         {/* ── Left column: form ── */}
         <div
@@ -1025,6 +1023,7 @@ export default function AbmScreen({
         {resultadosCard}
       </div>
       )}
+      </div>
 
       {/* Layout "barra": Modificar en un modal de edición de registro (ver
           DESIGN_SYSTEM.md, "Modal de edición de registro"):
