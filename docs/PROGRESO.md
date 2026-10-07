@@ -446,6 +446,13 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   `text-secondary`, fuente de texto). `font-mono` solo en el identificador
   del registro: se elimina `mono` de las columnas del ABM (derivado del
   `campoId`) y de Reposiciones; cifras con `tabular-nums`.
+- **Columnas de Resultados = tabla real, con scroll horizontal** (`6ae1150`):
+  columnas derivadas de la config (`columnasDeResultados`): campos con
+  `nombreReal` en el orden real (`ordenTablaReal`), campoId primero y fijo
+  (sticky, borde solo con contenido desplazado), "Nro. cuenta" para POL /
+  CUENTA (`labelColumna`), sin máximo ni auditoría; se quita
+  `columnasResultadoBarra`. Tabla en `border-separate`, celdas nowrap y
+  scroll horizontal dentro de la caja (paginación y barra fijas).
 - `DESIGN_SYSTEM.md`: Patrones → "ABM" (patrón único; el formulario y las
   reglas de edición son de cada tabla; regla de chips: hasta 5 visibles,
   el resto en "Agregar filtro"; labels de columna = label del form),
@@ -459,8 +466,12 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   6: CTs; Tabla 7: chips numéricos) y los toggles con `expandirBotones` en
   el modal (Causa ≈ 323px, Zona ≈ 297px: más anchos que
   `--form-control-w`).
-- **Tabla 2 tiene 8 columnas** (la regla dice máximo 7): se dejó como
-  estaba porque Tabla 2 no tenía que cambiar (salvo labels).
+- **Tablas anchas sin probar:** Tabla 2 (12 columnas), Tabla 7 (11) y
+  Tabla 8 (13) probablemente scrolleen en horizontal en notebooks: falta
+  ver el ID fijo, su borde y el fondo en hover y selección.
+- **Piso y Depto. (Tabla 8)** tienen filas vacías en la data sintética
+  (10 y 5 de 40): son valores legítimos (casa, sin depto), no se completaron.
+- **Tabla 9 NM:** la tabla real tiene CT pero el formulario no; sin columna.
 - **Pista de nombre real sin probar:** el tag va en un portal (fixed), así
   que no se recorta; falta ver su posición real sobre el `th` sticky y el
   cierre con scroll.

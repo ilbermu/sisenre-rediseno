@@ -253,6 +253,14 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **ABM — columnas de Resultados = estructura de la tabla real:** todos los
+  campos con `nombreReal`, en el orden real (`ordenTablaReal`), con el
+  campoId primero y fijo; sin campos sin nombreReal ni auditoría; sin
+  máximo; "Nro. cuenta" para POL / CUENTA (`labelColumna`). Se derivan
+  (`columnasDeResultados`) y se elimina `columnasResultadoBarra`. Scroll
+  horizontal solo si no entran, con el ID fijo (sección nueva "Tabla de
+  resultados").
+
 - **Tipografía en tablas:** `font-mono` solo en el valor del identificador
   del registro (columna del `campoId` en el ABM, Referencia en
   Interrupciones de Consultas); todo lo demás en fuente de texto; cifras
@@ -416,6 +424,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [SelectionActionBar](#selectionactionbar) ·
 [SelectWrap](#selectwrap) ·
 [SortableHeaderCell / SortableTh](#sortableheadercell--sortableth) ·
+[Tabla de resultados](#tabla-de-resultados) ·
 [TableCounter](#tablecounter) ·
 [TableToolbar y useTableToolbar](#tabletoolbar-y-usetabletoolbar) ·
 [TopBar](#topbar) ·
@@ -1853,6 +1862,42 @@ tablas armadas con `div` (flex/grid); `SortableTh` para `<table>` (tabs de
 
 **Archivo:** `src/components/ui/SortableHeader.tsx`.
 
+## Tabla de resultados
+
+**Para qué:** la tabla de Resultados del ABM (`AbmScreen`): muchas columnas
+que no siempre entran en la caja.
+
+**Anatomía:** caja (`border border-border rounded-md bg-surface shadow-sm`,
+`min-w-0`) con tres capas: el contenedor con scroll (`overflow-auto`,
+`rounded-t-md`) que lleva la `<table>`, y el pie de paginación **fuera** del
+scroll. La tabla es `border-separate` con `borderSpacing: 0`: bajo
+`border-collapse`, los bordes de una celda sticky se pintan en la capa de la
+tabla y quedan mal al scrollear; por eso los separadores de fila (`border-b
+border-border-subtle`) van en cada `<td>`.
+
+**Ancho y scroll horizontal:**
+- Celdas y encabezados en `whitespace-nowrap`; ningún valor se trunca.
+- Si no entran, el contenedor scrollea en horizontal (**no la página**); el
+  `thead` acompaña (`sticky top-0`, `bg-fill-subtle-solid`).
+- **Columna fija:** la del identificador del registro (`campoId`) es
+  `sticky left-0` con `z-(--z-sticky)`; su encabezado, además de sticky
+  arriba, queda sobre las demás celdas sticky (`--z-sticky` + 1). Su fondo es
+  **opaco** en todos los estados (la fila pasa por detrás al scrollear):
+  `surface`, con el hover (`fill-muted`, translúcido) como degradé encima, o
+  `primary-tint` si la fila está seleccionada.
+- **Indicador:** mientras haya contenido desplazado a la izquierda
+  (`scrollLeft > 0`), la columna fija muestra un borde derecho
+  (`border-border`); sin scroll el borde es transparente (sin borde extra).
+- Barra de la tabla (contador / selección) y paginación **fijas** al ancho
+  de la caja.
+- El tag de [`ColumnHeaderHint`](#columnheaderhint) va en un portal (fixed),
+  así que el `overflow` no lo recorta.
+
+**Tipografía:** mono solo en la columna del ID; el resto en fuente de texto
+con `tabular-nums` (ver [Tipografía](#tipografía)).
+
+**Archivo:** `src/features/abm/AbmScreen.tsx` (tabla `resultados`).
+
 ## TableCounter
 
 **Para qué:** contador del toolbar de tabla: "`N` de `M` registros", o
@@ -2275,15 +2320,30 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   resultados: "No hay registros con estos filtros" + link "Limpiar
   filtros", sin pie. Un solo buscador: la tabla no lleva `TableToolbar` ni
   `FilterTrigger`; el orden por columna se mantiene.
-- **Columnas** (`columnasResultadoBarra`): el `campoId` primero (mono), la
-  fecha si hay y los campos de los chips visibles (máximo 7 columnas).
-  **Labels de columna = label del campo en el formulario**, en todas las
-  tablas (la del código de interrupción es "Código de interrupción" en
-  todas; nada de "Referencia", "Ref", "F", "Alim", "Rec"). El nombre corto de
-  la base va en la pista del encabezado
-  ([`ColumnHeaderHint`](#columnheaderhint), `nombreReal` del campo); un
-  campo sin `nombreReal` no lleva pista. Una columna con `campo` muestra la
-  etiqueta de la opción.
+- **Columnas: la estructura de la tabla real.** Se **derivan** de la config
+  (`columnasDeResultados`, `src/features/abm/columnasDeResultados.ts`), no
+  se declaran a mano por tabla:
+  - son **todos los campos del formulario con `nombreReal`** (o sea, que
+    existen en la tabla real), en el **orden de la tabla real**
+    (`ordenTablaReal` de la config);
+  - el **`campoId` va siempre primero** (mono) y fijo a la izquierda, aunque
+    en la tabla real no sea el primero (Tablas 9 y 9 NM);
+  - **no se muestran** los campos sin `nombreReal` (Consumo y los CT de
+    Tabla 6, Reclamos de Tabla 8), que siguen en el modal, ni los campos de
+    auditoría de la tabla real;
+  - **sin máximo de columnas**.
+- **Encabezado = label del campo en el formulario** (la del código de
+  interrupción es "Código de interrupción" en todas; nada de "Ref", "F",
+  "Alim", "Rec"), con **una excepción**: los campos POL y CUENTA se titulan
+  **"Nro. cuenta"** (`labelColumna` opcional del campo, solo para estos
+  casos; el label del formulario no cambia). El nombre real de la base va en
+  la pista del encabezado ([`ColumnHeaderHint`](#columnheaderhint)). Una
+  columna de toggle, select o combobox muestra la etiqueta de la opción.
+- **Ancho:** celdas y encabezados en `whitespace-nowrap`, ningún valor se
+  trunca. Solo si las columnas no entran en la caja hay **scroll horizontal
+  dentro de la caja**, con la columna del ID fija (ver [Tabla de
+  resultados](#tabla-de-resultados)); la barra de la tabla y la paginación
+  no scrollean. Nunca scroll horizontal de la página.
 - **Auditoría y Exportar** no se renderizan (pendientes de reubicar).
 - **Borrar** abre `ConfirmarBorrarModal`.
 
