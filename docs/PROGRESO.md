@@ -440,10 +440,17 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   de tensión", "Fase eléctrica"), con el nombre real como pista. Sin
   nombreReal: Consumo, CT (Tabla 9), CT (Tabla 10) en Tabla 6 y Reclamos en
   Tabla 8.
+- **`ColumnHeaderHint` ajustado y tipografía de tablas** (`fb03f82`,
+  `43e6469`): sin subrayado (el título pasa a `text-secondary` con hover o
+  foco), tag arriba del título (portal, `primary-tint` / `chip-border` /
+  `text-secondary`, fuente de texto). `font-mono` solo en el identificador
+  del registro: se elimina `mono` de las columnas del ABM (derivado del
+  `campoId`) y de Reposiciones; cifras con `tabular-nums`.
 - `DESIGN_SYSTEM.md`: Patrones → "ABM" (patrón único; el formulario y las
   reglas de edición son de cada tabla; regla de chips: hasta 5 visibles,
   el resto en "Agregar filtro"; labels de columna = label del form),
-  "Modal de edición de registro" con Insertar y `ColumnHeaderHint`.
+  "Modal de edición de registro" con Insertar, `ColumnHeaderHint` y la regla
+  de tipografía en tablas.
 
 ### Pendientes abiertos
 
@@ -454,9 +461,11 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   `--form-control-w`).
 - **Tabla 2 tiene 8 columnas** (la regla dice máximo 7): se dejó como
   estaba porque Tabla 2 no tenía que cambiar (salvo labels).
-- **Pista de nombre real sin probar:** el tag vive dentro del `th` sticky y
-  del contenedor con scroll de la tabla; en la última columna a la derecha
-  podría quedar recortado.
+- **Pista de nombre real sin probar:** el tag va en un portal (fixed), así
+  que no se recorta; falta ver su posición real sobre el `th` sticky y el
+  cierre con scroll.
+- **`font-mono` fuera de tablas** sin revisar: ver el listado del reporte
+  del 2026-10-07 (modales, fichas, chips, inputs).
 - **Tabla 9 NM no tiene CT:** el pedido listaba CT como agregable; se
   omitió (el campo no existe en la config).
 - **Deep-link de alta a Tabla 8** ("Ir a Tabla 8 a insertar" desde Tablas

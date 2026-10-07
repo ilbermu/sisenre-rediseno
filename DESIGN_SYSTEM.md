@@ -253,8 +253,16 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
-- **`ColumnHeaderHint`** (nuevo): subrayado punteado + tag con el nombre
-  real de la columna (hover/foco, 300 ms). Los campos del ABM suman
+- **Tipografía en tablas:** `font-mono` solo en el valor del identificador
+  del registro (columna del `campoId` en el ABM, Referencia en
+  Interrupciones de Consultas); todo lo demás en fuente de texto; cifras
+  con `tabular-nums`. Se elimina la prop `mono` de las columnas.
+- **`ColumnHeaderHint`:** sin subrayado (el título pasa a `text-secondary`
+  con hover o foco), tag arriba del título con `primary-tint` /
+  `chip-border` / `text-secondary` en fuente de texto.
+
+- **`ColumnHeaderHint`** (nuevo): tag con el nombre real de la columna
+  (hover/foco, 300 ms). Los campos del ABM suman
   `nombreReal`; los encabezados de Resultados usan el label del formulario
   ("Código de interrupción" también en Tabla 2) y muestran el nombre real
   como pista.
@@ -635,6 +643,16 @@ juntos. Se elige por **rol** (qué es el texto), nunca por tamaño.
     ópticamente con Inter a 13 en la misma fila.
   - `text-caption font-mono` — **badges y contadores**: nombre de tabla
     ("Tabla 4"), contadores del sidebar, letra de fase.
+- **En tablas, mono solo para el identificador del registro.**
+  `font-mono` (`text-code`) va **únicamente en el valor del identificador**:
+  la columna del `campoId` en todos los ABM y la columna Referencia en la
+  tabla de Interrupciones de Consultas. Todo lo demás en una tabla — cadenas
+  eléctricas, CT, códigos de equipo, cliente, póliza, alimentador (salvo
+  cuando es el `campoId`), encabezados, tags, contador y paginación — usa la
+  fuente de texto (`font-sans`). **Números, fechas y horas:** fuente de
+  texto + `tabular-nums`, para que las cifras alineen en columna. En la
+  config del ABM no se declara: el mono se **deriva** (la columna del
+  `campoId`), no hay prop `mono` por columna.
 
 ## Espaciado y densidad
 
@@ -1251,29 +1269,37 @@ en la barra de contexto de registro.
 **Para qué:** dar una pista sobre el título de una columna sin ocupar
 lugar: hoy, el **nombre real** de la columna en la base (`nombreReal` del
 campo: REF, F, FAS…) en los encabezados de Resultados del ABM, cuyo título
-es el label del formulario. Patrón "definition tooltip" de Carbon. No es el
-Tooltip general de la app (queda para la fase de componentes nuevos), pero
-está pensado para evolucionar hacia él.
+es el label del formulario. No es el Tooltip general de la app (queda para
+la fase de componentes nuevos), pero está pensado para evolucionar hacia él.
 
 **Anatomía:**
-- **Título** con subrayado punteado sutil (`underline decoration-dotted
-  decoration-neutral-400 underline-offset-3`), para que se note que tiene
-  información.
-- **Tag** debajo del título: `text-caption font-mono uppercase
-  text-text-muted`, `bg-fill-subtle`, `border-border`, `rounded-sm`, capa
-  `--z-tooltip`. Aparece con hover o foco tras **300 ms**; se va al
-  instante.
+- **Título:** se ve igual que cualquier otro encabezado — mismo color, peso
+  y tamaño, **sin subrayado ni decoración**. Para que se note que tiene
+  información, con hover o foco pasa a `text-secondary` (los encabezados sin
+  `nombreReal` no cambian en hover). El cursor es el del encabezado
+  (pointer en uno ordenable); nunca `help`.
+- **Tag** **arriba** del título, a 4px, alineado a la izquierda con su
+  texto; solo si no hay lugar arriba (borde superior del viewport) se abre
+  abajo. Mismo idioma que los chips de la app: `bg-primary-tint`,
+  `border-chip-border` (1px), `text-secondary`, `text-caption
+  font-semibold caps`, `rounded-sm`, `px-1.5`, alto 20px, **fuente de
+  texto** (no mono). Capa `--z-tooltip` (70), `position: fixed` en un
+  portal (el contenedor con scroll de la tabla lo recortaría). Aparece con
+  hover o foco tras **300 ms**; se va al instante, y también con scroll o
+  resize.
 
-**Props:** `hint?` y `children` como render-prop `(trigger, subrayadoCls)`:
-el título sigue siendo su propio elemento enfocable (ej. el botón de orden
-de `SortableHeaderCell`, que suma la prop `hint`) y recibe las props del
-disparador. **Sin `hint`: sin subrayado, sin tag y sin envoltorio.**
+**Props:** `hint?` y `children` como render-prop `(trigger)`: el título
+sigue siendo su propio elemento enfocable (ej. el botón de orden de
+`SortableHeaderCell`, que suma la prop `hint` y pinta el hover) y recibe
+las props del disparador. **Sin `hint`: sin tag, sin cambio de hover y sin
+envoltorio.**
 
-**Accesibilidad:** el disparador es enfocable; el tag (`role="tooltip"`)
-se asocia con `aria-describedby`; Escape lo cierra.
+**Accesibilidad:** el disparador es enfocable; la descripción (`sr-only`,
+siempre en el DOM) se asocia con `aria-describedby`; Escape cierra el tag
+(sin deseleccionar la fila de la tabla).
 
-**Qué no hacer:** usarlo para texto largo o con contenido interactivo;
-subrayar un título sin pista.
+**Qué no hacer:** subrayar el título; usarlo para texto largo o con
+contenido interactivo; poner el tag dentro del contenedor con scroll.
 
 **Archivo:** `src/components/ui/ColumnHeaderHint.tsx`.
 
