@@ -14,9 +14,6 @@ import {
 import { labelDeValor } from "@/features/abm/labelDeValor";
 import { AbmMode, CampoBusqueda } from "@/data/types";
 
-// Letras del campo "fase", en el orden en que se arma el valor.
-const FASES = ["R", "S", "T"] as const;
-
 function estadoDeCampo(campo: CampoBusqueda, mode: AbmMode, consultando: boolean, lockedEnModificar: boolean): CampoEstado {
   if (consultando) return "placeholder";
   if (mode === "modificar" && (campo.tipo === "readonly" || lockedEnModificar)) return "disabled";
@@ -75,7 +72,7 @@ export default function AbmCampo({
   // alinea al borde derecho (el control está pegado a la derecha).
   labelExterno?: { controlId: string; labelId: string };
 }) {
-  if (readOnly && campo.tipo !== "toggle" && campo.tipo !== "fase") {
+  if (readOnly && campo.tipo !== "toggle") {
     const legible = labelDeValor(campo, value ?? "", valoresFormulario ?? {});
     if (labelExterno) {
       return <span id={labelExterno.controlId} className="block truncate text-body text-text">{legible || " "}</span>;
@@ -92,35 +89,16 @@ export default function AbmCampo({
   const widget = campo.tipo === "readonly" ? "texto" : campo.tipo;
   const opts = (typeof campo.opciones === "function" ? campo.opciones(valoresFormulario ?? {}) : campo.opciones) ?? [];
 
-  if (widget === "toggle" || widget === "fase") {
+  if (widget === "toggle") {
     // Igual que "select": opciones string simple (value===label) u
     // objeto {value,label} — el dato real del campo es siempre `value`,
     // el botón muestra `label`.
-    // "fase": tres botones R, S, T de selección MÚLTIPLE (ver
-    // DESIGN_SYSTEM.md, "Fase (R/S/T)"): cada letra se prende y se apaga
-    // sola; el valor son las letras prendidas concatenadas siempre en orden
-    // R-S-T ("RT", "RST"…). En edición (modo modificar) no se puede apagar
-    // la última letra; en búsqueda, ninguna letra = sin filtro.
-    const esFase = widget === "fase";
-    const toggleOpts = esFase
-      ? FASES.map((l) => ({ value: l, label: l }))
-      : opts.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
+    const toggleOpts = opts.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
     const v = value ?? "";
-    const estaActiva = (o: { value: string }) => (esFase ? v.includes(o.value) : v === o.value);
-    const alternar = (o: { value: string }) => {
-      if (!esFase) {
-        onChange?.(v === o.value ? "" : o.value);
-        return;
-      }
-      const prendidas = FASES.filter((l) => v.includes(l));
-      const siguiente = estaActiva(o) ? prendidas.filter((l) => l !== o.value) : [...prendidas, o.value];
-      if (siguiente.length === 0 && mode === "modificar") return; // mínimo una letra en edición
-      onChange?.(FASES.filter((l) => siguiente.includes(l)).join(""));
-    };
     if (readOnly) {
       // Read-only: grupo enfocable una sola vez (lector de pantalla lee el
       // valor), opciones no tabulables ni clickeables.
-      const seleccionadas = toggleOpts.filter(estaActiva).map((o) => o.label).join(", ");
+      const seleccionada = toggleOpts.find((o) => o.value === v);
       return (
         <div>
           {!labelExterno && (
@@ -135,20 +113,19 @@ export default function AbmCampo({
           )}
           <div
             id={labelExterno?.controlId}
-            role={esFase ? "group" : "radiogroup"}
+            role="radiogroup"
             aria-readonly="true"
-            aria-label={`${campo.label}: ${seleccionadas || "sin valor"}`}
+            aria-label={`${campo.label}: ${seleccionada?.label ?? "sin valor"}`}
             tabIndex={0}
             className={`inline-grid grid-flow-col auto-cols-fr gap-2 ${labelExterno ? "" : "mt-0.5"} rounded-sm ${FOCUS_RING}`}
           >
             {toggleOpts.map((opt) => {
-              const active = estaActiva(opt);
+              const active = v === opt.value;
               return (
                 <span
                   key={opt.value}
-                  role={esFase ? undefined : "radio"}
-                  aria-checked={esFase ? undefined : active}
-                  aria-label={esFase ? `Fase ${opt.label}${active ? ", presente" : ""}` : undefined}
+                  role="radio"
+                  aria-checked={active}
                   className={`${BTN_SEG_MD} w-full flex items-center justify-center border select-none cursor-default ${
                     active ? "border-primary bg-primary-tint text-secondary" : "border-border-strong bg-surface text-text"
                   }`}
@@ -166,9 +143,8 @@ export default function AbmCampo({
         {!labelExterno && <FieldLabel>{campo.label}</FieldLabel>}
         <div
           id={labelExterno?.controlId}
-          role={labelExterno || esFase ? "group" : undefined}
+          role={labelExterno ? "group" : undefined}
           aria-labelledby={labelExterno?.labelId}
-          aria-label={esFase && !labelExterno ? campo.label : undefined}
           // Igual ancho: todas las opciones miden lo que la más larga
           // (inline-grid auto-cols-fr + botones w-full). Con
           // expandirBotones, o en la grilla plana del tier 760px, el grupo
@@ -177,15 +153,13 @@ export default function AbmCampo({
           className={`${campo.expandirBotones && !intrinseco ? "grid w-full" : "inline-grid"} grid-flow-col auto-cols-fr gap-2 ${labelExterno ? "" : "mt-0.5"} ${intrinseco ? "" : "[@media(max-height:760px)]:grid [@media(max-height:760px)]:w-full"}`}
         >
           {toggleOpts.map((opt) => {
-            const active = estaActiva(opt);
+            const active = v === opt.value;
             return (
               <button
                 key={opt.value}
                 type="button"
                 disabled={isDisabled}
-                aria-pressed={esFase ? active : undefined}
-                aria-label={esFase ? `Fase ${opt.label}` : undefined}
-                onClick={() => alternar(opt)}
+                onClick={() => onChange?.(active ? "" : opt.value)}
                 // w-full: llena su columna del grid del grupo (todas las
                 // columnas miden lo mismo, ver el contenedor).
                 className={`${BTN_SEG_MD} w-full flex items-center justify-center border select-none transition-colors duration-(--duration-base) ${

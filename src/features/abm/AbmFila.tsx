@@ -46,7 +46,7 @@ export default function AbmFila({
   // campos de una fila "no compartida" quedan compactos (ningún campo
   // abierto que absorba el sobrante), ese sobrante se reparte como espacio
   // entre los campos (space-between) en vez de amontonarse al final.
-  const esCompacto = (tipo: CampoTipo) => tipo === "toggle" || tipo === "select" || tipo === "fase";
+  const esCompacto = (tipo: CampoTipo) => tipo === "toggle" || tipo === "select";
   const gridTemplate = isMulti
     ? columnasCompartidas
       ? `repeat(${fila.length}, 1fr)`
