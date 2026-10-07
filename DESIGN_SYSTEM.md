@@ -253,6 +253,17 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **07/10/2026**
 
+- **Fase eléctrica vuelve a dropdown:** se elimina el tipo de campo
+  `"fase"` (botones R/S/T de selección múltiple) y su sección del DS;
+  `faseElectrica` de CDS2 es un select con R, S, T, RS, RT, ST, RST, también
+  en el modal de Modificar (`--form-control-w`). `FaseIndicador` no cambia.
+- **Regla de botones vs dropdown** (reemplaza "un campo de pocas opciones
+  cortas se resuelve con botones"): dropdown en barras de filtro y zonas
+  densas; toggle en formularios de edición solo para elegir una opción
+  entre 2–3 cortas; dropdown para valores combinados o listas; indicadores
+  de solo lectura sin interacción. Ver [Formulario de
+  edición](#formulario-de-edición).
+
 - **`FilterBar`** (nuevo, `components/ui`): la barra de búsqueda general
   de Consultas de interrupción sale de `ModificarContent` a un componente
   controlado por la pantalla. Regla: toda pantalla con barra de búsqueda
@@ -291,7 +302,6 @@ Vigesimosexta pasada (también 06/10/2026):
 [DateTimeField](#datetimefield) ·
 [Dropdowns flotantes](#dropdowns-flotantes-dropdownts) ·
 [FaseIndicador](#faseindicador) ·
-[Fase (R/S/T)](#fase-rst) ·
 [FieldLabel](#fieldlabel) ·
 [FloatingPanel](#floatingpanel) ·
 [FormRow](#formrow) ·
@@ -858,7 +868,7 @@ patrón tint (`bg-primary-tint border-primary text-secondary`). **Todas las
 opciones de un grupo miden lo mismo**, el ancho de la más larga
 (`inline-grid grid-flow-col auto-cols-fr`, cada botón `w-full` con el texto
 centrado). Vale igual para el toggle de `AbmCampo` (BT/MT/AT, Sí/No,
-Interno/Externo, Forzado/Programado) y para el grupo de fase R/S/T; con
+Interno/Externo, Forzado/Programado); con
 `expandirBotones` el grupo ocupa todo el ancho y las opciones se reparten
 parejo. Única excepción: `igualAncho={false}` (fila con wrap) para listas
 largas de opciones que no entran en una línea, como el Motivo de
@@ -1055,41 +1065,6 @@ formulario del ABM); darle hover o cursor.
 
 **Archivo:** `src/components/ui/FaseIndicador.tsx`.
 
-## Fase (R/S/T)
-
-**Para qué:** elegir las fases eléctricas de un registro. Campo tipo
-`"fase"` en la config del ABM (lo renderiza `AbmCampo`); hoy,
-`faseElectrica` de CDS2.
-
-**Anatomía:** tres botones R, S y T con el mismo componente y estilo del
-toggle (`BTN_SEG_MD`, patrón tint para la letra prendida, todos del mismo
-ancho), pero de **selección múltiple**: cada letra se prende y se apaga
-sola.
-
-**Valor:** las letras prendidas concatenadas **siempre en orden R-S-T**
-(prender T y después R da `"RT"`; las tres, `"RST"`). Al cargar un valor
-existente se prenden las letras que contiene.
-
-**Estados y reglas:**
-- **Edición** (modal de Modificar): mínimo una letra — si se intenta apagar
-  la última, no se apaga (sin mensaje). Guardar / "Revisar cambios"
-  detectan el cambio como en cualquier campo.
-- **Búsqueda** (barra de Tabla 2, panel del ABM split): ninguna letra
-  prendida = sin filtro de fase.
-- **Read-only:** el mismo estado read-only de los toggles.
-- Deshabilitado / consultando: igual que el toggle.
-
-**Accesibilidad:** grupo `role="group"` con `aria-label` "Fase eléctrica"
-(o `aria-labelledby` del label de la `FormRow`); cada botón con
-`aria-pressed` y `aria-label` "Fase R" / "Fase S" / "Fase T"; navegable con
-Tab y activable con Espacio/Enter.
-
-**Qué no hacer:** resolver la fase con un dropdown de combinaciones
-(R/S/T/RST…). Distinto de [`FaseIndicador`](#faseindicador), que solo
-muestra las fases de un registro (sin interacción).
-
-**Archivo:** `src/features/abm/AbmCampo.tsx` (tipo `"fase"`).
-
 ## FieldLabel
 
 **Para qué:** label de campo de formulario.
@@ -1195,9 +1170,8 @@ FILTROS APLICADOS: (Cadena eléctrica: NCBT ×) (División red normal: Sí ×)  
 - **Fecha:** `DateTimeField`.
 - **Nivel** (BT/MT/AT, 88px; el valor elegido en semibold) y **Fase**
   (R/S/T/RS/RT/ST/RST, 84px): `ValuePicker` sin label, el placeholder hace
-  de label. Excepción a la regla de [Fase (R/S/T)](#fase-rst): en la barra
-  la fase es un dropdown, por ancho. El campo Fase de un formulario de
-  edición sigue con botones.
+  de label. Barra de filtro = zona densa: dropdown, no botones (ver
+  [Formulario de edición](#formulario-de-edición), "Botones o dropdown").
 - **Divisor** vertical (`w-px h-5 bg-border`).
 - **Origen y Tipo:** label inline (`text-heading-xs` uppercase,
   `text-text-muted`) + `ButtonSelectGroup` `BTN_SEG_MD`, selección única
@@ -1934,8 +1908,14 @@ registro](#modal-de-edición-de-registro):
   última sin borde), filas de `min-h 56px`. Campos en el orden de la config
   de la tabla.
 - Read-only con candado junto al label y el control en su estado read-only.
-- **Un campo de pocas opciones cortas se resuelve con botones** (toggle o
-  [fase](#fase-rst)), no con un dropdown.
+- **Botones o dropdown:**
+  - **Barras de filtro y zonas densas:** dropdown (`ValuePicker`) — compacta
+    más que botones con padding propio.
+  - **Formularios de edición:** toggle de botones solo para elegir **una**
+    opción entre 2–3 opciones cortas (Origen, Tipo, Sí/No, Nivel); dropdown
+    para valores combinados o listas (Fase, Descripción).
+  - **Indicadores de solo lectura** ([`FaseIndicador`](#faseindicador)):
+    letras que se marcan según el valor, sin interacción.
 
 ## Modal de edición de registro
 ## Modal de edición de registro
