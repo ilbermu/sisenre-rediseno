@@ -646,15 +646,14 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
     ocultos o no). Los chips pueden ocultarse ahora: antes los visibles
     nunca.
   - **Hoja, sección Reclamos:** sale `ReclamosResumenCompacto` (repetía
-    inicio, fin y duración). Ahora una frase + mini gráfico de 18 barras
-    (`ReclamosResumen.tsx`) sobre el tramo inicio → última reposición, con
-    "Ver reclamos".
-  - **"Ver detalle" abría `DatosInterrupcionModal`**, que NO es solo la
-    línea de tiempo: tiene título "Datos de la interrupción", la grilla de
-    campos generales (Repos, Usu_BT, SAIFI, SAIDI…), el botón "Procesar" y
-    la línea de tiempo arriba. Por eso "Ver reclamos" abre un modal nuevo
-    (`ReclamosModal.tsx`) solo con `ReclamosTimeline` de la interrupción.
-    `DatosInterrupcionModal` queda sin uso.
+    inicio, fin y duración) y en su lugar va el gráfico que ya existía,
+    `ReclamosTimeline`, con una prop nueva `variant: "modal" | "embebido"`
+    (default `"modal"`: el modal queda igual). El embebido no tiene card,
+    header, chip DURACIÓN ni pie INICIO/FIN; KPIs más chicos; misma pista a
+    todo el ancho; debajo, las horas de los extremos. Se saca "Ver detalle".
+    Un primer intento (frase + mini gráfico de barras nuevo) se descartó.
+  - `DatosInterrupcionModal` (el que abría "Ver detalle": datos generales,
+    "Procesar" y la línea de tiempo arriba) queda **sin forma de abrirse**.
   - `DESIGN_SYSTEM.md`: `ChipFilterBar` (una fila, overflow, contador,
     "Limpiar" borra todo; sin variante compacta) y Maestro-detalle (sección
     Reclamos).
@@ -697,13 +696,14 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   cuántos chips entran en cada tier y ancho (en Consulta, con ~52% del
   ancho, se espera que oculte Origen/Tipo/Fase eléctrica); que no haya
   saltos al abrir un popover (la medición se congela) ni al cerrar uno.
-- **Mini gráfico de reclamos:** el pico es el centro del intervalo con más
-  reclamos (el primero si hay empate); con muy pocos reclamos las barras
-  quedan finas. Falta verlo con 1, 2 y cientos de reclamos.
+- **`ReclamosTimeline` embebido:** falta verlo en la hoja con 0, 1, 2 y
+  cientos de reclamos (estado saturado) y con la hoja angosta; los KPIs
+  usan el mismo ancho de pista que el modal pero la geometría (78px de
+  alto, con marcas de hora) se dejó igual.
 - **Componentes sin uso tras el rediseño** (no se borraron):
   `ReposicionesLista.tsx`, `ReclamosResumenCompacto.tsx`,
-  `DatosInterrupcionModal.tsx`, `SubtituloEtiquetado.tsx` (ya estaba sin
-  uso),
+  `DatosInterrupcionModal.tsx` (sin acceso), `SubtituloEtiquetado.tsx` (ya
+  estaba sin uso),
   `components/ui/FilterBar.tsx`, y los modales de
   `consultas-interrupcion/herramientas/` (`DesarmeModal`,
   `NivelTipoModal`, `ReplicarModal`, `CambiaFasesModal`,

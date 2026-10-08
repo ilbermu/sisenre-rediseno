@@ -28,7 +28,6 @@ import { AbmDeepLink } from "@/data/types";
 import FaseReposicionFicha from "@/features/consultas-interrupcion/FaseReposicionFicha";
 import InterrupcionesMaestro from "@/features/consultas-interrupcion/InterrupcionesMaestro";
 import InterrupcionHoja from "@/features/consultas-interrupcion/InterrupcionHoja";
-import ReclamosModal from "@/features/consultas-interrupcion/ReclamosModal";
 import { parseFechaHora, VALOR_VACIO } from "@/lib/format";
 
 // ─── Consultas de interrupción ─────────────────────────────────────────────
@@ -44,8 +43,7 @@ import { parseFechaHora, VALOR_VACIO } from "@/lib/format";
 // interrupción (índice de SAMPLE_ROWS = fila de Tabla 2) y la fase de
 // reposición (su nro). Al cambiar de interrupción se selecciona su primera
 // fase. Los chips de Tablas relacionadas de la fase abren el modal de
-// siempre ("Tablas relacionadas"), y "Ver reclamos" abre la línea de
-// tiempo de reclamos de la interrupción.
+// siempre ("Tablas relacionadas").
 export default function ModificarContent({
   periodo,
   onIrAAbm,
@@ -74,8 +72,7 @@ export default function ModificarContent({
   // resultados.
   const [seleccionada, setSeleccionada] = useState<number | null>(initialRowIndex >= 0 ? initialRowIndex : null);
   const [relTab, setRelTab] = useState<string | null>(initialRelTab);
-  const [reclamosOpen, setReclamosOpen] = useState(false);
-  const registro = seleccionada !== null ? SAMPLE_ROWS[seleccionada] : null;
+    const registro = seleccionada !== null ? SAMPLE_ROWS[seleccionada] : null;
   const activeTabData = DRAWER_TABS.find((t) => t.key === relTab);
   // Tabla ABM equivalente al tab activo del modal "Tablas relacionadas"
   // (solo CDS5/6/8/9) — si existe, las filas de la tabla y el estado vacío
@@ -199,14 +196,6 @@ export default function ModificarContent({
         onSeleccionarFase={seleccionarFase}
         valoresRelacionadas={valoresRelacionadas}
         onAbrirTabla={setRelTab}
-        reclamos={reclamos}
-        onVerReclamos={() => setReclamosOpen(true)}
-      />
-
-      <ReclamosModal
-        open={reclamosOpen}
-        onClose={() => setReclamosOpen(false)}
-        referencia={registro?.referencia ?? ""}
         reclamos={reclamos}
       />
 

@@ -162,7 +162,22 @@ function marcasHora(inicio: Date, duracionMin: number, px: (m: number) => number
   return marcas;
 }
 
-export default function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcion | null }) {
+// `variant`: "modal" (default) es el gráfico completo de siempre, en su
+// contenedor tipo card con header, chip DURACIÓN y pie INICIO / FIN.
+// "embebido" es para dentro de una sección de la hoja de Consulta de
+// interrupciones: sin card (sin borde, radio, fondo ni padding), sin header
+// (el título lo pone la sección), sin chip DURACIÓN ni pie con fecha completa
+// (ya están en la franja de cifras y en la línea de tiempo), KPIs más chicos
+// con los mismos valores, la misma pista a todo el ancho y, debajo, solo las
+// horas de los extremos.
+export default function ReclamosTimeline({
+  datos,
+  variant = "modal",
+}: {
+  datos: ReclamosInterrupcion | null;
+  variant?: "modal" | "embebido";
+}) {
+  const embebido = variant === "embebido";
   const g = TIMELINE_MODAL;
   const [pistaRef, ancho] = useAncho<HTMLDivElement>();
   const idBase = useId().replace(/:/g, "");
@@ -185,16 +200,18 @@ export default function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcio
   const rotuloX = Math.min(bandaX + 6, x1 - 112);
 
   const kLabel = "block text-caption caps text-text-muted mb-[3px]";
-  const kValor = "text-heading-md text-secondary tabular-nums";
+  const kValor = embebido ? "text-body font-semibold text-secondary tabular-nums" : "text-heading-md text-secondary tabular-nums";
   const kSufijo = "text-caption text-text-muted";
 
   const contenido = (
     <>
       {/* Header: label + chip DURACIÓN */}
-      <div className="flex items-center justify-between gap-[12px] mb-[14px]">
-        <span className="text-caption caps text-text-muted">RECLAMOS DURANTE LA INTERRUPCIÓN</span>
-        {resumen && <ChipDuracion minutos={resumen.duracionMin} />}
-      </div>
+      {!embebido && (
+        <div className="flex items-center justify-between gap-[12px] mb-[14px]">
+          <span className="text-caption caps text-text-muted">RECLAMOS DURANTE LA INTERRUPCIÓN</span>
+          {resumen && <ChipDuracion minutos={resumen.duracionMin} />}
+        </div>
+      )}
 
       {/* KPIs: TOTAL + RECLAMO (1) · TOTAL + PRIMER RECLAMO + 80% LLEGÓ EN (2+) */}
       <div className="flex gap-[26px] mb-[14px]">
@@ -298,7 +315,16 @@ export default function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcio
         )}
       </div>
 
-      {/* Footer: INICIO / FIN */}
+      {/* Footer: solo las horas de los extremos (embebido) */}
+      {embebido ? (
+        datos && (
+          <div className="flex justify-between text-caption text-text-muted mt-[7px] tabular-nums">
+            <span>{fmtHoraCorta(datos.inicio, conDia)}</span>
+            <span>{fmtHoraCorta(datos.fin, conDia)}</span>
+          </div>
+        )
+      ) : (
+      /* Footer: INICIO / FIN */
       <div className="flex justify-between text-caption text-text mt-[7px] tabular-nums">
         <span>
           <span className="block text-caption caps text-text-muted mb-[1px]">INICIO</span>
@@ -309,9 +335,11 @@ export default function ReclamosTimeline({ datos }: { datos: ReclamosInterrupcio
           {datos ? formatFechaHora(datos.fin) : VALOR_VACIO}
         </span>
       </div>
+      )}
     </>
   );
 
+  if (embebido) return <div className="w-full text-left">{contenido}</div>;
   return (
     <section className="block w-full text-left bg-surface border border-border rounded-md px-[18px] py-[16px]">
       {contenido}

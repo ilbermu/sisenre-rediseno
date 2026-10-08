@@ -429,9 +429,9 @@ Vigesimosexta pasada (también 06/10/2026):
   ninguno), con contador de ocultos activos. Reemplaza al "+N filtros" y al
   modo compacto; no hay variante compacta. "Limpiar filtros" borra todo.
 - **Consulta de interrupciones:** la pantalla y su ítem de menú se llaman
-  igual ("Consulta de interrupciones"). La sección Reclamos de la hoja pasa
-  de una franja de cifras a una frase + mini gráfico de barras sobre el
-  tramo de la interrupción, con "Ver reclamos".
+  igual ("Consulta de interrupciones"). La sección Reclamos de la hoja usa
+  `ReclamosTimeline variant="embebido"` (el gráfico del modal, sin card ni
+  datos repetidos) y se saca "Ver detalle".
 - **Componentes nuevos:** [`Timeline`](#timeline) (línea de tiempo vertical
   genérica) y [`TablaChip`](#tablachip) (el chip "Tabla N", que sale de
   `AbmTableSelector` para reusarse).
@@ -2373,7 +2373,7 @@ reposiciones y sus reclamos).
 │ │▌BFZ…   │ …                              › │◀────│ [Tabla 4] Reposiciones │
 │ │ …                                          │     │ ● ◉ ○ línea de tiempo  │
 │ └ Anterior · Pág. 1 de 2.284 · Siguiente ────┘     │───────────────────────│
-│                                                    │ Reclamos   [Ver reclamos]│
+│                                                    │ Reclamos (gráfico)     │
 └────────────────────────────────────────────────────┴───────────────────────┘
 ```
 
@@ -2407,20 +2407,20 @@ reposiciones y sus reclamos).
     ancho (container query) pasa a 2×2.
   - **Cuerpo** (scroll propio, `4px 24px 24px`): **secciones con título**
     (`heading-xs`, con `TablaChip` si muestran una tabla) separadas por
-    `border-t`. Acciones de sección (ej. "Ver reclamos") ghost `sm` a la
+    `border-t`. Acciones de sección (si las hay) ghost `sm` a la
     derecha del título.
-  - **Sección Reclamos:** no repite la franja de cifras (inicio, fin y
-    duración ya están en la hoja). Es una **frase** (`text-body-sm
-    neutral-700`, con los datos en `neutral-900 semibold tabular-nums`: "N
-    reclamos mientras duró la interrupción. El primero llegó a las hh:mm y
-    el pico fue cerca de las hh:mm."; con 1, "…, a las hh:mm."; con 0, "Sin
-    reclamos durante la interrupción." y sin gráfico) y un **mini gráfico de
-    barras** de 44px de alto y ancho completo: los reclamos agrupados en 18
-    intervalos iguales entre el inicio y la última reposición, barras
-    `--color-chip-border` y la máxima `--color-primary`, radio 2px arriba;
-    debajo, un eje con `border-t` y `text-caption neutral-500` ("hh:mm
-    inicio" / "hh:mm última reposición"). "Ver reclamos" abre un modal con
-    la línea de tiempo de reclamos (`ReclamosTimeline`).
+  - **Sección Reclamos:** reutiliza el gráfico existente, `ReclamosTimeline`
+    con `variant="embebido"` (el default `"modal"` es el de "Datos de la
+    interrupción", sin cambios). Sin card (sin borde, radio, fondo ni
+    padding), sin header propio (el título lo pone la sección, igual que
+    "Reposiciones de esta interrupción"), sin chip DURACIÓN ni pie
+    INICIO / FIN (ya están en la franja de cifras y en la línea de tiempo).
+    Los KPIs (TOTAL, PRIMER RECLAMO, 80% LLEGÓ EN) mantienen su lógica y
+    valores, más chicos (`text-body font-semibold text-secondary
+    tabular-nums`). La pista (banda, hitos, primer reclamo, estado
+    saturado) es la misma, a todo el ancho de la sección; debajo, solo las
+    horas de los extremos (`text-caption text-muted tabular-nums`). Estados
+    vacíos iguales a los del modal. Sin "Ver detalle": el gráfico ya se ve.
   - Al cambiar de registro, el contenido hace un **fade de 140ms**
     (`animate-[hoja-fade_140ms_ease-out]`; directo con movimiento
     reducido).
@@ -2432,7 +2432,7 @@ reposiciones y sus reclamos).
 
 **Archivos:** `src/features/consultas-interrupcion/ModificarContent.tsx`
 (estado y modales), `InterrupcionesMaestro.tsx`, `InterrupcionHoja.tsx`,
-`ReposicionesTimeline.tsx`, `ReclamosResumen.tsx`, `ReclamosModal.tsx`.
+`ReposicionesTimeline.tsx`, `ReclamosTimeline.tsx`.
 
 ## Registro seleccionado y detalle
 
