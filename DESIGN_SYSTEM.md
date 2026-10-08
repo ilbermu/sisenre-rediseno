@@ -395,10 +395,11 @@ Vigesimosexta pasada (también 06/10/2026):
   barra de filtros y la tabla; el estado vacío va dentro de la caja, debajo
   del `thead`. Espaciados: `--page-gap` entre el header y los filtros, `gap-3`
   entre los filtros y la tabla.
-- **ABM — selección sobre el encabezado:** la barra de selección se
-  superpone al `thead` (mismo alto, hermana del contenedor con scroll,
-  opacidad 120ms) y reemplaza a la toolbar de selección; se elimina
-  `SelectionActionBar` (sin uso).
+- **ABM — franja de selección condicional:** se probó una barra de
+  selección superpuesta al `thead` y se descartó; vuelve la franja entre la
+  barra de filtros y la tabla (`SelectionActionBar`), sin contador, que no
+  existe en el DOM ni reserva espacio sin selección y entra y sale animando
+  alto + opacidad (150ms).
 - **`ChipFilterBar` — input de ID:** ancho fijo (`--filter-id-w`, 224px);
   placeholder en fuente de texto = encabezado de la columna del ID (se
   elimina `idPlaceholder` de la config); el valor tipeado sigue en mono.
@@ -449,6 +450,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [PeriodSelector](#periodselector) ·
 [ReadOnlyField](#readonlyfield) ·
 [SegmentadoSoloLectura](#segmentadosololectura) ·
+[SelectionActionBar](#selectionactionbar) ·
 [SelectWrap](#selectwrap) ·
 [SortableHeaderCell / SortableTh](#sortableheadercell--sortableth) ·
 [Tabla de resultados](#tabla-de-resultados) ·
@@ -1857,6 +1859,23 @@ segmento); usarlo para un toggle deshabilitado.
 
 **Archivo:** `src/components/ui/SegmentadoSoloLectura.tsx`.
 
+## SelectionActionBar
+
+**Para qué:** confirmar qué registro está seleccionado en el ABM
+("REGISTRO SELECCIONADO `<id>`").
+
+**Anatomía:** punto `bg-primary`, overline `text-heading-xs uppercase
+text-secondary`, id en `text-code font-mono`; `border-b border-border`.
+
+**Props:** `recordLabel`, `actions?` (slot a la derecha, `ml-auto`), `bare?`
+(sin padding ni `border-b` propios, para vivir dentro de otra barra).
+
+**Qué no hacer:** acciones por fila en la tabla. En el ABM, `bare` dentro de
+la [franja de selección](#tabla-de-resultados), con `actions`: Modificar,
+Borrar y Deseleccionar.
+
+**Archivo:** `src/components/ui/SelectionActionBar.tsx`.
+
 ## SelectWrap
 
 **Para qué:** envoltorio de un `<select>` nativo que le agrega el chevron
@@ -1915,34 +1934,31 @@ border-border-subtle`) van en cada `<td>`.
 - **Indicador:** mientras haya contenido desplazado a la izquierda
   (`scrollLeft > 0`), la columna fija muestra un borde derecho
   (`border-border`); sin scroll el borde es transparente (sin borde extra).
-- La barra de selección y la paginación son **fijas** al ancho de la caja
-  (no scrollean).
+- La paginación es **fija** al ancho de la caja (no scrollea).
 - El tag de [`ColumnHeaderHint`](#columnheaderhint) va en un portal (fixed),
   así que el `overflow` no lo recorta.
 
-**Barra de selección superpuesta al `thead`:** al seleccionar una fila, la
-fila de encabezados se cubre con una barra del **mismo alto que el `thead`**
-(medido con `ResizeObserver`, porque cambia con los tiers de `--spacing`):
-la tabla no salta.
-- **Contenido**, de izquierda a derecha: "1 registro seleccionado"
-  (`text-body-sm font-semibold text-secondary`), un separador, **Modificar**
-  y **Borrar** (`ghostBtnCls`, `sm`; Borrar destructivo) y, a la derecha
-  (`ml-auto`), ✕ (`ICON_BTN_SM`, "Deseleccionar"). Fondo `bg-primary-tint`,
-  `border-b border-chip-border`.
-- **Posición:** `absolute top-0 inset-x-0` en la caja (`relative`), **hermana
-  del contenedor con scroll y no hija**: ocupa siempre el ancho visible de
-  la caja y no se desplaza con el scroll horizontal. Capa por encima de las
-  celdas sticky (`--z-sticky` + 2).
-- **Encabezados:** mientras la barra está visible, el `thead` queda
-  `aria-hidden` e `inert` (sin foco, y el tag de `ColumnHeaderHint` no
-  aparece).
-- **Teclado:** Escape deselecciona y vuelven los encabezados. Al aparecer
-  la barra el foco **no se mueve**; Modificar y Borrar quedan alcanzables
-  con Tab (después de la tabla). Si el foco estaba en la barra al
+**Encabezado:** el `thead` está siempre visible, también con una fila
+seleccionada (`ColumnHeaderHint` funciona normal).
+
+**Franja de selección (condicional):** con un registro seleccionado aparece
+**fuera de la caja**, entre la barra de filtros y la tabla.
+- **Contenido:** `SelectionActionBar` (`bare`): "Registro seleccionado" y el
+  identificador; a la derecha Modificar y Borrar (`ghostBtnCls`, `sm`; Borrar
+  destructivo), un separador y ✕ (`ICON_BTN_SM`, "Deseleccionar"). Alto
+  `--control-sm`, separada de la tabla por `gap-2`. Sin contador.
+- **No reserva espacio:** sin selección **no existe en el DOM**; el
+  espaciado es el de siempre (barra de filtros → `gap-3` → tabla).
+- **Entrada y salida animadas:** alto + opacidad, 150ms
+  (`AnimatePresence` de `motion/react`), para que la tabla no salte. El
+  `gap-2` con la tabla va dentro de la animación. Con
+  `prefers-reduced-motion`, aparece y desaparece directo (`useReducedMotion`:
+  `MotionConfig` solo recorta transformaciones, no alto ni opacidad). Al
+  cambiar de una fila seleccionada a otra no se anima de nuevo: solo cambia
+  el registro (la clave es la franja, no la fila). Durante la salida
+  conserva el último registro.
+- **Teclado:** Escape deselecciona. Si el foco estaba en la franja al
   deseleccionar, vuelve a la tabla.
-- **Movimiento:** la barra siempre está montada y transiciona la opacidad
-  (120ms, `duration-120`); sin selección es `inert` e invisible. Con
-  `prefers-reduced-motion` la transición queda en ~0ms (regla global).
 
 **Estado vacío:** con filtros que no dejan filas, el `thead` sigue y, dentro
 de la caja y debajo de él, va "No hay registros con estos filtros"
@@ -2331,9 +2347,10 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
 │                                                                (gap --page-gap)
 │ [🔍 Código de interrupción ] Causa ▾ │ (agregados) [+ Agregar filtro]  Limpiar filtros │  ChipFilterBar
 │                                                                (gap-3)
+│ • REGISTRO SELECCIONADO BPR…        [Modificar] [Borrar] [✕]            │  franja: SOLO con una fila seleccionada (--control-sm)
+│                                                                (gap-2)
 │ ┌───────────────────────────────────────────────────────────────────┐   │  caja de la tabla (borde, md, surface, shadow-sm)
 │ │ CÓDIGO DE INTERRUPCIÓN   CAUSA   FASE DE REPOSICIÓN                │   │  thead fill-subtle-solid, sticky …
-│ │ 1 registro seleccionado │ Modificar Borrar                    ✕    │   │  … cubierto por la barra de selección con una fila elegida
 │ │ fila…                                                              │   │
 │ │ Registros encontrados: N           Anterior  Pág. 1 de N  Siguiente │   │  paginación fill-subtle, border-t
 │ └───────────────────────────────────────────────────────────────────┘   │
@@ -2356,13 +2373,13 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   sin hora = día completo). Sin filtros se ven todos los registros.
   Vuelve a la página 1 y deselecciona el registro si quedó afuera. Nunca se bloquea (no hay estado
   "consultando").
-- **Sin contador ni franja reservada:** no hay "N de M registros" ni una
-  barra entre la de filtros y la tabla (el pie de la caja ya cuenta los
-  "Registros encontrados"). Ningún espacio se reserva para un estado que no
-  está visible.
+- **Sin contador ni espacio reservado:** no hay "N de M registros" (el pie
+  de la caja ya cuenta los "Registros encontrados") y no se reserva ningún
+  espacio para un estado que no está visible.
 - **Espaciado vertical:** header de página (selector + Insertar) → barra de
   filtros: `--page-gap`; barra de filtros → caja de la tabla: `gap-3` (escala
-  con los tiers de `--spacing`).
+  con los tiers de `--spacing`); con selección, la franja se intercala entre
+  ambas y suma su alto + `gap-2`.
 - **Tabla en su caja:** `border border-border rounded-md bg-surface
   shadow-sm`, `thead` sticky `bg-fill-subtle-solid`, filas con hover
   `fill-muted` y seleccionada `primary-tint` + `inset-shadow-row-selected`,
@@ -2370,11 +2387,13 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   filas encontradas con algún filtro; sin filtros, el total de la tabla). Sin
   `overflow-hidden`: el radio lo resuelven el wrapper con scroll
   (`rounded-t-md`) y el pie.
-- **Selección sobre el encabezado:** con un registro seleccionado, una barra
-  ("1 registro seleccionado" · Modificar · Borrar · ✕) **cubre la fila de
-  encabezados** con su mismo alto, así la tabla no salta; Escape también
-  deselecciona y las flechas mueven la selección. Sin columna de acciones
-  por fila. Detalle en [Tabla de resultados](#tabla-de-resultados).
+- **Franja de selección condicional:** con un registro seleccionado, entre
+  la barra de filtros y la tabla ("Registro seleccionado" · Modificar ·
+  Borrar · ✕, alto `--control-sm`, `gap-2` con la tabla). Sin selección no
+  existe en el DOM. Entra y sale animada (alto + opacidad, 150ms); Escape
+  también deselecciona y las flechas mueven la selección. Sin columna de
+  acciones por fila. Detalle en [Tabla de
+  resultados](#tabla-de-resultados).
 - **Estado vacío dentro de la tabla:** sin resultados, el `thead` sigue y
   debajo, dentro de la caja, va "No hay registros con estos filtros" +
   "Limpiar filtros" (sin pie). Un solo buscador: la tabla no lleva
@@ -2431,8 +2450,8 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
 - **Ancho:** celdas y encabezados en `whitespace-nowrap`, ningún valor se
   trunca. Solo si las columnas no entran en la caja hay **scroll horizontal
   dentro de la caja**, con la columna del ID fija (ver [Tabla de
-  resultados](#tabla-de-resultados)); la barra de selección y la
-  paginación no scrollean. Nunca scroll horizontal de la página.
+  resultados](#tabla-de-resultados)); la paginación no
+  scrollea. Nunca scroll horizontal de la página.
 - **Auditoría y Exportar** no se renderizan (pendientes de reubicar).
 - **Borrar** abre `ConfirmarBorrarModal`.
 

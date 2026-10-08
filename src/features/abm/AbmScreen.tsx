@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Plus, X } from "lucide-react";
 import {
   BTN_MD,
@@ -16,6 +17,7 @@ import {
   modalNeutralBtnCls,
   modalPrimaryBtnCls,
   READONLY_FIELD_CLS,
+  SelectionActionBar,
   SortableHeaderCell,
   useTableToolbar,
 } from "@/components/ui";
@@ -62,8 +64,9 @@ function editorDeCampo(c: CampoBusqueda): ChipFiltroDef["editor"] {
 // Pantalla única de ABM (ver DESIGN_SYSTEM.md, Patrones → "ABM"): el mismo
 // patrón para todas las tablas — TopBar, selector de tabla como título (+
 // Insertar si la tabla lo permite), barra de filtros híbrida y la tabla en
-// su caja (con un registro seleccionado, la barra de acciones cubre el
-// encabezado); Modificar e Insertar en el modal de edición de registro. Todo el contenido
+// su caja (con un registro seleccionado, una franja de acciones entre los
+// filtros y la tabla); Modificar e Insertar en el modal de edición de
+// registro. Todo el contenido
 // (campos, tipos, opciones, dependencias, qué se bloquea) sale de
 // ABM_TABLE_CONFIGS[tableKey]: nada de una tabla puntual vive acá.
 // `onChangeTable` es el mismo setScreen de App — así el selector y el ítem
@@ -251,12 +254,20 @@ export default function AbmScreen({
       ?.scrollIntoView({ block: "nearest" });
   }, [selectedRow]);
 
-  // Barra de selección (cubre el encabezado): si al deseleccionar el foco
-  // estaba adentro, vuelve a la lista de Resultados — la barra pasa a inert y
-  // el foco se perdería.
-  const barraSeleccionRef = useRef<HTMLDivElement>(null);
+  // Franja de selección: si al deseleccionar el foco estaba adentro, vuelve a
+  // la lista de Resultados — la franja sale del DOM y el foco se perdería.
+  const franjaRef = useRef<HTMLDivElement>(null);
+  const sinAnimacion = useReducedMotion();
+  // Último registro seleccionado: durante la salida animada la franja ya no
+  // tiene selección, pero sigue mostrando el mismo registro.
+  const ultimaFila = useRef(0);
+  if (selectedRow !== null) ultimaFila.current = selectedRow;
+  const filaFranja = ultimaFila.current;
+  // overflow-hidden solo mientras anima el alto: en reposo recortaría el
+  // anillo de foco de los botones.
+  const [franjaAnimando, setFranjaAnimando] = useState(false);
   function deseleccionar() {
-    if (barraSeleccionRef.current?.contains(document.activeElement)) resultadosListRef.current?.focus();
+    if (franjaRef.current?.contains(document.activeElement)) resultadosListRef.current?.focus();
     setSelectedRow(null);
   }
 
@@ -272,19 +283,6 @@ export default function AbmScreen({
     return () => document.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRow, mode, filaABorrar]);
-
-  // Alto del thead: la barra de selección lo copia para que la tabla no
-  // salte (cambia con los tiers de --spacing, por eso se mide).
-  const theadRef = useRef<HTMLTableSectionElement>(null);
-  const [altoEncabezado, setAltoEncabezado] = useState<number | undefined>(undefined);
-  useLayoutEffect(() => {
-    const el = theadRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setAltoEncabezado(el.offsetHeight));
-    ro.observe(el);
-    setAltoEncabezado(el.offsetHeight);
-    return () => ro.disconnect();
-  }, []);
 
   function handleResultadosKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (mode !== "buscar" || visibleIndices.length === 0) return;
@@ -405,20 +403,16 @@ export default function AbmScreen({
   // pie con fill-subtle). Sin overflow-hidden en la caja: el radio lo
   // resuelven el wrapper con scroll (rounded-t-md) y el pie (rounded-b-md).
   // Sin contador ni franja reservada. Sin filas, el thead sigue y el estado
-  // vacío va debajo, dentro de la caja.
-  // Con un registro seleccionado, la barra de selección se superpone al
-  // thead (mismo alto, así no salta nada): hermana del wrapper con scroll,
-  // no adentro, para ocupar siempre el ancho visible de la caja sin
-  // desplazarse con el scroll horizontal. Los títulos quedan aria-hidden e
-  // inert (ni foco ni tag de ColumnHeaderHint). Sin columna de acciones por
-  // fila. Auditoría y Exportar no se renderizan (pendientes de reubicar).
+  // vacío va debajo, dentro de la caja. El thead está siempre visible, también
+  // con una fila seleccionada. Sin columna de acciones por fila. Auditoría y
+  // Exportar no se renderizan (pendientes de reubicar).
   const hayResultados = visibleIndices.length > 0;
   // Con algún filtro aplicado, el pie cuenta las filas encontradas; sin
   // filtros, el total de la tabla.
   const registrosEncontrados = hayFiltrosBarra ? visibleIndices.length : config.totalRegistros;
   const paginas = Math.max(1, Math.ceil(registrosEncontrados / 25));
   const resultados = (
-    <div className="relative shadow-sm flex-1 min-h-0 min-w-0 flex flex-col border border-border rounded-md bg-surface">
+    <div className="shadow-sm flex-1 min-h-0 min-w-0 flex flex-col border border-border rounded-md bg-surface">
       <div
         ref={resultadosListRef}
         tabIndex={0}
@@ -432,7 +426,7 @@ export default function AbmScreen({
             nowrap: ningún valor se trunca; si no entran, scroll horizontal
             adentro de la caja (la paginación queda fuera). */}
         <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
-          <thead ref={theadRef} aria-hidden={hasSelection || undefined} inert={hasSelection}>
+          <thead>
             <tr>
               {columnas.map((c, ci) => (
                 <th
@@ -524,41 +518,6 @@ export default function AbmScreen({
         )}
       </div>
 
-      {/* Barra de selección — encima del thead, mismo alto. Siempre montada
-          (para que la opacidad transicione); sin selección, inert + invisible:
-          sin foco ni lectura. El foco no se mueve al aparecer; Modificar y
-          Borrar quedan en el orden de tabulación, después de la lista. */}
-      <div
-        ref={barraSeleccionRef}
-        role="toolbar"
-        aria-label="Acciones del registro seleccionado"
-        inert={!hasSelection}
-        style={{ height: altoEncabezado, zIndex: "calc(var(--z-sticky) + 2)" }}
-        className={`absolute top-0 inset-x-0 flex items-center gap-3 px-4 rounded-t-md bg-primary-tint border-b border-chip-border transition-opacity duration-120 ${
-          hasSelection ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        <span className="text-body-sm font-semibold text-secondary whitespace-nowrap select-none">1 registro seleccionado</span>
-        <div className="w-px h-4 bg-chip-border shrink-0" />
-        {/* Acciones de registro: sm, ghost (no compiten con la barra de
-            filtros, que es de página). */}
-        <button type="button" onClick={() => handleAbrirModificar(selectedRow!)} className={ghostBtnCls("neutral")}>
-          Modificar
-        </button>
-        <button type="button" onClick={() => handleAbrirBorrar(selectedRow!)} className={ghostBtnCls("destructive")}>
-          Borrar
-        </button>
-        <button
-          type="button"
-          onClick={deseleccionar}
-          aria-label="Deseleccionar"
-          title="Deseleccionar"
-          className={`${ICON_BTN_SM} ml-auto shrink-0 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors ${FOCUS_RING}`}
-        >
-          <X size={ICON.sm} strokeWidth={1.5} />
-        </button>
-      </div>
-
       {/* Paginación — al pie, dentro de la caja. */}
       {hayResultados && (
         <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-md shrink-0 flex items-center justify-between">
@@ -643,7 +602,62 @@ export default function AbmScreen({
             onLimpiar={handleLimpiarFiltrosBarra}
             periodo={periodo}
           />
-          {resultados}
+          <div className="flex-1 min-h-0 flex flex-col">
+            {/* Franja de selección — entre los filtros y la tabla, solo con un
+                registro seleccionado: fuera del DOM (y sin reservar espacio)
+                sin selección. Entra y sale animando alto + opacidad (150ms;
+                sin animación con movimiento reducido), así la tabla no salta.
+                Al pasar de una fila a otra no se re-anima: la clave es la
+                franja, no el registro. El pb-2 va adentro para que el gap-2 con
+                la tabla también anime. */}
+            <AnimatePresence initial={false}>
+              {hasSelection && (
+                <motion.div
+                  key="franja-seleccion"
+                  ref={franjaRef}
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: sinAnimacion ? 0 : 0.15, ease: "easeOut" }}
+                  onAnimationStart={() => setFranjaAnimando(true)}
+                  onAnimationComplete={() => setFranjaAnimando(false)}
+                  className={`shrink-0 ${franjaAnimando ? "overflow-hidden" : ""}`}
+                >
+                  <div className="pb-2">
+                    <div className="h-(--control-sm) flex items-center">
+                      <SelectionActionBar
+                        bare
+                        recordLabel={rows[filaFranja]?.[columnKeys[0]] ?? ""}
+                        actions={
+                          <>
+                            {/* Acciones de registro: sm, ghost (no compiten con
+                                la barra de filtros, que es de página). */}
+                            <button type="button" onClick={() => handleAbrirModificar(filaFranja)} className={ghostBtnCls("neutral")}>
+                              Modificar
+                            </button>
+                            <button type="button" onClick={() => handleAbrirBorrar(filaFranja)} className={ghostBtnCls("destructive")}>
+                              Borrar
+                            </button>
+                            <div className="w-px h-4 bg-border shrink-0" />
+                            <button
+                              type="button"
+                              onClick={deseleccionar}
+                              aria-label="Deseleccionar"
+                              title="Deseleccionar"
+                              className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors ${FOCUS_RING}`}
+                            >
+                              <X size={ICON.sm} strokeWidth={1.5} />
+                            </button>
+                          </>
+                        }
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {resultados}
+          </div>
         </div>
       </div>
 

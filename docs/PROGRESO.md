@@ -524,11 +524,8 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
     tabla; el estado vacío ("No hay registros con estos filtros" + "Limpiar
     filtros") va dentro de la caja, debajo del `thead`. Espaciados:
     `--page-gap` entre header y filtros, `gap-3` entre filtros y tabla.
-  - Barra de selección superpuesta al `thead` (mismo alto, medido con
-    `ResizeObserver`; hermana del contenedor con scroll; opacidad 120ms;
-    `thead` `aria-hidden` + `inert` mientras está visible; Escape
-    deselecciona; el foco no se mueve al aparecer). Reemplaza a la toolbar
-    de selección; se elimina `SelectionActionBar` (sin uso).
+  - Barra de selección superpuesta al `thead`: se probó y se descartó el
+    mismo día (ver más abajo).
   - `ChipFilterBar`: input de ID de ancho fijo (`--filter-id-w`, 224px);
     placeholder en fuente de texto = encabezado de la columna del ID
     ("Código de interrupción", "Alimentador MT", "Nro. reclamo"); el valor
@@ -549,19 +546,26 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
     - Tablas 9 y 9 NM: "Cliente" → "Nro. cuenta".
     - `encabezadosInconsistentes` ahora también verifica esta regla (script
       de comprobación contra las 9 configs: sin problemas).
+- **Franja de selección condicional** (reemplaza a la barra sobre el
+  `thead`): se descartó la barra superpuesta y vuelve la franja entre la
+  barra de filtros y la tabla, con el contenido de siempre
+  (`SelectionActionBar`: registro seleccionado, Modificar · Borrar, ✕), sin
+  contador. Alto `--control-sm`, `gap-2` con la tabla; sin selección no
+  existe en el DOM ni reserva espacio (el espaciado queda en `gap-3`). Entra
+  y sale animando alto + opacidad (150ms, `AnimatePresence`; sin animación
+  con `prefers-reduced-motion`); al cambiar de fila no se re-anima. El
+  `thead` queda siempre visible. `SelectionActionBar` se restaura.
 - `DESIGN_SYSTEM.md`: Patrones → "ABM" (chip + nombre, sin contador,
-  selección sobre el encabezado, estado vacío dentro de la tabla,
-  espaciados), "Tabla de resultados" (barra de selección superpuesta),
-  `AbmTableSelector`, `ChipFilterBar`; se elimina la sección
-  `SelectionActionBar`.
+  franja de selección condicional, estado vacío dentro de la tabla,
+  espaciados), "Tabla de resultados", `AbmTableSelector`, `ChipFilterBar`.
 
 ### Pendientes abiertos
 
 - **Sin probar en el navegador** (no se abrió, por pedido): el chip del
-  título y su hover; que la barra de selección tape el `thead` sin saltos en
-  los tres tiers de `--spacing` y quede por encima de las celdas sticky
-  (`src/features/abm/AbmScreen.tsx`, barra `role="toolbar"`); la transición
-  de 120ms; Tab hasta Modificar / Borrar; Escape con el foco en la barra.
+  título y su hover; la animación de la franja de selección
+  (`src/features/abm/AbmScreen.tsx`, `AnimatePresence`): que la tabla se
+  desplace sin saltos, que no se re-anime al cambiar de fila, el recorte del
+  anillo de foco mientras anima y el movimiento reducido.
 - **`--filter-id-w` (224px) estimado, no medido:** se calculó para
   "Código de interrupción" en Inter 12px (~145px) + `pl-8` / `pr-8`. Falta
   confirmar que el placeholder entra completo en los tres tiers.
@@ -575,8 +579,6 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
 - **Estado vacío con scroll horizontal:** el mensaje está centrado en el
   ancho visible, pero no es sticky; si las columnas desbordan y se hace
   scroll sin filas, se desplaza con la tabla.
-- **La barra de selección tapa el tramo superior de la barra de scroll
-  vertical** de la caja (ocupa todo el ancho de la caja).
 
 ## Historia de decisiones del DS
 
