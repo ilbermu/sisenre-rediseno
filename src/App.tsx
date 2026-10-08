@@ -9,7 +9,7 @@ import TopBar from "@/components/layout/TopBar";
 import UserMenu from "@/components/layout/UserMenu";
 import { ICON, ICON_BTN_SM } from "@/components/ui";
 import { isAbmTableKey } from "@/data/abmTables";
-import { ABM_ITEMS } from "@/data/dominio";
+import { ABM_ITEMS, PERIODS } from "@/data/dominio";
 import { AbmDeepLink, AbmTableKey, Screen } from "@/data/types";
 import AbmScreen from "@/features/abm/AbmScreen";
 import ModificarContent from "@/features/consultas-interrupcion/ModificarContent";
@@ -100,6 +100,10 @@ export default function App() {
   const [modificarInitialRelTab, setModificarInitialRelTab] = useState<string | null>(null);
   const [modificarInitialReferencia, setModificarInitialReferencia] = useState<string | null>(null);
   const [modificarInitialReposicion, setModificarInitialReposicion] = useState<number | null>(null);
+  // Período del TopBar de Consultas de interrupción (PeriodSelector
+  // controlado): lo usa el maestro para el contexto de su toolbar y el atajo
+  // "Período completo" del filtro de fecha.
+  const [periodoConsultas, setPeriodoConsultas] = useState(PERIODS[0]);
 
   // Acordeón de uno-abierto-a-la-vez del sidebar compacto (tier 760px):
   // abre el grupo que contiene `target` y cierra el otro. No hace nada si
@@ -464,12 +468,18 @@ export default function App() {
           <>
             {/* Top bar — mismo en todas las pantallas salvo el ABM (que
                 tiene su encabezado propio con el selector de tabla). */}
-            {TITULOS_PANTALLA[screen] && <TopBar title={TITULOS_PANTALLA[screen]!} />}
+            {TITULOS_PANTALLA[screen] &&
+              (screen === "modificar" ? (
+                <TopBar title={TITULOS_PANTALLA[screen]!} periodo={periodoConsultas} onPeriodoChange={setPeriodoConsultas} />
+              ) : (
+                <TopBar title={TITULOS_PANTALLA[screen]!} />
+              ))}
 
             {/* Content */}
             {screen === "welcome" && <WelcomeContent onIrATabla={goToAbmTable} />}
             {screen === "modificar" && (
               <ModificarContent
+                periodo={periodoConsultas}
                 onIrAAbm={irAAbmConDeepLink}
                 initialRelTab={modificarInitialRelTab}
                 initialReferencia={modificarInitialReferencia}

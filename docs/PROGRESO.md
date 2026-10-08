@@ -582,6 +582,51 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
 - `DESIGN_SYSTEM.md`: Patrones → "ABM" (chip + nombre, sin contador,
   toolbar de tabla persistente, estado vacío dentro de la tabla,
   espaciados), "Tabla de resultados", `AbmTableSelector`, `ChipFilterBar`.
+- **Consultas de interrupción — maestro-detalle sin cards** (maqueta de
+  referencia: https://claude.ai/artifact/5RCqnneDfFQCnyRsJGZogh).
+  - Se sacan las cards Interrupciones/Reposiciones, la sección "Tablas
+    relacionadas", el buscador "Buscar referencia…", la barra `FilterBar`
+    (búsqueda con botón Buscar) y los modales de herramientas que ya no
+    tenían cómo abrirse.
+  - Split 52/48 del alto disponible, cada columna con su scroll:
+    - **Maestro** (`InterrupcionesMaestro.tsx`): chip "Tabla 2" +
+      "Interrupciones"; `ChipFilterBar` compacta con los filtros de Tabla 2
+      (los mismos del ABM, vía `chipsDeConfig`, nuevo en
+      `features/abm/filtrosDeConfig.ts`, que también usa `AbmScreen`);
+      toolbar solo con el contexto; tabla con Código de interrupción,
+      Fecha, Nivel de tensión, Fase eléctrica, Origen y Tipo (con
+      `ColumnHeaderHint`). Selección siempre activa (auto-selección de la
+      primera fila), ↑/↓, chevron hacia el detalle.
+    - **Hoja** (`InterrupcionHoja.tsx`): header "Interrupción seleccionada"
+      + código, franja de cifras (Duración, Reposiciones, Clientes
+      repuestos, Reclamos; 2×2 con container query), y las secciones
+      "Reposiciones de esta interrupción" (línea de tiempo) y "Reclamos
+      durante la interrupción" (`ReclamosResumenCompacto` + "Ver detalle",
+      que abre "Datos de la interrupción"). Fade de 140ms al cambiar.
+    - **Línea de tiempo** (`ReposicionesTimeline.tsx` sobre
+      `components/ui/Timeline.tsx`, nuevos): inicio + una fase por ítem; la
+      fase seleccionada muestra sus chips de Tablas relacionadas, que abren
+      el modal de siempre en ese tab.
+  - `ChipFilterBar`: variante `compact` (ID flexible 160–260px + Fecha +
+    "Filtros" con popover de 300px, contador y "Limpiar"). La variante
+    completa no cambia (se extrajeron piezas compartidas).
+  - `TablaChip` pasa a `components/ui` (lo usan `AbmTableSelector` y las
+    secciones de Consultas).
+  - El período del TopBar de Consultas pasa a estar controlado en `App.tsx`
+    (el TopBar no cambia; título "Búsqueda de interrupciones", como estaba).
+  - Datos: `generarFasesSinteticas` recibe el inicio y el fin de la
+    interrupción (los de `generarReclamosSinteticos`) y ubica las horas de
+    las fases después del inicio, en orden, con la última en el fin; antes
+    eran fechas al azar del mes y la duración podía dar negativa.
+  - `ReclamosResumenCompacto` queda solo con la grilla de cifras (el título
+    y "Ver detalle" los pone la hoja).
+  - `ModificarContent.tsx` pasa de 856 a ~470 líneas: estado de selección
+    y los modales ("Tablas relacionadas" sin cambios, "Datos de la
+    interrupción").
+  - `DESIGN_SYSTEM.md`: Patrones → "Maestro-detalle" (nuevo); Componentes →
+    `ChipFilterBar` (variante compacta), `Timeline` y `TablaChip`
+    (nuevos); notas de "sin uso" en `FilterBar`, "Card con secciones" y
+    "Lista de filas".
 
 ### Pendientes abiertos
 
@@ -608,6 +653,24 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
 - **Filtros sin columna:** Consumo, CT T9 y CT T10 (Tabla 6) y Reclamos
   (Tabla 8) conservan su `chipLabel` propio, porque el campo no tiene
   `nombreReal` y no se muestra como columna.
+- **Consultas de interrupción sin probar en el navegador** (no se abrió,
+  por pedido): el split 52/48 y que la página no scrollee en los tres
+  tiers; el popover "Filtros" y sus editores anclados al botón; la
+  auto-selección al filtrar; el fade de 140ms; la grilla 2×2 de cifras con
+  la hoja angosta; la línea de tiempo (alineación de dots y conectora); el
+  scroll horizontal de la tabla del maestro (6 columnas en ~52% del ancho).
+- **Supuestos de cifras sin validar con negocio** (`TODO` en
+  `InterrupcionHoja.tsx`): Duración = FEC de la última fase − FECHA de
+  inicio; Clientes repuestos = suma de CLI de las fases.
+- **Título del TopBar:** el pedido lo nombra "Consultas de interrupción"; se
+  dejó "Búsqueda de interrupciones" (`TITULOS_PANTALLA` en `App.tsx`) para
+  no cambiar el TopBar. Confirmar cuál va.
+- **Componentes sin uso tras el rediseño** (no se borraron):
+  `ReposicionesLista.tsx`, `SubtituloEtiquetado.tsx` (ya estaba sin uso),
+  `components/ui/FilterBar.tsx`, y los modales de
+  `consultas-interrupcion/herramientas/` (`DesarmeModal`,
+  `NivelTipoModal`, `ReplicarModal`, `CambiaFasesModal`,
+  `AltaClientesModal`, `IntercambioModal`), que ya no tenían cómo abrirse.
 - **Estado vacío con scroll horizontal:** el mensaje está centrado en el
   ancho visible, pero no es sticky; si las columnas desbordan y se hace
   scroll sin filas, se desplaza con la tabla.

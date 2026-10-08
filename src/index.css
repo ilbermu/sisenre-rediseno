@@ -399,6 +399,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   letter-spacing: 0.06em;
 }
 
+/* Fade de entrada del contenido de la hoja de detalle (maestro-detalle) al
+   cambiar de registro: animate-[hoja-fade_140ms_ease-out]. Con movimiento
+   reducido, directo (regla de abajo). */
+@keyframes hoja-fade {
+  from {
+    opacity: 0;
+  }
+}
+
 @utility bg-fill-subtle-solid {
   background-color: var(--color-surface);
   background-image: linear-gradient(var(--color-fill-subtle), var(--color-fill-subtle));

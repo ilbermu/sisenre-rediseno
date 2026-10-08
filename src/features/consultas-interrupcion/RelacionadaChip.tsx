@@ -6,7 +6,7 @@ import { formatNumero, VALOR_VACIO } from "@/lib/format";
 // ("SI"/"NO" para la booleana, conteo como string para el resto);
 // undefined = sin interrupción seleccionada ("—").
 // En reposo NUNCA lleva tint ni borde celeste: el azul relleno queda
-// reservado para la fila seleccionada de ReposicionesLista, justo arriba.
+// reservado para la fase seleccionada de la línea de tiempo (ReposicionesTimeline).
 // Con contenido (conteo > 0 o "Sí"): <button> blanco + borde de card +
 // valor navy, abre el modal en ese tab; el azul aparece solo en hover
 // (tint + borde primary) y foco. Sin contenido (0, "No" o sin selección):

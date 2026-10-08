@@ -1,25 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
-import { dropdownAnchorStyle, FOCUS_RING, ICON, useDropdownDirection } from "@/components/ui";
+import { dropdownAnchorStyle, FOCUS_RING, ICON, TablaChip, useDropdownDirection } from "@/components/ui";
 import { ABM_TABLE_CONFIGS, ABM_TABLE_ORDER } from "@/data/abmTables";
 import { AbmTableKey } from "@/data/types";
 
 // ─── ABM engine: componentes de UI ─────────────────────────────────────────
-
-// Chip "Tabla N": mismo idioma que los chips de "Tablas relacionadas"
-// (primary-tint + chip-border, texto secondary), en forma de píldora.
-// `ancho` (dropdown): ancho mínimo común para que los nombres alineen.
-function TablaChip({ nombre, ancho = false }: { nombre: string; ancho?: boolean }) {
-  return (
-    <span
-      className={`inline-flex items-center justify-center h-5.5 px-2 shrink-0 rounded-full border border-chip-border bg-primary-tint text-secondary text-caption font-semibold whitespace-nowrap ${
-        ancho ? "min-w-20" : ""
-      }`}
-    >
-      {nombre}
-    </span>
-  );
-}
 
 // Selector de tabla ABM, variante título (ver DESIGN_SYSTEM.md,
 // "AbmTableSelector"): nombra la vista y permite cambiarla — es el título

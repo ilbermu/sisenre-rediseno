@@ -4,7 +4,6 @@ import {
   BTN_MD,
   BTN_SM,
   ChipFilterBar,
-  ChipFiltroDef,
   FOCUS_RING,
   FOCUS_RING_INSET,
   FormRow,
@@ -22,12 +21,13 @@ import TopBar from "@/components/layout/TopBar";
 import { columnasDeResultados, encabezadosInconsistentes } from "@/features/abm/columnasDeResultados";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { PERIODS } from "@/data/dominio";
-import { AbmDeepLink, AbmFiltroBarra, AbmMode, AbmTableKey, CampoBusqueda } from "@/data/types";
+import { AbmDeepLink, AbmMode, AbmTableKey, CampoBusqueda } from "@/data/types";
 import AbmCampo from "@/features/abm/AbmCampo";
 import AbmTableSelector from "@/features/abm/AbmTableSelector";
 import AbmToolbar from "@/features/abm/AbmToolbar";
 import ConfirmarBorrarModal from "@/features/abm/ConfirmarBorrarModal";
-import { filtrarFilas, FiltroFila, modoDeEditor } from "@/features/abm/filtrarFilas";
+import { filtrarFilas, FiltroFila } from "@/features/abm/filtrarFilas";
+import { chipsDeConfig, filtrosFilaDeBarra } from "@/features/abm/filtrosDeConfig";
 import RevisarCambiosContent, { ResumenValoresContent, useMotivoCambio } from "@/features/abm/RevisarCambiosContent";
 import { labelDeValor } from "@/features/abm/labelDeValor";
 import { descargarCsv } from "@/lib/csv";
@@ -50,14 +50,6 @@ function mapearFilaAValores(mapeo: Record<string, string>, fila: Record<string, 
     if (fila[columna] !== undefined) nuevos[campoNombre] = fila[columna];
   }
   return nuevos;
-}
-
-// Editor del chip según el tipo actual del campo (ver AbmFiltroBarra).
-function editorDeCampo(c: CampoBusqueda): ChipFiltroDef["editor"] {
-  if (c.tipo === "fecha") return "fecha";
-  if (c.tipo === "toggle" || c.tipo === "select") return "lista";
-  if (c.tipo === "combobox") return "busqueda";
-  return "texto";
 }
 
 // Pantalla única de ABM (ver DESIGN_SYSTEM.md, Patrones → "ABM"): el mismo
@@ -144,8 +136,6 @@ export default function AbmScreen({
 
   const camposTabla = config.secciones.flatMap((s) => s.filas.flat());
   const campoDe = (nombre: string) => camposTabla.find((c) => c.nombre === nombre);
-  // Columna de `rows` de un campo (inversa de mapeoFilaACampos).
-  const columnaDe = (nombre: string) => Object.keys(config.mapeoFilaACampos).find((k) => config.mapeoFilaACampos[k] === nombre);
 
   // Aplica un deep-link pendiente para ESTA tabla — corre después del
   // reset de arriba, así su estado gana. "alta" abre Insertar con el campo
@@ -184,22 +174,9 @@ export default function AbmScreen({
   }
 
   // ── Barra de filtros ────────────────────────────────────────────────────
-  // Cada filtro de la config → ChipFiltroDef: editor, opciones y
-  // emptyMessage salen del campo, sin cambios.
-  const chipDe = (f: AbmFiltroBarra): ChipFiltroDef => {
-    const c = campoDe(f.campo);
-    return {
-      campo: f.campo,
-      label: f.label ?? c?.label ?? f.campo,
-      chipLabel: f.chipLabel,
-      soloValor: f.soloValor,
-      editor: c ? editorDeCampo(c) : "texto",
-      opciones: c?.opciones,
-      emptyMessage: c?.emptyMessage,
-    };
-  };
-  const chipsVisibles = config.filtrosBarra.visibles.map(chipDe);
-  const chipsAgregables = config.filtrosBarra.agregables.map(chipDe);
+  // Cada filtro de la config → ChipFiltroDef (chipsDeConfig): editor,
+  // opciones y emptyMessage salen del campo, sin cambios.
+  const { visibles: chipsVisibles, agregables: chipsAgregables } = useMemo(() => chipsDeConfig(config), [config]);
   function cambiarFiltro(campo: string, v: string) {
     // Misma dependencia que el formulario: al cambiar Partido se limpia
     // Localidad.
@@ -211,14 +188,7 @@ export default function AbmScreen({
   }
   // Filtros de la barra → filtros por columna de `rows`: el ID por
   // "contiene"; cada chip según su editor.
-  const filtrosFila: FiltroFila[] = [
-    { columna: columnaDe(config.campoId) ?? config.campoId, valor: idBarra, modo: "contiene" },
-    ...[...chipsVisibles, ...chipsAgregables].map((d) => ({
-      columna: columnaDe(d.campo) ?? d.campo,
-      valor: filtrosBarraValores[d.campo] ?? "",
-      modo: modoDeEditor(d.editor),
-    })),
-  ];
+  const filtrosFila: FiltroFila[] = filtrosFilaDeBarra(config, idBarra, filtrosBarraValores, [...chipsVisibles, ...chipsAgregables]);
   const hayFiltrosBarra = filtrosFila.some((f) => f.valor.trim() !== "");
   function handleLimpiarFiltrosBarra() {
     setIdBarra("");

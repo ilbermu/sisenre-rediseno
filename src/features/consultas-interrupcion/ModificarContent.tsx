@@ -1,19 +1,10 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Inbox } from "lucide-react";
 import {
-  BTN_SM,
-  CardHeader,
   CopyButton,
-  FILTER_BAR_VACIO,
-  FilterBar,
-  FilterBarValores,
   FilterTrigger,
-  FOCUS_RING_INSET,
   ICON,
   Modal,
-  parseDateTimeStr,
-  RangoFecha,
-  SortableHeaderCell,
   SortableTh,
   TableCounter,
   TableToolbar,
@@ -21,9 +12,8 @@ import {
   useTableToolbar,
 } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
-import { DRAWER_TAB_TO_ABM, DRAWER_TABS, STATUS_ITEMS } from "@/data/dominio";
+import { DRAWER_TAB_TO_ABM, DRAWER_TABS } from "@/data/dominio";
 import {
-  DESCRIPCIONES_EQUIPO_OPERADO,
   generarFasesSinteticas,
   generarFilasTabla5,
   generarFilasTabla6,
@@ -34,47 +24,37 @@ import {
   RECORD,
   SAMPLE_ROWS,
 } from "@/data/sinteticos";
-import { AbmDeepLink, FaseReposicion } from "@/data/types";
+import { AbmDeepLink } from "@/data/types";
 import DatosInterrupcionModal from "@/features/consultas-interrupcion/DatosInterrupcionModal";
 import FaseReposicionFicha from "@/features/consultas-interrupcion/FaseReposicionFicha";
-import ReclamosResumenCompacto from "@/features/consultas-interrupcion/ReclamosResumenCompacto";
-import RelacionadaChip from "@/features/consultas-interrupcion/RelacionadaChip";
-import ReposicionesLista from "@/features/consultas-interrupcion/ReposicionesLista";
-import AltaClientesModal from "@/features/consultas-interrupcion/herramientas/AltaClientesModal";
-import CambiaFasesModal from "@/features/consultas-interrupcion/herramientas/CambiaFasesModal";
-import DesarmeModal from "@/features/consultas-interrupcion/herramientas/DesarmeModal";
-import IntercambioModal from "@/features/consultas-interrupcion/herramientas/IntercambioModal";
-import NivelTipoModal from "@/features/consultas-interrupcion/herramientas/NivelTipoModal";
-import ReplicarModal from "@/features/consultas-interrupcion/herramientas/ReplicarModal";
-import { VALOR_VACIO } from "@/lib/format";
+import InterrupcionesMaestro from "@/features/consultas-interrupcion/InterrupcionesMaestro";
+import InterrupcionHoja from "@/features/consultas-interrupcion/InterrupcionHoja";
+import { parseFechaHora, VALOR_VACIO } from "@/lib/format";
 
-// ─── Modificar content ────────────────────────────────────────────────────────
-
-// "dd/mm/aaaa hh:mm" → Date, sobre parseDateTimeStr (null si no parsea).
-function fechaHoraDeStr(v: string): Date | null {
-  const { date, time } = parseDateTimeStr(v);
-  if (!date) return null;
-  const [hh, mm] = time.split(":").map(Number);
-  const d = new Date(date);
-  d.setHours(hh || 0, mm || 0, 0, 0);
-  return d;
-}
-
-// Rango inclusivo; se permite un solo extremo. Sin rango, todo pasa.
-function fechaEnRango(d: Date | null, r: RangoFecha | null): boolean {
-  if (!r) return true;
-  if (!d) return false;
-  if (r.desde && d < r.desde) return false;
-  if (r.hasta && d > r.hasta) return false;
-  return true;
-}
-
+// ─── Consultas de interrupción ─────────────────────────────────────────────
+// Maestro-detalle sin cards (ver DESIGN_SYSTEM.md, Patrones →
+// "Maestro-detalle"): debajo del TopBar (lo pone App, con el PeriodSelector
+// controlado), un área de trabajo del alto disponible partida en dos
+// columnas que scrollean por dentro — la página no scrollea en ningún tier:
+//   izquierda (52%) → InterrupcionesMaestro: Tabla 2 con filtros compactos;
+//   derecha (48%)   → InterrupcionHoja: la interrupción seleccionada, sus
+//                     cifras, la línea de tiempo de reposiciones (Tabla 4)
+//                     y el resumen de reclamos.
+// El layout no se mueve al seleccionar. La selección vive acá: la
+// interrupción (índice de SAMPLE_ROWS = fila de Tabla 2) y la fase de
+// reposición (su nro). Al cambiar de interrupción se selecciona su primera
+// fase. Los chips de Tablas relacionadas de la fase abren el modal de
+// siempre ("Tablas relacionadas"), y "Ver detalle" de Reclamos abre "Datos
+// de la interrupción".
 export default function ModificarContent({
+  periodo,
   onIrAAbm,
   initialRelTab = null,
   initialReferencia = null,
   initialReposicion = null,
 }: {
+  // Período del PeriodSelector del TopBar (controlado en App).
+  periodo: string;
   onIrAAbm: (link: AbmDeepLink) => void;
   // Tab del modal "Tablas relacionadas" a reabrir al montar — lo usa el
   // botón "Volver" de AbmScreen para restaurar el contexto desde el que se
@@ -85,124 +65,56 @@ export default function ModificarContent({
   // mirando, no solo a la pantalla.
   initialReferencia?: string | null;
   // Número de reposición (.nro) a re-seleccionar al montar — misma fuente
-  // que initialRelTab/initialReferencia, para que "Volver" restaure
-  // exactamente la reposición que se estaba mirando, no siempre la
-  // primera. Se resuelve una sola vez, en el useState inicial de
-  // modSelectedFase más abajo — el efecto que resetea esa selección al
-  // cambiar de interrupción se salta su primera corrida para no pisarlo.
+  // que initialRelTab/initialReferencia.
   initialReposicion?: number | null;
 }) {
   const initialRowIndex = initialReferencia ? SAMPLE_ROWS.findIndex((r) => r.referencia === initialReferencia) : -1;
-  const [modShowData, setModShowData] = useState(initialRowIndex >= 0);
-  const [modSelectedRow, setModSelectedRow] = useState<number | null>(initialRowIndex >= 0 ? initialRowIndex : null);
+  // Interrupción seleccionada (índice de SAMPLE_ROWS). El maestro la
+  // mantiene siempre en una fila visible (auto-selección); null = sin
+  // resultados.
+  const [seleccionada, setSeleccionada] = useState<number | null>(initialRowIndex >= 0 ? initialRowIndex : null);
   const [relTab, setRelTab] = useState<string | null>(initialRelTab);
-  const [flyoutOpen, setFlyoutOpen] = useState(false);
-  // Valores de la barra de búsqueda (FilterBar), controlados acá para poder
-  // autocompletarlos con los datos de la interrupción seleccionada.
-  const [filtros, setFiltros] = useState<FilterBarValores>(FILTER_BAR_VACIO);
-  const [desarmeOpen, setDesarmeOpen] = useState(false);
-  const [nivelTipoOpen, setNivelTipoOpen] = useState(false);
-  const [replicarOpen, setReplicarOpen] = useState(false);
-  const [cambiaFasesOpen, setCambiaFasesOpen] = useState(false);
-  const [altaClientesOpen, setAltaClientesOpen] = useState(false);
-  const [intercambioOpen, setIntercambioOpen] = useState(false);
   const [datosInterrupcionOpen, setDatosInterrupcionOpen] = useState(false);
-  const hasSelection = modSelectedRow !== null;
-  const activeTabData = DRAWER_TABS.find(t => t.key === relTab);
-  const selectedRecord = modSelectedRow !== null ? SAMPLE_ROWS[modSelectedRow] : null;
+  const registro = seleccionada !== null ? SAMPLE_ROWS[seleccionada] : null;
+  const activeTabData = DRAWER_TABS.find((t) => t.key === relTab);
   // Tabla ABM equivalente al tab activo del modal "Tablas relacionadas"
   // (solo CDS5/6/8/9) — si existe, las filas de la tabla y el estado vacío
   // ofrecen el deep-link hacia AbmScreen.
   const abmMapping = relTab ? DRAWER_TAB_TO_ABM[relTab] : undefined;
-  // Interrupción (SAMPLE_ROWS) que se está mirando ahora mismo — viaja en
-  // todo deep-link como `referenciaOrigen` para que "Volver" restaure
-  // exactamente esta selección.
-  const interrupcionActualRef = selectedRecord?.referencia ?? RECORD.referencia;
+  // Interrupción que se está mirando — viaja en todo deep-link como
+  // `referenciaOrigen` para que "Volver" restaure exactamente esta selección.
+  const interrupcionActualRef = registro?.referencia ?? RECORD.referencia;
 
-  // Autocompleta el formulario de Búsqueda con los datos de la interrupción
-  // seleccionada en la tabla — solo para mostrar contexto, nunca dispara
-  // una búsqueda ni toca modShowData/resultados. A diferencia de ABM, acá
-  // no hay modo Modificar propio: mientras haya una fila seleccionada el
-  // formulario entero queda fijo en placeholder/no editable (ver
-  // `disabled={hasSelection}` en FilterBar, más abajo) — no editable "por
-  // si el usuario quiere ajustar y volver a buscar", nomás de consulta.
-  // Cubre selección por click, por teclado (flechas) y la restauración
-  // inicial al volver desde ABM, ya que todas pasan por modSelectedRow. Al
-  // deseleccionar, el formulario vuelve a su estado en blanco y editable —
-  // mismo criterio que ya usan "Datos de la interrupción" y "Tablas
-  // relacionadas" para su estado vacío.
-  useEffect(() => {
-    const datos = selectedRecord
-      ? { codigo: selectedRecord.referencia, fecha: selectedRecord.fecha, nivel: selectedRecord.nivel, fase: selectedRecord.fase, origen: selectedRecord.origen, tipo: selectedRecord.tipo }
-      : { codigo: "", fecha: "", nivel: "", fase: "", origen: "", tipo: "" };
-    setFiltros((prev) => ({ ...prev, ...datos }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modSelectedRow]);
+  // Reclamos de la interrupción (por interrupción, no por fase): su inicio
+  // y fin también ubican las horas de las fases.
+  const reclamos = useMemo(() => (registro ? generarReclamosSinteticos(registro.referencia, registro.fecha) : null), [registro]);
+  // Fases de reposición (Tabla 4) de la interrupción, ordenadas por FEC.
+  const fases = useMemo(() => {
+    if (!registro || !reclamos) return [];
+    const ms = (t: string) => parseFechaHora(t)?.getTime() ?? 0;
+    return generarFasesSinteticas(registro.referencia, { inicio: reclamos.inicio, fin: reclamos.fin }).sort((a, b) => ms(a.horaRep) - ms(b.horaRep));
+  }, [registro, reclamos]);
 
-  // Tabla Referencia / Fecha (columna derecha). El buscador cubre solo
-  // Referencia (searchCols [0]); la fecha se filtra con el FilterTrigger
-  // date-range. El filtro se aplica DESPUÉS del hook, sobre los índices de
-  // SAMPLE_ROWS (mismo criterio que las filas borradas de ABM): así
-  // modVisibleIndices sigue indexando SAMPLE_ROWS, que es lo que usan
-  // modSelectedRow, data-row-index y la navegación por teclado. Si la
-  // interrupción seleccionada queda fuera del filtro, NO se deselecciona.
-  const modGetCells = (row: (typeof SAMPLE_ROWS)[number]) => [row.referencia, row.fecha];
-  const [modFiltroFecha, setModFiltroFecha] = useState<RangoFecha | null>(null);
-  const { search: modSearch, setSearch: setModSearch, sortIdx: modSortIdx, sortDir: modSortDir, toggleSort: modToggleSort, visibleIndices: modVisibleIndicesBusqueda } =
-    useTableToolbar(SAMPLE_ROWS, modGetCells, undefined, [0]);
-  const modVisibleIndices = modFiltroFecha
-    ? modVisibleIndicesBusqueda.filter((i) => fechaEnRango(fechaHoraDeStr(SAMPLE_ROWS[i].fecha), modFiltroFecha))
-    : modVisibleIndicesBusqueda;
-
-  // Tabla 4 (Reposiciones) — siempre visible en la Card B, ya no vive detrás
-  // de un tab del drawer. Sin interrupción seleccionada no hay reposiciones
-  // que mostrar. Con selección, se generan (seed = referencia) filas
-  // propias de esa interrupción — cantidad y valores varían de una a otra,
-  // pero siempre las mismas para la misma interrupción.
-  const tabla4Rows: FaseReposicion[] = selectedRecord ? generarFasesSinteticas(selectedRecord.referencia) : [];
-
-  // Fila de Reposiciones seleccionada (tabla interactiva, igual que
-  // Interrupciones) — "Tablas relacionadas" y "Datos de la interrupción"
-  // reflejan la reposición puntual seleccionada acá, no siempre la primera
-  // ni la última. Al cambiar de interrupción se preselecciona la primera
-  // reposición de la lista (si tiene alguna) — ver efecto más abajo. Al
-  // MONTAR, en cambio, arranca en `initialReposicion` si vino uno (viaja
-  // desde el botón "Volver" de AbmScreen) — el useState inicial la busca
-  // por .nro en vez de asumir índice 0, porque la posición de una
-  // reposición dentro de tabla4Rows no tiene por qué coincidir con su
-  // número (ver DRAWER_TABS.tabla4).
-  const [modSelectedFase, setModSelectedFase] = useState<number | null>(() => {
-    if (tabla4Rows.length === 0) return null;
-    if (initialReposicion !== null) {
-      const idx = tabla4Rows.findIndex((f) => f.nro === initialReposicion);
-      if (idx >= 0) return idx;
-    }
-    return 0;
+  // Fase seleccionada: { interrupción, nro }. Si no es de la interrupción
+  // actual (se cambió de interrupción), vale la primera fase. Al montar
+  // arranca en `initialReposicion` (viaja desde "Volver" de AbmScreen).
+  const [faseSel, setFaseSel] = useState<{ referencia: string | null; nro: number | null }>({
+    referencia: initialReferencia,
+    nro: initialReposicion,
   });
-  // Se salta su primera corrida (el useState de arriba ya resolvió el
-  // valor inicial, initialReposicion incluido) — si no, este efecto corre
-  // igual en el primer render (todo useEffect corre después del montaje,
-  // "cambió" o no) y pisaría esa restauración con 0 antes de que el
-  // usuario llegue a verla.
-  const isFirstFaseReset = useRef(true);
-  useEffect(() => {
-    if (isFirstFaseReset.current) {
-      isFirstFaseReset.current = false;
-      return;
-    }
-    setModSelectedFase(tabla4Rows.length > 0 ? 0 : null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modSelectedRow]);
-  const filaFaseSeleccionada = modSelectedFase !== null ? tabla4Rows[modSelectedFase] : undefined;
+  const nroFase =
+    registro && faseSel.referencia === registro.referencia && fases.some((f) => f.nro === faseSel.nro) ? faseSel.nro : (fases[0]?.nro ?? null);
+  const filaFaseSeleccionada = fases.find((f) => f.nro === nroFase);
+  const indiceFase = filaFaseSeleccionada ? fases.indexOf(filaFaseSeleccionada) : 0;
+  function seleccionarFase(nro: number) {
+    setFaseSel({ referencia: registro?.referencia ?? null, nro });
+  }
 
-  // Valores de "Tablas relacionadas" para la reposición seleccionada —
-  // mismo generador (ver generarTablasRelacionadas), pero semilla = la
-  // interrupción + el número de esa reposición puntual (no solo la
-  // interrupción), así cada reposición tiene sus propios valores,
-  // deterministicos: volver a seleccionar la misma reposición siempre da
-  // los mismos valores.
-  const valoresRelacionadas = selectedRecord && filaFaseSeleccionada
-    ? generarTablasRelacionadas(`${selectedRecord.referencia}#${filaFaseSeleccionada.nro}`)
+  // Valores de "Tablas relacionadas" para la fase seleccionada — semilla =
+  // la interrupción + el número de esa fase: cada fase tiene sus propios
+  // valores, siempre los mismos.
+  const valoresRelacionadas = registro && filaFaseSeleccionada
+    ? generarTablasRelacionadas(`${registro.referencia}#${filaFaseSeleccionada.nro}`)
     : null;
 
   // Filas de cada tab del modal "Tablas relacionadas" (5/6/8/9) —
@@ -211,8 +123,8 @@ export default function ModificarContent({
   // valoresRelacionadas. Tabla 3 no pasa por acá (usa
   // valoresRelacionadas.tabla3 directo, ver JSX).
   const relTabRows: string[][] = (() => {
-    if (!relTab || !selectedRecord || !filaFaseSeleccionada || !valoresRelacionadas) return [];
-    const referencia = selectedRecord.referencia;
+    if (!relTab || !registro || !filaFaseSeleccionada || !valoresRelacionadas) return [];
+    const referencia = registro.referencia;
     const nroReposicion = filaFaseSeleccionada.nro;
     const seedBase = `${referencia}#${nroReposicion}`;
     switch (relTab) {
@@ -227,7 +139,7 @@ export default function ModificarContent({
   // Filtros por columna del toolbar (FilterTrigger): columna → valor, null
   // o ausente = sin filtro. Viven acá y no en useTableToolbar (compartido
   // con los ABM). Se resetean con la misma clave que el buscador.
-  const relResetKey = `${relTab}#${modSelectedFase}`;
+  const relResetKey = `${relTab}#${registro?.referencia}#${nroFase}`;
   const [relFiltros, setRelFiltros] = useState<Record<string, string | null>>({});
   useEffect(() => {
     setRelFiltros({});
@@ -277,322 +189,27 @@ export default function ModificarContent({
   const { search: relSearch, setSearch: setRelSearch, sortIdx: relSortIdx, sortDir: relSortDir, toggleSort: relToggleSort, visibleIndices: relVisibleIndices } =
     useTableToolbar(relFilteredRows, relGetCells, relResetKey, relSearchCols);
 
-  // Datos de la interrupción (widget + modal, Card B) — solo tiene sentido
-  // con una interrupción seleccionada; sin selección, la sección completa
-  // muestra un estado vacío (ver JSX) y estos valores no se usan.
-  // "Fecha última reposición" ahora refleja la reposición seleccionada en
-  // la Tabla 4 (no siempre la última de la lista).
-  const timelineReferencia = selectedRecord?.referencia ?? "";
-  const timelineFechaInicio = selectedRecord?.fecha ?? "";
-  const timelineFechaUltRepo = filaFaseSeleccionada ? filaFaseSeleccionada.horaRep : "";
-  // Reclamos de la interrupción seleccionada (gráfico debajo de la
-  // Tabla 4) — por interrupción, no por reposición.
-  const reclamosInterrupcion = useMemo(
-    () => (selectedRecord ? generarReclamosSinteticos(selectedRecord.referencia, selectedRecord.fecha) : null),
-    [selectedRecord],
-  );
-
-  // Navegación por teclado en la tabla de Interrupciones: flecha abajo/arriba
-  // mueve la selección entre filas visibles y actualiza en vivo la Card B,
-  // igual que un click sobre la fila.
-  const modListRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (modSelectedRow === null || !modListRef.current) return;
-    modListRef.current
-      .querySelector<HTMLElement>(`[data-row-index="${modSelectedRow}"]`)
-      ?.scrollIntoView({ block: "nearest" });
-  }, [modSelectedRow]);
-
-  function handleModListKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (!modShowData || modVisibleIndices.length === 0) return;
-    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-    e.preventDefault();
-    if (modSelectedRow === null) {
-      setModSelectedRow(e.key === "ArrowDown" ? modVisibleIndices[0] : modVisibleIndices[modVisibleIndices.length - 1]);
-      return;
-    }
-    const currentPos = modVisibleIndices.indexOf(modSelectedRow);
-    const nextPos =
-      e.key === "ArrowDown"
-        ? Math.min(currentPos + 1, modVisibleIndices.length - 1)
-        : Math.max(currentPos - 1, 0);
-    setModSelectedRow(modVisibleIndices[Math.max(nextPos, 0)]);
-  }
-
-
   return (
-    <div className="flex-1 min-h-0 flex flex-col px-(--page-px) pt-(--page-pt) pb-(--page-pt) relative overflow-hidden">
-    <div className="flex-1 min-h-0 flex flex-col gap-(--page-gap)">
-
-        {/* Búsqueda — sin contenedor: la fila de filtros se apoya directo
-            en el fondo de la página, debajo del top bar (ver FilterBar).
-            Mientras hay una interrupción seleccionada la fila queda fija
-            mostrando sus datos. */}
-        <FilterBar
-          valores={filtros}
-          onChange={(cambios) => setFiltros((prev) => ({ ...prev, ...cambios }))}
-          onBuscar={() => { setModShowData(true); setModSelectedRow(null); }}
-          onLimpiar={() => {
-            setModShowData(false);
-            setModSelectedRow(null);
-            setFiltros(FILTER_BAR_VACIO);
-          }}
-          buscado={modShowData}
-          disabled={hasSelection}
-          placeholderCodigo={`Ej: ${RECORD.referencia}`}
-          opcionesDescEquipo={DESCRIPCIONES_EQUIPO_OPERADO}
-          flyoutAbierto={flyoutOpen}
-          onFlyoutAbiertoChange={setFlyoutOpen}
-        />
-
-      {/* ── FILA INFERIOR — Interrupciones y Reposiciones (CDS4), una al lado
-          de la otra. Cada card se ajusta a su contenido (items-start, no se
-          fuerza el mismo alto) con tope en el alto disponible (max-h-full):
-          si el contenido no entra, la tabla se achica y scrollea adentro,
-          nunca la página. Las cards NO llevan overflow-hidden: recortaría
-          el panel del filtro de Fecha y cualquier otro popover. ── */}
-      <div className={`flex-1 min-h-0 flex items-start gap-(--cards-gap) transition-opacity duration-(--duration-base) ${flyoutOpen ? "opacity-50 pointer-events-none" : ""}`}>
-
-      {/* ── Card Interrupciones — card con secciones (ver DESIGN_SYSTEM.md,
-          "Card con secciones"): header con divisor → toolbar → tabla al ras
-          con paginación al pie → sección Reclamos. Split 50/50 con
-          Reposiciones (flex-1 en las dos). ── */}
-      <div
-        className="shadow-sm flex-1 min-w-0 max-h-full flex flex-col rounded-md border border-border bg-surface"
-      >
-
-        {/* Header — sin subtítulo (el contador va en el toolbar). Sin
-            acciones: "Datos de la interrupción" se abre desde la sección
-            Reclamos. */}
-        <CardHeader title="Interrupciones" tag={ABM_TABLE_CONFIGS.cds2.nombre} />
-
-        {/* Toolbar de tabla — FUERA del contenedor de la tabla, sin fondo ni
-            línea divisoria con la tabla (ver DESIGN_SYSTEM.md, "Patrones
-            de contenedor y tabla"): buscador de Referencia → divisor → filtro de Fecha →
-            (derecha) Limpiar filtros + contador. Se renderiza SIEMPRE: sin
-            resultados, buscador y filtro quedan deshabilitados y el contador
-            dice "0 registros" — así el divisor del header nunca queda pegado
-            al thead. "Limpiar filtros" quita el filtro, no el texto del
-            buscador. */}
-        <div className="px-(--card-px) py-3 shrink-0 flex items-center flex-wrap gap-2">
-          <div className="w-60 shrink-0">
-            <TableToolbar search={modSearch} onSearchChange={setModSearch} searchPlaceholder="Buscar referencia…" hideExport bare disabled={!modShowData} />
-          </div>
-          <div className="w-px h-5 bg-border shrink-0" />
-          <FilterTrigger variant="date-range" label="Fecha" value={modFiltroFecha} onChange={setModFiltroFecha} disabled={!modShowData} />
-          <div className="ml-auto shrink-0 flex items-center gap-4">
-            {modShowData && modFiltroFecha && (
-              <button
-                type="button"
-                onClick={() => setModFiltroFecha(null)}
-                className="text-label text-secondary hover:underline"
-              >
-                Limpiar filtros
-              </button>
-            )}
-            {modShowData
-              ? <TableCounter visibles={modVisibleIndices.length} total={SAMPLE_ROWS.length} />
-              : <TableCounter visibles={0} />}
-          </div>
-        </div>
-
-        {/* Body — tabla Referencia / Fecha al ras de la card (el aire de
-            arriba lo da el py-3 del toolbar), y debajo el resumen de
-            reclamos. Los paddings horizontales de header, toolbar, celdas
-            extremas, paginador y secciones salen todos de --card-px para
-            quedar alineados. */}
-        <div className="min-h-0 flex flex-col">
-          {/* Tabla: header bg-fill-subtle de alto fijo (32px), celdas
-              px-3 py-2 text-body-sm, separador border-subtle, acento de
-              selección con sombra inset en la primera celda, paginación como
-              pie (fill-subtle). El toolbar de arriba siempre está, así que
-              la tabla lleva su propia línea superior. */}
-          <div className="min-h-0 flex flex-col">
-            <div className="grid grid-cols-2 items-center shrink-0 bg-fill-subtle border-y border-border" style={{ height: 32 }}>
-              <SortableHeaderCell
-                label="Referencia"
-                active={modSortIdx === 0}
-                dir={modSortDir}
-                onClick={() => modToggleSort(0)}
-                className="pl-(--card-px) pr-3"
-              />
-              <SortableHeaderCell
-                label="Fecha"
-                active={modSortIdx === 1}
-                dir={modSortDir}
-                onClick={() => modToggleSort(1)}
-                className="pl-3 pr-(--card-px)"
-              />
-            </div>
-            {/* La card tiene altura fija (arriba) — esta lista ocupa todo el
-                espacio que queda dentro de ese alto fijo (flex-1) y scrollea
-                internamente, en vez de empujar el scroll general de la página.
-                min-h-0 es necesario para que un hijo flex con overflow pueda
-                angostarse por debajo de su alto de contenido natural. */}
-            <div
-              ref={modListRef}
-              tabIndex={modShowData ? 0 : -1}
-              onKeyDown={handleModListKeyDown}
-              className={`min-h-0 overflow-y-auto ${FOCUS_RING_INSET}`}
-            >
-              {!modShowData ? (
-                <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-8">
-                  <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
-                  <p className="text-label text-text-muted">Sin resultados</p>
-                  <p className="text-caption text-text-muted">Completá los filtros y presioná Buscar</p>
-                </div>
-              ) : modFiltroFecha && modVisibleIndices.length === 0 ? (
-                /* El filtro dejó 0 filas — mismo empty state de arriba. */
-                <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-8">
-                  <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
-                  <p className="text-label text-text-muted">Sin resultados para los filtros aplicados</p>
-                </div>
-              ) : modVisibleIndices.map((i, vi) => {
-                const row = SAMPLE_ROWS[i];
-                const selected = modSelectedRow === i;
-                const esUltima = vi === modVisibleIndices.length - 1;
-                const textCls = selected ? "text-secondary font-medium" : "text-text";
-                return (
-                  <div
-                    key={i}
-                    data-row-index={i}
-                    className={`grid grid-cols-2 transition-colors cursor-pointer hover:bg-fill-muted ${esUltima ? "" : "border-b border-border-subtle"}`}
-                    style={{ backgroundColor: selected ? "var(--color-primary-tint)" : undefined }}
-                    onClick={() => setModSelectedRow(selected ? null : i)}
-                  >
-                    <div
-                      className={`pl-(--card-px) pr-3 py-2 text-code tabular-nums whitespace-nowrap font-mono ${textCls} ${selected ? "inset-shadow-row-selected" : ""}`}
-                    >
-                      {row.referencia}
-                    </div>
-                    <div className={`pl-3 pr-(--card-px) py-2 text-body-sm tabular-nums whitespace-nowrap ${textCls}`}>{row.fecha}</div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="shrink-0 border-t border-border bg-fill-subtle px-(--card-px) py-1.5 flex items-center justify-between">
-              <button className={`${BTN_SM} border border-border bg-surface text-text-muted disabled:opacity-40`} disabled>Anterior</button>
-              <span className="text-caption text-text-muted tabular-nums">Página <span className="font-medium text-text">1</span> de <span className="font-medium text-text">2.213</span></span>
-              <button className={`${BTN_SM} border border-border bg-surface text-text-muted hover:bg-fill-muted transition-colors`}>Siguiente</button>
-            </div>
-          </div>
-          <ReclamosResumenCompacto
-            datos={reclamosInterrupcion}
-            referencia={selectedRecord?.referencia ?? null}
-            onClick={() => setDatosInterrupcionOpen(true)}
-          />
-        </div>
-      </div>
-
-        {/* Card B — Reposiciones (CDS4). Mismo criterio que la card de
-            Interrupciones: nunca crece con el contenido (banner de
-            selección, filas de la Tabla 4, etc.) — body scrolleable propio
-            en vez de empujar el scroll de la página. Split de la fila 50/50
-            en todos los tamaños (flex-1 acá y en Interrupciones) — antes era
-            40/60 a favor de esta card, pero el resumen de reclamos pasó a
-            vivir en Interrupciones. */}
-        <div
-          className="shadow-sm flex-1 min-w-0 max-h-full flex flex-col rounded-md border border-border bg-surface"
-        >
-          {/* La interrupción seleccionada (registro padre de las
-              reposiciones) va como contexto del header, en la misma línea
-              del título: "· INTERRUPCIÓN" + ID. La línea del header hace de
-              línea superior de la lista. */}
-          <CardHeader
-            title="Reposiciones"
-            tag={ABM_TABLE_CONFIGS.cds4.nombre}
-            context={selectedRecord ? { label: "Interrupción", value: selectedRecord.referencia } : undefined}
-          />
-
-          <div className="min-h-0 flex flex-col">
-
-            {/* Tabla 4 — siempre visible, nunca detrás de un modal/drawer.
-                Vacía hasta que se selecciona una interrupción. Toma el alto
-                de su contenido (la card no se estira); si no entra en el
-                alto disponible se achica con scroll propio + header sticky,
-                ver ReposicionesLista. min-h-0 en este wrapper: sin él la
-                tabla no puede achicarse y Tablas relacionadas quedaría
-                cortada. */}
-            <div className="min-h-0 flex flex-col">
-              <ReposicionesLista
-                rows={tabla4Rows}
-                selectedIndex={modSelectedFase}
-                onSelect={setModSelectedFase}
-              />
-              {/* Sección "Tablas relacionadas" de la card (no una card
-                  anidada): separada por border-t a todo el ancho, sin
-                  borde, fondo ni radio propios. Los chips abren el modal
-                  "Tablas relacionadas", preseleccionado en la reposición
-                  actual (modSelectedFase es la única fuente de verdad,
-                  compartida entre esta card y el modal) y en el tab del
-                  chip clickeado. La reposición activa va como contexto:
-                  "REPOSICIÓN" + "X de N · hora". */}
-              <div className="shrink-0 border-t border-border">
-                <CardHeader
-                  title="Tablas relacionadas"
-                  level="section"
-                  context={
-                    filaFaseSeleccionada
-                      ? { label: "Reposición", value: `${modSelectedFase !== null ? modSelectedFase + 1 : VALOR_VACIO} de ${tabla4Rows.length} · ${filaFaseSeleccionada.horaRep}` }
-                      : undefined
-                  }
-                />
-                <div className="flex flex-wrap gap-[6px] px-(--card-px) pt-1 pb-(--card-section-py)">
-                  {STATUS_ITEMS.map((item) => (
-                    <RelacionadaChip
-                      key={item.tabKey}
-                      label={item.label}
-                      raw={hasSelection ? valoresRelacionadas?.[item.tabKey] : undefined}
-                      booleana={item.tabKey === "tabla3"}
-                      onClick={() => setRelTab(item.tabKey)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-
-      </div>
-
-      {/* ── MODALES DE ACCIÓN ───────────────────────────────────── */}
-      <DesarmeModal
-        open={desarmeOpen}
-        onClose={() => setDesarmeOpen(false)}
-        referencia={selectedRecord?.referencia ?? ""}
+    <div className="flex-1 min-h-0 flex overflow-hidden">
+      <InterrupcionesMaestro periodo={periodo} seleccionada={seleccionada} onSeleccionar={setSeleccionada} />
+      <InterrupcionHoja
+        interrupcion={registro ? { referencia: registro.referencia, fecha: registro.fecha, nivel: registro.nivel, fase: registro.faseElectrica } : null}
+        fases={fases}
+        faseSeleccionada={nroFase}
+        onSeleccionarFase={seleccionarFase}
+        valoresRelacionadas={valoresRelacionadas}
+        onAbrirTabla={setRelTab}
+        reclamos={reclamos}
+        onVerDetalle={() => setDatosInterrupcionOpen(true)}
       />
-      <NivelTipoModal open={nivelTipoOpen} onClose={() => setNivelTipoOpen(false)} />
-      <ReplicarModal
-        open={replicarOpen}
-        onClose={() => setReplicarOpen(false)}
-        referencia={selectedRecord?.referencia ?? ""}
-      />
-      <CambiaFasesModal
-        open={cambiaFasesOpen}
-        onClose={() => setCambiaFasesOpen(false)}
-        referencia={selectedRecord?.referencia ?? ""}
-      />
-      <AltaClientesModal
-        open={altaClientesOpen}
-        onClose={() => setAltaClientesOpen(false)}
-        referencia={selectedRecord?.referencia ?? ""}
-      />
-      <IntercambioModal
-        open={intercambioOpen}
-        onClose={() => setIntercambioOpen(false)}
-        referencia={selectedRecord?.referencia ?? ""}
-      />
+
       <DatosInterrupcionModal
         open={datosInterrupcionOpen}
         onClose={() => setDatosInterrupcionOpen(false)}
-        referencia={timelineReferencia}
-        fechaInicio={timelineFechaInicio}
-        fechaUltRepo={timelineFechaUltRepo}
-        reclamos={reclamosInterrupcion}
+        referencia={registro?.referencia ?? ""}
+        fechaInicio={registro?.fecha ?? ""}
+        fechaUltRepo={filaFaseSeleccionada?.horaRep ?? ""}
+        reclamos={reclamos}
       />
 
       {/* ── MODAL "Tablas relacionadas" ─────────────────────────── */}
@@ -626,9 +243,9 @@ export default function ModificarContent({
           <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2">
             <span className="text-heading-xs uppercase text-text-muted">Interrupción</span>
             <span className="text-code font-mono tabular-nums text-text">
-              {selectedRecord ? selectedRecord.referencia : RECORD.referencia}
+              {interrupcionActualRef}
             </span>
-            <CopyButton value={selectedRecord ? selectedRecord.referencia : RECORD.referencia} label="interrupción" />
+            <CopyButton value={interrupcionActualRef} label="interrupción" />
           </div>
         }
       >
@@ -640,9 +257,9 @@ export default function ModificarContent({
           {filaFaseSeleccionada && (
             <FaseReposicionFicha
               fila={filaFaseSeleccionada}
-              reposicionIndex={modSelectedFase ?? 0}
-              totalReposiciones={tabla4Rows.length}
-              onChangeReposicion={setModSelectedFase}
+              reposicionIndex={indiceFase}
+              totalReposiciones={fases.length}
+              onChangeReposicion={(i) => seleccionarFase(fases[i].nro)}
             />
           )}
           <UnderlineTabs
@@ -850,7 +467,6 @@ export default function ModificarContent({
           </div>
         </div>
       </Modal>
-
     </div>
   );
 }

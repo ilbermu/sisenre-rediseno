@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Plus, Search, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import AnchoredPopover from "@/components/ui/AnchoredPopover";
 import FieldLabel from "@/components/ui/FieldLabel";
 import { FilterTriggerButton, RANGO_TEXTO_VACIO, RangoTexto } from "@/components/ui/FilterTrigger";
@@ -174,29 +174,12 @@ function EditorTexto({ def, valor, onAplicar }: { def: ChipFiltroDef; valor: str
   );
 }
 
-// ─── ChipFilterBar ────────────────────────────────────────────────────────────
+// ─── Piezas compartidas por las dos variantes ────────────────────────────────
 
-type Abierto = { campo: string; ancla: "chip" | "mas" };
-
-// Barra de filtros híbrida (ver DESIGN_SYSTEM.md, "ChipFilterBar" y "Barra
-// de filtros híbrida"): input de ID directo + chips de filtro que aplican al
-// instante, sin botón Buscar. Una sola línea, todo a --control-md:
-//   ID · chips visibles · │ chips agregados · +N filtros · Agregar filtro · (ml-auto) Limpiar filtros
-// Controlada desde la pantalla: `id` y `valores` (campo → valor, "" = sin
-// filtro) vienen por props y cada cambio se avisa al instante. Los chips
-// agregados (cuáles están en la barra) son estado propio: un agregado sin
-// valor existe solo mientras su editor está abierto.
-export default function ChipFilterBar({
-  id,
-  onIdChange,
-  idPlaceholder,
-  visibles,
-  agregables,
-  valores,
-  onChange,
-  onLimpiar,
-  periodo,
-}: {
+type ChipFilterBarProps = {
+  // "completa" (default): la barra de los ABM. "compact": paneles angostos
+  // (ID + Fecha + "Filtros" agrupados, ver ChipFilterBarCompacta).
+  variant?: "completa" | "compact";
   id: string;
   onIdChange: (v: string) => void;
   idPlaceholder: string;
@@ -209,8 +192,10 @@ export default function ChipFilterBar({
   // Período del PeriodSelector de la pantalla (ej. "Agosto 2026"): el atajo
   // "Período completo" del editor de fecha.
   periodo?: string;
-}) {
-  // ── ID: aplica con Enter o a los 500 ms de dejar de tipear.
+};
+
+// ID: aplica con Enter o a los 500 ms de dejar de tipear.
+function useBorradorId(id: string, onIdChange: (v: string) => void) {
   const [borradorId, setBorradorId] = useState(id);
   useEffect(() => setBorradorId(id), [id]);
   useEffect(() => {
@@ -219,13 +204,16 @@ export default function ChipFilterBar({
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [borradorId]);
+  return [borradorId, setBorradorId] as const;
+}
 
-  // ── Un filtro de fecha aplicado con "Período completo" sigue al período:
-  // si cambia, se actualiza al nuevo.
+// Un filtro de fecha aplicado con "Período completo" sigue al período: si
+// cambia, se actualiza al nuevo.
+function useSeguirPeriodo(periodo: string | undefined, defs: ChipFiltroDef[], valores: Record<string, string>, onChange: (campo: string, valor: string) => void) {
   useEffect(() => {
     const rango = periodo ? rangoDePeriodo(periodo) : null;
     if (!rango) return;
-    for (const d of [...visibles, ...agregables]) {
+    for (const d of defs) {
       const v = valores[d.campo] ?? "";
       if (d.editor !== "fecha" || !esRangoDePeriodo(v)) continue;
       const nuevo = valorDeRango(rango, true);
@@ -233,6 +221,153 @@ export default function ChipFilterBar({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [periodo]);
+}
+
+// Input de ID: lupa, valor en mono (placeholder en fuente de texto) y ✕ para
+// borrarlo. El ancho lo pone quien lo usa (`className`).
+function InputId({
+  borrador,
+  setBorrador,
+  onIdChange,
+  placeholder,
+  className,
+  divRef,
+}: {
+  borrador: string;
+  setBorrador: (v: string) => void;
+  onIdChange: (v: string) => void;
+  placeholder: string;
+  className: string;
+  divRef?: React.RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    <div ref={divRef} className={`relative ${className}`}>
+      <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-icon">
+        <Search size={ICON.sm} strokeWidth={1.5} />
+      </span>
+      <input
+        value={borrador}
+        onChange={(e) => setBorrador(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") onIdChange(borrador);
+        }}
+        placeholder={placeholder}
+        aria-label={placeholder}
+        className={MOD_FIELD_CLS + " pl-8 pr-8 text-code! font-mono placeholder:font-sans"}
+      />
+      {borrador && (
+        <button
+          type="button"
+          aria-label="Borrar ID"
+          onClick={() => {
+            setBorrador("");
+            onIdChange("");
+          }}
+          className={`${ICON_BTN_XS} absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors ${FOCUS_RING}`}
+        >
+          <X size={ICON.sm} strokeWidth={1.5} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Editor del filtro abierto, según su tipo.
+function EditorDeFiltro({
+  def,
+  valores,
+  periodo,
+  onAplicar,
+}: {
+  def: ChipFiltroDef;
+  valores: Record<string, string>;
+  periodo?: string;
+  onAplicar: (v: string) => void;
+}) {
+  const valor = valores[def.campo] ?? "";
+  if (def.editor === "lista") return <EditorLista def={def} opciones={opcionesDe(def, valores)} valor={valor} onAplicar={onAplicar} />;
+  if (def.editor === "busqueda") return <EditorBusqueda def={def} opciones={opcionesDe(def, valores)} valor={valor} onAplicar={onAplicar} />;
+  if (def.editor === "texto") return <EditorTexto def={def} valor={valor} onAplicar={onAplicar} />;
+  return (
+    <RangoFechaCalendario
+      label={def.label}
+      inicial={rangoDeValor(valor)}
+      inicialPeriodo={esRangoDePeriodo(valor)}
+      periodo={periodo}
+      onApply={(r, esPeriodo) => onAplicar(r ? valorDeRango(r, esPeriodo) : "")}
+    />
+  );
+}
+
+// Chip de un filtro en la barra (mismo aspecto en las dos variantes).
+function ChipDeFiltro({
+  def,
+  valores,
+  open,
+  maxWidth,
+  buttonRef,
+  onToggle,
+  onClear,
+}: {
+  def: ChipFiltroDef;
+  valores: Record<string, string>;
+  open: boolean;
+  maxWidth: number;
+  buttonRef: (el: HTMLButtonElement | null) => void;
+  onToggle: () => void;
+  onClear: () => void;
+}) {
+  const v = valores[def.campo] ?? "";
+  return (
+    <div className="shrink-0 min-w-0 flex">
+      <FilterTriggerButton
+        buttonRef={buttonRef}
+        label={def.label}
+        etiqueta={def.chipLabel}
+        soloValor={def.soloValor}
+        aplicado={v ? textoValor(def, v, valores) : null}
+        open={open}
+        onToggle={onToggle}
+        onClear={onClear}
+        size="md"
+        maxWidth={maxWidth}
+        valorDestacado
+        chevronConValor={false}
+        haspopup={def.editor === "lista" || def.editor === "busqueda" ? "listbox" : "dialog"}
+      />
+    </div>
+  );
+}
+
+// ─── ChipFilterBar ────────────────────────────────────────────────────────────
+
+export default function ChipFilterBar(props: ChipFilterBarProps) {
+  return props.variant === "compact" ? <ChipFilterBarCompacta {...props} /> : <ChipFilterBarCompleta {...props} />;
+}
+
+type Abierto = { campo: string; ancla: "chip" | "mas" };
+
+// Barra de filtros híbrida (ver DESIGN_SYSTEM.md, "ChipFilterBar" y "Barra
+// de filtros híbrida"): input de ID directo + chips de filtro que aplican al
+// instante, sin botón Buscar. Una sola línea, todo a --control-md:
+//   ID · chips visibles · │ chips agregados · +N filtros · Agregar filtro · (ml-auto) Limpiar filtros
+// Controlada desde la pantalla: `id` y `valores` (campo → valor, "" = sin
+// filtro) vienen por props y cada cambio se avisa al instante. Los chips
+// agregados (cuáles están en la barra) son estado propio: un agregado sin
+// valor existe solo mientras su editor está abierto.
+function ChipFilterBarCompleta({
+  id,
+  onIdChange,
+  idPlaceholder,
+  visibles,
+  agregables,
+  valores,
+  onChange,
+  onLimpiar,
+  periodo,
+}: ChipFilterBarProps) {
+  const [borradorId, setBorradorId] = useBorradorId(id, onIdChange);
+  useSeguirPeriodo(periodo, [...visibles, ...agregables], valores, onChange);
 
   // ── Chips agregados (en orden de alta).
   const [agregados, setAgregados] = useState<string[]>(() => agregables.filter((d) => valores[d.campo]).map((d) => d.campo));
@@ -365,34 +500,23 @@ export default function ChipFilterBar({
   }
 
   const chipMax = disposicion.compacto ? CHIP_MAX_COMPACTO : CHIP_MAX;
-  const chip = (def: ChipFiltroDef) => {
-    const v = valores[def.campo] ?? "";
-    return (
-      <div key={def.campo} className="shrink-0 min-w-0 flex">
-        <FilterTriggerButton
-          buttonRef={refChip(def.campo)}
-          label={def.label}
-          etiqueta={def.chipLabel}
-          soloValor={def.soloValor}
-          aplicado={v ? textoValor(def, v, valores) : null}
-          open={abierto?.campo === def.campo}
-          onToggle={() => (abierto?.campo === def.campo ? cerrarEditor() : setAbierto({ campo: def.campo, ancla: "chip" }))}
-          onClear={() => quitar(def.campo)}
-          size="md"
-          maxWidth={chipMax}
-          valorDestacado
-          chevronConValor={false}
-          haspopup={def.editor === "lista" || def.editor === "busqueda" ? "listbox" : "dialog"}
-        />
-      </div>
-    );
-  };
+  const chip = (def: ChipFiltroDef) => (
+    <ChipDeFiltro
+      key={def.campo}
+      def={def}
+      valores={valores}
+      open={abierto?.campo === def.campo}
+      maxWidth={chipMax}
+      buttonRef={refChip(def.campo)}
+      onToggle={() => (abierto?.campo === def.campo ? cerrarEditor() : setAbierto({ campo: def.campo, ancla: "chip" }))}
+      onClear={() => quitar(def.campo)}
+    />
+  );
 
   // "+N filtros": chip pintado, mismo aspecto que un chip con valor.
   const masCls = "h-(--control-md) px-2.5 rounded-sm text-label border inline-flex items-center whitespace-nowrap bg-primary-tint border-primary text-secondary";
 
   const defAbierto = abierto ? defs.get(abierto.campo) : undefined;
-  const valorAbierto = defAbierto ? valores[defAbierto.campo] ?? "" : "";
 
   return (
     <div ref={barraRef} className="relative shrink-0 flex items-center gap-2 flex-nowrap min-w-0">
@@ -431,34 +555,14 @@ export default function ChipFilterBar({
 
       {/* 1. ID — ancho fijo (--filter-id-w): entra el placeholder más largo
           (el encabezado de la columna del ID) en todos los tiers. */}
-      <div ref={idRef} className="relative shrink-0 w-(--filter-id-w)">
-        <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-icon">
-          <Search size={ICON.sm} strokeWidth={1.5} />
-        </span>
-        <input
-          value={borradorId}
-          onChange={(e) => setBorradorId(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") onIdChange(borradorId);
-          }}
-          placeholder={idPlaceholder}
-          aria-label={idPlaceholder}
-          className={MOD_FIELD_CLS + " pl-8 pr-8 text-code! font-mono placeholder:font-sans"}
-        />
-        {borradorId && (
-          <button
-            type="button"
-            aria-label="Borrar ID"
-            onClick={() => {
-              setBorradorId("");
-              onIdChange("");
-            }}
-            className={`${ICON_BTN_XS} absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors ${FOCUS_RING}`}
-          >
-            <X size={ICON.sm} strokeWidth={1.5} />
-          </button>
-        )}
-      </div>
+      <InputId
+        divRef={idRef}
+        borrador={borradorId}
+        setBorrador={setBorradorId}
+        onIdChange={onIdChange}
+        placeholder={idPlaceholder}
+        className="shrink-0 w-(--filter-id-w)"
+      />
 
       {/* 2. Chips visibles — siempre en la barra. */}
       {visibles.map((d) => chip(d))}
@@ -561,18 +665,182 @@ export default function ChipFilterBar({
         onClose={cerrarEditor}
         reposicionar={`${disposicion.enBarra}|${disposicion.compacto}|${anchoBarra}`}
       >
-        {defAbierto?.editor === "lista" && <EditorLista def={defAbierto} opciones={opcionesDe(defAbierto, valores)} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
-        {defAbierto?.editor === "busqueda" && <EditorBusqueda def={defAbierto} opciones={opcionesDe(defAbierto, valores)} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
-        {defAbierto?.editor === "texto" && <EditorTexto def={defAbierto} valor={valorAbierto} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
-        {defAbierto?.editor === "fecha" && (
-          <RangoFechaCalendario
-            label={defAbierto.label}
-            inicial={rangoDeValor(valorAbierto)}
-            inicialPeriodo={esRangoDePeriodo(valorAbierto)}
-            periodo={periodo}
-            onApply={(r, esPeriodo) => aplicar(defAbierto.campo, r ? valorDeRango(r, esPeriodo) : "")}
-          />
+        {defAbierto && <EditorDeFiltro def={defAbierto} valores={valores} periodo={periodo} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
+      </AnchoredPopover>
+    </div>
+  );
+}
+
+// ─── Variante compacta ────────────────────────────────────────────────────────
+
+type AbiertoCompacta = { campo: string; ancla: "chip" | "filtros" };
+
+// Variante compacta (`variant="compact"`, ver DESIGN_SYSTEM.md,
+// "ChipFilterBar"): para paneles angostos (el maestro de un maestro-detalle).
+// Siempre una sola fila, sin desborde que calcular:
+//   ID (flexible, 160–260px) · chip Fecha · [Filtros ⌄] · (ml-auto) Limpiar
+// El chip de fecha es el/los visibles con editor "fecha", igual que en la
+// variante completa. Todos los demás filtros (los visibles que no son fecha
+// y, debajo de "Más campos", los agregables) van agrupados en el popover de
+// "Filtros" (300px, anclado al botón): una fila por filtro con el nombre a
+// la izquierda y el valor a la derecha ("Todos" sin filtro); la fila abre el
+// MISMO editor que su chip, anclado al botón "Filtros". Con alguno de esos
+// filtros activo, el botón toma el estilo seleccionado y muestra cuántos, y
+// aparece "Limpiar" (limpia solo los filtros del popover; ID y fecha tienen
+// su ✕). Aplicación instantánea, como la completa.
+function ChipFilterBarCompacta({ id, onIdChange, idPlaceholder, visibles, agregables, valores, onChange, periodo }: ChipFilterBarProps) {
+  const [borradorId, setBorradorId] = useBorradorId(id, onIdChange);
+  useSeguirPeriodo(periodo, [...visibles, ...agregables], valores, onChange);
+
+  const fechas = visibles.filter((d) => d.editor === "fecha");
+  const principales = visibles.filter((d) => d.editor !== "fecha");
+  const enPanel = [...principales, ...agregables];
+  const defs = useMemo(() => new Map([...visibles, ...agregables].map((d) => [d.campo, d])), [visibles, agregables]);
+  const activos = enPanel.filter((d) => valores[d.campo]).length;
+
+  const [panel, setPanel] = useState(false);
+  const [abierto, setAbierto] = useState<AbiertoCompacta | null>(null);
+  const chipRefs = useRef(new Map<string, HTMLButtonElement>());
+  const filtrosRef = useRef<HTMLButtonElement>(null);
+  const abiertoRef = useRef(abierto);
+  abiertoRef.current = abierto;
+  const anclaEditor = useMemo<React.RefObject<HTMLElement | null>>(
+    () => ({
+      get current() {
+        const a = abiertoRef.current;
+        if (!a) return null;
+        return (a.ancla === "chip" ? chipRefs.current.get(a.campo) : null) ?? filtrosRef.current;
+      },
+    }),
+    [],
+  );
+  const refChip = (campo: string) => (el: HTMLButtonElement | null) => {
+    if (el) chipRefs.current.set(campo, el);
+    else chipRefs.current.delete(campo);
+  };
+
+  function aplicar(campo: string, v: string) {
+    onChange(campo, v);
+    const ancla = anclaEditor.current;
+    setAbierto(null);
+    ancla?.focus();
+  }
+  function limpiarPanel() {
+    for (const d of enPanel) if (valores[d.campo]) onChange(d.campo, "");
+  }
+
+  const defAbierto = abierto ? defs.get(abierto.campo) : undefined;
+  const filaPanel = (d: ChipFiltroDef, autoFocus: boolean) => {
+    const v = valores[d.campo] ?? "";
+    const texto = v ? textoValor(d, v, valores) : "";
+    return (
+      <div key={d.campo} className="group flex items-center gap-1 rounded-sm hover:bg-fill-muted focus-within:bg-fill-muted">
+        <button
+          type="button"
+          autoFocus={autoFocus}
+          title={texto ? `${d.label}: ${texto}` : d.label}
+          aria-haspopup={d.editor === "lista" || d.editor === "busqueda" ? "listbox" : "dialog"}
+          onClick={() => {
+            setPanel(false);
+            setAbierto({ campo: d.campo, ancla: "filtros" });
+          }}
+          className={`flex-1 min-w-0 px-2.5 py-2 rounded-sm text-left text-body flex items-baseline justify-between gap-3 ${FOCUS_RING}`}
+        >
+          <span className="shrink-0 text-text">{d.chipLabel ?? d.label}</span>
+          {texto ? (
+            <span className="min-w-0 truncate text-secondary font-semibold tabular-nums">{texto}</span>
+          ) : (
+            <span className="shrink-0 text-text-muted">Todos</span>
+          )}
+        </button>
+        {texto && (
+          <button
+            type="button"
+            aria-label={`Quitar filtro ${d.label}`}
+            onClick={() => onChange(d.campo, "")}
+            className={`${ICON_BTN_XS} shrink-0 mr-1 flex items-center justify-center rounded-sm text-icon opacity-60 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-fill-muted hover:text-text transition-[opacity,color,background-color] ${FOCUS_RING}`}
+          >
+            <X size={ICON.sm} strokeWidth={1.5} />
+          </button>
         )}
+      </div>
+    );
+  };
+
+  const seleccionado = activos > 0 || panel || abierto?.ancla === "filtros";
+  return (
+    <div className="relative shrink-0 flex items-center gap-2 flex-nowrap min-w-0">
+      <InputId
+        borrador={borradorId}
+        setBorrador={setBorradorId}
+        onIdChange={onIdChange}
+        placeholder={idPlaceholder}
+        className="flex-1 min-w-[160px] max-w-[260px]"
+      />
+
+      {fechas.map((d) => (
+        <ChipDeFiltro
+          key={d.campo}
+          def={d}
+          valores={valores}
+          open={abierto?.campo === d.campo}
+          maxWidth={CHIP_MAX_COMPACTO}
+          buttonRef={refChip(d.campo)}
+          onToggle={() => setAbierto(abierto?.campo === d.campo ? null : { campo: d.campo, ancla: "chip" })}
+          onClear={() => onChange(d.campo, "")}
+        />
+      ))}
+
+      {enPanel.length > 0 && (
+        <button
+          ref={filtrosRef}
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={panel}
+          aria-label={activos > 0 ? `Filtros (${activos} activos)` : undefined}
+          onClick={() => setPanel(!panel)}
+          className={`h-(--control-md) shrink-0 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${FOCUS_RING} ${
+            seleccionado
+              ? "bg-primary-tint border-chip-border text-secondary"
+              : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
+          }`}
+        >
+          <SlidersHorizontal size={ICON.sm} strokeWidth={1.5} />
+          Filtros
+          {activos > 0 && (
+            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-secondary text-white text-caption font-semibold tabular-nums inline-flex items-center justify-center">
+              {activos}
+            </span>
+          )}
+          {panel ? <ChevronUp size={ICON.xs} strokeWidth={1.5} /> : <ChevronDown size={ICON.xs} strokeWidth={1.5} />}
+        </button>
+      )}
+
+      {activos > 0 && (
+        <button type="button" onClick={limpiarPanel} className={`ml-auto shrink-0 whitespace-nowrap rounded-sm text-label text-secondary hover:underline ${FOCUS_RING}`}>
+          Limpiar
+        </button>
+      )}
+
+      {/* Popover "Filtros": los visibles que no son fecha y, debajo de "Más
+          campos", los agregables. */}
+      <AnchoredPopover anchorRef={filtrosRef} open={panel} onClose={() => setPanel(false)} role="dialog" ariaLabel="Filtros">
+        <div className="p-1.5 flex flex-col gap-0.5" style={{ width: 300 }}>
+          {principales.map((d, i) => filaPanel(d, i === 0))}
+          {agregables.length > 0 && (
+            <>
+              <p className={`px-2.5 pt-2 pb-1 text-heading-xs uppercase text-text-muted select-none ${principales.length > 0 ? "mt-1 border-t border-border-subtle" : ""}`}>
+                Más campos
+              </p>
+              {agregables.map((d, i) => filaPanel(d, principales.length === 0 && i === 0))}
+            </>
+          )}
+        </div>
+      </AnchoredPopover>
+
+      {/* Editor del filtro abierto — anclado a su chip o al botón "Filtros". */}
+      <AnchoredPopover anchorRef={anclaEditor} open={!!defAbierto} onClose={() => setAbierto(null)}>
+        {defAbierto && <EditorDeFiltro def={defAbierto} valores={valores} periodo={periodo} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
       </AnchoredPopover>
     </div>
   );

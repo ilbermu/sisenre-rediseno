@@ -46,7 +46,7 @@ export const DRAWER_TABS = [
     // sin resolver a propósito (ver mensaje de entrega).
     cols: ["Reposición", "Hora reposición", "Fase", "Equipo", "Usuarios BT"],
     filtrables: [] as string[],
-    // Sin uso — Card B arma sus propias filas via generarFasesSinteticas,
+    // Sin uso — la hoja de Consultas de interrupción arma sus fases via generarFasesSinteticas,
     // acá solo quedan cols/subtitle/key/label.
     rows: [] as string[][],
   },

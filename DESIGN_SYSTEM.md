@@ -414,6 +414,18 @@ Vigesimosexta pasada (también 06/10/2026):
   exactamente el encabezado de su columna ("Fase de reposición", "Nro.
   cuenta", "Alimentador MT"…); `encabezadosInconsistentes` también lo
   verifica.
+- **Consultas de interrupción — maestro-detalle sin cards:** se sacan las
+  cards Interrupciones/Reposiciones, la sección "Tablas relacionadas", el
+  buscador de referencia y la barra `FilterBar`. Split persistente 52/48:
+  Tabla 2 a la izquierda (sobre el fondo de la app) y la interrupción
+  seleccionada como hoja blanca a la derecha (header, franja de cifras,
+  línea de tiempo de reposiciones y reclamos). Patrón nuevo:
+  [Maestro-detalle](#maestro-detalle).
+- **`ChipFilterBar` — variante compacta** (`variant="compact"`): ID + Fecha
+  + botón "Filtros" con el resto agrupado en un popover.
+- **Componentes nuevos:** [`Timeline`](#timeline) (línea de tiempo vertical
+  genérica) y [`TablaChip`](#tablachip) (el chip "Tabla N", que sale de
+  `AbmTableSelector` para reusarse).
 
 ## Índice
 
@@ -459,9 +471,11 @@ Vigesimosexta pasada (también 06/10/2026):
 [SegmentadoSoloLectura](#segmentadosololectura) ·
 [SelectWrap](#selectwrap) ·
 [SortableHeaderCell / SortableTh](#sortableheadercell--sortableth) ·
+[TablaChip](#tablachip) ·
 [Tabla de resultados](#tabla-de-resultados) ·
 [TableCounter](#tablecounter) ·
 [TableToolbar y useTableToolbar](#tabletoolbar-y-usetabletoolbar) ·
+[Timeline](#timeline) ·
 [TopBar](#topbar) ·
 [UnderlineTabs](#underlinetabs) ·
 [ValuePicker](#valuepicker)
@@ -471,6 +485,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [Lista de filas](#lista-de-filas) ·
 [Toolbar de tabla y filtros](#toolbar-de-tabla-y-filtros) ·
 [Barra de filtros híbrida](#barra-de-filtros-híbrida) ·
+[Maestro-detalle](#maestro-detalle) ·
 [Registro seleccionado y detalle](#registro-seleccionado-y-detalle) ·
 [Orden de botones](#orden-de-botones) ·
 [Aire: chrome vs datos](#aire-chrome-vs-datos) ·
@@ -1302,6 +1317,36 @@ barra pase a dos líneas; ocultar un chip fijo; agregar un botón Buscar;
 mostrar chevron y ✕ juntos; usar `soloValor` en un campo de códigos,
 números o Sí/No.
 
+### Variante compacta (`variant="compact"`)
+
+**Para qué:** paneles angostos, donde la barra completa desbordaría en
+seguida (hoy, el maestro de Consultas de interrupción). Mismos props, mismos
+filtros y misma aplicación instantánea; cambia solo cómo se agrupan.
+
+```
+[🔍 Código de interrupción  ✕]  Fecha ▾  [⚙ Filtros ② ⌄]            Limpiar
+```
+
+- **Siempre una sola fila**, sin cálculo de desborde: no hay chips
+  agregados, "+N filtros" ni "Agregar filtro".
+- **Input de ID:** el mismo de la completa, pero de **ancho flexible**
+  entre 160 y 260px (`flex-1 min-w-[160px] max-w-[260px]`).
+- **Chip Fecha:** los visibles con editor "fecha", iguales a la completa
+  (con "Período completo").
+- **Botón "Filtros"** (`SlidersHorizontal` + chevron, alto `--control-md`):
+  abre un popover anclado de **300px** con **todos los demás filtros**:
+  primero los visibles que no son fecha (en Tabla 2: Nivel de tensión, Fase
+  eléctrica, Origen, Tipo) y, debajo del rótulo "Más campos", los
+  agregables. Cada fila: nombre del chip a la izquierda y el valor a la
+  derecha ("Todos" en `text-muted`, o el valor en `text-secondary
+  font-semibold`), con ✕ para quitarlo si tiene valor. La fila abre **el
+  mismo editor** que el chip de ese filtro, anclado al botón "Filtros".
+- **Con filtros activos en el popover:** el botón toma el estilo
+  seleccionado (`primary-tint` + `chip-border` + `text-secondary`) y
+  muestra un contador (círculo `bg-secondary`, texto blanco, 18px), y
+  aparece el link **"Limpiar"**, que limpia solo esos filtros (ID y fecha
+  tienen su ✕).
+
 **Archivo:** `src/components/ui/ChipFilterBar.tsx`.
 
 ## CodeBadge
@@ -1546,8 +1591,11 @@ fila.
 
 ## FilterBar
 
+**Sin uso desde el 08/10/2026:** Consultas de interrupción pasó a
+`ChipFilterBar` compacta. El componente se conserva.
+
 **Para qué:** la barra de búsqueda general con botón Buscar y flyout "Más
-filtros" (hoy, solo Consultas de interrupción). Para la búsqueda principal
+filtros". Para la búsqueda principal
 de una pantalla de datos, ver [Barra de filtros
 híbrida](#barra-de-filtros-híbrida) ([`ChipFilterBar`](#chipfilterbar)).
 **Regla:** una pantalla con esta barra usa `FilterBar`; los campos cambian
@@ -1896,6 +1944,21 @@ tablas armadas con `div` (flex/grid); `SortableTh` para `<table>` (tabs de
 
 **Archivo:** `src/components/ui/SortableHeader.tsx`.
 
+## TablaChip
+
+**Para qué:** el nombre de una tabla tal como lo conoce el usuario ("Tabla
+2"), al lado del título de la tabla o de la sección que la muestra.
+
+**Anatomía:** píldora de 22px (`h-5.5`), `px-2`, `rounded-full`,
+`bg-primary-tint` + `border-chip-border`, `text-secondary text-caption
+font-semibold`. `ancho`: ancho mínimo parejo (`min-w-20`) para listas.
+
+**Dónde:** título de los ABM (`AbmTableSelector`, también en su dropdown);
+títulos de sección de Consultas de interrupción ("Tabla 2" Interrupciones,
+"Tabla 4" Reposiciones). Estático: no es un botón.
+
+**Archivo:** `src/components/ui/TablaChip.tsx`.
+
 ## Tabla de resultados
 
 **Para qué:** la tabla de Resultados del ABM (`AbmScreen`): muchas columnas
@@ -2032,6 +2095,48 @@ nombra (ver [Toolbar de tabla y filtros](#toolbar-de-tabla-y-filtros)).
 **Archivo:** `src/components/ui/TableToolbar.tsx`,
 `src/components/ui/useTableToolbar.ts`.
 
+## Timeline
+
+**Para qué:** una secuencia de eventos en el tiempo, uno debajo del otro,
+cuando lo que importa es el orden y la distancia entre ellos (ej. las fases
+de reposición de una interrupción). Genérica: el contenido y el estado de
+cada ítem los pone quien la usa.
+
+**Anatomía:**
+
+```
+●  Inicio de la interrupción 08:10        ← dot "inicio" (fill-muted, borde neutral-400)
+│  05/07/2026 · MT · fase RST
+◉  Fase 1 08:52 +42 min     12 clientes repuestos   ← dot "activo" (secondary + anillo tint)
+│  Fase eléctrica R · @27… · SECCIONADOR
+│  ┌ Tablas relacionadas de la fase 1 ┐
+○  Fase 2 10:24 +1 h 32 min   8 clientes repuestos  ← dot "normal" (blanco, borde 2px neutral-300)
+```
+
+- `<ol>`; cada ítem con `padding-left` de 28px y el **dot de 16px** en
+  `left 0`, centrado con la primera línea del contenido (el contenido
+  arranca con `TIMELINE_CONTENIDO_PY`, 8px, y una primera línea de 20px).
+- **Línea conectora** de 2px `bg-border` del pie de un dot al tope del
+  siguiente; el último ítem no la tiene.
+- Medidas en px, fuera de la escala `--spacing`: no cambian entre tiers.
+- Dots: `"inicio"` (ítem fijo, no seleccionable), `"normal"`, `"activo"`
+  (el seleccionado).
+
+**Uso: `ReposicionesTimeline`** (Consultas de interrupción): primer ítem
+fijo "Inicio de la interrupción"; un ítem por fase, en orden de FEC, con
+"Fase N" · hh:mm · "+X min" (desde el ítem anterior) · "N clientes
+repuestos" y, debajo, fase eléctrica · código · descripción del equipo
+(fuente de texto). Cada fase es un `<button>` (Enter o Espacio la
+seleccionan); hover `fill-subtle rounded-lg`; la seleccionada suma borde y
+se expande para mostrar solo sus chips de Tablas relacionadas. Sin fases:
+el inicio y "Sin reposiciones registradas".
+
+**Qué no hacer:** meter acciones o fichas completas en el ítem expandido;
+usarla para registros que se comparan por columnas (va tabla).
+
+**Archivo:** `src/components/ui/Timeline.tsx`; uso en
+`src/features/consultas-interrupcion/ReposicionesTimeline.tsx`.
+
 ## TopBar
 
 **Para qué:** el encabezado de pantalla. **Todas las pantallas** usan
@@ -2118,8 +2223,9 @@ listbox/option en el panel.
 
 ## Card con secciones
 
-Anatomía de las cards de la vista de trabajo (Interrupciones y
-Reposiciones en Consultas de interrupción): **un único contenedor**
+Anatomía de las cards de la vista de trabajo (antes, Interrupciones y
+Reposiciones en Consultas de interrupción, que desde el 08/10/2026 es un
+[maestro-detalle](#maestro-detalle) sin cards): **un único contenedor**
 dividido en franjas por líneas `border-border` a todo el ancho.
 
 ```
@@ -2184,8 +2290,9 @@ dividido en franjas por líneas `border-border` a todo el ancho.
 ## Lista de filas
 
 Alternativa a la tabla para registros con **pocos campos**, un
-**identificador principal** y metadatos secundarios (ej. Reposiciones en
-Consultas de interrupción, `ReposicionesLista`). Si el usuario necesita
+**identificador principal** y metadatos secundarios (ej.
+`ReposicionesLista`, hoy sin uso: las reposiciones de Consultas de
+interrupción pasaron a una [`Timeline`](#timeline)). Si el usuario necesita
 comparar columnas u ordenarlas, va tabla.
 
 ```
@@ -2261,15 +2368,82 @@ consulta y se refina), con [`ChipFilterBar`](#chipfilterbar):
 fila + Buscar + flyout "Más filtros") queda, por ahora, en Consultas de
 interrupción. Una pantalla nueva de datos usa la barra híbrida.
 
+## Maestro-detalle
+
+Una lista de registros y, al lado, el detalle del seleccionado, sin cards.
+Hoy: Consultas de interrupción (Tabla 2 → la interrupción, sus
+reposiciones y sus reclamos).
+
+```
+┌ TopBar ───────────────────────────────────────────────────────────────────┐
+├ maestro (52%, fondo de la app, padding de página) ─┬ hoja (48%, surface) ──┤
+│ [Tabla 2] Interrupciones                           │ Interrupción seleccionada
+│ [🔍 Código…] Fecha ▾ [Filtros ⌄]                   │ BFZ202607056849        │
+│ Período 08/2026 · Actualizado 10:42                ├───────────────────────┤
+│ ┌───────────────────────────────────────────┐      │ Duración │ Repos. │ … │
+│ │ CÓDIGO ▏ FECHA ▏ NIVEL ▏ FASE ▏ ORIGEN ▏ TIPO│    ├───────────────────────┤
+│ │▌BFZ…   │ …                              › │◀────│ [Tabla 4] Reposiciones │
+│ │ …                                          │     │ ● ◉ ○ línea de tiempo  │
+│ └ Anterior · Pág. 1 de 2.284 · Siguiente ────┘     │───────────────────────│
+│                                                    │ Reclamos   [Ver detalle]│
+└────────────────────────────────────────────────────┴───────────────────────┘
+```
+
+- **Split persistente 52/48** (`flex-[52_1_0%]` / `flex-[48_1_0%]`), del
+  alto disponible. Cada columna scrollea por dentro; **la página no
+  scrollea** en ningún tier.
+- **Maestro sobre el fondo de la app** (`bg-app`, padding `--page-px` /
+  `--page-pt`): título de sección (`TablaChip` + nombre en `heading-sm`,
+  estático), [`ChipFilterBar` compacta](#variante-compacta-variantcompact),
+  toolbar de tabla con **solo el contexto** ("Período 08/2026 · Actualizado
+  hh:mm"; sin Exportar, Auditoría ni modo selección) y la tabla en su caja
+  (estilo de los ABM, pocas columnas, paginación al pie).
+- **Selección siempre activa (auto-selección):** siempre hay un registro
+  seleccionado. Al cargar y al cambiar filtros o período, si el
+  seleccionado no está en los resultados, pasa a la primera fila. Clic en
+  el seleccionado no deselecciona; con foco en la tabla, ↑/↓ mueven la
+  selección. **El layout no se mueve al seleccionar.**
+- **Fila seleccionada:** fondo tint, texto secondary, barra interna de 3px
+  `bg-secondary` en el borde izquierdo de la primera celda y un chevron de
+  6px (trazo secondary) a la derecha de la última, que apunta al detalle.
+- **Detalle como hoja blanca:** `bg-surface`, `border-l`, alto completo, sin
+  padding exterior ni radio, sin sombra. De arriba abajo:
+  - **Header de registro** (fijo, `16px 24px 14px`, `border-b`): "X
+    seleccionada" (`text-caption neutral-500`) + el identificador en mono
+    18px `font-medium`. Sin chips, botones ni metadatos que ya se ven en la
+    fila.
+  - **Franja de cifras** (fija, `border-b`): grilla de 4 columnas iguales
+    separadas por `border-l`, `12px 24px`; label 11px `neutral-500
+    medium` y valor 17px `semibold tabular-nums`. Con menos de 440px de
+    ancho (container query) pasa a 2×2.
+  - **Cuerpo** (scroll propio, `4px 24px 24px`): **secciones con título**
+    (`heading-xs`, con `TablaChip` si muestran una tabla) separadas por
+    `border-t`. Acciones de sección (ej. "Ver detalle") ghost `sm` a la
+    derecha del título.
+  - Al cambiar de registro, el contenido hace un **fade de 140ms**
+    (`animate-[hoja-fade_140ms_ease-out]`; directo con movimiento
+    reducido).
+  - **Sin resultados:** estado vacío centrado ("No hay interrupciones con
+    estos filtros", `text-body-sm neutral-600`).
+- **Sin cards:** ni `CardHeader`, ni bordes o sombras contenedoras; la
+  separación es el divisor vertical entre columnas y las secciones con
+  título.
+
+**Archivos:** `src/features/consultas-interrupcion/ModificarContent.tsx`
+(estado y modales), `InterrupcionesMaestro.tsx`, `InterrupcionHoja.tsx`,
+`ReposicionesTimeline.tsx`.
+
 ## Registro seleccionado y detalle
 
 - **Registro seleccionado:** fila resaltada en su tabla
   (`bg-primary-tint` + `inset-shadow-row-selected`). En paneles que muestran
   datos hijos de ese registro, el registro va como contexto del header
   (ej. "Interrupción `<ref>`").
-- **Detalle:** se abre desde la sección de detalle clickeable (ej.
-  `ReclamosResumenCompacto` → "Datos de la interrupción"), sin un botón
-  duplicado en ningún header.
+- **Detalle:** se abre desde la sección que lo resume, con un único
+  disparador: en la hoja de un [maestro-detalle](#maestro-detalle), "Ver
+  detalle" (ghost `sm`) a la derecha del título de la sección (ej.
+  "Reclamos durante la interrupción" → "Datos de la interrupción"); en una
+  card, la sección clickeable (stretched button, abajo).
 - **Stretched button:** la sección clickeable no es un `<button>` (un
   heading dentro de un botón es HTML inválido). El botón vive en `actions`
   de `CardHeader`, con `aria-label`, y su `::after` (`after:absolute

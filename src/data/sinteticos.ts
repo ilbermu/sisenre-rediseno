@@ -1,6 +1,6 @@
 import { crearRng, elegir, enteroEntre, hashSemilla } from "@/data/rng";
 import { FaseReposicion, ReclamosInterrupcion } from "@/data/types";
-import { ceros } from "@/lib/format";
+import { ceros, formatFechaHora } from "@/lib/format";
 
 export function filasSinteticas<T>(n: number, gen: () => T): T[] {
   return Array.from({ length: n }, gen);
@@ -209,17 +209,21 @@ function faseElectricaReposicionSintetica(rng: () => number): string {
   return elegir(rng, ["RS", "RT", "ST"]);
 }
 
-// Fases de reposición de la interrupción seleccionada — mostrada siempre
-// visible en la Card B de Consultas de interrupción (ya no detrás de un
-// tab del drawer). Varía por interrupción: la semilla es la referencia
-// seleccionada, así que la misma interrupción siempre muestra las mismas
-// fases pero cada interrupción tiene las suyas. La cantidad de filas está
-// sesgada hacia pocas (1-3 el caso típico, 4-6 menos común, 7-10 raro).
-export function generarFasesSinteticas(referencia: string): FaseReposicion[] {
+// Fases de reposición de la interrupción seleccionada (Tabla 4 en
+// Consultas de interrupción). Varía por interrupción: la semilla es la
+// referencia seleccionada, así que la misma interrupción siempre muestra las
+// mismas fases pero cada interrupción tiene las suyas. La cantidad de filas
+// está sesgada hacia pocas (1-3 el caso típico, 4-6 menos común, 7-10 raro).
+// Con `rango` (inicio y fin de la interrupción, ver
+// generarReclamosSinteticos), la hora de reposición de cada fase cae después
+// del inicio, en orden creciente, y la última es el fin: así la duración
+// (última fase − inicio) y los tiempos entre fases tienen sentido. Las horas
+// salen de otra semilla, así que el resto de los campos no cambia.
+export function generarFasesSinteticas(referencia: string, rango?: { inicio: Date; fin: Date }): FaseReposicion[] {
   const rng = crearRng(hashSemilla(referencia + ":fases"));
   const dado = rng();
   const cantidad = dado < 0.65 ? enteroEntre(rng, 1, 3) : dado < 0.9 ? enteroEntre(rng, 4, 6) : enteroEntre(rng, 7, 10);
-  return Array.from({ length: cantidad }, (_, i) => ({
+  const fases = Array.from({ length: cantidad }, (_, i) => ({
     nro: i + 1,
     horaRep: fechaSintetica(rng, 7, 2026),
     fase: faseElectricaReposicionSintetica(rng),
@@ -227,6 +231,15 @@ export function generarFasesSinteticas(referencia: string): FaseReposicion[] {
     equipoDesc: elegir(rng, DESCRIPCIONES_EQUIPO_OPERADO),
     usuariosBT: enteroEntre(rng, 1, 60),
   }));
+  if (!rango) return fases;
+  const rngHoras = crearRng(hashSemilla(referencia + ":fases-horas"));
+  const totalMin = Math.max(cantidad, Math.round((rango.fin.getTime() - rango.inicio.getTime()) / 60000));
+  // Minutos desde el inicio: los primeros al azar (distintos y crecientes),
+  // el último en el fin.
+  const minutos = Array.from({ length: cantidad - 1 }, () => enteroEntre(rngHoras, 1, totalMin - 1)).sort((a, b) => a - b);
+  minutos.push(totalMin);
+  for (let i = 1; i < minutos.length; i++) if (minutos[i] <= minutos[i - 1]) minutos[i] = minutos[i - 1] + 1;
+  return fases.map((f, i) => ({ ...f, horaRep: formatFechaHora(new Date(rango.inicio.getTime() + minutos[i] * 60000)) }));
 }
 
 // Valores de "Tablas relacionadas" (indicadores TABLA 3/5/6/8/9) para la

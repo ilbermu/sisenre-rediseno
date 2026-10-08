@@ -24,6 +24,13 @@ export function formatFechaHora(d: Date): string {
   return `${formatFecha(d)} ${formatHora(d)}`;
 }
 
+// "dd/mm/aaaa hh:mm" → Date (null si no parsea).
+export function parseFechaHora(texto: string): Date | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2}))?$/.exec(texto.trim());
+  if (!m) return null;
+  return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), Number(m[4] ?? 0), Number(m[5] ?? 0));
+}
+
 // "dd/mm hh:mm" — texto del trigger con un rango aplicado.
 export function fmtDiaHora(d: Date): string {
   return `${ceros(d.getDate(), 2)}/${ceros(d.getMonth() + 1, 2)} ${formatHora(d)}`;
@@ -37,6 +44,15 @@ export function fmtDuracion(min: number): string {
   if (d > 0) return h > 0 ? `${d} d ${h} h` : `${d} d`;
   if (h > 0) return m > 0 ? `${h} h ${m} min` : `${h} h`;
   return `${m} min`;
+}
+
+// "47 min", "2 h 14 min", "2 h 05 min" (sin días: 26 h 10 min). Minutos con
+// dos cifras cuando hay horas. Duración y tiempos entre fases de Consultas de
+// interrupción.
+export function fmtHorasMin(min: number): string {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return h > 0 ? `${h} h ${ceros(m, 2)} min` : `${m} min`;
 }
 
 // Delta desde el inicio: "+8 min", "+1 h 14 min".
