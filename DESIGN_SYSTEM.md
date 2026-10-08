@@ -397,10 +397,13 @@ Vigesimosexta pasada (también 06/10/2026):
   entre los filtros y la tabla.
 - **ABM — toolbar de tabla persistente:** entre la barra de filtros y la
   tabla va una toolbar que **siempre existe** (patrón de toolbar de Carbon:
-  cambia el contenido, no el layout). Sin selección: contexto de los datos
-  ("Período 08/2026 · Actualizado 10:42") + Exportar y Auditoría; con
-  selección: el registro + Modificar / Borrar / ✕, sobre `primary-tint`.
-  Crossfade de 120ms, sin cambio de alto: la tabla no se mueve nunca. Se
+  cambia el contenido, no el layout), sin fondo en ninguno de los dos estados.
+  Sin selección: contexto de los datos ("Período 08/2026 · Actualizado
+  10:42") + Exportar y Auditoría; con selección: texto plano "<id>
+  seleccionado" (o "N registros seleccionados") + link Deseleccionar, y
+  Modificar (solo con 1) / Borrar a la derecha. Crossfade de 120ms, sin
+  cambio de alto: la tabla no se mueve nunca. La selección ya es una
+  colección de ids (múltiple preparada, no habilitada). Se
   probaron y descartaron una barra superpuesta al `thead` y una franja
   condicional animada; se elimina `SelectionActionBar`. Exportar (CSV
   client-side) y Auditoría vuelven al ABM.
@@ -1371,8 +1374,7 @@ Interrupción en el header del modal "Tablas relacionadas").
 **Props:** `value: string`, `label: string` (qué se copia, en minúscula y
 sin artículo: arma "Copiar interrupción" / "Interrupción copiada"),
 `size?` (`"sm"` default, `ICON_BTN_SM` + `ICON.sm`; `"xs"`, `ICON_BTN_XS` +
-`ICON.xs`, para ir junto a un texto chico o dentro de un campo, como el
-identificador de solo lectura del modal de edición de registro).
+`ICON.xs`, para ir junto a un texto chico o dentro de un campo).
 
 **Estados:** reposo; copiado — **solo si la copia realmente ocurrió**, el
 ícono pasa a `Check` (`text-success-text-strong`) por 1.5s. Usa
@@ -1948,17 +1950,33 @@ seleccionar** — solo cambia el contenido; la tabla no se mueve nunca.
     contenedor: un botón deshabilitado no recibe el hover). Auditoría es una
     acción de la tabla, no de un registro; todavía no abre nada (como en el
     ABM original).
-- **Con selección** (`bg-primary-tint rounded-md`, mismo alto y posición): el
-  contexto y las acciones de tabla **no se muestran**. Izquierda:
-  "Registro seleccionado" (`text-body-sm font-semibold text-secondary`) + el
-  valor del `campoId` en mono (`text-body-sm`); después Modificar y Borrar
-  (`ghostBtnCls`, `sm`; Borrar destructivo); a la derecha ✕ (`ICON_BTN_SM`,
-  "Deseleccionar").
+- **Con selección** (mismo alto, padding y posición; **sin fondo de color**
+  ni `rounded`: la toolbar se ve igual en los dos estados, el celeste queda
+  solo en la fila seleccionada de la tabla): el contexto y Exportar /
+  Auditoría **no se muestran**.
+  - Izquierda, **texto plano en el estilo del contexto** (`text-caption
+    text-neutral-600`, una sola línea): con **1 registro**, el valor del
+    `campoId` en `font-mono text-neutral-900` + " seleccionado" ("AFZ2026…
+    seleccionado"); con **2 o más**, "N registros seleccionados" (sin
+    códigos).
+  - Después, un separador vertical (`w-px h-4 bg-neutral-300`) y
+    **Deseleccionar** como link (`text-caption text-secondary underline
+    underline-offset-3`). Sin ✕.
+  - Derecha, en el mismo lugar que Exportar y Auditoría y con el mismo
+    tamaño y estilo (`ghostBtnCls` `sm` + ícono): **Modificar** (`Pencil`) y
+    **Borrar** (`Trash2`, destructivo).
+- **Selección múltiple (preparada, no habilitada):** la selección es una
+  colección de ids de fila; hoy la tabla selecciona de a una (clic en otra
+  fila la reemplaza) y no hay checkboxes. Reglas ya implementadas: Modificar
+  solo con exactamente 1 registro; Borrar aplica a todos los seleccionados;
+  `ConfirmarBorrarModal` acepta N registros y pluraliza ("Vas a borrar 3
+  registros", con los códigos listados si son 5 o menos); el texto de la
+  izquierda pluraliza como arriba.
 - **Transición:** las dos capas ocupan la misma celda de un grid y hacen
-  crossfade de **120ms** (solo opacidad; el fondo transiciona igual). Con
+  crossfade de **120ms** (solo opacidad). Con
   `prefers-reduced-motion` el cambio es directo (regla global). La capa
   oculta es `inert`. Al cambiar de una fila a otra solo se actualiza el valor
-  del `campoId`; durante la salida conserva el último registro.
+  del `campoId`; durante la salida conserva los últimos registros.
 - **Teclado:** Escape deselecciona. Si el foco estaba en las acciones de
   registro al deseleccionar, vuelve a la tabla.
 
@@ -1970,7 +1988,8 @@ centrado). Sin pie de paginación.
 **Tipografía:** mono solo en la columna del ID; el resto en fuente de texto
 con `tabular-nums` (ver [Tipografía](#tipografía)).
 
-**Archivo:** `src/features/abm/AbmScreen.tsx` (tabla `resultados`).
+**Archivo:** `src/features/abm/AbmScreen.tsx` (tabla `resultados`); la
+toolbar es `src/features/abm/AbmToolbar.tsx`.
 
 ## TableCounter
 
@@ -2350,7 +2369,7 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
 │ [🔍 Código de interrupción ] Causa ▾ │ (agregados) [+ Agregar filtro]  Limpiar filtros │  ChipFilterBar
 │                                                                (gap-3)
 │ Período 08/2026 · Actualizado 10:42        [⭳ Exportar] [↺ Auditoría] │  toolbar de tabla, SIEMPRE (--control-sm) …
-│ Registro seleccionado BPR…   Modificar Borrar                  ✕   │  … con una fila seleccionada: mismo alto, fondo primary-tint
+│ BPR… seleccionado │ Deseleccionar           [✎ Modificar] [🗑 Borrar] │  … con una fila seleccionada: mismo alto, sin fondo
 │                                                                (gap-2)
 │ ┌───────────────────────────────────────────────────────────────────┐   │  caja de la tabla (borde, md, surface, shadow-sm)
 │ │ CÓDIGO DE INTERRUPCIÓN   CAUSA   FASE DE REPOSICIÓN                │   │  thead fill-subtle-solid, sticky …
@@ -2391,10 +2410,11 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   `overflow-hidden`: el radio lo resuelven el wrapper con scroll
   (`rounded-t-md`) y el pie.
 - **Toolbar de tabla persistente** entre la barra de filtros y la tabla,
-  con dos estados del mismo alto: sin selección, el contexto ("Período
-  08/2026 · Actualizado 10:42") y las acciones de tabla Exportar (CSV de las
-  filas visibles) y Auditoría; con un registro seleccionado, "Registro
-  seleccionado" + su ID, Modificar, Borrar y ✕, sobre `primary-tint`. El
+  con dos estados del mismo alto y sin fondo: sin selección, el contexto
+  ("Período 08/2026 · Actualizado 10:42") y las acciones de tabla Exportar
+  (CSV de las filas visibles) y Auditoría; con selección, texto plano
+  ("<id> seleccionado" / "N registros seleccionados") + link Deseleccionar y,
+  a la derecha, las acciones de registro Modificar (solo con 1) y Borrar. El
   layout no cambia al seleccionar. Escape también deselecciona y las flechas
   mueven la selección. Sin columna de acciones por fila. Detalle en [Tabla de
   resultados](#tabla-de-resultados).
@@ -2456,7 +2476,7 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   dentro de la caja**, con la columna del ID fija (ver [Tabla de
   resultados](#tabla-de-resultados)); la paginación no
   scrollea. Nunca scroll horizontal de la página.
-- **Borrar** abre `ConfirmarBorrarModal`.
+- **Borrar** abre `ConfirmarBorrarModal` (acepta N registros y pluraliza).
 
 **Config de la barra (por tabla):**
 - `campoId`: el campo del input de ID ("contiene"). No se repite como chip.
@@ -2532,12 +2552,11 @@ config (`AbmCampo`). Nada de una tabla puntual vive en el modal.
   + los campos tipo `"readonly"`; en Insertar no se bloquea nada (lo que
   hace `AbmCampo` en modo alta). Una tabla sin campos bloqueados (Tabla 7)
   no muestra ningún candado.
-- **El identificador (`campoId`) bloqueado** lleva `CopyButton` `xs`
-  dentro del campo: `FormRow` con candado; `<input readOnly>` con
-  `READONLY_FIELD_CLS`, ancho `--form-control-w`, valor en `text-code
-  font-mono`, seleccionable y copiable con mouse y teclado (Check 1,5 s y
-  "… copiada" solo si la copia ocurrió). No se edita: nunca aparece en
-  "Revisar cambios".
+- **El identificador (`campoId`) bloqueado** es una fila de solo lectura con
+  candado, igual que los otros campos bloqueados: `FormRow` con candado;
+  `<input readOnly>` con `READONLY_FIELD_CLS`, ancho `--form-control-w`, valor
+  en `text-code font-mono`, seleccionable y copiable con mouse y teclado. Sin
+  botón de copiar. No se edita: nunca aparece en "Revisar cambios".
 - **Paso 1 — Editar / Completar:** el [formulario de
   edición](#formulario-de-edición) horizontal en filas: los campos de la
   config de la tabla en su orden, en una lista continua sin títulos de

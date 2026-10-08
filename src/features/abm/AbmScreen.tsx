@@ -1,15 +1,13 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Download, History, Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   BTN_MD,
   BTN_SM,
   ChipFilterBar,
   ChipFiltroDef,
-  CopyButton,
   FOCUS_RING,
   FOCUS_RING_INSET,
   FormRow,
-  ghostBtnCls,
   ICON,
   ICON_BTN_SM,
   Modal,
@@ -27,6 +25,7 @@ import { PERIODS } from "@/data/dominio";
 import { AbmDeepLink, AbmFiltroBarra, AbmMode, AbmTableKey, CampoBusqueda } from "@/data/types";
 import AbmCampo from "@/features/abm/AbmCampo";
 import AbmTableSelector from "@/features/abm/AbmTableSelector";
+import AbmToolbar from "@/features/abm/AbmToolbar";
 import ConfirmarBorrarModal from "@/features/abm/ConfirmarBorrarModal";
 import { filtrarFilas, FiltroFila, modoDeEditor } from "@/features/abm/filtrarFilas";
 import RevisarCambiosContent, { ResumenValoresContent, useMotivoCambio } from "@/features/abm/RevisarCambiosContent";
@@ -95,14 +94,19 @@ export default function AbmScreen({
   // "buscar" = la pantalla; "modificar" / "alta" = el modal de edición
   // abierto en ese modo.
   const [mode, setMode] = useState<AbmMode>("buscar");
-  const [selectedRow, setSelectedRow] = useState<number | null>(null);
+  // Selección: colección de ids de fila (índices de `rows`, que son su
+  // identidad). Hoy la tabla selecciona de a una (clic en otra fila reemplaza
+  // la selección); las reglas de selección múltiple ya están (ver
+  // AbmToolbar y ConfirmarBorrarModal).
+  const [seleccion, setSeleccion] = useState<number[]>([]);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   // Valores del formulario del modal (Modificar / Insertar).
   const [valores, setValores] = useState<Record<string, string>>({});
   // Foto del registro tal como estaba al entrar a Modificar — se compara
   // contra `valores` para saber qué campos cambiaron.
   const [valoresOriginales, setValoresOriginales] = useState<Record<string, string>>({});
-  const [filaABorrar, setFilaABorrar] = useState<number | null>(null);
+  // Filas pendientes de confirmar el borrado; vacío = modal cerrado.
+  const [filasABorrar, setFilasABorrar] = useState<number[]>([]);
   // Índices borrados en esta sesión — config.rows es mock estático, así
   // que "borrar" excluye la fila de Resultados (visibleIndices) sin tocar
   // los índices de las demás, que siguen siendo su identidad.
@@ -129,7 +133,7 @@ export default function AbmScreen({
   // Reset al cambiar de tabla — corre primero.
   useEffect(() => {
     setMode("buscar");
-    setSelectedRow(null);
+    setSeleccion([]);
     setValores({});
     setValoresOriginales({});
     setFilasBorradas(new Set());
@@ -153,7 +157,7 @@ export default function AbmScreen({
     // aplica como búsqueda.
     if (deepLink.modo === "alta" && config.hasInsertar) {
       setMode("alta");
-      setSelectedRow(null);
+      setSeleccion([]);
       setValores({ [deepLink.campo]: deepLink.valor });
       setPasoModal(1);
     } else {
@@ -162,7 +166,7 @@ export default function AbmScreen({
       if (deepLink.campo === config.campoId) setIdBarra(deepLink.valor);
       else if (filtros.some((f) => f.campo === deepLink.campo)) setFiltrosBarraValores({ [deepLink.campo]: deepLink.valor });
       const idx = rows.findIndex((r) => r[deepLink.columna] === deepLink.valor);
-      setSelectedRow(idx >= 0 ? idx : null);
+      setSeleccion(idx >= 0 ? [idx] : []);
     }
     onDeepLinkConsumed?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -222,7 +226,9 @@ export default function AbmScreen({
   }
 
   // ── Resultados ──────────────────────────────────────────────────────────
-  const hasSelection = selectedRow !== null;
+  const hasSelection = seleccion.length > 0;
+  // Última fila seleccionada: ancla de la navegación por teclado y del scroll.
+  const ultimaSel = seleccion.length > 0 ? seleccion[seleccion.length - 1] : null;
   // Columnas derivadas de la config (columnasDeResultados): los campos con
   // nombreReal, en el orden de la tabla real, con el campoId primero y fijo.
   // Una columna de toggle/select/combobox muestra la etiqueta de la opción
@@ -248,21 +254,16 @@ export default function AbmScreen({
   // selección entre filas visibles.
   const resultadosListRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (selectedRow === null || !resultadosListRef.current) return;
+    if (ultimaSel === null || !resultadosListRef.current) return;
     resultadosListRef.current
-      .querySelector<HTMLElement>(`[data-row-index="${selectedRow}"]`)
+      .querySelector<HTMLElement>(`[data-row-index="${ultimaSel}"]`)
       ?.scrollIntoView({ block: "nearest" });
-  }, [selectedRow]);
+  }, [ultimaSel]);
 
-  // Toolbar de tabla (siempre presente; cambia el contenido, no el layout):
-  // si al deseleccionar el foco estaba en las acciones de registro, vuelve a
-  // la lista de Resultados — esa capa pasa a inert y el foco se perdería.
+  // Toolbar de tabla (AbmToolbar, siempre presente): si al deseleccionar el
+  // foco estaba en las acciones de registro, vuelve a la lista de Resultados —
+  // esa capa pasa a inert y el foco se perdería.
   const accionesRegistroRef = useRef<HTMLDivElement>(null);
-  // Último registro seleccionado: durante el crossfade de salida la capa ya no
-  // tiene selección, pero sigue mostrando el mismo registro.
-  const ultimaFila = useRef(0);
-  if (selectedRow !== null) ultimaFila.current = selectedRow;
-  const filaToolbar = ultimaFila.current;
   // "Actualizado hh:mm": la última vez que se resolvieron los resultados
   // (cada aplicación de filtros o cambio de período/tabla).
   const [actualizado, setActualizado] = useState(() => new Date());
@@ -271,21 +272,21 @@ export default function AbmScreen({
   }, [idBarra, filtrosBarraValores, periodo, tableKey]);
   function deseleccionar() {
     if (accionesRegistroRef.current?.contains(document.activeElement)) resultadosListRef.current?.focus();
-    setSelectedRow(null);
+    setSeleccion([]);
   }
 
   // Escape con una fila seleccionada la deselecciona (las acciones de
   // registro viven en la barra de selección, solo con selección). No actúa
   // con un modal abierto.
   useEffect(() => {
-    if (selectedRow === null || mode !== "buscar" || filaABorrar !== null) return;
+    if (!hasSelection || mode !== "buscar" || filasABorrar.length > 0) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") deseleccionar();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRow, mode, filaABorrar]);
+  }, [hasSelection, mode, filasABorrar]);
 
   // Exportar: CSV de las filas que se ven con los filtros actuales, con los
   // encabezados de columna en el orden de la tabla. Archivo:
@@ -309,22 +310,24 @@ export default function AbmScreen({
     if (mode !== "buscar" || visibleIndices.length === 0) return;
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
     e.preventDefault();
-    if (selectedRow === null) {
-      setSelectedRow(e.key === "ArrowDown" ? visibleIndices[0] : visibleIndices[visibleIndices.length - 1]);
+    if (ultimaSel === null) {
+      setSeleccion([e.key === "ArrowDown" ? visibleIndices[0] : visibleIndices[visibleIndices.length - 1]]);
       return;
     }
-    const currentPos = visibleIndices.indexOf(selectedRow);
+    const currentPos = visibleIndices.indexOf(ultimaSel);
     const nextPos =
       e.key === "ArrowDown"
         ? Math.min(currentPos + 1, visibleIndices.length - 1)
         : Math.max(currentPos - 1, 0);
-    setSelectedRow(visibleIndices[Math.max(nextPos, 0)]);
+    setSeleccion([visibleIndices[Math.max(nextPos, 0)]]);
   }
 
-  // Si un cambio de filtro deja afuera al registro seleccionado, se
-  // deselecciona. (La paginación es fija: siempre página 1.)
+  // Si un cambio de filtro deja afuera a registros seleccionados, se
+  // deseleccionan. (La paginación es fija: siempre página 1.)
   useEffect(() => {
-    if (selectedRow !== null && indicesBuscados && !indicesBuscados.has(selectedRow)) setSelectedRow(null);
+    if (indicesBuscados && seleccion.some((i) => !indicesBuscados.has(i))) {
+      setSeleccion((prev) => prev.filter((i) => indicesBuscados.has(i)));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idBarra, filtrosBarraValores]);
 
@@ -338,7 +341,7 @@ export default function AbmScreen({
     motivoModificar.reset();
   }
   function handleAbrirModificar(i: number) {
-    setSelectedRow(i);
+    setSeleccion([i]);
     abrirModal("modificar", mapearFilaAValores(config.mapeoFilaACampos, rows[i]));
   }
   function handleAbrirAlta() {
@@ -353,14 +356,14 @@ export default function AbmScreen({
   function handleCancelarModificar() {
     // Cancelar Modificar deselecciona; cancelar Insertar deja la selección
     // como estaba.
-    if (!esAlta) setSelectedRow(null);
+    if (!esAlta) setSeleccion([]);
     cerrarModal();
   }
   function handleConfirmarModificar() {
     // TODO: config.rows es mock derivado de la config, no estado real —
     // todavía no hay dónde persistir el cambio ni la nota (mismo caso que
     // Borrar). Por ahora cierra el flujo.
-    setSelectedRow(null);
+    setSeleccion([]);
     cerrarModal();
   }
   function handleConfirmarAlta() {
@@ -372,7 +375,7 @@ export default function AbmScreen({
     const indice = rows.length;
     setFilasAgregadas((prev) => ({ ...prev, [tableKey]: [...(prev[tableKey] ?? []), fila] }));
     if (hayFiltrosBarra && filtrarFilas([fila], filtrosFila).length === 0) handleLimpiarFiltrosBarra();
-    setSelectedRow(indice);
+    setSeleccion([indice]);
     cerrarModal();
   }
   // Al pasar de paso, el foco va al primer elemento interactivo del body
@@ -386,18 +389,16 @@ export default function AbmScreen({
       ?.focus();
   }, [pasoModal]);
 
-  function handleAbrirBorrar(i: number) {
-    setFilaABorrar(i);
+  function handleAbrirBorrar(filas: number[]) {
+    setFilasABorrar(filas);
   }
   function handleCancelarBorrar() {
-    setFilaABorrar(null);
+    setFilasABorrar([]);
   }
   function handleConfirmarBorrar() {
-    if (filaABorrar !== null) {
-      setFilasBorradas((prev) => new Set(prev).add(filaABorrar));
-      if (selectedRow === filaABorrar) setSelectedRow(null);
-    }
-    setFilaABorrar(null);
+    setFilasBorradas((prev) => new Set([...prev, ...filasABorrar]));
+    setSeleccion((prev) => prev.filter((i) => !filasABorrar.includes(i)));
+    setFilasABorrar([]);
   }
 
   // Campos que cambiaron respecto a `valoresOriginales` (Modificar) — value →
@@ -477,14 +478,14 @@ export default function AbmScreen({
           <tbody>
             {visibleIndices.map((i) => {
               const row = rows[i];
-              const isSelected = selectedRow === i;
+              const isSelected = seleccion.includes(i);
               const isHovered = hoveredRow === i;
               const fondoFila = isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined;
               return (
                 <tr
                   key={i}
                   data-row-index={i}
-                  onClick={() => setSelectedRow(isSelected ? null : i)}
+                  onClick={() => setSeleccion(isSelected && seleccion.length === 1 ? [] : [i])}
                   onMouseEnter={() => setHoveredRow(i)}
                   onMouseLeave={() => setHoveredRow(null)}
                   className="cursor-pointer transition-colors duration-(--duration-fast)"
@@ -626,68 +627,19 @@ export default function AbmScreen({
             periodo={periodo}
           />
           <div className="flex-1 min-h-0 flex flex-col gap-2">
-            {/* Toolbar de tabla — SIEMPRE presente (--control-sm, ancho completo,
-                px-2): la tabla no se mueve al seleccionar ni al deseleccionar.
-                Dos capas en la misma celda de un grid; crossfade de 120ms (solo
-                opacidad; con movimiento reducido la regla global lo vuelve
-                directo). La capa oculta es inert. Con selección, fondo
-                primary-tint + rounded-md; sin selección, sin fondo. */}
-            <div
-              className={`shrink-0 grid h-(--control-sm) px-2 rounded-md transition-[background-color] duration-120 ${
-                hasSelection ? "bg-primary-tint" : "bg-transparent"
-              }`}
-            >
-              {/* Sin selección: contexto de los datos + acciones de tabla. */}
-              <div
-                inert={hasSelection}
-                className={`col-start-1 row-start-1 flex items-center gap-2 min-w-0 transition-opacity duration-120 ${
-                  hasSelection ? "opacity-0 pointer-events-none" : "opacity-100"
-                }`}
-              >
-                <span className="text-caption text-neutral-600 tabular-nums whitespace-nowrap truncate">
-                  Período {periodoMmAaaa} · Actualizado {formatHora(actualizado)}
-                </span>
-                <div className="ml-auto flex items-center gap-2 shrink-0">
-                  <span title={hayResultados ? undefined : "No hay registros para exportar"}>
-                    <button type="button" onClick={handleExportar} disabled={!hayResultados} className={`${ghostBtnCls("neutral")} gap-1.5`}>
-                      <Download size={ICON.sm} strokeWidth={1.5} />
-                      Exportar
-                    </button>
-                  </span>
-                  <button type="button" onClick={handleAuditoria} className={`${ghostBtnCls("neutral")} gap-1.5`}>
-                    <History size={ICON.sm} strokeWidth={1.5} />
-                    Auditoría
-                  </button>
-                </div>
-              </div>
-              {/* Con selección: el registro + acciones de registro. */}
-              <div
-                ref={accionesRegistroRef}
-                inert={!hasSelection}
-                className={`col-start-1 row-start-1 flex items-center gap-2 min-w-0 transition-opacity duration-120 ${
-                  hasSelection ? "opacity-100" : "opacity-0 pointer-events-none"
-                }`}
-              >
-                <span className="text-body-sm font-semibold text-secondary whitespace-nowrap select-none">Registro seleccionado</span>
-                <span className="text-body-sm font-mono tabular-nums text-text truncate">{rows[filaToolbar]?.[columnKeys[0]] ?? ""}</span>
-                {/* Acciones de registro: sm, ghost. */}
-                <button type="button" onClick={() => handleAbrirModificar(filaToolbar)} className={ghostBtnCls("neutral")}>
-                  Modificar
-                </button>
-                <button type="button" onClick={() => handleAbrirBorrar(filaToolbar)} className={ghostBtnCls("destructive")}>
-                  Borrar
-                </button>
-                <button
-                  type="button"
-                  onClick={deseleccionar}
-                  aria-label="Deseleccionar"
-                  title="Deseleccionar"
-                  className={`${ICON_BTN_SM} ml-auto shrink-0 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors ${FOCUS_RING}`}
-                >
-                  <X size={ICON.sm} strokeWidth={1.5} />
-                </button>
-              </div>
-            </div>
+            {/* Toolbar de tabla — SIEMPRE presente (ver AbmToolbar): la tabla no
+                se mueve al seleccionar ni al deseleccionar. */}
+            <AbmToolbar
+              contexto={`Período ${periodoMmAaaa} · Actualizado ${formatHora(actualizado)}`}
+              hayResultados={hayResultados}
+              codigos={seleccion.map((i) => rows[i]?.[columnKeys[0]] ?? "")}
+              onExportar={handleExportar}
+              onAuditoria={handleAuditoria}
+              onModificar={() => handleAbrirModificar(ultimaSel ?? 0)}
+              onBorrar={() => handleAbrirBorrar(seleccion)}
+              onDeseleccionar={deseleccionar}
+              registroRef={accionesRegistroRef}
+            />
             {resultados}
           </div>
         </div>
@@ -745,18 +697,13 @@ export default function AbmScreen({
                 const labelId = `${controlId}-label`;
                 const bloqueado = !esAlta && esNoEditable(c);
                 if (bloqueado && c.nombre === config.campoId && c.tipo !== "toggle") {
-                  // Identificador bloqueado: solo lectura (seleccionable), en
-                  // mono, con copiar adentro a la derecha. No se edita, así
-                  // que nunca entra en "Revisar cambios".
+                  // Identificador bloqueado: solo lectura (seleccionable, con
+                  // candado en la fila), en mono. No se edita, así que nunca
+                  // entra en "Revisar cambios".
                   const id = valores[c.nombre] ?? "";
                   return (
                     <FormRow key={c.nombre} label={c.label} labelId={labelId} htmlFor={controlId} readOnly>
-                      <div className="relative">
-                        <input id={controlId} readOnly value={id} className={`${READONLY_FIELD_CLS} text-code! font-mono tabular-nums pr-8`} />
-                        <div className="absolute inset-y-0 right-1.5 flex items-center">
-                          <CopyButton value={id} label={columnas[0].label.toLowerCase()} size="xs" />
-                        </div>
-                      </div>
+                      <input id={controlId} readOnly value={id} className={`${READONLY_FIELD_CLS} text-code! font-mono tabular-nums`} />
                     </FormRow>
                   );
                 }
@@ -801,8 +748,8 @@ export default function AbmScreen({
       </Modal>
 
       <ConfirmarBorrarModal
-        open={filaABorrar !== null}
-        registro={filaABorrar !== null ? rows[filaABorrar][columnKeys[0]] : ""}
+        open={filasABorrar.length > 0}
+        registros={filasABorrar.map((i) => rows[i]?.[columnKeys[0]] ?? "")}
         tabla={config.nombre}
         onCancelar={handleCancelarBorrar}
         onConfirmar={handleConfirmarBorrar}

@@ -562,6 +562,23 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
     `exportRowsToCsv` (`AbmScreen.tsx`, quitado en `9758308`).
   - **Auditoría** (recuperada): el botón del ABM original no tenía handler
     (`9758308`), así que sigue sin abrir nada (`handleAuditoria`, TODO).
+- **Toolbar, estado con selección rediseñado** (`AbmToolbar.tsx`, nuevo):
+  se evaluaron un chip, texto plano y una barra flotante; se eligió **texto
+  plano**. Sin fondo ni `rounded`: la toolbar se ve igual en los dos
+  estados y el celeste queda solo en la fila seleccionada. Izquierda: "<id
+  en mono> seleccionado" (o "N registros seleccionados") en el estilo del
+  contexto + separador + link "Deseleccionar" (sin ✕); derecha: Modificar
+  (`Pencil`, solo con 1) y Borrar (`Trash2`), ghost `sm` como Exportar y
+  Auditoría. La **barra flotante** queda como alternativa para pantallas
+  con scroll de página largo.
+- **Selección múltiple preparada, sin habilitar:** la selección de
+  `AbmScreen` pasa a ser una colección de ids (`seleccion: number[]`); la
+  tabla sigue seleccionando de a una y no hay checkboxes.
+  `ConfirmarBorrarModal` acepta N registros (`registros`) y pluraliza
+  ("Vas a borrar 3 registros", con los códigos si son 5 o menos). Las reglas
+  están documentadas en `AbmToolbar.tsx`.
+- **Modal Modificar:** la fila del `campoId` pierde el `CopyButton`; queda de
+  solo lectura con candado como los otros campos bloqueados.
 - `DESIGN_SYSTEM.md`: Patrones → "ABM" (chip + nombre, sin contador,
   toolbar de tabla persistente, estado vacío dentro de la tabla,
   espaciados), "Tabla de resultados", `AbmTableSelector`, `ChipFilterBar`.
@@ -570,9 +587,12 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
 
 - **Sin probar en el navegador** (no se abrió, por pedido): el chip del
   título y su hover; la toolbar de tabla (`src/features/abm/AbmScreen.tsx`):
-  que la tabla no se mueva al seleccionar, el crossfade de 120ms, el fondo
-  `primary-tint`, el movimiento reducido y el CSV descargado (acentos en
+  que la tabla no se mueva al seleccionar, el crossfade de 120ms, el
+  movimiento reducido y el CSV descargado (acentos en
   Excel).
+- **Selección múltiple sin probar:** la lógica (Borrar de N, texto plural,
+  Modificar oculto con 2 o más) no se ejerce desde la UI mientras no haya
+  forma de seleccionar varias filas.
 - **Auditoría sin destino:** el botón no abre nada. Definir qué abre
   (¿la pantalla "Auditoría" del menú con la tabla activa preseleccionada?).
 - **"Actualizado hh:mm"** es la hora de la última aplicación de filtros o
