@@ -5,7 +5,6 @@ import {
   BTN_SM,
   ChipFilterBar,
   FOCUS_RING,
-  FOCUS_RING_INSET,
   FormRow,
   ICON,
   ICON_BTN_SM,
@@ -241,7 +240,9 @@ export default function AbmScreen({
     setActualizado(new Date());
   }, [idBarra, filtrosBarraValores, periodo, tableKey]);
   function deseleccionar() {
-    if (accionesRegistroRef.current?.contains(document.activeElement)) resultadosListRef.current?.focus();
+    if (accionesRegistroRef.current?.contains(document.activeElement)) {
+      resultadosListRef.current?.querySelector<HTMLElement>(`[data-row-index="${ultimaSel}"]`)?.focus({ preventScroll: true });
+    }
     setSeleccion([]);
   }
 
@@ -276,20 +277,28 @@ export default function AbmScreen({
     // TODO: sin definir qué abre (el original no tenía handler); ver PROGRESO.md.
   }
 
-  function handleResultadosKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (mode !== "buscar" || visibleIndices.length === 0) return;
-    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-    e.preventDefault();
-    if (ultimaSel === null) {
-      setSeleccion([e.key === "ArrowDown" ? visibleIndices[0] : visibleIndices[visibleIndices.length - 1]]);
+  // Foco itinerante en las filas de Resultados: la última seleccionada (o la
+  // primera visible, sin selección) tiene tabIndex 0 y el resto -1. ↑/↓ mueven
+  // foco y selección a la vez; Home/End van a la primera y la última visible.
+  // Solo actúa con el foco en la fila misma.
+  const filaConTabIndex = ultimaSel !== null && visibleIndices.includes(ultimaSel) ? ultimaSel : (visibleIndices[0] ?? null);
+  function handleFilaKeyDown(e: React.KeyboardEvent<HTMLTableRowElement>, indiceFila: number) {
+    if (e.target !== e.currentTarget || mode !== "buscar" || visibleIndices.length === 0) return;
+    if ((e.key === "Enter" || e.key === " ") && !seleccion.includes(indiceFila)) {
+      e.preventDefault();
+      setSeleccion([indiceFila]);
       return;
     }
-    const currentPos = visibleIndices.indexOf(ultimaSel);
-    const nextPos =
-      e.key === "ArrowDown"
-        ? Math.min(currentPos + 1, visibleIndices.length - 1)
-        : Math.max(currentPos - 1, 0);
-    setSeleccion([visibleIndices[Math.max(nextPos, 0)]]);
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+    e.preventDefault();
+    const pos = visibleIndices.indexOf(indiceFila);
+    const ultimo = visibleIndices.length - 1;
+    const sig = e.key === "Home" ? 0 : e.key === "End" ? ultimo : e.key === "ArrowDown" ? Math.min(pos + 1, ultimo) : Math.max(pos - 1, 0);
+    const indice = visibleIndices[sig];
+    setSeleccion([indice]);
+    const fila = resultadosListRef.current?.querySelector<HTMLElement>(`[data-row-index="${indice}"]`);
+    fila?.focus({ preventScroll: true });
+    fila?.scrollIntoView({ block: "nearest" });
   }
 
   // Si un cambio de filtro deja afuera a registros seleccionados, se
@@ -409,10 +418,8 @@ export default function AbmScreen({
     <div className="shadow-sm flex-1 min-h-0 min-w-0 flex flex-col border border-border rounded-md bg-surface">
       <div
         ref={resultadosListRef}
-        tabIndex={0}
-        onKeyDown={handleResultadosKeyDown}
         onScroll={(e) => setDesplazado(e.currentTarget.scrollLeft > 0)}
-        className={`flex-1 min-h-0 overflow-auto rounded-t-md ${hayResultados ? "" : "rounded-b-md"} ${FOCUS_RING_INSET}`}
+        className={`flex-1 min-h-0 overflow-auto rounded-t-md ${hayResultados ? "" : "rounded-b-md"}`}
       >
         {/* border-separate (spacing 0): bajo border-collapse los bordes de
             una celda sticky quedan en la capa de la tabla y se pintan
@@ -455,10 +462,12 @@ export default function AbmScreen({
                 <tr
                   key={i}
                   data-row-index={i}
+                  tabIndex={i === filaConTabIndex ? 0 : -1}
+                  onKeyDown={(e) => handleFilaKeyDown(e, i)}
                   onClick={() => setSeleccion(isSelected && seleccion.length === 1 ? [] : [i])}
                   onMouseEnter={() => setHoveredRow(i)}
                   onMouseLeave={() => setHoveredRow(null)}
-                  className="cursor-pointer transition-colors duration-(--duration-fast)"
+                  className="cursor-pointer outline-none transition-colors duration-(--duration-fast)"
                   style={{ backgroundColor: fondoFila }}
                 >
                   {columnas.map((c, ci) => {

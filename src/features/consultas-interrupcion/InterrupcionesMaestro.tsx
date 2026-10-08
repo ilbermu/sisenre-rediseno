@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BTN_SM, ChipFilterBar, CopyButton, FOCUS_RING_INSET, rangoDePeriodo, SortableHeaderCell, TablaChip, useTableToolbar } from "@/components/ui";
+import { BTN_SM, ChipFilterBar, CopyButton, rangoDePeriodo, SortableHeaderCell, TablaChip, useTableToolbar } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { columnasDeResultados } from "@/features/abm/columnasDeResultados";
 import { filtrarFilas } from "@/features/abm/filtrarFilas";
@@ -79,12 +79,22 @@ export default function InterrupcionesMaestro({
     if (seleccionada === null) return;
     listaRef.current?.querySelector<HTMLElement>(`[data-row-index="${seleccionada}"]`)?.scrollIntoView({ block: "nearest" });
   }, [seleccionada]);
-  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (!hayResultados || (e.key !== "ArrowDown" && e.key !== "ArrowUp")) return;
+  // Foco itinerante: la fila seleccionada tiene tabIndex 0 y el resto -1.
+  // ↑/↓ mueven foco y selección a la vez; Home/End van a la primera y la
+  // última fila visible. Solo actúa con el foco en la fila misma (no en el
+  // botón de copiar de su celda).
+  function handleRowKeyDown(e: React.KeyboardEvent<HTMLTableRowElement>) {
+    if (e.target !== e.currentTarget || !hayResultados) return;
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
     e.preventDefault();
     const pos = seleccionada === null ? -1 : visibleIndices.indexOf(seleccionada);
-    const sig = e.key === "ArrowDown" ? Math.min(pos + 1, visibleIndices.length - 1) : Math.max(pos - 1, 0);
-    onSeleccionar(visibleIndices[sig]);
+    const ultimo = visibleIndices.length - 1;
+    const sig = e.key === "Home" ? 0 : e.key === "End" ? ultimo : e.key === "ArrowDown" ? Math.min(pos + 1, ultimo) : Math.max(pos - 1, 0);
+    const indice = visibleIndices[sig];
+    onSeleccionar(indice);
+    const fila = listaRef.current?.querySelector<HTMLElement>(`[data-row-index="${indice}"]`);
+    fila?.focus({ preventScroll: true });
+    fila?.scrollIntoView({ block: "nearest" });
   }
 
   // ── Toolbar: "Período 08/2026 · Actualizado hh:mm".
@@ -137,11 +147,8 @@ export default function InterrupcionesMaestro({
         <div className="shadow-sm flex-1 min-h-0 min-w-0 flex flex-col border border-border rounded-md bg-surface">
           <div
             ref={listaRef}
-            tabIndex={0}
-            aria-label="Interrupciones"
-            onKeyDown={handleKeyDown}
             onScroll={(e) => setDesplazado(e.currentTarget.scrollLeft > 0)}
-            className={`flex-1 min-h-0 overflow-auto rounded-t-md ${hayResultados ? "" : "rounded-b-md"} ${FOCUS_RING_INSET}`}
+            className={`flex-1 min-h-0 overflow-auto rounded-t-md ${hayResultados ? "" : "rounded-b-md"}`}
           >
             <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
               <thead>
@@ -172,10 +179,12 @@ export default function InterrupcionesMaestro({
                       key={i}
                       data-row-index={i}
                       aria-selected={sel}
+                      tabIndex={sel ? 0 : -1}
+                      onKeyDown={handleRowKeyDown}
                       onClick={() => onSeleccionar(i)}
                       onMouseEnter={() => setHover(i)}
                       onMouseLeave={() => setHover(null)}
-                      className="group/fila cursor-pointer transition-colors duration-(--duration-fast)"
+                      className="group/fila cursor-pointer outline-none transition-colors duration-(--duration-fast)"
                       style={{ backgroundColor: fondo }}
                     >
                       {columnas.map((c, ci) => {

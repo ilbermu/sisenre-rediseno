@@ -713,8 +713,23 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
     (hover / foco / fila seleccionada), sin cambiar la selección. Inicio:
     accesos con `TablaChip`.
 
+- **Foco de la tabla e Inicio.**
+  - **Foco itinerante:** en la lista de Consulta de interrupciones y en los
+    resultados de los ABM, el contenedor con scroll deja de ser focusable
+    (sin outline cortado). La fila seleccionada tiene `tabIndex=0` y el resto
+    `-1`; ↑/↓ mueven foco y selección, Home/End a los extremos, con
+    `scrollIntoView({ block: "nearest" })`. Sin outline propio en la fila: el
+    indicador es el estado seleccionado. El `CopyButton` sigue alcanzable con
+    Tab. En ABM, Enter/Espacio sobre una fila sin seleccionar la selecciona.
+  - **Inicio:** cards con el `TablaChip` arriba a la derecha (misma fila que
+    el ícono); nuevo acceso destacado "Consulta de interrupciones" (primero,
+    2 columnas, sin chip, navega a la pantalla).
+
 ### Pendientes abiertos
 
+- **Foco itinerante sin probar en el navegador:** el foco al entrar con Tab,
+  el retorno al deseleccionar en ABM (vuelve a la fila) y las flechas con
+  filtros que cambian la lista.
 - **Tablas relacionadas sin probar en el navegador:** la medición del
   segmentado (cuándo pasa a desplegable), el popover de fases dentro del
   modal (`--z-modal-popover`) y el foco al abrir/cerrar. Los hints de

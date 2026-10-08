@@ -389,6 +389,14 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **08/10/2026**
 
+- **Foco itinerante en tablas con selección:** el contenedor con scroll ya
+  no es focusable ni dibuja outline; la fila seleccionada tiene `tabIndex=0`
+  y el resto `-1`; ↑/↓/Home/End mueven foco y selección. Aplicado a la
+  lista de Consulta de interrupciones y a los ABM.
+- **Inicio — card de acceso:** el `TablaChip` va arriba a la derecha, en la
+  fila del ícono (`items-start`); título y descripción debajo, a todo el
+  ancho. Nuevo acceso destacado "Consulta de interrupciones" (primero, dos
+  columnas, sin chip).
 - **Modales — regla del header:** el header lleva solo el título y la ✕;
   `Modal` pierde `subtitle` y `headerExtra`. El contexto del registro pasa
   al primer bloque del cuerpo (`ContextoRegistro`). "Tablas relacionadas"
@@ -932,6 +940,20 @@ cards lo cierra.
   reducedMotion="user">` en `src/main.tsx`.
 
 ## Foco
+
+**Tablas con selección: foco itinerante (roving tabindex).** El contenedor
+con scroll de la tabla **no es focusable ni dibuja outline** (un anillo
+interno quedaba cortado por el `overflow`). El foco vive en las filas: la
+fila seleccionada (o, sin selección, la primera visible) tiene `tabIndex=0`
+y el resto `-1`, así Tab entra a la tabla en la fila seleccionada. ↑/↓
+mueven foco y selección a la vez, Home/End van a la primera y la última fila
+visibles, y cada movimiento hace `scrollIntoView({ block: "nearest" })`. La
+fila con foco **no dibuja outline propio** (`outline-none`): el indicador es
+el estado seleccionado que ya existe (fondo `primary-tint`, barra de 3px
+`secondary`, chevron). Los controles dentro de la fila (el `CopyButton` de la
+celda del identificador) siguen alcanzables con Tab; las flechas solo actúan
+con el foco en la fila misma. Aplica a la lista de Consulta de interrupciones
+y a los resultados de todos los ABM.
 
 Un solo color de foco, `--color-focus` = `#076AEE` (mismo valor que
 `primary-strong`, 4.88:1 sobre blanco), y cuatro constantes en
@@ -2567,8 +2589,9 @@ reposiciones y sus reclamos).
 - **Selección siempre activa (auto-selección):** siempre hay un registro
   seleccionado. Al cargar y al cambiar filtros o período, si el
   seleccionado no está en los resultados, pasa a la primera fila. Clic en
-  el seleccionado no deselecciona; con foco en la tabla, ↑/↓ mueven la
-  selección. **El layout no se mueve al seleccionar.**
+  el seleccionado no deselecciona; con foco en una fila, ↑/↓ mueven la
+  selección y el foco (foco itinerante, Home/End a los extremos; ver
+  [Foco](#foco)). **El layout no se mueve al seleccionar.**
 - **Fila seleccionada:** fondo tint, texto secondary, barra interna de 3px
   `bg-secondary` en el borde izquierdo de la primera celda y un chevron de
   6px (trazo secondary) a la derecha de la última, que apunta al detalle.

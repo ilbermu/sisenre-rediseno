@@ -476,7 +476,7 @@ export default function App() {
               ))}
 
             {/* Content */}
-            {screen === "welcome" && <WelcomeContent onIrATabla={goToAbmTable} />}
+            {screen === "welcome" && <WelcomeContent onIrATabla={goToAbmTable} onIrAConsultas={irAConsultas} />}
             {screen === "modificar" && (
               <ModificarContent
                 periodo={periodoConsultas}
