@@ -505,8 +505,6 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
 - **Modificar y Borrar sin persistencia:** Guardar cierra sin cambiar la
   fila (`handleConfirmarModificar`); Borrar solo la oculta en la sesión.
   Insertar sí agrega la fila a la data local de la sesión.
-- **Auditoría y Exportar** siguen sin renderizarse en el ABM;
-  `exportFilename` queda en la config sin uso.
 - **No hay script `lint`** en `package.json`: se verificó con
   `tsc --noEmit` y `pnpm build`.
 
@@ -546,26 +544,40 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
     - Tablas 9 y 9 NM: "Cliente" → "Nro. cuenta".
     - `encabezadosInconsistentes` ahora también verifica esta regla (script
       de comprobación contra las 9 configs: sin problemas).
-- **Franja de selección condicional** (reemplaza a la barra sobre el
-  `thead`): se descartó la barra superpuesta y vuelve la franja entre la
-  barra de filtros y la tabla, con el contenido de siempre
-  (`SelectionActionBar`: registro seleccionado, Modificar · Borrar, ✕), sin
-  contador. Alto `--control-sm`, `gap-2` con la tabla; sin selección no
-  existe en el DOM ni reserva espacio (el espaciado queda en `gap-3`). Entra
-  y sale animando alto + opacidad (150ms, `AnimatePresence`; sin animación
-  con `prefers-reduced-motion`); al cambiar de fila no se re-anima. El
-  `thead` queda siempre visible. `SelectionActionBar` se restaura.
+- **Selección: dos intentos descartados.** Se probó una barra de selección
+  superpuesta al `thead` y después una franja condicional animada
+  (`AnimatePresence`); las dos movían o tapaban algo al seleccionar.
+- **Toolbar de tabla persistente** (patrón Carbon): entre los filtros y la
+  tabla, siempre presente (`--control-sm`, `px-2`; `filtros → gap-3 → toolbar
+  → gap-2 → tabla`). Sin selección: "Período 08/2026 · Actualizado hh:mm" +
+  Exportar (`Download`) y Auditoría (`History`). Con selección: "Registro
+  seleccionado" + ID en mono, Modificar · Borrar y ✕, sobre `primary-tint`
+  `rounded-md`. Crossfade de 120ms (solo opacidad), capa oculta `inert`; la
+  tabla no se mueve nunca. Se elimina `SelectionActionBar` (otra vez sin
+  uso).
+  - **Exportar** (recuperado): CSV de las filas visibles con los
+    encabezados de columna, en `src/lib/csv.ts` (`descargarCsv`, Blob
+    client-side). Archivo `<exportFilename>_<aaaamm>.csv`. Sin resultados,
+    `disabled` con "No hay registros para exportar". Salió de
+    `exportRowsToCsv` (`AbmScreen.tsx`, quitado en `9758308`).
+  - **Auditoría** (recuperada): el botón del ABM original no tenía handler
+    (`9758308`), así que sigue sin abrir nada (`handleAuditoria`, TODO).
 - `DESIGN_SYSTEM.md`: Patrones → "ABM" (chip + nombre, sin contador,
-  franja de selección condicional, estado vacío dentro de la tabla,
+  toolbar de tabla persistente, estado vacío dentro de la tabla,
   espaciados), "Tabla de resultados", `AbmTableSelector`, `ChipFilterBar`.
 
 ### Pendientes abiertos
 
 - **Sin probar en el navegador** (no se abrió, por pedido): el chip del
-  título y su hover; la animación de la franja de selección
-  (`src/features/abm/AbmScreen.tsx`, `AnimatePresence`): que la tabla se
-  desplace sin saltos, que no se re-anime al cambiar de fila, el recorte del
-  anillo de foco mientras anima y el movimiento reducido.
+  título y su hover; la toolbar de tabla (`src/features/abm/AbmScreen.tsx`):
+  que la tabla no se mueva al seleccionar, el crossfade de 120ms, el fondo
+  `primary-tint`, el movimiento reducido y el CSV descargado (acentos en
+  Excel).
+- **Auditoría sin destino:** el botón no abre nada. Definir qué abre
+  (¿la pantalla "Auditoría" del menú con la tabla activa preseleccionada?).
+- **"Actualizado hh:mm"** es la hora de la última aplicación de filtros o
+  cambio de período en el cliente; con datos reales debería ser la de la
+  consulta.
 - **`--filter-id-w` (224px) estimado, no medido:** se calculó para
   "Código de interrupción" en Inter 12px (~145px) + `pl-8` / `pr-8`. Falta
   confirmar que el placeholder entra completo en los tres tiers.

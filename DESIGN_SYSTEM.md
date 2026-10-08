@@ -395,11 +395,15 @@ Vigesimosexta pasada (también 06/10/2026):
   barra de filtros y la tabla; el estado vacío va dentro de la caja, debajo
   del `thead`. Espaciados: `--page-gap` entre el header y los filtros, `gap-3`
   entre los filtros y la tabla.
-- **ABM — franja de selección condicional:** se probó una barra de
-  selección superpuesta al `thead` y se descartó; vuelve la franja entre la
-  barra de filtros y la tabla (`SelectionActionBar`), sin contador, que no
-  existe en el DOM ni reserva espacio sin selección y entra y sale animando
-  alto + opacidad (150ms).
+- **ABM — toolbar de tabla persistente:** entre la barra de filtros y la
+  tabla va una toolbar que **siempre existe** (patrón de toolbar de Carbon:
+  cambia el contenido, no el layout). Sin selección: contexto de los datos
+  ("Período 08/2026 · Actualizado 10:42") + Exportar y Auditoría; con
+  selección: el registro + Modificar / Borrar / ✕, sobre `primary-tint`.
+  Crossfade de 120ms, sin cambio de alto: la tabla no se mueve nunca. Se
+  probaron y descartaron una barra superpuesta al `thead` y una franja
+  condicional animada; se elimina `SelectionActionBar`. Exportar (CSV
+  client-side) y Auditoría vuelven al ABM.
 - **`ChipFilterBar` — input de ID:** ancho fijo (`--filter-id-w`, 224px);
   placeholder en fuente de texto = encabezado de la columna del ID (se
   elimina `idPlaceholder` de la config); el valor tipeado sigue en mono.
@@ -450,7 +454,6 @@ Vigesimosexta pasada (también 06/10/2026):
 [PeriodSelector](#periodselector) ·
 [ReadOnlyField](#readonlyfield) ·
 [SegmentadoSoloLectura](#segmentadosololectura) ·
-[SelectionActionBar](#selectionactionbar) ·
 [SelectWrap](#selectwrap) ·
 [SortableHeaderCell / SortableTh](#sortableheadercell--sortableth) ·
 [Tabla de resultados](#tabla-de-resultados) ·
@@ -1859,23 +1862,6 @@ segmento); usarlo para un toggle deshabilitado.
 
 **Archivo:** `src/components/ui/SegmentadoSoloLectura.tsx`.
 
-## SelectionActionBar
-
-**Para qué:** confirmar qué registro está seleccionado en el ABM
-("REGISTRO SELECCIONADO `<id>`").
-
-**Anatomía:** punto `bg-primary`, overline `text-heading-xs uppercase
-text-secondary`, id en `text-code font-mono`; `border-b border-border`.
-
-**Props:** `recordLabel`, `actions?` (slot a la derecha, `ml-auto`), `bare?`
-(sin padding ni `border-b` propios, para vivir dentro de otra barra).
-
-**Qué no hacer:** acciones por fila en la tabla. En el ABM, `bare` dentro de
-la [franja de selección](#tabla-de-resultados), con `actions`: Modificar,
-Borrar y Deseleccionar.
-
-**Archivo:** `src/components/ui/SelectionActionBar.tsx`.
-
 ## SelectWrap
 
 **Para qué:** envoltorio de un `<select>` nativo que le agrega el chevron
@@ -1941,24 +1927,40 @@ border-border-subtle`) van en cada `<td>`.
 **Encabezado:** el `thead` está siempre visible, también con una fila
 seleccionada (`ColumnHeaderHint` funciona normal).
 
-**Franja de selección (condicional):** con un registro seleccionado aparece
-**fuera de la caja**, entre la barra de filtros y la tabla.
-- **Contenido:** `SelectionActionBar` (`bare`): "Registro seleccionado" y el
-  identificador; a la derecha Modificar y Borrar (`ghostBtnCls`, `sm`; Borrar
-  destructivo), un separador y ✕ (`ICON_BTN_SM`, "Deseleccionar"). Alto
-  `--control-sm`, separada de la tabla por `gap-2`. Sin contador.
-- **No reserva espacio:** sin selección **no existe en el DOM**; el
-  espaciado es el de siempre (barra de filtros → `gap-3` → tabla).
-- **Entrada y salida animadas:** alto + opacidad, 150ms
-  (`AnimatePresence` de `motion/react`), para que la tabla no salte. El
-  `gap-2` con la tabla va dentro de la animación. Con
-  `prefers-reduced-motion`, aparece y desaparece directo (`useReducedMotion`:
-  `MotionConfig` solo recorta transformaciones, no alto ni opacidad). Al
-  cambiar de una fila seleccionada a otra no se anima de nuevo: solo cambia
-  el registro (la clave es la franja, no la fila). Durante la salida
-  conserva el último registro.
-- **Teclado:** Escape deselecciona. Si el foco estaba en la franja al
-  deseleccionar, vuelve a la tabla.
+**Toolbar de tabla (persistente):** entre la barra de filtros y la caja
+(`filtros → gap-3 → toolbar → gap-2 → tabla`), **siempre presente**: alto
+`--control-sm`, ancho completo, `px-2`. **Regla: el layout no cambia al
+seleccionar** — solo cambia el contenido; la tabla no se mueve nunca.
+- **Sin selección** (sin fondo):
+  - Izquierda, contexto de los datos: "Período 08/2026 · Actualizado 10:42"
+    (`text-caption text-neutral-600 tabular-nums`, fuente de texto). El
+    período sale del `PeriodSelector` controlado (mm/aaaa); "Actualizado" es
+    la hora (hh:mm) de la última vez que se resolvieron los resultados (cada
+    aplicación de filtros o cambio de período o de tabla).
+  - Derecha, acciones **de tabla** en `ghostBtnCls("neutral")` `sm` con ícono
+    (`ICON.sm`): **Exportar** (`Download`) y **Auditoría** (`History`).
+    Exportar descarga un CSV (`descargarCsv`, `src/lib/csv.ts`: Blob,
+    client-side) de las filas que se ven con los filtros actuales, con los
+    encabezados de columna en el orden de la tabla; archivo
+    `<exportFilename>_<aaaamm>.csv` (ej.
+    `interrupciones_no_computables_202608.csv`). Sin resultados queda
+    `disabled` con el tooltip nativo "No hay registros para exportar" (en el
+    contenedor: un botón deshabilitado no recibe el hover). Auditoría es una
+    acción de la tabla, no de un registro; todavía no abre nada (como en el
+    ABM original).
+- **Con selección** (`bg-primary-tint rounded-md`, mismo alto y posición): el
+  contexto y las acciones de tabla **no se muestran**. Izquierda:
+  "Registro seleccionado" (`text-body-sm font-semibold text-secondary`) + el
+  valor del `campoId` en mono (`text-body-sm`); después Modificar y Borrar
+  (`ghostBtnCls`, `sm`; Borrar destructivo); a la derecha ✕ (`ICON_BTN_SM`,
+  "Deseleccionar").
+- **Transición:** las dos capas ocupan la misma celda de un grid y hacen
+  crossfade de **120ms** (solo opacidad; el fondo transiciona igual). Con
+  `prefers-reduced-motion` el cambio es directo (regla global). La capa
+  oculta es `inert`. Al cambiar de una fila a otra solo se actualiza el valor
+  del `campoId`; durante la salida conserva el último registro.
+- **Teclado:** Escape deselecciona. Si el foco estaba en las acciones de
+  registro al deseleccionar, vuelve a la tabla.
 
 **Estado vacío:** con filtros que no dejan filas, el `thead` sigue y, dentro
 de la caja y debajo de él, va "No hay registros con estos filtros"
@@ -2347,7 +2349,8 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
 │                                                                (gap --page-gap)
 │ [🔍 Código de interrupción ] Causa ▾ │ (agregados) [+ Agregar filtro]  Limpiar filtros │  ChipFilterBar
 │                                                                (gap-3)
-│ • REGISTRO SELECCIONADO BPR…        [Modificar] [Borrar] [✕]            │  franja: SOLO con una fila seleccionada (--control-sm)
+│ Período 08/2026 · Actualizado 10:42        [⭳ Exportar] [↺ Auditoría] │  toolbar de tabla, SIEMPRE (--control-sm) …
+│ Registro seleccionado BPR…   Modificar Borrar                  ✕   │  … con una fila seleccionada: mismo alto, fondo primary-tint
 │                                                                (gap-2)
 │ ┌───────────────────────────────────────────────────────────────────┐   │  caja de la tabla (borde, md, surface, shadow-sm)
 │ │ CÓDIGO DE INTERRUPCIÓN   CAUSA   FASE DE REPOSICIÓN                │   │  thead fill-subtle-solid, sticky …
@@ -2378,8 +2381,8 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   espacio para un estado que no está visible.
 - **Espaciado vertical:** header de página (selector + Insertar) → barra de
   filtros: `--page-gap`; barra de filtros → caja de la tabla: `gap-3` (escala
-  con los tiers de `--spacing`); con selección, la franja se intercala entre
-  ambas y suma su alto + `gap-2`.
+  con los tiers de `--spacing`); entre ambas, la toolbar de tabla
+  (`--control-sm`) y `gap-2` hasta la caja.
 - **Tabla en su caja:** `border border-border rounded-md bg-surface
   shadow-sm`, `thead` sticky `bg-fill-subtle-solid`, filas con hover
   `fill-muted` y seleccionada `primary-tint` + `inset-shadow-row-selected`,
@@ -2387,12 +2390,13 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   filas encontradas con algún filtro; sin filtros, el total de la tabla). Sin
   `overflow-hidden`: el radio lo resuelven el wrapper con scroll
   (`rounded-t-md`) y el pie.
-- **Franja de selección condicional:** con un registro seleccionado, entre
-  la barra de filtros y la tabla ("Registro seleccionado" · Modificar ·
-  Borrar · ✕, alto `--control-sm`, `gap-2` con la tabla). Sin selección no
-  existe en el DOM. Entra y sale animada (alto + opacidad, 150ms); Escape
-  también deselecciona y las flechas mueven la selección. Sin columna de
-  acciones por fila. Detalle en [Tabla de
+- **Toolbar de tabla persistente** entre la barra de filtros y la tabla,
+  con dos estados del mismo alto: sin selección, el contexto ("Período
+  08/2026 · Actualizado 10:42") y las acciones de tabla Exportar (CSV de las
+  filas visibles) y Auditoría; con un registro seleccionado, "Registro
+  seleccionado" + su ID, Modificar, Borrar y ✕, sobre `primary-tint`. El
+  layout no cambia al seleccionar. Escape también deselecciona y las flechas
+  mueven la selección. Sin columna de acciones por fila. Detalle en [Tabla de
   resultados](#tabla-de-resultados).
 - **Estado vacío dentro de la tabla:** sin resultados, el `thead` sigue y
   debajo, dentro de la caja, va "No hay registros con estos filtros" +
@@ -2452,7 +2456,6 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   dentro de la caja**, con la columna del ID fija (ver [Tabla de
   resultados](#tabla-de-resultados)); la paginación no
   scrollea. Nunca scroll horizontal de la página.
-- **Auditoría y Exportar** no se renderizan (pendientes de reubicar).
 - **Borrar** abre `ConfirmarBorrarModal`.
 
 **Config de la barra (por tabla):**

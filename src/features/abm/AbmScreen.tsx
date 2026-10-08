@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Plus, X } from "lucide-react";
+import { Download, History, Plus, X } from "lucide-react";
 import {
   BTN_MD,
   BTN_SM,
@@ -16,8 +15,8 @@ import {
   Modal,
   modalNeutralBtnCls,
   modalPrimaryBtnCls,
+  rangoDePeriodo,
   READONLY_FIELD_CLS,
-  SelectionActionBar,
   SortableHeaderCell,
   useTableToolbar,
 } from "@/components/ui";
@@ -32,7 +31,8 @@ import ConfirmarBorrarModal from "@/features/abm/ConfirmarBorrarModal";
 import { filtrarFilas, FiltroFila, modoDeEditor } from "@/features/abm/filtrarFilas";
 import RevisarCambiosContent, { ResumenValoresContent, useMotivoCambio } from "@/features/abm/RevisarCambiosContent";
 import { labelDeValor } from "@/features/abm/labelDeValor";
-import { formatNumero } from "@/lib/format";
+import { descargarCsv } from "@/lib/csv";
+import { formatHora, formatNumero } from "@/lib/format";
 
 // Verificación de desarrollo: mismo nombre real = mismo encabezado en todas
 // las tablas (salvo las excepciones declaradas). Si falla, lo reporta.
@@ -64,9 +64,9 @@ function editorDeCampo(c: CampoBusqueda): ChipFiltroDef["editor"] {
 // Pantalla única de ABM (ver DESIGN_SYSTEM.md, Patrones → "ABM"): el mismo
 // patrón para todas las tablas — TopBar, selector de tabla como título (+
 // Insertar si la tabla lo permite), barra de filtros híbrida y la tabla en
-// su caja (con un registro seleccionado, una franja de acciones entre los
-// filtros y la tabla); Modificar e Insertar en el modal de edición de
-// registro. Todo el contenido
+// su caja, con una toolbar de tabla persistente entre ambas (contexto +
+// Exportar / Auditoría, o el registro seleccionado + Modificar / Borrar);
+// Modificar e Insertar en el modal de edición de registro. Todo el contenido
 // (campos, tipos, opciones, dependencias, qué se bloquea) sale de
 // ABM_TABLE_CONFIGS[tableKey]: nada de una tabla puntual vive acá.
 // `onChangeTable` es el mismo setScreen de App — así el selector y el ítem
@@ -254,20 +254,23 @@ export default function AbmScreen({
       ?.scrollIntoView({ block: "nearest" });
   }, [selectedRow]);
 
-  // Franja de selección: si al deseleccionar el foco estaba adentro, vuelve a
-  // la lista de Resultados — la franja sale del DOM y el foco se perdería.
-  const franjaRef = useRef<HTMLDivElement>(null);
-  const sinAnimacion = useReducedMotion();
-  // Último registro seleccionado: durante la salida animada la franja ya no
+  // Toolbar de tabla (siempre presente; cambia el contenido, no el layout):
+  // si al deseleccionar el foco estaba en las acciones de registro, vuelve a
+  // la lista de Resultados — esa capa pasa a inert y el foco se perdería.
+  const accionesRegistroRef = useRef<HTMLDivElement>(null);
+  // Último registro seleccionado: durante el crossfade de salida la capa ya no
   // tiene selección, pero sigue mostrando el mismo registro.
   const ultimaFila = useRef(0);
   if (selectedRow !== null) ultimaFila.current = selectedRow;
-  const filaFranja = ultimaFila.current;
-  // overflow-hidden solo mientras anima el alto: en reposo recortaría el
-  // anillo de foco de los botones.
-  const [franjaAnimando, setFranjaAnimando] = useState(false);
+  const filaToolbar = ultimaFila.current;
+  // "Actualizado hh:mm": la última vez que se resolvieron los resultados
+  // (cada aplicación de filtros o cambio de período/tabla).
+  const [actualizado, setActualizado] = useState(() => new Date());
+  useEffect(() => {
+    setActualizado(new Date());
+  }, [idBarra, filtrosBarraValores, periodo, tableKey]);
   function deseleccionar() {
-    if (franjaRef.current?.contains(document.activeElement)) resultadosListRef.current?.focus();
+    if (accionesRegistroRef.current?.contains(document.activeElement)) resultadosListRef.current?.focus();
     setSelectedRow(null);
   }
 
@@ -283,6 +286,24 @@ export default function AbmScreen({
     return () => document.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRow, mode, filaABorrar]);
+
+  // Exportar: CSV de las filas que se ven con los filtros actuales, con los
+  // encabezados de columna en el orden de la tabla. Archivo:
+  // <exportFilename>_<aaaamm>.csv (período del TopBar).
+  function handleExportar() {
+    const desde = rangoDePeriodo(periodo)?.desdeFecha ?? "";
+    const aaaamm = desde ? desde.slice(0, 4) + desde.slice(5, 7) : "";
+    descargarCsv(
+      aaaamm ? `${config.exportFilename}_${aaaamm}` : config.exportFilename,
+      columnas.map((c) => c.label),
+      visibleIndices.map((i) => getCells(rows[i])),
+    );
+  }
+  // Auditoría: acción de la tabla (no de un registro). Como en el ABM
+  // original, el botón todavía no abre nada.
+  function handleAuditoria() {
+    // TODO: sin definir qué abre (el original no tenía handler); ver PROGRESO.md.
+  }
 
   function handleResultadosKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (mode !== "buscar" || visibleIndices.length === 0) return;
@@ -402,11 +423,13 @@ export default function AbmScreen({
   // md, surface, shadow-sm; thead fill-subtle-solid sticky; paginación al
   // pie con fill-subtle). Sin overflow-hidden en la caja: el radio lo
   // resuelven el wrapper con scroll (rounded-t-md) y el pie (rounded-b-md).
-  // Sin contador ni franja reservada. Sin filas, el thead sigue y el estado
-  // vacío va debajo, dentro de la caja. El thead está siempre visible, también
-  // con una fila seleccionada. Sin columna de acciones por fila. Auditoría y
-  // Exportar no se renderizan (pendientes de reubicar).
+  // Sin contador. Sin filas, el thead sigue y el estado vacío va debajo,
+  // dentro de la caja. El thead está siempre visible, también con una fila
+  // seleccionada. Sin columna de acciones por fila.
   const hayResultados = visibleIndices.length > 0;
+  // "08/2026" — el período controlado del TopBar.
+  const desdePeriodo = rangoDePeriodo(periodo)?.desdeFecha ?? "";
+  const periodoMmAaaa = desdePeriodo ? `${desdePeriodo.slice(5, 7)}/${desdePeriodo.slice(0, 4)}` : periodo;
   // Con algún filtro aplicado, el pie cuenta las filas encontradas; sin
   // filtros, el total de la tabla.
   const registrosEncontrados = hayFiltrosBarra ? visibleIndices.length : config.totalRegistros;
@@ -588,8 +611,8 @@ export default function AbmScreen({
             </button>
           )}
         </div>
-        {/* Filtros + tabla: gap-3 entre sí (--page-gap solo separa el header
-            de página de este bloque). */}
+        {/* Filtros → gap-3 → toolbar → gap-2 → tabla (--page-gap solo separa
+            el header de página de este bloque). */}
         <div className="flex-1 min-h-0 flex flex-col gap-3">
           <ChipFilterBar
             id={idBarra}
@@ -602,60 +625,69 @@ export default function AbmScreen({
             onLimpiar={handleLimpiarFiltrosBarra}
             periodo={periodo}
           />
-          <div className="flex-1 min-h-0 flex flex-col">
-            {/* Franja de selección — entre los filtros y la tabla, solo con un
-                registro seleccionado: fuera del DOM (y sin reservar espacio)
-                sin selección. Entra y sale animando alto + opacidad (150ms;
-                sin animación con movimiento reducido), así la tabla no salta.
-                Al pasar de una fila a otra no se re-anima: la clave es la
-                franja, no el registro. El pb-2 va adentro para que el gap-2 con
-                la tabla también anime. */}
-            <AnimatePresence initial={false}>
-              {hasSelection && (
-                <motion.div
-                  key="franja-seleccion"
-                  ref={franjaRef}
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: sinAnimacion ? 0 : 0.15, ease: "easeOut" }}
-                  onAnimationStart={() => setFranjaAnimando(true)}
-                  onAnimationComplete={() => setFranjaAnimando(false)}
-                  className={`shrink-0 ${franjaAnimando ? "overflow-hidden" : ""}`}
+          <div className="flex-1 min-h-0 flex flex-col gap-2">
+            {/* Toolbar de tabla — SIEMPRE presente (--control-sm, ancho completo,
+                px-2): la tabla no se mueve al seleccionar ni al deseleccionar.
+                Dos capas en la misma celda de un grid; crossfade de 120ms (solo
+                opacidad; con movimiento reducido la regla global lo vuelve
+                directo). La capa oculta es inert. Con selección, fondo
+                primary-tint + rounded-md; sin selección, sin fondo. */}
+            <div
+              className={`shrink-0 grid h-(--control-sm) px-2 rounded-md transition-[background-color] duration-120 ${
+                hasSelection ? "bg-primary-tint" : "bg-transparent"
+              }`}
+            >
+              {/* Sin selección: contexto de los datos + acciones de tabla. */}
+              <div
+                inert={hasSelection}
+                className={`col-start-1 row-start-1 flex items-center gap-2 min-w-0 transition-opacity duration-120 ${
+                  hasSelection ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
+              >
+                <span className="text-caption text-neutral-600 tabular-nums whitespace-nowrap truncate">
+                  Período {periodoMmAaaa} · Actualizado {formatHora(actualizado)}
+                </span>
+                <div className="ml-auto flex items-center gap-2 shrink-0">
+                  <span title={hayResultados ? undefined : "No hay registros para exportar"}>
+                    <button type="button" onClick={handleExportar} disabled={!hayResultados} className={`${ghostBtnCls("neutral")} gap-1.5`}>
+                      <Download size={ICON.sm} strokeWidth={1.5} />
+                      Exportar
+                    </button>
+                  </span>
+                  <button type="button" onClick={handleAuditoria} className={`${ghostBtnCls("neutral")} gap-1.5`}>
+                    <History size={ICON.sm} strokeWidth={1.5} />
+                    Auditoría
+                  </button>
+                </div>
+              </div>
+              {/* Con selección: el registro + acciones de registro. */}
+              <div
+                ref={accionesRegistroRef}
+                inert={!hasSelection}
+                className={`col-start-1 row-start-1 flex items-center gap-2 min-w-0 transition-opacity duration-120 ${
+                  hasSelection ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
+              >
+                <span className="text-body-sm font-semibold text-secondary whitespace-nowrap select-none">Registro seleccionado</span>
+                <span className="text-body-sm font-mono tabular-nums text-text truncate">{rows[filaToolbar]?.[columnKeys[0]] ?? ""}</span>
+                {/* Acciones de registro: sm, ghost. */}
+                <button type="button" onClick={() => handleAbrirModificar(filaToolbar)} className={ghostBtnCls("neutral")}>
+                  Modificar
+                </button>
+                <button type="button" onClick={() => handleAbrirBorrar(filaToolbar)} className={ghostBtnCls("destructive")}>
+                  Borrar
+                </button>
+                <button
+                  type="button"
+                  onClick={deseleccionar}
+                  aria-label="Deseleccionar"
+                  title="Deseleccionar"
+                  className={`${ICON_BTN_SM} ml-auto shrink-0 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors ${FOCUS_RING}`}
                 >
-                  <div className="pb-2">
-                    <div className="h-(--control-sm) flex items-center">
-                      <SelectionActionBar
-                        bare
-                        recordLabel={rows[filaFranja]?.[columnKeys[0]] ?? ""}
-                        actions={
-                          <>
-                            {/* Acciones de registro: sm, ghost (no compiten con
-                                la barra de filtros, que es de página). */}
-                            <button type="button" onClick={() => handleAbrirModificar(filaFranja)} className={ghostBtnCls("neutral")}>
-                              Modificar
-                            </button>
-                            <button type="button" onClick={() => handleAbrirBorrar(filaFranja)} className={ghostBtnCls("destructive")}>
-                              Borrar
-                            </button>
-                            <div className="w-px h-4 bg-border shrink-0" />
-                            <button
-                              type="button"
-                              onClick={deseleccionar}
-                              aria-label="Deseleccionar"
-                              title="Deseleccionar"
-                              className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors ${FOCUS_RING}`}
-                            >
-                              <X size={ICON.sm} strokeWidth={1.5} />
-                            </button>
-                          </>
-                        }
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <X size={ICON.sm} strokeWidth={1.5} />
+                </button>
+              </div>
+            </div>
             {resultados}
           </div>
         </div>

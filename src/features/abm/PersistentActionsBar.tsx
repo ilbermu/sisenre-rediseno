@@ -9,8 +9,8 @@ import {
   useDropdownDirection,
 } from "@/components/ui";
 
-// Barra de acciones persistente — a diferencia de la barra de selección
-// del ABM (que solo aparece con una fila seleccionada),
+// Barra de acciones persistente — a diferencia de las acciones de registro
+// del ABM (que solo aparecen con una fila seleccionada),
 // esta vive siempre en pantalla. Cada acción decide su propio estado
 // habilitado/deshabilitado via `disabled` en vez de depender de que la
 // barra entera aparezca/desaparezca — mismo criterio que separa "+Insertar"
