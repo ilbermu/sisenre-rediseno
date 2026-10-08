@@ -646,17 +646,34 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
     ocultos o no). Los chips pueden ocultarse ahora: antes los visibles
     nunca.
   - **Hoja, sección Reclamos:** sale `ReclamosResumenCompacto` (repetía
-    inicio, fin y duración) y en su lugar va el gráfico que ya existía,
-    `ReclamosTimeline`, con una prop nueva `variant: "modal" | "embebido"`
-    (default `"modal"`: el modal queda igual). El embebido no tiene card,
-    header, chip DURACIÓN ni pie INICIO/FIN; KPIs más chicos; misma pista a
-    todo el ancho; debajo, las horas de los extremos. Se saca "Ver detalle".
-    Un primer intento (frase + mini gráfico de barras nuevo) se descartó.
-  - `DatosInterrupcionModal` (el que abría "Ver detalle": datos generales,
-    "Procesar" y la línea de tiempo arriba) queda **sin forma de abrirse**.
+    inicio, fin y duración). Pasó por dos intentos descartados (frase +
+    mini gráfico de barras; `ReclamosTimeline variant="embebido"`, ya
+    revertido: `ReclamosTimeline` es otra vez solo el gráfico del modal).
+    Quedó `ReclamosConcentracion.tsx` (ver la entrada siguiente).
   - `DESIGN_SYSTEM.md`: `ChipFilterBar` (una fila, overflow, contador,
     "Limpiar" borra todo; sin variante compacta) y Maestro-detalle (sección
     Reclamos).
+
+- **Consulta de interrupciones — concentración de reclamos, botón único y
+  título** (maqueta, modo "Concentración":
+  https://claude.ai/artifact/5RCqnneDfFQCnyRsJGZogh).
+  - **Sección Reclamos de la hoja:** nuevo `ReclamosConcentracion.tsx`
+    (curva de densidad por kernel gaussiano anclada a la interrupción, con
+    las reposiciones F1, F2… marcadas, primer reclamo, eje con las horas,
+    tooltip en hover y teclado). Sin KPIs ni frase. "Ver detalle" vuelve,
+    solo con reclamos, y abre `DatosInterrupcionModal` como antes (que
+    recupera su acceso). Sin reclamos: una línea con `CircleCheck`.
+    `ReclamosTimeline` vuelve a su versión anterior (sin `variant`).
+    `ReclamosResumenCompacto` sigue sin uso.
+  - **`ChipFilterBar`:** el botón final es un único elemento y estilo
+    (ghost, ícono `Plus`) en el ABM y en Consulta; cambia solo el nombre
+    ("Más filtros" / "Agregar filtro"). Antes "Más filtros" era un chip con
+    ícono de filtros y chevron.
+  - **Maestro:** el título "Interrupciones" pasa a `text-heading-md` (el
+    del selector de tablas del ABM); `TablaChip` ya era el mismo
+    componente y tamaño.
+  - `DESIGN_SYSTEM.md`: `ReclamosConcentracion` (nuevo), botón único en
+    `ChipFilterBar` y la sección Reclamos de Maestro-detalle.
 
 ### Pendientes abiertos
 
@@ -696,14 +713,14 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   cuántos chips entran en cada tier y ancho (en Consulta, con ~52% del
   ancho, se espera que oculte Origen/Tipo/Fase eléctrica); que no haya
   saltos al abrir un popover (la medición se congela) ni al cerrar uno.
-- **`ReclamosTimeline` embebido:** falta verlo en la hoja con 0, 1, 2 y
-  cientos de reclamos (estado saturado) y con la hoja angosta; los KPIs
-  usan el mismo ancho de pista que el modal pero la geometría (78px de
-  alto, con marcas de hora) se dejó igual.
+- **`ReclamosConcentracion` sin probar en el navegador:** la curva con 1,
+  2 y cientos de reclamos; los rótulos F1, F2… cuando hay fases muy
+  juntas (se pisan, no hay resolución de colisiones); la posición del
+  rótulo "1.º reclamo" cerca del pico; el tooltip y las flechas; la hoja
+  angosta.
 - **Componentes sin uso tras el rediseño** (no se borraron):
   `ReposicionesLista.tsx`, `ReclamosResumenCompacto.tsx`,
-  `DatosInterrupcionModal.tsx` (sin acceso), `SubtituloEtiquetado.tsx` (ya
-  estaba sin uso),
+  `SubtituloEtiquetado.tsx` (ya estaba sin uso),
   `components/ui/FilterBar.tsx`, y los modales de
   `consultas-interrupcion/herramientas/` (`DesarmeModal`,
   `NivelTipoModal`, `ReplicarModal`, `CambiaFasesModal`,

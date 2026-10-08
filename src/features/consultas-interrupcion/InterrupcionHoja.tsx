@@ -1,7 +1,7 @@
-import { TablaChip } from "@/components/ui";
+import { ghostBtnCls, TablaChip } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { FaseReposicion, ReclamosInterrupcion } from "@/data/types";
-import ReclamosTimeline from "@/features/consultas-interrupcion/ReclamosTimeline";
+import ReclamosConcentracion from "@/features/consultas-interrupcion/ReclamosConcentracion";
 import ReposicionesTimeline, { minutosEntre } from "@/features/consultas-interrupcion/ReposicionesTimeline";
 import { fmtHorasMin, formatHora, formatNumero, parseFechaHora, VALOR_VACIO } from "@/lib/format";
 
@@ -22,9 +22,9 @@ const horaDe = (texto: string) => {
 //   cuerpo (scroll propio), dos secciones separadas por border-t:
 //     a) "Reposiciones de esta interrupción" (chip Tabla 4) con el rango
 //        hh:mm → hh:mm y la línea de tiempo (ReposicionesTimeline);
-//     b) "Reclamos durante la interrupción" (ReclamosTimeline
-//        variant="embebido": el gráfico del modal, sin card ni datos
-//        repetidos).
+//     b) "Reclamos durante la interrupción" (ReclamosConcentracion: curva de
+//        concentración sobre la interrupción, con las reposiciones
+//        marcadas; "Ver detalle" abre "Datos de la interrupción").
 // Al cambiar de interrupción el contenido hace un fade de 140ms (directo
 // con prefers-reduced-motion, regla global). Sin interrupción (los filtros
 // no dejan ninguna), un estado vacío centrado.
@@ -36,6 +36,7 @@ export default function InterrupcionHoja({
   valoresRelacionadas,
   onAbrirTabla,
   reclamos,
+  onVerDetalle,
 }: {
   // null = sin resultados.
   interrupcion: { referencia: string; fecha: string; nivel: string; fase: string } | null;
@@ -46,6 +47,8 @@ export default function InterrupcionHoja({
   valoresRelacionadas: Record<string, string> | null;
   onAbrirTabla: (tabKey: string) => void;
   reclamos: ReclamosInterrupcion | null;
+  // Abre "Datos de la interrupción" (gráfico completo y KPIs).
+  onVerDetalle: () => void;
 }) {
   if (!interrupcion) {
     return (
@@ -124,8 +127,24 @@ export default function InterrupcionHoja({
           </section>
 
           <section aria-label="Reclamos durante la interrupción" className="py-4 border-t border-border">
-            <h3 className={`${tituloSeccion} truncate mb-3`}>Reclamos durante la interrupción</h3>
-            <ReclamosTimeline datos={reclamos} variant="embebido" />
+            <div className="flex items-center gap-2 mb-3 min-w-0">
+              <h3 className={`${tituloSeccion} truncate`}>Reclamos durante la interrupción</h3>
+              {reclamos && reclamos.minutos.length > 0 && (
+                <button type="button" onClick={onVerDetalle} className={`${ghostBtnCls("neutral")} ml-auto shrink-0`}>
+                  Ver detalle
+                </button>
+              )}
+            </div>
+            {reclamos && (
+              <ReclamosConcentracion
+                datos={reclamos}
+                inicio={parseFechaHora(interrupcion.fecha)}
+                fin={ultima ? parseFechaHora(ultima.horaRep) : null}
+                fases={fases}
+                faseSeleccionada={faseSeleccionada}
+                onSeleccionarFase={onSeleccionarFase}
+              />
+            )}
           </section>
         </div>
       </div>

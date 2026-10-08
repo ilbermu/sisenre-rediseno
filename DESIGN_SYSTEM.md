@@ -426,12 +426,12 @@ Vigesimosexta pasada (también 06/10/2026):
 - **`ChipFilterBar` — un solo overflow:** la barra es siempre una sola fila
   y los chips que no entran se ocultan por prioridad (del último al primero)
   hacia un botón final "Más filtros" (o "Agregar filtro" si no se oculta
-  ninguno), con contador de ocultos activos. Reemplaza al "+N filtros" y al
+  ninguno; un único botón y estilo, con ícono +), con contador de ocultos activos. Reemplaza al "+N filtros" y al
   modo compacto; no hay variante compacta. "Limpiar filtros" borra todo.
 - **Consulta de interrupciones:** la pantalla y su ítem de menú se llaman
   igual ("Consulta de interrupciones"). La sección Reclamos de la hoja usa
-  `ReclamosTimeline variant="embebido"` (el gráfico del modal, sin card ni
-  datos repetidos) y se saca "Ver detalle".
+  un gráfico de concentración con las reposiciones marcadas
+  (`ReclamosConcentracion`), sin KPIs; el detalle va en el modal.
 - **Componentes nuevos:** [`Timeline`](#timeline) (línea de tiempo vertical
   genérica) y [`TablaChip`](#tablachip) (el chip "Tabla N", que sale de
   `AbmTableSelector` para reusarse).
@@ -479,6 +479,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [ReadOnlyField](#readonlyfield) ·
 [SegmentadoSoloLectura](#segmentadosololectura) ·
 [SelectWrap](#selectwrap) ·
+[ReclamosConcentracion](#reclamosconcentracion) ·
 [SortableHeaderCell / SortableTh](#sortableheadercell--sortableth) ·
 [TablaChip](#tablachip) ·
 [Tabla de resultados](#tabla-de-resultados) ·
@@ -1231,11 +1232,16 @@ todas las tablas del ABM.
 3. **Separador vertical** (solo con agregados) + **chips agregados**, mismo
    aspecto (un agregado vacío solo existe con su editor abierto).
 4. **Botón final**, un solo disparador con dos nombres:
-   - **"Más filtros"** (`SlidersHorizontal` + chevron) cuando hay chips
-     ocultos. Popover de 300px (ver Overflow).
-   - **"Agregar filtro"** (`ghostBtnCls("neutral")` a `--control-md`, ícono
-     +) cuando no se oculta ninguno y hay agregables (sin agregables no se
-     renderiza). Menú solo con los agregables que no están en la barra.
+   - **"Más filtros"** cuando hay chips ocultos. Popover de 300px (ver
+     Overflow).
+   - **"Agregar filtro"** cuando no se oculta ninguno y hay agregables (sin
+     agregables no se renderiza). Menú solo con los agregables que no están
+     en la barra.
+   Es **un único botón y un solo estilo** en el ABM y en Consulta de
+   interrupciones: `ghostBtnCls("neutral")` a `--control-md`, ícono `Plus`
+   y texto; cambia solo el nombre. Con ocultos activos toma el estilo
+   seleccionado (`primary-tint` + `chip-border` + `text-secondary`) y el
+   contador.
    Elegir un agregable agrega su chip y abre su editor; si el editor se
    cierra sin valor, el chip se quita.
 5. **"Limpiar filtros":** link (`text-label text-secondary
@@ -2084,6 +2090,61 @@ nombra (ver [Toolbar de tabla y filtros](#toolbar-de-tabla-y-filtros)).
 **Archivo:** `src/components/ui/TableToolbar.tsx`,
 `src/components/ui/useTableToolbar.ts`.
 
+## ReclamosConcentracion
+
+**Para qué:** mostrar cuándo llegaron los reclamos durante una
+interrupción, anclado a la interrupción y con sus reposiciones marcadas.
+Es el gráfico de la sección Reclamos de la hoja de [Consulta de
+interrupciones](#maestro-detalle). `ReclamosTimeline` sigue siendo solo el
+gráfico completo del modal "Datos de la interrupción".
+
+**Anatomía** (SVG medido con `ResizeObserver` en px reales, sin
+`preserveAspectRatio="none"`):
+
+```
+        F1 ┊      F2 ┊            F3 ┊     ← rótulos (16px) de las reposiciones
+           ┊  ╭──╮   ┊              ┊
+    ●1.º reclamo ╲   ┊              ┊        área de trazado: 84px
+ ──────────────────────────────────────  ← base 1px border
+ Inicio 08:10        09:00      10:00      Fin 10:40
+```
+
+- **Eje X:** del inicio de la interrupción a su fin (el mismo "fin" que usa
+  la Duración de la franja de cifras: la última reposición).
+- **Curva:** densidad de reclamos por kernel gaussiano (ancho de banda =
+  máx(duración/14, 6 min)), 72 puntos normalizados al máximo, suavizada
+  con Catmull-Rom → Bézier con los puntos de control limitados al rango de
+  cada tramo (nunca pasa por debajo de la base ni por encima del pico).
+  Área con degradé vertical de `--color-primary` (28% → 2%) y línea de 2px
+  con uniones redondeadas.
+- **Reposiciones:** línea vertical punteada de 1px `neutral-300` a todo el
+  alto en la hora de cada fase, con su rótulo "F1", "F2"… (10.5px
+  semibold `neutral-500`) arriba a la derecha de la línea (a la izquierda
+  pasado el 92% del ancho). La fase seleccionada en la línea de tiempo va
+  en `--color-secondary`; clic en un rótulo la selecciona.
+- **Primer reclamo:** punto de 9px (fondo blanco, borde de 2px
+  `--color-secondary`) sobre la curva y "1.º reclamo hh:mm" (11px medium
+  `text-secondary`) a su derecha, o a su izquierda pasado el 70%.
+- **Eje inferior**, una fila de 11px `tabular-nums`: "Inicio" + hora a la
+  izquierda, "Fin" + hora a la derecha (con `dd/mm` si dura más de un día)
+  y, en el medio, las horas en punto entre el 14% y el 86% del ancho.
+- **Hover:** línea vertical de 1px `neutral-400` y tooltip oscuro
+  (`neutral-900`, texto blanco, 11.5px, radio 6) con la hora en negrita,
+  "N de M reclamos hasta acá" y "Repuestas X de Y fases" / "Sin
+  reposiciones todavía"; se invierte a la izquierda pasado el 60%.
+- **Accesibilidad:** focusable (`role="group"`); ←/→ mueven la línea de a
+  5% del ancho y Escape la oculta; `aria-label` con el resumen ("N
+  reclamos entre hh:mm y hh:mm, mayor concentración cerca de hh:mm").
+- **Sin reclamos:** sin gráfico, una línea con `CircleCheck` y "No hubo
+  reclamos durante la interrupción."
+- **Sin KPIs ni frase:** la cantidad está en la franja de cifras y el "80%
+  llegó en" en el modal.
+
+Solo tokens de color (`--color-primary`, `--color-secondary`, escala
+neutral, `--color-border`).
+
+**Archivo:** `src/features/consultas-interrupcion/ReclamosConcentracion.tsx`.
+
 ## Timeline
 
 **Para qué:** una secuencia de eventos en el tiempo, uno debajo del otro,
@@ -2409,18 +2470,14 @@ reposiciones y sus reclamos).
     (`heading-xs`, con `TablaChip` si muestran una tabla) separadas por
     `border-t`. Acciones de sección (si las hay) ghost `sm` a la
     derecha del título.
-  - **Sección Reclamos:** reutiliza el gráfico existente, `ReclamosTimeline`
-    con `variant="embebido"` (el default `"modal"` es el de "Datos de la
-    interrupción", sin cambios). Sin card (sin borde, radio, fondo ni
-    padding), sin header propio (el título lo pone la sección, igual que
-    "Reposiciones de esta interrupción"), sin chip DURACIÓN ni pie
-    INICIO / FIN (ya están en la franja de cifras y en la línea de tiempo).
-    Los KPIs (TOTAL, PRIMER RECLAMO, 80% LLEGÓ EN) mantienen su lógica y
-    valores, más chicos (`text-body font-semibold text-secondary
-    tabular-nums`). La pista (banda, hitos, primer reclamo, estado
-    saturado) es la misma, a todo el ancho de la sección; debajo, solo las
-    horas de los extremos (`text-caption text-muted tabular-nums`). Estados
-    vacíos iguales a los del modal. Sin "Ver detalle": el gráfico ya se ve.
+  - **Sección Reclamos:** un **gráfico de concentración anclado a la
+    interrupción**, con las reposiciones marcadas
+    ([`ReclamosConcentracion`](#reclamosconcentracion)). Título a la
+    izquierda y, a la derecha, "Ver detalle" (ghost `sm`, solo si hay
+    reclamos) que abre "Datos de la interrupción" (el gráfico completo y
+    sus KPIs). **Sin KPIs ni frase** debajo del título: la cantidad ya está
+    en la franja de cifras. Sin reclamos: una línea con ícono, sin gráfico
+    ni "Ver detalle".
   - Al cambiar de registro, el contenido hace un **fade de 140ms**
     (`animate-[hoja-fade_140ms_ease-out]`; directo con movimiento
     reducido).
@@ -2432,7 +2489,7 @@ reposiciones y sus reclamos).
 
 **Archivos:** `src/features/consultas-interrupcion/ModificarContent.tsx`
 (estado y modales), `InterrupcionesMaestro.tsx`, `InterrupcionHoja.tsx`,
-`ReposicionesTimeline.tsx`, `ReclamosTimeline.tsx`.
+`ReposicionesTimeline.tsx`, `ReclamosConcentracion.tsx`.
 
 ## Registro seleccionado y detalle
 

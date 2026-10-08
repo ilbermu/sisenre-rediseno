@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import AnchoredPopover from "@/components/ui/AnchoredPopover";
 import FieldLabel from "@/components/ui/FieldLabel";
 import { FilterTriggerButton, RANGO_TEXTO_VACIO, RangoTexto } from "@/components/ui/FilterTrigger";
@@ -504,13 +504,11 @@ export default function ChipFilterBar({
     />
   );
 
-  // "Más filtros": con filtros ocultos activos, estilo seleccionado + contador.
-  const masSel = ocultosActivos > 0 || (menu && hayOcultos);
-  const masCls = `h-(--control-md) shrink-0 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-    masSel
-      ? "bg-primary-tint border-chip-border text-secondary"
-      : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
-  }`;
+  // Botón final, UN solo estilo: ghost con ícono + ("Más filtros" o "Agregar
+  // filtro", cambia solo el nombre). Con filtros ocultos activos, estilo
+  // seleccionado + contador.
+  const masSel = ocultosActivos > 0;
+  const botonCls = `${ghostBtnCls("neutral")} shrink-0 h-(--control-md)! gap-1.5 ${masSel ? "bg-primary-tint! border-chip-border! text-secondary!" : ""}`;
   const contador = (n: number) => (
     <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-secondary text-white text-caption font-semibold tabular-nums inline-flex items-center justify-center">
       {n}
@@ -575,13 +573,12 @@ export default function ChipFilterBar({
             </div>
           );
         })}
-        <span ref={refMedida("mas")} className={masCls}>
-          <SlidersHorizontal size={ICON.sm} strokeWidth={1.5} />
+        <span ref={refMedida("mas")} className={botonCls}>
+          <Plus size={ICON.sm} strokeWidth={1.5} />
           Más filtros
           {contador(secuencia.length)}
-          <ChevronDown size={ICON.xs} strokeWidth={1.5} />
         </span>
-        <span ref={refMedida("agregar")} className={`${ghostBtnCls("neutral")} h-(--control-md)! gap-1.5`}>
+        <span ref={refMedida("agregar")} className={botonCls}>
           <Plus size={ICON.sm} strokeWidth={1.5} />
           Agregar filtro
         </span>
@@ -606,38 +603,23 @@ export default function ChipFilterBar({
       {enBarra > visibles.length && <div className="w-px h-5 bg-border shrink-0" />}
       {enBarraDefs.slice(visibles.length).map((d) => chip(d))}
 
-      {/* 4. Botón final: "Más filtros" si hay ocultos; si no, "Agregar
-          filtro" (solo con agregables). */}
-      {hayOcultos ? (
+      {/* 4. Botón final (un solo componente y estilo): "Más filtros" si hay
+          ocultos; si no, "Agregar filtro" (solo con agregables). */}
+      {(hayOcultos || agregables.length > 0) && (
         <button
           ref={botonRef}
           type="button"
           aria-haspopup="menu"
           aria-expanded={menu}
           aria-label={ocultosActivos > 0 ? `Más filtros (${ocultosActivos} activos)` : undefined}
+          disabled={!hayOcultos && disponibles.length === 0}
           onClick={() => setMenu(!menu)}
-          className={`${masCls} ${FOCUS_RING}`}
+          className={botonCls}
         >
-          <SlidersHorizontal size={ICON.sm} strokeWidth={1.5} />
-          Más filtros
+          <Plus size={ICON.sm} strokeWidth={1.5} />
+          {hayOcultos ? "Más filtros" : "Agregar filtro"}
           {ocultosActivos > 0 && contador(ocultosActivos)}
-          {menu ? <ChevronUp size={ICON.xs} strokeWidth={1.5} /> : <ChevronDown size={ICON.xs} strokeWidth={1.5} />}
         </button>
-      ) : (
-        agregables.length > 0 && (
-          <button
-            ref={botonRef}
-            type="button"
-            aria-haspopup="menu"
-            aria-expanded={menu}
-            disabled={disponibles.length === 0}
-            onClick={() => setMenu(!menu)}
-            className={`${ghostBtnCls("neutral")} shrink-0 h-(--control-md)! gap-1.5`}
-          >
-            <Plus size={ICON.sm} strokeWidth={1.5} />
-            Agregar filtro
-          </button>
-        )
       )}
 
       {/* 5. Limpiar filtros — solo con algún filtro o ID cargado; borra

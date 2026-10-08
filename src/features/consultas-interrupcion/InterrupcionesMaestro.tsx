@@ -107,7 +107,7 @@ export default function InterrupcionesMaestro({
       {/* Título de sección — estático, no es selector. */}
       <h2 className="shrink-0 flex items-center gap-2 min-w-0">
         <TablaChip nombre={CONFIG.nombre} />
-        <span className="text-heading-sm text-neutral-900 truncate">{CONFIG.titulo}</span>
+        <span className="text-heading-md text-neutral-900 truncate">{CONFIG.titulo}</span>
       </h2>
 
       <ChipFilterBar
