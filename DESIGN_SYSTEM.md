@@ -389,6 +389,14 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **08/10/2026**
 
+- **Modales — regla del header:** el header lleva solo el título y la ✕;
+  `Modal` pierde `subtitle` y `headerExtra`. El contexto del registro pasa
+  al primer bloque del cuerpo (`ContextoRegistro`). "Tablas relacionadas"
+  se rediseña: contexto en dos columnas, `FaseSelector` (segmentado o
+  desplegable, sin flechas) y tabs con contador. Inicio: los accesos usan
+  `TablaChip`. Consulta de interrupciones: `CopyButton` en la celda del
+  código de la lista.
+
 - **Reclamos — modal de detalle, rótulos y datos:** nuevo
   `ReclamosInterrupcionModal` (ancho `--modal-lg-w` 880px, `Modal
   size="detalle"`) para "Ver detalle"; `ReclamosConcentracion` gana
@@ -468,6 +476,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [ChipFilterBar](#chipfilterbar) ·
 [CodeBadge](#codebadge) ·
 [ColumnHeaderHint](#columnheaderhint) ·
+[ContextoRegistro](#contextoregistro) ·
 [CopyButton](#copybutton) ·
 [DateTimeField](#datetimefield) ·
 [Dropdowns flotantes](#dropdowns-flotantes-dropdownts) ·
@@ -513,6 +522,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [Nunca un modal sobre otro](#nunca-un-modal-sobre-otro) ·
 [ABM](#abm) ·
 [Barra de contexto de registro](#barra-de-contexto-de-registro) ·
+[Selector de fase](#selector-de-fase) ·
 [Contenedores flex con scroll](#contenedores-flex-con-scroll) ·
 [Voz y formatos](#voz-y-formatos)
 
@@ -1413,8 +1423,9 @@ contenido interactivo; poner el tag dentro del contenedor con scroll.
 
 ## CopyButton
 
-**Para qué:** copiar un valor al portapapeles (ej. la referencia de
-Interrupción en el header del modal "Tablas relacionadas").
+**Para qué:** copiar un valor al portapapeles: el identificador de un
+registro, en el [contexto del registro](#contextoregistro) de un modal o en
+la celda del identificador de una tabla.
 
 **Anatomía:** botón de ícono `ICON_BTN_SM`, `text-icon`, hover
 `bg-fill-muted` + `text-text`; ícono `Copy` (`ICON.sm`).
@@ -1422,20 +1433,27 @@ Interrupción en el header del modal "Tablas relacionadas").
 **Props:** `value: string`, `label: string` (qué se copia, en minúscula y
 sin artículo: arma "Copiar interrupción" / "Interrupción copiada"),
 `size?` (`"sm"` default, `ICON_BTN_SM` + `ICON.sm`; `"xs"`, `ICON_BTN_XS` +
-`ICON.xs`, para ir junto a un texto chico o dentro de un campo).
+`ICON.xs`, para ir junto a un texto chico o dentro de una celda), `tooltip?`
+y `mensaje?` (tooltip nativo y anuncio, si no se arman con `label`).
 
 **Estados:** reposo; copiado — **solo si la copia realmente ocurrió**, el
-ícono pasa a `Check` (`text-success-text-strong`) por 1.5s. Usa
+ícono pasa a `Check` en `--color-secondary` por 1,5 s. El clic hace
+`stopPropagation` (no dispara el de la fila). Usa
 `navigator.clipboard.writeText` con fallback a `document.execCommand("copy")`
 vía un `<textarea>` oculto.
+
+**En la celda del identificador de una tabla** (lista de Consulta de
+interrupciones): `size="xs"` a la derecha del código, con su espacio
+reservado (`opacity`, no `display`: la columna no cambia de ancho). Aparece
+en hover y en `focus-within` de la fila y queda siempre visible en la fila
+seleccionada. Copiar no cambia la selección. Tooltip "Copiar código" y
+anuncio "Código copiado".
 
 **Accesibilidad:** `aria-label` y `title` "Copiar \<label\>"; anuncio
 "\<Label\> copiada" en un `sr-only aria-live="polite"`.
 
 **Qué no hacer:** simular el estado de éxito si la operación falló o no
-está implementada. Por eso el botón "Copiar datos de la reposición" (ícono
-`ClipboardList`, handler vacío pendiente de definición) no usa este
-componente ni su feedback.
+está implementada.
 
 **Archivo:** `src/components/ui/CopyButton.tsx`. La copia y el estado
 `copied` salen de `useCopiar` (`src/components/ui/useCopiar.ts`).
@@ -1760,26 +1778,27 @@ contenedores con borde).
 
 **Para qué:** el estándar de toda acción que requiera un diálogo.
 
+**Regla del header (todos los modales):** el header lleva **SOLO el título y
+la ✕**. Sin subtítulos, códigos, labels de contexto ni botones. Si el modal
+necesita mostrar a qué registro se refiere, ese contexto es el **primer
+bloque del cuerpo** ([ContextoRegistro](#contextoregistro)). Por eso `Modal`
+ya no tiene `subtitle` ni `headerExtra`. El indicador "Paso N de M" (`paso`)
+es parte de la línea del título.
+
 **Anatomía:** scrim `bg-scrim` (`--z-overlay`) + panel centrado
 `rounded-xl shadow-lg` (`--z-modal`). Header transparente con
 `border-b border-border` — el mismo tratamiento que `CardHeader`, en todos
-los modales por igual —, título `text-heading-md` + subtítulo mono
-opcional + cerrar (`ICON_BTN_SM`). Sin `headerExtra`, la línea del título
-usa los tokens de `CardHeader`: alto `h-(--card-header-h)` sin padding
-vertical y `px-(--card-px)`. Body `bg-surface` con `p-5` que crece
-con el contenido y scrollea hasta el tope de alto. Footer con botones a la
-derecha (`modalNeutralBtnCls` + `modalPrimaryBtnCls`).
+los modales por igual —, título `text-heading-md` + cerrar (`ICON_BTN_SM`),
+alto `h-(--card-header-h)` y `px-(--card-px)`. Body `bg-surface` con `p-5`
+que crece con el contenido y scrollea hasta el tope de alto. Footer con
+botones a la derecha (`modalNeutralBtnCls` + `modalPrimaryBtnCls`).
 
-**Props:** `title`, `subtitle?`, `open`, `onClose`, `size?` (`"sm"` 480 /
+**Props:** `title`, `open`, `onClose`, `size?` (`"sm"` 480 /
 `"form"` `--modal-form-w` 704 / `"detalle"` `--modal-lg-w` 880 / `"lg"` 920 / `"xl"` 1120), `footer?`, `children`, y para
 extenderlo sin tocar a los demás:
 - **`paso`** (`{ actual, total }`): indicador "Paso N de M" junto al título,
   para un modal de varios pasos (ver [Nunca un modal sobre
   otro](#nunca-un-modal-sobre-otro)).
-- **`headerExtra`**: segunda línea dentro del bloque del header (ej.
-  "Interrupción `<ref>`" + `CopyButton`). Con ella, la línea del título
-  no usa el alto fijo: va `px-5 pt-3.5 pb-0` y `headerExtra` aporta
-  `mt-0.5 pb-3.5`.
 - **`bodyPadding={false}`**: saca el `p-5` del body (layouts propios de
   borde a borde).
 - **`bodyOverflow="hidden"`** (default `"auto"`): el body deja de
@@ -1795,14 +1814,36 @@ el título; al abrir enfoca el panel (`tabIndex=-1`) y al cerrar devuelve el
 foco al elemento previo; cierra con X, clic en el scrim o Escape.
 
 Los dropdowns y popovers que se abren dentro de un `Modal` salen en un
-portal (ver [FloatingPanel](#floatingpanel)): el overflow del body no los
-recorta.
+portal, por encima del modal (`--z-modal-popover`): el overflow del body no
+los recorta.
 
 **Qué no hacer:** cambiar el tamaño del título (es fijo en todos los
-modales; un dato propio en `headerExtra` va en un token más liviano,
-`text-code` o `text-body-sm`); fondo en el header.
+modales); fondo en el header; poner en el header el código del registro, un
+subtítulo o un botón.
 
 **Archivo:** `src/components/ui/Modal.tsx`.
+
+## ContextoRegistro
+
+**Para qué:** el patrón "contexto del registro": a qué registro se refiere un
+modal. Es el **primer bloque del cuerpo** (nunca el header).
+
+**Anatomía:** etiqueta en `text-caption neutral-500` ("Interrupción"); el
+identificador en mono 18px `font-medium` (`tabular-nums`, `neutral-900`),
+con `CopyButton` si `copiable`; debajo, una línea de meta en `text-caption
+neutral-600 tabular-nums` (ej. "dd/mm/aaaa · hh:mm → hh:mm · X h YY min").
+Bloque con `px-6 py-4` y `border-b`. El mismo lenguaje que el header de la
+hoja de Consulta de interrupciones.
+
+**Props:** `etiqueta`, `valor`, `meta?`, `copiable?`, `etiquetaCopia?`,
+`bleed?` (para modales con el `p-5` estándar: el bloque va de borde a borde,
+`-mx-5 -mt-5 mb-5`), `sinMarco?` (sin padding ni borde, para componerlo en
+una grilla propia, como en "Tablas relacionadas").
+
+**Dónde se usa:** Replicar, Cambia fases, Alta de clientes BT y Datos de la
+interrupción (`bleed`); Tablas relacionadas (`sinMarco`, columna izquierda).
+
+**Archivo:** `src/components/ui/ContextoRegistro.tsx`.
 
 ## ModalCheckbox
 
@@ -2293,8 +2334,15 @@ relacionadas").
 texto quede alineado con el resto del contenido. El borde inferior va de
 lado a lado: el padding mueve el contenido, no el borde.
 
-**Props:** `options: { key, label }[]`, `activeKey`, `onSelect`,
+**Props:** `options: { key, label, contador? }[]`, `activeKey`, `onSelect`,
 `ariaLabel`.
+
+**Contador:** con `contador`, el tab lleva una pill de 18px (`text-caption
+font-semibold`, `rounded-full`, `tabular-nums`) con la cantidad de registros
+de esa vista. Sin seleccionar: `fill-muted` y `neutral-500`; seleccionado:
+`primary-tint` y `text-secondary`. En "Tablas relacionadas" cuenta los
+registros de cada tabla para la fase elegida; al cambiar de fase se
+mantiene el tab activo.
 
 **Estados:** reposo `text-text-muted` (hover `bg-fill-muted`); activo
 `text-secondary font-medium` + `border-b-2 border-primary` superpuesto a la
@@ -2628,16 +2676,17 @@ puntual) — ej. "Tablas relacionadas" de Consultas de interrupción — el
 contenido va de borde a borde del modal, alineado al mismo `px-5` que el
 header. Sin cards ni fondo gris en el body.
 
-- **Header:** `headerExtra` lleva SOLO la identidad del modal, el dato que
-  no cambia mientras está abierto (ej. Interrupción + `CopyButton`), con
-  `pb-3.5` fijo. Un dato que SÍ cambia con la interacción (ej. qué
-  reposición está activa) va en el body, no en el header.
+- **Header:** solo el título y la ✕ (regla de todos los modales). El
+  contexto —el registro y, si cambia con la interacción, la fase activa— es
+  el primer bloque del cuerpo ([ContextoRegistro](#contextoregistro)). En
+  "Tablas relacionadas" son dos columnas (ver
+  [Selector de fase](#selector-de-fase)).
 - **Body:** `bodyPadding={false}` + `bodyOverflow="hidden"` — el body nunca
   scrollea ni tiene padding/fondo propios. Su único hijo es un wrapper
   `h-full flex flex-col min-h-0`: filas fijas (`shrink-0`, con su propio
   `px-5`) arriba — la primera, la [barra de contexto de
-  registro](#barra-de-contexto-de-registro), sin `border-b` propio (lo pone
-  la fila de tabs) — y la zona de trabajo (`flex-1 min-h-0`) al final.
+  registro](#barra-de-contexto-de-registro) o el bloque de contexto, con su
+  `border-b` — y la zona de trabajo (`flex-1 min-h-0`) al final.
 - **El scroll vive dentro de un contenedor propio** con borde (`border
   border-border rounded-md overflow-auto`, `mx-5 mb-5`) — la única zona con
   scroll del modal; todo lo demás (tabs, descripción, toolbar) es
@@ -2899,6 +2948,45 @@ modal necesita un paso extra (revisar, justificar, confirmar), es un
 (prop `paso` de `Modal`) y el pie ofrece Volver junto al primario. El ancho
 no cambia entre pasos.
 
+## Selector de fase
+
+**Para qué:** elegir la fase de reposición en el modal "Tablas relacionadas".
+**Un solo control, según el caso** (`FaseSelector`):
+
+- **Segmentado** — 6 fases o menos **y** todas entran en el ancho de la
+  columna (se mide con `ResizeObserver` una copia invisible): un botón por
+  fase con "Fase N" + hh:mm (12px `neutral-500`). Contenedor `fill-subtle`
+  con borde, `rounded-lg` y padding 3px; la seleccionada va en fondo blanco,
+  `text-secondary`, sombra sutil y anillo de 1px `border`. `role="tablist"`;
+  ←/→ mueven la selección.
+- **Desplegable** — más de 6 fases **o** no entran: trigger de alto
+  `--control-md` con "Fase N" + hh:mm en `text-secondary`, chevron y borde
+  `border-strong`. La lista (popover anclado, `role="listbox"`) muestra en
+  cada opción tres columnas alineadas, `tabular-nums`: "Fase N" | hh:mm |
+  "N clientes"; la seleccionada en `primary-tint`. Con foco en el trigger
+  cerrado, ↑/↓ cambian de fase; dentro de la lista, ↑/↓ mueven el foco.
+- **No hay** flechas anterior/siguiente ni "1 de N" en ningún caso.
+
+**Contexto del modal "Tablas relacionadas":** header solo con título y ✕;
+primer bloque del cuerpo en dos columnas (`minmax(220px, auto)` | `1fr`,
+separadas por `border-l`, `border-b` debajo, `px-6 py-4`; por debajo de
+760px se apilan):
+
+- *Interrupción:* [ContextoRegistro](#contextoregistro) con el código +
+  `CopyButton` y "dd/mm/aaaa · hh:mm → hh:mm · X h YY min" (mismo fin y
+  duración que la hoja de Consulta).
+- *Reposición:* caption, el selector de fase y una línea en `text-body-sm
+  neutral-600`: "Fase eléctrica **RST** · @equipo · DESCRIPCIÓN · **N**
+  clientes repuestos". La fase eléctrica va en **texto**, no con
+  `FaseIndicador`.
+
+Debajo, [UnderlineTabs con contador](#underlinetabs) (Tabla 3 / 5 / 6 / 8 /
+9). Las tablas siguen las reglas vigentes: encabezados unificados (Nro.
+reclamo, Nro. cuenta, Código falla…), mono solo en el identificador del
+registro y `ColumnHeaderHint` con el nombre real de la columna.
+
+**Archivo:** `src/features/consultas-interrupcion/FaseSelector.tsx`.
+
 ## Barra de contexto de registro
 
 Cuando una vista (modal, drawer) opera sobre un registro, arriba va un
@@ -2914,9 +3002,9 @@ contenedor único (borde de card, fondo blanco) con:
   horizontal).
 
 Todo el contenido debajo pertenece a ese registro. Ej.:
-`FaseReposicionFicha` en "Tablas relacionadas" ("Reposición 1 `Tabla 4` · hora
-· Fase R S T · equipo · usuarios BT"), con destello `primary-tint` al
-cambiar de reposición (sin destello con movimiento reducido).
+el bloque de contexto de "Tablas relacionadas" (interrupción | reposición).
+`FaseReposicionFicha` (la ficha con borde, destello y paginador ‹ ›) quedó
+sin uso: lo reemplazó el [selector de fase](#selector-de-fase).
 
 ## Contenedores flex con scroll
 

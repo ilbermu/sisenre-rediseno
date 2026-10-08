@@ -1,4 +1,4 @@
-import { Modal, modalNeutralBtnCls, modalPrimaryBtnCls, ReadOnlyField } from "@/components/ui";
+import { ContextoRegistro, Modal, modalNeutralBtnCls, modalPrimaryBtnCls, ReadOnlyField } from "@/components/ui";
 import { ReclamosInterrupcion } from "@/data/types";
 import ReclamosTimeline from "@/features/consultas-interrupcion/ReclamosTimeline";
 
@@ -91,7 +91,6 @@ export default function DatosInterrupcionModal({
   return (
     <Modal
       title="Datos de la interrupción"
-      subtitle={referencia}
       open={open}
       onClose={onClose}
       size="xl"
@@ -106,6 +105,7 @@ export default function DatosInterrupcionModal({
         </>
       }
     >
+      <ContextoRegistro etiqueta="Interrupción" valor={referencia} copiable bleed />
       <div className="flex flex-col gap-5">
         {/* Gráfico de reclamos — el mismo ReclamosTimeline de la Card B,
             ampliado, siempre visible arriba de la grilla de campos. */}

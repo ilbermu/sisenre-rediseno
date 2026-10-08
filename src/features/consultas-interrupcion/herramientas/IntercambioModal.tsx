@@ -74,7 +74,6 @@ export default function IntercambioModal({
   return (
     <Modal
       title="Intercambio entre 2 interrupciones"
-      subtitle={referencia}
       open={open}
       onClose={onClose}
       size="xl"

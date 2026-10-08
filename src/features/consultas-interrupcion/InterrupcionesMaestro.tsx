@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BTN_SM, ChipFilterBar, FOCUS_RING_INSET, rangoDePeriodo, SortableHeaderCell, TablaChip, useTableToolbar } from "@/components/ui";
+import { BTN_SM, ChipFilterBar, CopyButton, FOCUS_RING_INSET, rangoDePeriodo, SortableHeaderCell, TablaChip, useTableToolbar } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { columnasDeResultados } from "@/features/abm/columnasDeResultados";
 import { filtrarFilas } from "@/features/abm/filtrarFilas";
@@ -175,7 +175,7 @@ export default function InterrupcionesMaestro({
                       onClick={() => onSeleccionar(i)}
                       onMouseEnter={() => setHover(i)}
                       onMouseLeave={() => setHover(null)}
-                      className="cursor-pointer transition-colors duration-(--duration-fast)"
+                      className="group/fila cursor-pointer transition-colors duration-(--duration-fast)"
                       style={{ backgroundColor: fondo }}
                     >
                       {columnas.map((c, ci) => {
@@ -200,7 +200,23 @@ export default function InterrupcionesMaestro({
                                 : undefined
                             }
                           >
-                            {celda(row, c)}
+                            {esId ? (
+                              <span className="flex items-center gap-1">
+                                <span>{celda(row, c)}</span>
+                                {/* Copiar el código: reserva su espacio (opacity, no
+                                    display), aparece en hover/focus-within de la
+                                    fila y queda fijo en la seleccionada. No cambia
+                                    la selección. */}
+                                <span
+                                  onClick={(e) => e.stopPropagation()}
+                                  className={`transition-opacity duration-(--duration-fast) group-hover/fila:opacity-100 group-focus-within/fila:opacity-100 ${sel ? "opacity-100" : "opacity-0"}`}
+                                >
+                                  <CopyButton value={celda(row, c)} label="código" tooltip="Copiar código" mensaje="Código copiado" size="xs" />
+                                </span>
+                              </span>
+                            ) : (
+                              celda(row, c)
+                            )}
                           </td>
                         );
                       })}

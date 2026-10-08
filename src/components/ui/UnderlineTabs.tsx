@@ -13,7 +13,8 @@ export default function UnderlineTabs({
   onSelect,
   ariaLabel,
 }: {
-  options: { key: string; label: string }[];
+  // `contador` (opcional): pill de 18px con la cantidad de registros del tab.
+  options: { key: string; label: string; contador?: number }[];
   activeKey: string | null;
   onSelect: (key: string) => void;
   ariaLabel: string;
@@ -48,6 +49,15 @@ export default function UnderlineTabs({
             }`}
           >
             {opt.label}
+            {opt.contador !== undefined && (
+              <span
+                className={`ml-1.5 inline-flex items-center justify-center min-w-4.5 h-4.5 px-1.5 rounded-full text-caption font-semibold tabular-nums ${
+                  active ? "bg-primary-tint text-secondary" : "bg-fill-muted text-neutral-500"
+                }`}
+              >
+                {opt.contador}
+              </span>
+            )}
           </button>
         );
       })}

@@ -695,8 +695,31 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   - **Sin uso ahora:** `DatosInterrupcionModal` y `ReclamosTimeline` (no se
     borraron), además de `ReclamosResumenCompacto`.
 
+- **Modales: regla del header, Tablas relacionadas, copiar código e
+  Inicio** (maqueta: https://claude.ai/artifact/6aWx61zFNJZTvpi2fQp6Se).
+  - **Regla:** el header de un modal lleva solo título y ✕; `Modal` pierde
+    `subtitle` y `headerExtra`. Nuevo `ContextoRegistro` (caption + id mono
+    + meta) como primer bloque del cuerpo. Aplicado a Replicar, Cambia
+    fases, Alta de clientes BT, Datos de la interrupción y Tablas
+    relacionadas; en Intercambio el subtítulo se eliminó por redundante (el
+    código ya está en la barra lateral del cuerpo).
+  - **Tablas relacionadas:** contexto en dos columnas (interrupción con
+    copiar + reposición con `FaseSelector`: segmentado con 6 fases o menos
+    si entra, si no desplegable; sin flechas ni "1 de N"), tabs con
+    contador. Encabezados "Nro. reclamo", "Nro. cuenta", "Código falla",
+    mono solo en la primera columna y `ColumnHeaderHint` (`SortableTh`
+    gana `hint`). `FaseReposicionFicha` queda sin uso.
+  - **Lista de Consulta:** `CopyButton` `xs` en la celda del código
+    (hover / foco / fila seleccionada), sin cambiar la selección. Inicio:
+    accesos con `TablaChip`.
+
 ### Pendientes abiertos
 
+- **Tablas relacionadas sin probar en el navegador:** la medición del
+  segmentado (cuándo pasa a desplegable), el popover de fases dentro del
+  modal (`--z-modal-popover`) y el foco al abrir/cerrar. Los hints de
+  columna de Tabla 6/9 solo cubren las columnas con nombre real conocido
+  (REF, F, POL, TARIFA); el resto sin hint hasta confirmar la base.
 - **Modal de reclamos sin probar en el navegador:** el hover sincronizado,
   el rug con muchos reclamos juntos, el eje con interrupciones de varios
   días y los rótulos "F2 · 07:04" con fases muy juntas. "80% llegó en" se

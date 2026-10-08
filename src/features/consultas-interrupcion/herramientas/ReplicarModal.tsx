@@ -1,4 +1,5 @@
 import {
+  ContextoRegistro,
   FieldLabel,
   Modal,
   modalNeutralBtnCls,
@@ -20,7 +21,6 @@ export default function ReplicarModal({
   return (
     <Modal
       title="Replicar interrupción"
-      subtitle={referencia}
       open={open}
       onClose={onClose}
       size="sm"
@@ -35,6 +35,7 @@ export default function ReplicarModal({
         </>
       }
     >
+      <ContextoRegistro etiqueta="Interrupción" valor={referencia} copiable bleed />
       <div className="grid grid-cols-2 gap-4">
         <div>
           <FieldLabel>Período destino</FieldLabel>

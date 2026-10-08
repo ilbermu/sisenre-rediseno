@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Inbox } from "lucide-react";
 import {
-  CopyButton,
+  ContextoRegistro,
   FilterTrigger,
   ICON,
   Modal,
@@ -26,10 +26,11 @@ import {
 } from "@/data/sinteticos";
 import { AbmDeepLink } from "@/data/types";
 import ReclamosInterrupcionModal from "@/features/consultas-interrupcion/ReclamosInterrupcionModal";
-import FaseReposicionFicha from "@/features/consultas-interrupcion/FaseReposicionFicha";
+import FaseSelector from "@/features/consultas-interrupcion/FaseSelector";
+import { minutosEntre } from "@/features/consultas-interrupcion/ReposicionesTimeline";
 import InterrupcionesMaestro from "@/features/consultas-interrupcion/InterrupcionesMaestro";
 import InterrupcionHoja from "@/features/consultas-interrupcion/InterrupcionHoja";
-import { parseFechaHora, VALOR_VACIO } from "@/lib/format";
+import { fmtHorasMin, formatFecha, formatHora, formatNumero, parseFechaHora, VALOR_VACIO } from "@/lib/format";
 
 // ─── Consultas de interrupción ─────────────────────────────────────────────
 // Maestro-detalle sin cards (ver DESIGN_SYSTEM.md, Patrones →
@@ -44,7 +45,7 @@ import { parseFechaHora, VALOR_VACIO } from "@/lib/format";
 // interrupción (índice de SAMPLE_ROWS = fila de Tabla 2) y la fase de
 // reposición (su nro). Al cambiar de interrupción se selecciona su primera
 // fase. Los chips de Tablas relacionadas de la fase abren el modal de
-// siempre ("Tablas relacionadas"), y "Ver detalle" de Reclamos abre "Datos de
+// siempre ("Tablas relacionadas"), y "Ver detalle" de Reclamos abre "Reclamos de
 // la interrupción".
 export default function ModificarContent({
   periodo,
@@ -189,6 +190,25 @@ export default function ModificarContent({
   const { search: relSearch, setSearch: setRelSearch, sortIdx: relSortIdx, sortDir: relSortDir, toggleSort: relToggleSort, visibleIndices: relVisibleIndices } =
     useTableToolbar(relFilteredRows, relGetCells, relResetKey, relSearchCols);
 
+  // Cantidad de registros de cada tab para la fase elegida (contador de los
+  // tabs): Tabla 3 es Sí/No (1 o 0); el resto, la cantidad de
+  // valoresRelacionadas.
+  const contadorDeTab = (key: string) => {
+    if (!valoresRelacionadas) return undefined;
+    if (key === "tabla3") return valoresRelacionadas.tabla3 === "SI" ? 1 : 0;
+    return Number(valoresRelacionadas[key]);
+  };
+  // "dd/mm/aaaa · hh:mm → hh:mm · X h YY min": el fin y la duración de la
+  // hoja (FEC de la última fase − inicio).
+  function resumenInterrupcion(fecha: string, lista: typeof fases) {
+    const inicio = parseFechaHora(fecha);
+    const ultima = lista[lista.length - 1];
+    const fin = ultima ? parseFechaHora(ultima.horaRep) : null;
+    const dur = ultima ? minutosEntre(fecha, ultima.horaRep) : null;
+    if (!inicio) return fecha;
+    return `${formatFecha(inicio)} · ${formatHora(inicio)}${fin ? ` → ${formatHora(fin)}` : ""}${dur !== null ? ` · ${fmtHorasMin(dur)}` : ""}`;
+  }
+
   return (
     <div className="flex-1 min-h-0 flex overflow-hidden">
       <InterrupcionesMaestro periodo={periodo} seleccionada={seleccionada} onSeleccionar={setSeleccionada} />
@@ -216,18 +236,13 @@ export default function ModificarContent({
 
       {/* ── MODAL "Tablas relacionadas" ─────────────────────────── */}
       {/* Alto FIJO (min(720px, 100vh−40px)): el modal no puede saltar de
-          tamaño al cambiar de tab o de reposición. bodyPadding={false} +
+          tamaño al cambiar de tab o de fase. bodyPadding={false} +
           bodyOverflow="hidden": sin cards ni fondo gris — el contenido va
-          de borde a borde del modal (mismo px-5 que el header), con un
-          wrapper interno `h-full flex flex-col min-h-0` propio (tabs
-          shrink-0, área de tabla flex-1 min-h-0 — la única zona con
-          scroll). headerExtra agrega, debajo de título/cerrar: la línea
-          de Interrupción + CopyButton, y — si hay una reposición
-          seleccionada — la línea de metadatos de esa reposición
-          (FaseReposicionFicha, separados por "·") + el paginador ‹ ›.
-          Ninguna de estas props toca el header de los demás modales de la
-          app (ninguno las pasa). El título va en heading-md, como en
-          todos los modales. */}
+          de borde a borde, con un wrapper interno `h-full flex flex-col
+          min-h-0` (contexto y tabs shrink-0, área de tabla flex-1 min-h-0 —
+          la única zona con scroll). El header lleva SOLO el título y la ✕
+          (regla de todos los modales); el contexto —la interrupción y la
+          fase elegida— es el primer bloque del cuerpo, en dos columnas. */}
       <Modal
         title="Tablas relacionadas"
         open={relTab !== null}
@@ -236,37 +251,43 @@ export default function ModificarContent({
         bodyPadding={false}
         bodyOverflow="hidden"
         height="min(720px, calc(100vh - 40px))"
-        headerExtra={
-          // Solo la Interrupción: es la identidad del modal, no cambia
-          // mientras está abierto (a diferencia de la reposición activa,
-          // que ahora vive en el body — ver abajo). pb-3.5 fijo (ya no
-          // condicional): sin una segunda línea debajo, el header siempre
-          // cierra parejo.
-          <div className="px-5 mt-0.5 pb-3.5 flex items-center gap-2">
-            <span className="text-heading-xs uppercase text-text-muted">Interrupción</span>
-            <span className="text-code font-mono tabular-nums text-text">
-              {interrupcionActualRef}
-            </span>
-            <CopyButton value={interrupcionActualRef} label="interrupción" />
-          </div>
-        }
       >
         <div className="h-full flex flex-col min-h-0">
-          {/* Reposición activa — primer elemento del body, en fondo
-              blanco (el body no tiene bg propio, hereda el bg-surface del
-              panel). Sin border-b propio: lo pone la barra de tabs de
-              abajo. */}
-          {filaFaseSeleccionada && (
-            <FaseReposicionFicha
-              fila={filaFaseSeleccionada}
-              reposicionIndex={indiceFase}
-              totalReposiciones={fases.length}
-              onChangeReposicion={(i) => seleccionarFase(fases[i].nro)}
-            />
-          )}
+          {/* Contexto: Interrupción | Reposición. Por debajo de 760px de
+              ancho, las dos columnas se apilan. */}
+          <div className="@container shrink-0 border-b border-border">
+            <div className="grid grid-cols-[minmax(220px,auto)_1fr] @max-[760px]:grid-cols-1">
+              <div className="px-6 py-4 min-w-0">
+                <ContextoRegistro
+                  sinMarco
+                  etiqueta="Interrupción"
+                  valor={interrupcionActualRef}
+                  copiable
+                  meta={registro ? resumenInterrupcion(registro.fecha, fases) : undefined}
+                />
+              </div>
+              <div className="px-6 py-4 min-w-0 border-l border-border @max-[760px]:border-l-0 @max-[760px]:border-t flex flex-col gap-1.5">
+                <p className="text-caption text-neutral-500">Reposición</p>
+                {filaFaseSeleccionada && (
+                  <>
+                    <FaseSelector fases={fases} seleccionada={filaFaseSeleccionada.nro} onSeleccionar={seleccionarFase} />
+                    <p aria-live="polite" className="text-body-sm text-neutral-600">
+                      Fase eléctrica <span className="font-semibold text-neutral-900">{filaFaseSeleccionada.fase}</span> · {filaFaseSeleccionada.equipoCodigo} ·{" "}
+                      {filaFaseSeleccionada.equipoDesc} · <span className="font-semibold text-neutral-900">{formatNumero(filaFaseSeleccionada.usuariosBT)}</span>{" "}
+                      {filaFaseSeleccionada.usuariosBT === 1 ? "cliente repuesto" : "clientes repuestos"}
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
           <UnderlineTabs
             ariaLabel="Tablas relacionadas"
-            options={DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => ({ key: tab.key, label: tab.label }))}
+            options={DRAWER_TABS.filter((tab) => tab.key !== "tabla4").map((tab) => ({
+              key: tab.key,
+              label: tab.label,
+              contador: contadorDeTab(tab.key),
+            }))}
             activeKey={relTab}
             onSelect={setRelTab}
           />
@@ -414,6 +435,7 @@ export default function ModificarContent({
                           active={relSortIdx === ci}
                           dir={relSortDir}
                           onClick={() => relToggleSort(ci)}
+                          hint={(activeTabData as { hints?: (string | undefined)[] }).hints?.[ci]}
                         />
                       ))}
                     </tr>
@@ -454,7 +476,7 @@ export default function ModificarContent({
                           {row.map((cell, ci) => (
                             <td
                               key={ci}
-                              className={`px-4 py-3.5 text-body text-text whitespace-nowrap ${esUltima ? "" : "border-b border-border-subtle"}`}
+                              className={`px-4 py-3.5 text-body text-text whitespace-nowrap ${ci === 0 && activeTabData.key !== "tabla3" ? "text-code font-mono" : ""} ${esUltima ? "" : "border-b border-border-subtle"}`}
                             >
                               {cell}
                             </td>

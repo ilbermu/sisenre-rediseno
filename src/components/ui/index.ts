@@ -5,6 +5,7 @@ export { default as CardHeader } from "./CardHeader";
 export { default as ChipFilterBar } from "./ChipFilterBar";
 export * from "./ChipFilterBar";
 export { default as CodeBadge } from "./CodeBadge";
+export { default as ContextoRegistro } from "./ContextoRegistro";
 export { default as ColumnHeaderHint } from "./ColumnHeaderHint";
 export * from "./ColumnHeaderHint";
 export { default as CopyButton } from "./CopyButton";

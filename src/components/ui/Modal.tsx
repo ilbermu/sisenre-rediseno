@@ -13,13 +13,11 @@ import { ICON, ICON_BTN_SM } from "@/components/ui/tokens";
 // click en el overlay o Escape.
 export default function Modal({
   title,
-  subtitle,
   open,
   onClose,
   size = "lg",
   footer,
   children,
-  headerExtra,
   paso,
   bodyPadding = true,
   bodyOverflow = "auto",
@@ -27,7 +25,6 @@ export default function Modal({
   height,
 }: {
   title: string;
-  subtitle?: string;
   open: boolean;
   onClose: () => void;
   // sm 480 · form --modal-form-w (704, formularios de edición de registro) · detalle --modal-lg-w (880, modales de detalle con gráfico y tabla) · lg 920 · xl 1120
@@ -38,16 +35,6 @@ export default function Modal({
   // junto al título, en text-body-sm text-text-muted. Nunca se abre un modal
   // desde otro modal: un paso extra es un paso del mismo modal.
   paso?: { actual: number; total: number };
-  // Slot propio para una segunda línea de header, debajo de título/cerrar
-  // pero todavía dentro del bloque con borde inferior del header — ej.
-  // contexto adicional con un CopyButton. Ningún modal existente lo pasa,
-  // así que su header no cambia. Cuando SÍ viene, el título pasa a
-  // pt-3.5/pb-0 (en vez de py-4) — el padding inferior del bloque entero
-  // lo aporta esa segunda línea (ver call site), no el título — así el
-  // gap entre título y esa línea queda compacto (mt-0.5) en vez de
-  // heredar el padding completo que separaba al título del body. Esto
-  // solo afecta a modales que pasan headerExtra.
-  headerExtra?: React.ReactNode;
   // false: el body pierde su padding p-5 — para modales que arman su
   // propio layout interno (barras, tabs, tablas de borde a borde) en vez
   // de dejar que Modal les imponga el padding estándar. Default true —
@@ -116,30 +103,18 @@ export default function Modal({
           height,
         }}
       >
-        {/* Header — sin fondo propio (mismo tratamiento que CardHeader:
-            transparente, deja ver el radio del contenedor), aplica a los 13 usos de Modal por
-            igual, no es una prop opt-in. border-b como divisor con el body
-            (bg-surface, sin cambios). título/cerrar siempre; headerExtra (si
-            viene) se apila debajo, todavía dentro de este mismo bloque. Sin
-            headerExtra, la línea de título usa los tokens de CardHeader:
-            alto h-(--card-header-h) sin padding vertical y px-(--card-px).
-            Con headerExtra, el título pasa a px-5 pt-3.5/pb-0 — el
-            padding inferior del bloque entero lo aporta headerExtra (su
-            propio pb-3.5, ver call site), con solo mt-0.5 de gap interno
-            entre las dos líneas. */}
+        {/* Header — SOLO el título y la ✕ (regla de todos los modales, ver
+            DESIGN_SYSTEM.md, "Header de modal"): sin subtítulos, códigos,
+            labels de contexto ni botones. El contexto del registro es el
+            primer bloque del cuerpo (ContextoRegistro). Sin fondo propio
+            (mismo tratamiento que CardHeader), alto h-(--card-header-h) y
+            px-(--card-px); border-b como divisor con el body. */}
         <DentroDeModalContext.Provider value={true}>
         <div className="border-b border-border shrink-0">
-          <div className={`flex items-center justify-between gap-3 ${headerExtra ? "px-5 pt-3.5 pb-0" : "h-(--card-header-h) px-(--card-px)"}`}>
+          <div className="flex items-center justify-between gap-3 h-(--card-header-h) px-(--card-px)">
             <p className={`min-w-0 truncate text-heading-md text-text`}>
               {title}
               {paso && <span className="ml-2">{pasoIndicador}</span>}
-              {subtitle && (
-                <span
-                  className="ml-2 text-code text-text-muted font-mono"
-                >
-                  {subtitle}
-                </span>
-              )}
             </p>
             <button
               type="button"
@@ -149,7 +124,6 @@ export default function Modal({
               <X size={ICON.sm} strokeWidth={1.5} />
             </button>
           </div>
-          {headerExtra}
         </div>
 
         {/* Body */}

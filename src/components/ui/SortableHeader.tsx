@@ -61,24 +61,32 @@ export function SortableTh({
   active,
   dir,
   onClick,
+  hint,
 }: {
   label: string;
   active: boolean;
   dir: SortDir;
   onClick: () => void;
+  // Nombre real de la columna en la base (ColumnHeaderHint).
+  hint?: string;
 }) {
   return (
     <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid border-b border-border px-4 py-3 text-left text-heading-xs uppercase select-none whitespace-nowrap">
-      <button
-        type="button"
-        onClick={onClick}
-        className={`flex items-center gap-1 cursor-pointer transition-colors hover:text-text ${
-          active ? "text-secondary" : "text-text-muted"
-        }`}
-      >
-        {label}
-        {active && <SortIndicator dir={dir} />}
-      </button>
+      <ColumnHeaderHint hint={hint}>
+        {(trigger) => (
+          <button
+            type="button"
+            onClick={onClick}
+            {...trigger}
+            className={`flex items-center gap-1 cursor-pointer transition-colors ${hint ? "hover:text-secondary focus-visible:text-secondary" : "hover:text-text"} ${
+              active ? "text-secondary" : "text-text-muted"
+            }`}
+          >
+            {label}
+            {active && <SortIndicator dir={dir} />}
+          </button>
+        )}
+      </ColumnHeaderHint>
     </th>
   );
 }

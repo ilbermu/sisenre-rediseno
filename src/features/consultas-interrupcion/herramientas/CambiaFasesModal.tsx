@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ICON_BTN_XS, Modal, modalNeutralBtnCls } from "@/components/ui";
+import { ContextoRegistro, ICON_BTN_XS, Modal, modalNeutralBtnCls } from "@/components/ui";
 import { CAMBIA_FASES_ROWS_INIT } from "@/data/mocks";
 
 // ─── Modal: Cambia fases ────────────────────────────────────────────────────
@@ -27,7 +27,6 @@ export default function CambiaFasesModal({
   return (
     <Modal
       title="Cambia fases"
-      subtitle={referencia}
       open={open}
       onClose={onClose}
       footer={
@@ -36,6 +35,7 @@ export default function CambiaFasesModal({
         </button>
       }
     >
+      <ContextoRegistro etiqueta="Interrupción" valor={referencia} copiable bleed />
       <div className="border border-border rounded-md overflow-hidden">
         <table className="w-full border-collapse">
           <thead>

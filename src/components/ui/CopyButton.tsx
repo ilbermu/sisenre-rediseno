@@ -6,12 +6,25 @@ import { useCopiar } from "@/components/ui/useCopiar";
 // que el botón cerrar de Modal (text-icon, hover bg-fill-muted + texto
 // text), mismo tamaño/strokeWidth de ícono. La copia (Clipboard API con
 // fallback) y el estado `copied` salen de useCopiar. Sin toasts: el feedback es el ícono cambiando a Check (color
-// success) ~1.5s y volviendo solo. `label` identifica QUÉ se copia (minúscula, sin artículo) para
+// secondary) ~1.5s y volviendo solo. `label` identifica QUÉ se copia (minúscula, sin artículo) para
 // armar aria-label/title/aria-live ("Copiar interrupción" / "Interrupción
 // copiada").
 // `size`: "sm" (default, ICON_BTN_SM) o "xs" (ICON_BTN_XS + ícono ICON.xs),
 // para ir junto a un texto chico — ej. el label de contexto de un modal.
-export default function CopyButton({ value, label, size = "sm" }: { value: string; label: string; size?: "xs" | "sm" }) {
+export default function CopyButton({
+  value,
+  label,
+  size = "sm",
+  tooltip,
+  mensaje,
+}: {
+  value: string;
+  label: string;
+  size?: "xs" | "sm";
+  // Tooltip nativo y anuncio aria-live; por defecto se arman con `label`.
+  tooltip?: string;
+  mensaje?: string;
+}) {
   const { copied, copiar: handleCopy } = useCopiar(value);
 
   const labelCapitalizado = label.charAt(0).toUpperCase() + label.slice(1);
@@ -20,14 +33,17 @@ export default function CopyButton({ value, label, size = "sm" }: { value: strin
     <>
       <button
         type="button"
-        onClick={handleCopy}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleCopy();
+        }}
         aria-label={`Copiar ${label}`}
-        title={copied ? "Copiada" : `Copiar ${label}`}
+        title={copied ? "Copiado" : (tooltip ?? `Copiar ${label}`)}
         className={`${size === "xs" ? ICON_BTN_XS : ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors shrink-0`}
       >
-        {copied ? <Check size={size === "xs" ? ICON.xs : ICON.sm} strokeWidth={1.5} className="text-success-text-strong" /> : <Copy size={size === "xs" ? ICON.xs : ICON.sm} strokeWidth={1.5} />}
+        {copied ? <Check size={size === "xs" ? ICON.xs : ICON.sm} strokeWidth={1.5} className="text-secondary" /> : <Copy size={size === "xs" ? ICON.xs : ICON.sm} strokeWidth={1.5} />}
       </button>
-      <span className="sr-only" aria-live="polite">{copied ? `${labelCapitalizado} copiada` : ""}</span>
+      <span className="sr-only" aria-live="polite">{copied ? (mensaje ?? `${labelCapitalizado} copiada`) : ""}</span>
     </>
   );
 }

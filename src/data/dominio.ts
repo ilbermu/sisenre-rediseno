@@ -61,6 +61,8 @@ export const DRAWER_TABS = [
     key: "tabla5", label: "Tabla 5",
     subtitle: "Transformadores MT/BT repuestos en interrupciones AT/MT (Tabla 5)",
     cols: ["Interrupción", "Fase", "Cadena eléctrica", "Potencia (Kva)", "Fase eléctrica", "Cant. clientes BT"],
+    // Nombre real de cada columna en la base (ColumnHeaderHint).
+    hints: ["REF", "F", "CADENA", "POT", "FAS", "CLI"],
     // Columnas con FilterTrigger en el toolbar del modal (por nombre de `cols`).
     filtrables: ["Fase eléctrica"],
     // Buscador = columnas de `cols` que NO están en `filtrables`. Con 3+
@@ -74,27 +76,30 @@ export const DRAWER_TABS = [
   {
     key: "tabla6", label: "Tabla 6",
     subtitle: "Clientes AT/MT afectados en interrupciones AT/MT (Tabla 6)",
-    cols: ["Interrupción", "Fase", "Cliente", "Consumo", "CT T9", "CT T10", "Tarifa", "Demanda media", "Tensión"],
+    cols: ["Interrupción", "Fase", "Nro. cuenta", "Consumo", "CT T9", "CT T10", "Tarifa", "Demanda media", "Tensión"],
+    hints: ["REF", "F", "POL", undefined, undefined, undefined, "TARIFA", undefined, undefined],
     filtrables: ["Tarifa", "Tensión", "CT T9", "CT T10"],
-    searchPlaceholder: "Buscar interrupción o cliente…",
+    searchPlaceholder: "Buscar interrupción o cuenta…",
     // Sin uso — ModificarContent arma las filas via generarFilasTabla6.
     rows: [] as string[][],
   },
   {
     key: "tabla8", label: "Tabla 8",
     subtitle: "Reclamos de clientes (Tabla 8)",
-    cols: ["Reclamo", "Fecha", "Cliente", "Nombre", "Tarifa", "Causa", "Piso", "Dpto", "Partido"],
-    filtrables: ["Tarifa", "Causa", "Partido"],
-    searchPlaceholder: "Buscar reclamo, cliente o nombre…",
+    cols: ["Nro. reclamo", "Fecha", "Nro. cuenta", "Nombre", "Tarifa", "Código falla", "Piso", "Dpto", "Partido"],
+    hints: ["REC", "FECHA", "POL", "NOMBRE", "TARIFA", "COD_FALLA", "PISO", "DPTO", "PARTIDO"],
+    filtrables: ["Tarifa", "Código falla", "Partido"],
+    searchPlaceholder: "Buscar reclamo, cuenta o nombre…",
     // Sin uso — ModificarContent arma las filas via generarFilasTabla8.
     rows: [] as string[][],
   },
   {
     key: "tabla9", label: "Tabla 9",
     subtitle: "Interrupciones por cliente (Tabla 9)",
-    cols: ["Interrupción", "Fase", "Cliente", "Tarifa", "CT T9", "CT T10"],
+    cols: ["Interrupción", "Fase", "Nro. cuenta", "Tarifa", "CT T9", "CT T10"],
+    hints: ["REF", "F", "POL", "TARIFA", undefined, undefined],
     filtrables: ["Tarifa", "CT T9", "CT T10"],
-    searchPlaceholder: "Buscar interrupción o cliente…",
+    searchPlaceholder: "Buscar interrupción o cuenta…",
     // Sin uso — ModificarContent arma las filas via generarFilasTabla9.
     rows: [] as string[][],
   },

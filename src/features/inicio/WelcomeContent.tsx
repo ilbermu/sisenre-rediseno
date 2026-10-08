@@ -1,5 +1,5 @@
 import { Zap } from "lucide-react";
-import { ICON } from "@/components/ui";
+import { ICON, TablaChip } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { AbmTableKey } from "@/data/types";
 import CronogramaEnre from "@/features/inicio/CronogramaEnre";
@@ -35,10 +35,8 @@ export default function WelcomeContent({ onIrATabla }: { onIrATabla: (k: AbmTabl
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="text-heading-md text-text group-hover:text-secondary transition-colors">{item.label}</p>
-                  <span
-                    className="text-caption font-mono px-1.5 py-0.5 rounded-xs border border-border-strong text-text-muted"
-                  >
-                    {ABM_TABLE_CONFIGS[item.tableKey].nombre}
+                  <span title={item.tableKey.toUpperCase()}>
+                    <TablaChip nombre={ABM_TABLE_CONFIGS[item.tableKey].nombre} />
                   </span>
                 </div>
                 <p className="text-body-sm text-text-muted">{item.desc}</p>

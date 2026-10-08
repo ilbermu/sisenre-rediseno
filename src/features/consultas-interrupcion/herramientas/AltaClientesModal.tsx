@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   actionBtnCls,
   BTN_SM,
+  ContextoRegistro,
   Modal,
   ModalCheckbox,
   modalNeutralBtnCls,
@@ -25,7 +26,6 @@ export default function AltaClientesModal({
   return (
     <Modal
       title="Alta de clientes BT"
-      subtitle={referencia}
       open={open}
       onClose={onClose}
       footer={
@@ -39,6 +39,7 @@ export default function AltaClientesModal({
         </>
       }
     >
+      <ContextoRegistro etiqueta="Interrupción" valor={referencia} copiable bleed />
       <div className="flex items-center justify-end gap-2 mb-3">
         <span className="text-body-sm text-text-muted">Filtro</span>
         <button
