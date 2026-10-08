@@ -4,7 +4,7 @@ import AnchoredPopover from "@/components/ui/AnchoredPopover";
 import FieldLabel from "@/components/ui/FieldLabel";
 import { FilterTriggerButton, RANGO_TEXTO_VACIO, RangoTexto } from "@/components/ui/FilterTrigger";
 import RangoFechaCalendario, { rangoDePeriodo } from "@/components/ui/RangoFechaCalendario";
-import { FOCUS_RING, ghostBtnCls, ICON, ICON_BTN_MD, ICON_BTN_XS, MOD_FIELD_CLS } from "@/components/ui/tokens";
+import { FOCUS_RING, ghostBtnCls, ICON, ICON_BTN_XS, MOD_FIELD_CLS } from "@/components/ui/tokens";
 
 // ─── Tipos y helpers ──────────────────────────────────────────────────────────
 
@@ -82,8 +82,6 @@ const ID_DEBOUNCE_MS = 500;
 // Ancho máximo de un chip: el valor trunca con "…" y el texto completo va
 // en el `title` del chip.
 const CHIP_MAX = 200;
-// Modo compacto (desborde, paso b): chips más angostos.
-const CHIP_MAX_COMPACTO = 150;
 
 // Ítem de menú/lista de los popovers — el de la lista de FilterTrigger.
 const itemCls = (sel: boolean) =>
@@ -174,12 +172,9 @@ function EditorTexto({ def, valor, onAplicar }: { def: ChipFiltroDef; valor: str
   );
 }
 
-// ─── Piezas compartidas por las dos variantes ────────────────────────────────
+// ─── Piezas de la barra ──────────────────────────────────────────────────────
 
 type ChipFilterBarProps = {
-  // "completa" (default): la barra de los ABM. "compact": paneles angostos
-  // (ID + Fecha + "Filtros" agrupados, ver ChipFilterBarCompacta).
-  variant?: "completa" | "compact";
   id: string;
   onIdChange: (v: string) => void;
   idPlaceholder: string;
@@ -299,7 +294,7 @@ function EditorDeFiltro({
   );
 }
 
-// Chip de un filtro en la barra (mismo aspecto en las dos variantes).
+// Chip de un filtro en la barra.
 function ChipDeFiltro({
   def,
   valores,
@@ -341,21 +336,17 @@ function ChipDeFiltro({
 
 // ─── ChipFilterBar ────────────────────────────────────────────────────────────
 
-export default function ChipFilterBar(props: ChipFilterBarProps) {
-  return props.variant === "compact" ? <ChipFilterBarCompacta {...props} /> : <ChipFilterBarCompleta {...props} />;
-}
-
-type Abierto = { campo: string; ancla: "chip" | "mas" };
+type Abierto = { campo: string; ancla: "chip" | "boton" };
 
 // Barra de filtros híbrida (ver DESIGN_SYSTEM.md, "ChipFilterBar" y "Barra
 // de filtros híbrida"): input de ID directo + chips de filtro que aplican al
-// instante, sin botón Buscar. Una sola línea, todo a --control-md:
-//   ID · chips visibles · │ chips agregados · +N filtros · Agregar filtro · (ml-auto) Limpiar filtros
+// instante, sin botón Buscar. SIEMPRE una sola fila, todo a --control-md:
+//   ID · chips visibles · │ chips agregados · [Más filtros | Agregar filtro] · (ml-auto) Limpiar filtros
 // Controlada desde la pantalla: `id` y `valores` (campo → valor, "" = sin
 // filtro) vienen por props y cada cambio se avisa al instante. Los chips
 // agregados (cuáles están en la barra) son estado propio: un agregado sin
 // valor existe solo mientras su editor está abierto.
-function ChipFilterBarCompleta({
+export default function ChipFilterBar({
   id,
   onIdChange,
   idPlaceholder,
@@ -372,7 +363,7 @@ function ChipFilterBarCompleta({
   // ── Chips agregados (en orden de alta).
   const [agregados, setAgregados] = useState<string[]>(() => agregables.filter((d) => valores[d.campo]).map((d) => d.campo));
   const [abierto, setAbierto] = useState<Abierto | null>(null);
-  const [menu, setMenu] = useState<"agregar" | "mas" | null>(null);
+  const [menu, setMenu] = useState(false);
   // Un agregado sin valor (limpiado desde afuera) sale de la barra, salvo el
   // que se está editando.
   useEffect(() => {
@@ -383,18 +374,20 @@ function ChipFilterBarCompleta({
   }, [valores, abierto]);
 
   const defs = useMemo(() => new Map([...visibles, ...agregables].map((d) => [d.campo, d])), [visibles, agregables]);
+  // Orden de prioridad de lo que puede estar en la barra: los visibles, y
+  // después los agregados en orden de alta.
+  const secuencia = [...visibles, ...agregados.map((c) => defs.get(c)!)];
   const disponibles = agregables.filter((d) => !agregados.includes(d.campo));
-  // Sin agregables (la tabla tiene 5 filtros o menos), no hay "Agregar
-  // filtro".
-  const hayAgregar = agregables.length > 0;
 
-  // ── Desborde: la barra nunca pasa de una línea. Si no entra todo, en
-  // orden: (a) los agregados, de derecha a izquierda, pasan a "+N filtros";
-  // (b) modo compacto: "Agregar filtro" solo ícono y chips a 150px. El ID es
-  // de ancho fijo (--filter-id-w): no se achica. Los visibles nunca
-  // se ocultan. Los anchos naturales salen de una fila de medición
-  // invisible; se recalcula al cambiar filtros y con el ancho de la barra
-  // (ResizeObserver).
+  // ── Overflow: la barra nunca pasa de una línea. Se muestran el ID y los
+  // chips de `secuencia` mientras entren; los que no entran se ocultan
+  // empezando por el último y pasan al botón final "Más filtros" (sin
+  // ocultos, ese botón es "Agregar filtro"). El ID es de ancho fijo
+  // (--filter-id-w): no se achica. Los anchos naturales salen de una fila de
+  // medición invisible; se recalcula con el ancho de la barra
+  // (ResizeObserver) y al cambiar un filtro (un chip con valor cambia de
+  // ancho), pero no mientras hay un popover abierto: los chips no se mueven
+  // debajo del cursor.
   const barraRef = useRef<HTMLDivElement>(null);
   const idRef = useRef<HTMLDivElement>(null);
   const medidasRef = useRef(new Map<string, HTMLElement>());
@@ -411,54 +404,52 @@ function ChipFilterBarCompleta({
     setAnchoBarra(el.clientWidth);
     return () => ro.disconnect();
   }, []);
-  const [disposicion, setDisposicion] = useState({ enBarra: agregados.length, compacto: false });
-  const hayAlgo = !!id || !!borradorId || visibles.some((d) => valores[d.campo]) || agregados.some((c) => valores[c]);
+  // Cantidad de ítems de `secuencia` que entran en la barra.
+  const [enBarra, setEnBarra] = useState(secuencia.length);
+  const hayAlgo = !!id || !!borradorId || [...visibles, ...agregables].some((d) => valores[d.campo]);
+  const hayPopover = menu || abierto !== null;
   useLayoutEffect(() => {
     const barra = barraRef.current;
-    if (!barra || anchoBarra === 0) return;
+    if (!barra || anchoBarra === 0 || hayPopover) return;
     const gap = parseFloat(getComputedStyle(barra).columnGap) || 0;
     const ancho = (clave: string) => medidasRef.current.get(clave)?.offsetWidth ?? 0;
-    const chipAncho = (campo: string, cap: number) => Math.min(ancho(`chip:${campo}`), cap);
-    const total = (n: number, compacto: boolean) => {
-      const cap = compacto ? CHIP_MAX_COMPACTO : CHIP_MAX;
+    const total = (n: number) => {
+      const hayOcultos = n < secuencia.length;
       const anchos = [
         idRef.current?.offsetWidth ?? 0,
-        ...visibles.map((d) => chipAncho(d.campo, cap)),
-        ...(agregados.length > 0 ? [1] : []),
-        ...agregados.slice(0, n).map((c) => chipAncho(c, cap)),
-        ...(n < agregados.length ? [ancho("mas")] : []),
-        ...(hayAgregar ? [ancho(compacto ? "agregar-icono" : "agregar")] : []),
+        ...secuencia.slice(0, n).map((d) => Math.min(ancho(`chip:${d.campo}`), CHIP_MAX)),
+        ...(n > visibles.length ? [1] : []),
+        ...(hayOcultos ? [ancho("mas")] : agregables.length > 0 ? [ancho("agregar")] : []),
         ...(hayAlgo ? [ancho("limpiar")] : []),
       ];
       return anchos.reduce((a, b) => a + b, 0) + gap * (anchos.length - 1);
     };
-    let elegida = { enBarra: 0, compacto: true };
-    buscar: for (const compacto of [false, true]) {
-      for (let n = agregados.length; n >= 0; n--) {
-        if (total(n, compacto) <= anchoBarra) {
-          elegida = { enBarra: n, compacto };
-          break buscar;
-        }
+    let elegida = 0;
+    for (let n = secuencia.length; n >= 0; n--) {
+      if (total(n) <= anchoBarra) {
+        elegida = n;
+        break;
       }
     }
-    setDisposicion((prev) => (prev.enBarra === elegida.enBarra && prev.compacto === elegida.compacto ? prev : elegida));
+    setEnBarra((prev) => (prev === elegida ? prev : elegida));
   });
-  const agregadosVisibles = agregados.slice(0, disposicion.enBarra);
-  const ocultos = agregados.slice(disposicion.enBarra);
+  const enBarraDefs = secuencia.slice(0, enBarra);
+  const ocultos = secuencia.slice(enBarra);
+  const ocultosActivos = ocultos.filter((d) => valores[d.campo]).length;
+  const hayOcultos = ocultos.length > 0;
 
   // ── Anclas de los popovers.
   const chipRefs = useRef(new Map<string, HTMLButtonElement>());
-  const masRef = useRef<HTMLButtonElement>(null);
-  const agregarRef = useRef<HTMLButtonElement>(null);
+  const botonRef = useRef<HTMLButtonElement>(null);
   const abiertoRef = useRef(abierto);
   abiertoRef.current = abierto;
-  // El editor se ancla a su chip; si el chip está oculto (en "+N"), al "+N".
+  // El editor se ancla a su chip; si el chip está oculto, al botón final.
   const anclaEditor = useMemo<React.RefObject<HTMLElement | null>>(
     () => ({
       get current() {
         const a = abiertoRef.current;
         if (!a) return null;
-        return (a.ancla === "chip" ? chipRefs.current.get(a.campo) : null) ?? masRef.current ?? agregarRef.current;
+        return (a.ancla === "chip" ? chipRefs.current.get(a.campo) : null) ?? botonRef.current;
       },
     }),
     [],
@@ -488,42 +479,84 @@ function ChipFilterBarCompleta({
   }
   function agregar(campo: string) {
     setAgregados((prev) => [...prev, campo]);
-    setMenu(null);
+    setMenu(false);
     setAbierto({ campo, ancla: "chip" });
   }
+  // Borra TODO: ID y todos los filtros, visibles u ocultos.
   function limpiarTodo() {
     setBorradorId("");
     setAgregados([]);
     setAbierto(null);
-    setMenu(null);
+    setMenu(false);
     onLimpiar();
   }
 
-  const chipMax = disposicion.compacto ? CHIP_MAX_COMPACTO : CHIP_MAX;
   const chip = (def: ChipFiltroDef) => (
     <ChipDeFiltro
       key={def.campo}
       def={def}
       valores={valores}
       open={abierto?.campo === def.campo}
-      maxWidth={chipMax}
+      maxWidth={CHIP_MAX}
       buttonRef={refChip(def.campo)}
       onToggle={() => (abierto?.campo === def.campo ? cerrarEditor() : setAbierto({ campo: def.campo, ancla: "chip" }))}
       onClear={() => quitar(def.campo)}
     />
   );
 
-  // "+N filtros": chip pintado, mismo aspecto que un chip con valor.
-  const masCls = "h-(--control-md) px-2.5 rounded-sm text-label border inline-flex items-center whitespace-nowrap bg-primary-tint border-primary text-secondary";
+  // "Más filtros": con filtros ocultos activos, estilo seleccionado + contador.
+  const masSel = ocultosActivos > 0 || (menu && hayOcultos);
+  const masCls = `h-(--control-md) shrink-0 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${
+    masSel
+      ? "bg-primary-tint border-chip-border text-secondary"
+      : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
+  }`;
+  const contador = (n: number) => (
+    <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-secondary text-white text-caption font-semibold tabular-nums inline-flex items-center justify-center">
+      {n}
+    </span>
+  );
 
   const defAbierto = abierto ? defs.get(abierto.campo) : undefined;
+  const filaOculta = (d: ChipFiltroDef, i: number) => {
+    const v = valores[d.campo] ?? "";
+    const texto = v ? textoValor(d, v, valores) : "";
+    return (
+      <div key={d.campo} className="group flex items-center gap-1 rounded-sm hover:bg-fill-muted focus-within:bg-fill-muted">
+        <button
+          type="button"
+          role="menuitem"
+          autoFocus={i === 0}
+          title={texto ? `${d.label}: ${texto}` : d.label}
+          onClick={() => {
+            setMenu(false);
+            setAbierto({ campo: d.campo, ancla: "boton" });
+          }}
+          className={`flex-1 min-w-0 px-2.5 py-2 rounded-sm text-left text-body flex items-baseline justify-between gap-3 ${FOCUS_RING}`}
+        >
+          <span className="shrink-0 text-text">{d.chipLabel ?? d.label}</span>
+          {texto ? <span className="min-w-0 truncate text-secondary font-semibold tabular-nums">{texto}</span> : <span className="shrink-0 text-text-muted">Todos</span>}
+        </button>
+        {texto && (
+          <button
+            type="button"
+            aria-label={`Quitar filtro ${d.label}`}
+            onClick={() => quitar(d.campo)}
+            className={`${ICON_BTN_XS} shrink-0 mr-1 flex items-center justify-center rounded-sm text-icon opacity-60 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-fill-muted hover:text-text transition-[opacity,color,background-color] ${FOCUS_RING}`}
+          >
+            <X size={ICON.sm} strokeWidth={1.5} />
+          </button>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div ref={barraRef} className="relative shrink-0 flex items-center gap-2 flex-nowrap min-w-0">
       {/* Fila de medición: anchos naturales de lo que puede desbordar.
           Invisible, inerte y fuera del flujo. */}
       <div aria-hidden inert className="absolute left-0 top-0 invisible pointer-events-none flex items-center gap-2 whitespace-nowrap">
-        {[...visibles, ...agregados.map((c) => defs.get(c)!)].map((d) => {
+        {secuencia.map((d) => {
           const v = valores[d.campo] ?? "";
           return (
             <div key={d.campo} ref={refMedida(`chip:${d.campo}`)} className="shrink-0 flex">
@@ -542,13 +575,15 @@ function ChipFilterBarCompleta({
             </div>
           );
         })}
-        <span ref={refMedida("mas")} className={`${masCls} shrink-0`}>+{agregados.length} filtros</span>
+        <span ref={refMedida("mas")} className={masCls}>
+          <SlidersHorizontal size={ICON.sm} strokeWidth={1.5} />
+          Más filtros
+          {contador(secuencia.length)}
+          <ChevronDown size={ICON.xs} strokeWidth={1.5} />
+        </span>
         <span ref={refMedida("agregar")} className={`${ghostBtnCls("neutral")} h-(--control-md)! gap-1.5`}>
           <Plus size={ICON.sm} strokeWidth={1.5} />
           Agregar filtro
-        </span>
-        <span ref={refMedida("agregar-icono")} className={`${ghostBtnCls("neutral")} ${ICON_BTN_MD} px-0!`}>
-          <Plus size={ICON.sm} strokeWidth={1.5} />
         </span>
         <span ref={refMedida("limpiar")} className="text-label">Limpiar filtros</span>
       </div>
@@ -564,282 +599,78 @@ function ChipFilterBarCompleta({
         className="shrink-0 w-(--filter-id-w)"
       />
 
-      {/* 2. Chips visibles — siempre en la barra. */}
-      {visibles.map((d) => chip(d))}
+      {/* 2. Chips visibles que entran, en su orden de prioridad. */}
+      {enBarraDefs.slice(0, visibles.length).map((d) => chip(d))}
 
-      {/* 3. Chips agregados. */}
-      {agregados.length > 0 && <div className="w-px h-5 bg-border shrink-0" />}
-      {agregadosVisibles.map((c) => chip(defs.get(c)!))}
+      {/* 3. Chips agregados que entran. */}
+      {enBarra > visibles.length && <div className="w-px h-5 bg-border shrink-0" />}
+      {enBarraDefs.slice(visibles.length).map((d) => chip(d))}
 
-      {/* 4. "+N filtros" — los agregados que no entran. */}
-      {ocultos.length > 0 && (
+      {/* 4. Botón final: "Más filtros" si hay ocultos; si no, "Agregar
+          filtro" (solo con agregables). */}
+      {hayOcultos ? (
         <button
-          ref={masRef}
+          ref={botonRef}
           type="button"
           aria-haspopup="menu"
-          aria-expanded={menu === "mas"}
-          onClick={() => setMenu(menu === "mas" ? null : "mas")}
-          className={`${masCls} shrink-0 ${FOCUS_RING}`}
+          aria-expanded={menu}
+          aria-label={ocultosActivos > 0 ? `Más filtros (${ocultosActivos} activos)` : undefined}
+          onClick={() => setMenu(!menu)}
+          className={`${masCls} ${FOCUS_RING}`}
         >
-          +{ocultos.length} {ocultos.length === 1 ? "filtro" : "filtros"}
+          <SlidersHorizontal size={ICON.sm} strokeWidth={1.5} />
+          Más filtros
+          {ocultosActivos > 0 && contador(ocultosActivos)}
+          {menu ? <ChevronUp size={ICON.xs} strokeWidth={1.5} /> : <ChevronDown size={ICON.xs} strokeWidth={1.5} />}
         </button>
+      ) : (
+        agregables.length > 0 && (
+          <button
+            ref={botonRef}
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded={menu}
+            disabled={disponibles.length === 0}
+            onClick={() => setMenu(!menu)}
+            className={`${ghostBtnCls("neutral")} shrink-0 h-(--control-md)! gap-1.5`}
+          >
+            <Plus size={ICON.sm} strokeWidth={1.5} />
+            Agregar filtro
+          </button>
+        )
       )}
 
-      {/* 5. Agregar filtro — solo si la tabla tiene agregables. */}
-      {hayAgregar && (
-      <button
-        ref={agregarRef}
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={menu === "agregar"}
-        aria-label={disposicion.compacto ? "Agregar filtro" : undefined}
-        title={disposicion.compacto ? "Agregar filtro" : undefined}
-        disabled={disponibles.length === 0}
-        onClick={() => setMenu(menu === "agregar" ? null : "agregar")}
-        className={`${ghostBtnCls("neutral")} shrink-0 ${disposicion.compacto ? `${ICON_BTN_MD} px-0!` : "h-(--control-md)! gap-1.5"}`}
-      >
-        <Plus size={ICON.sm} strokeWidth={1.5} />
-        {!disposicion.compacto && "Agregar filtro"}
-      </button>
-      )}
-
-      {/* 6. Limpiar filtros — solo con algún filtro o ID cargado. */}
+      {/* 5. Limpiar filtros — solo con algún filtro o ID cargado; borra
+          todo, también lo oculto. */}
       {hayAlgo && (
-        <button type="button" onClick={limpiarTodo} className="ml-auto shrink-0 whitespace-nowrap text-label text-secondary hover:underline">
+        <button type="button" onClick={limpiarTodo} className={`ml-auto shrink-0 whitespace-nowrap rounded-sm text-label text-secondary hover:underline ${FOCUS_RING}`}>
           Limpiar filtros
         </button>
       )}
 
-      {/* Menú "Agregar filtro". */}
-      <AnchoredPopover anchorRef={agregarRef} open={menu === "agregar"} onClose={() => setMenu(null)} role="menu" ariaLabel="Agregar filtro">
-        <div className="p-1.5 flex flex-col gap-0.5 min-w-52">
+      {/* Popover del botón final. "Más filtros": los ocultos (nombre a la
+          izquierda, valor o "Todos" a la derecha, ✕ con valor), un
+          separador, "Más campos" y los agregables. "Agregar filtro": solo
+          los agregables. */}
+      <AnchoredPopover anchorRef={botonRef} open={menu} onClose={() => setMenu(false)} role="menu" ariaLabel={hayOcultos ? "Más filtros" : "Agregar filtro"}>
+        <div className="p-1.5 flex flex-col gap-0.5" style={{ width: hayOcultos ? 300 : undefined, minWidth: hayOcultos ? undefined : 208 }}>
+          {ocultos.map((d, i) => filaOculta(d, i))}
+          {hayOcultos && disponibles.length > 0 && (
+            <>
+              <div className="my-1 border-t border-border-subtle" />
+              <p className="px-2.5 pb-1 text-heading-xs uppercase text-text-muted select-none">Más campos</p>
+            </>
+          )}
           {disponibles.map((d, i) => (
-            <button key={d.campo} type="button" role="menuitem" autoFocus={i === 0} onClick={() => agregar(d.campo)} className={itemCls(false) + " whitespace-nowrap"}>
+            <button key={d.campo} type="button" role="menuitem" autoFocus={!hayOcultos && i === 0} onClick={() => agregar(d.campo)} className={itemCls(false) + " whitespace-nowrap"}>
               {d.label}
             </button>
           ))}
         </div>
       </AnchoredPopover>
 
-      {/* Menú "+N filtros": filas con etiqueta + valor; ✕ ghost para quitar. */}
-      <AnchoredPopover anchorRef={masRef} open={menu === "mas" && ocultos.length > 0} onClose={() => setMenu(null)} role="menu" ariaLabel="Filtros ocultos">
-        <div className="p-1.5 flex flex-col gap-0.5" style={{ width: 280 }}>
-          {ocultos.map((c, i) => {
-            const d = defs.get(c)!;
-            const v = valores[c] ?? "";
-            const texto = v ? textoValor(d, v, valores) : "";
-            return (
-              <div key={c} className="group flex items-center gap-1 rounded-sm hover:bg-fill-muted focus-within:bg-fill-muted">
-                <button
-                  type="button"
-                  role="menuitem"
-                  autoFocus={i === 0}
-                  title={texto ? `${d.label}: ${texto}` : d.label}
-                  onClick={() => {
-                    setMenu(null);
-                    setAbierto({ campo: c, ancla: "mas" });
-                  }}
-                  className={`flex-1 min-w-0 px-2.5 py-2 rounded-sm text-left text-body flex items-baseline gap-1.5 ${FOCUS_RING}`}
-                >
-                  <span className="shrink-0 text-text-muted">{d.label}</span>
-                  <span className="min-w-0 truncate text-text">{texto}</span>
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Quitar filtro ${d.label}`}
-                  onClick={() => quitar(c)}
-                  className={`${ICON_BTN_XS} shrink-0 mr-1 flex items-center justify-center rounded-sm text-icon opacity-60 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-fill-muted hover:text-text transition-[opacity,color,background-color] ${FOCUS_RING}`}
-                >
-                  <X size={ICON.sm} strokeWidth={1.5} />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </AnchoredPopover>
-
-      {/* Editor del filtro abierto — anclado a su chip (o al "+N"). */}
-      <AnchoredPopover
-        anchorRef={anclaEditor}
-        open={!!defAbierto}
-        onClose={cerrarEditor}
-        reposicionar={`${disposicion.enBarra}|${disposicion.compacto}|${anchoBarra}`}
-      >
-        {defAbierto && <EditorDeFiltro def={defAbierto} valores={valores} periodo={periodo} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
-      </AnchoredPopover>
-    </div>
-  );
-}
-
-// ─── Variante compacta ────────────────────────────────────────────────────────
-
-type AbiertoCompacta = { campo: string; ancla: "chip" | "filtros" };
-
-// Variante compacta (`variant="compact"`, ver DESIGN_SYSTEM.md,
-// "ChipFilterBar"): para paneles angostos (el maestro de un maestro-detalle).
-// Siempre una sola fila, sin desborde que calcular:
-//   ID (flexible, 160–260px) · chip Fecha · [Filtros ⌄] · (ml-auto) Limpiar
-// El chip de fecha es el/los visibles con editor "fecha", igual que en la
-// variante completa. Todos los demás filtros (los visibles que no son fecha
-// y, debajo de "Más campos", los agregables) van agrupados en el popover de
-// "Filtros" (300px, anclado al botón): una fila por filtro con el nombre a
-// la izquierda y el valor a la derecha ("Todos" sin filtro); la fila abre el
-// MISMO editor que su chip, anclado al botón "Filtros". Con alguno de esos
-// filtros activo, el botón toma el estilo seleccionado y muestra cuántos, y
-// aparece "Limpiar" (limpia solo los filtros del popover; ID y fecha tienen
-// su ✕). Aplicación instantánea, como la completa.
-function ChipFilterBarCompacta({ id, onIdChange, idPlaceholder, visibles, agregables, valores, onChange, periodo }: ChipFilterBarProps) {
-  const [borradorId, setBorradorId] = useBorradorId(id, onIdChange);
-  useSeguirPeriodo(periodo, [...visibles, ...agregables], valores, onChange);
-
-  const fechas = visibles.filter((d) => d.editor === "fecha");
-  const principales = visibles.filter((d) => d.editor !== "fecha");
-  const enPanel = [...principales, ...agregables];
-  const defs = useMemo(() => new Map([...visibles, ...agregables].map((d) => [d.campo, d])), [visibles, agregables]);
-  const activos = enPanel.filter((d) => valores[d.campo]).length;
-
-  const [panel, setPanel] = useState(false);
-  const [abierto, setAbierto] = useState<AbiertoCompacta | null>(null);
-  const chipRefs = useRef(new Map<string, HTMLButtonElement>());
-  const filtrosRef = useRef<HTMLButtonElement>(null);
-  const abiertoRef = useRef(abierto);
-  abiertoRef.current = abierto;
-  const anclaEditor = useMemo<React.RefObject<HTMLElement | null>>(
-    () => ({
-      get current() {
-        const a = abiertoRef.current;
-        if (!a) return null;
-        return (a.ancla === "chip" ? chipRefs.current.get(a.campo) : null) ?? filtrosRef.current;
-      },
-    }),
-    [],
-  );
-  const refChip = (campo: string) => (el: HTMLButtonElement | null) => {
-    if (el) chipRefs.current.set(campo, el);
-    else chipRefs.current.delete(campo);
-  };
-
-  function aplicar(campo: string, v: string) {
-    onChange(campo, v);
-    const ancla = anclaEditor.current;
-    setAbierto(null);
-    ancla?.focus();
-  }
-  function limpiarPanel() {
-    for (const d of enPanel) if (valores[d.campo]) onChange(d.campo, "");
-  }
-
-  const defAbierto = abierto ? defs.get(abierto.campo) : undefined;
-  const filaPanel = (d: ChipFiltroDef, autoFocus: boolean) => {
-    const v = valores[d.campo] ?? "";
-    const texto = v ? textoValor(d, v, valores) : "";
-    return (
-      <div key={d.campo} className="group flex items-center gap-1 rounded-sm hover:bg-fill-muted focus-within:bg-fill-muted">
-        <button
-          type="button"
-          autoFocus={autoFocus}
-          title={texto ? `${d.label}: ${texto}` : d.label}
-          aria-haspopup={d.editor === "lista" || d.editor === "busqueda" ? "listbox" : "dialog"}
-          onClick={() => {
-            setPanel(false);
-            setAbierto({ campo: d.campo, ancla: "filtros" });
-          }}
-          className={`flex-1 min-w-0 px-2.5 py-2 rounded-sm text-left text-body flex items-baseline justify-between gap-3 ${FOCUS_RING}`}
-        >
-          <span className="shrink-0 text-text">{d.chipLabel ?? d.label}</span>
-          {texto ? (
-            <span className="min-w-0 truncate text-secondary font-semibold tabular-nums">{texto}</span>
-          ) : (
-            <span className="shrink-0 text-text-muted">Todos</span>
-          )}
-        </button>
-        {texto && (
-          <button
-            type="button"
-            aria-label={`Quitar filtro ${d.label}`}
-            onClick={() => onChange(d.campo, "")}
-            className={`${ICON_BTN_XS} shrink-0 mr-1 flex items-center justify-center rounded-sm text-icon opacity-60 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-fill-muted hover:text-text transition-[opacity,color,background-color] ${FOCUS_RING}`}
-          >
-            <X size={ICON.sm} strokeWidth={1.5} />
-          </button>
-        )}
-      </div>
-    );
-  };
-
-  const seleccionado = activos > 0 || panel || abierto?.ancla === "filtros";
-  return (
-    <div className="relative shrink-0 flex items-center gap-2 flex-nowrap min-w-0">
-      <InputId
-        borrador={borradorId}
-        setBorrador={setBorradorId}
-        onIdChange={onIdChange}
-        placeholder={idPlaceholder}
-        className="flex-1 min-w-[160px] max-w-[260px]"
-      />
-
-      {fechas.map((d) => (
-        <ChipDeFiltro
-          key={d.campo}
-          def={d}
-          valores={valores}
-          open={abierto?.campo === d.campo}
-          maxWidth={CHIP_MAX_COMPACTO}
-          buttonRef={refChip(d.campo)}
-          onToggle={() => setAbierto(abierto?.campo === d.campo ? null : { campo: d.campo, ancla: "chip" })}
-          onClear={() => onChange(d.campo, "")}
-        />
-      ))}
-
-      {enPanel.length > 0 && (
-        <button
-          ref={filtrosRef}
-          type="button"
-          aria-haspopup="dialog"
-          aria-expanded={panel}
-          aria-label={activos > 0 ? `Filtros (${activos} activos)` : undefined}
-          onClick={() => setPanel(!panel)}
-          className={`h-(--control-md) shrink-0 px-2.5 rounded-sm text-label border inline-flex items-center gap-1.5 whitespace-nowrap transition-colors ${FOCUS_RING} ${
-            seleccionado
-              ? "bg-primary-tint border-chip-border text-secondary"
-              : "border-transparent bg-transparent text-text hover:bg-primary-tint hover:border-primary hover:text-secondary"
-          }`}
-        >
-          <SlidersHorizontal size={ICON.sm} strokeWidth={1.5} />
-          Filtros
-          {activos > 0 && (
-            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-secondary text-white text-caption font-semibold tabular-nums inline-flex items-center justify-center">
-              {activos}
-            </span>
-          )}
-          {panel ? <ChevronUp size={ICON.xs} strokeWidth={1.5} /> : <ChevronDown size={ICON.xs} strokeWidth={1.5} />}
-        </button>
-      )}
-
-      {activos > 0 && (
-        <button type="button" onClick={limpiarPanel} className={`ml-auto shrink-0 whitespace-nowrap rounded-sm text-label text-secondary hover:underline ${FOCUS_RING}`}>
-          Limpiar
-        </button>
-      )}
-
-      {/* Popover "Filtros": los visibles que no son fecha y, debajo de "Más
-          campos", los agregables. */}
-      <AnchoredPopover anchorRef={filtrosRef} open={panel} onClose={() => setPanel(false)} role="dialog" ariaLabel="Filtros">
-        <div className="p-1.5 flex flex-col gap-0.5" style={{ width: 300 }}>
-          {principales.map((d, i) => filaPanel(d, i === 0))}
-          {agregables.length > 0 && (
-            <>
-              <p className={`px-2.5 pt-2 pb-1 text-heading-xs uppercase text-text-muted select-none ${principales.length > 0 ? "mt-1 border-t border-border-subtle" : ""}`}>
-                Más campos
-              </p>
-              {agregables.map((d, i) => filaPanel(d, principales.length === 0 && i === 0))}
-            </>
-          )}
-        </div>
-      </AnchoredPopover>
-
-      {/* Editor del filtro abierto — anclado a su chip o al botón "Filtros". */}
-      <AnchoredPopover anchorRef={anclaEditor} open={!!defAbierto} onClose={() => setAbierto(null)}>
+      {/* Editor del filtro abierto — anclado a su chip (o al botón final). */}
+      <AnchoredPopover anchorRef={anclaEditor} open={!!defAbierto} onClose={cerrarEditor} reposicionar={`${enBarra}|${anchoBarra}`}>
         {defAbierto && <EditorDeFiltro def={defAbierto} valores={valores} periodo={periodo} onAplicar={(v) => aplicar(defAbierto.campo, v)} />}
       </AnchoredPopover>
     </div>

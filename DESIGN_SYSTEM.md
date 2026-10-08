@@ -88,7 +88,9 @@ Octava pasada (también 06/10/2026):
 - **`TopBar`:** el top bar sale de `App.tsx` a `src/components/layout/TopBar.tsx`
   (prop `title`, mapa pantalla → título). Consultas de interrupción deja su
   encabezado propio (breadcrumb + título `heading-lg` + período) y usa
-  `TopBar` con "Búsqueda de interrupciones", como Inicio y "Otros".
+  `TopBar` con "Búsqueda de interrupciones" (desde el 08/10/2026,
+  "Consulta de interrupciones", igual que su ítem del menú), como Inicio y
+  "Otros".
 
 Novena pasada (también 06/10/2026):
 
@@ -421,8 +423,15 @@ Vigesimosexta pasada (también 06/10/2026):
   seleccionada como hoja blanca a la derecha (header, franja de cifras,
   línea de tiempo de reposiciones y reclamos). Patrón nuevo:
   [Maestro-detalle](#maestro-detalle).
-- **`ChipFilterBar` — variante compacta** (`variant="compact"`): ID + Fecha
-  + botón "Filtros" con el resto agrupado en un popover.
+- **`ChipFilterBar` — un solo overflow:** la barra es siempre una sola fila
+  y los chips que no entran se ocultan por prioridad (del último al primero)
+  hacia un botón final "Más filtros" (o "Agregar filtro" si no se oculta
+  ninguno), con contador de ocultos activos. Reemplaza al "+N filtros" y al
+  modo compacto; no hay variante compacta. "Limpiar filtros" borra todo.
+- **Consulta de interrupciones:** la pantalla y su ítem de menú se llaman
+  igual ("Consulta de interrupciones"). La sección Reclamos de la hoja pasa
+  de una franja de cifras a una frase + mini gráfico de barras sobre el
+  tramo de la interrupción, con "Ver reclamos".
 - **Componentes nuevos:** [`Timeline`](#timeline) (línea de tiempo vertical
   genérica) y [`TablaChip`](#tablachip) (el chip "Tabla N", que sale de
   `AbmTableSelector` para reusarse).
@@ -1198,7 +1207,8 @@ todas las tablas del ABM.
 `--control-md`, en este orden:
 
 ```
-[🔍 Código de interrupción ✕] Fecha ▾  Nivel de tensión: MT ✕  Fase eléctrica ▾  Origen ▾  Tipo ▾ │ Código equipo: @27… ✕  PROTECCION DE SUM… ✕  +2 filtros  [+ Agregar filtro]      Limpiar filtros
+[🔍 Código de interrupción ✕] Fecha ▾  Nivel de tensión: MT ✕  Fase eléctrica ▾ │ Código equipo: @27… ✕  [⚙ Más filtros ②⌄]      Limpiar filtros
+[🔍 Código de interrupción ✕] Fecha ▾  Nivel de tensión ▾  Fase eléctrica ▾  Origen ▾  Tipo ▾  [+ Agregar filtro]              ← sin ocultos
 ```
 
 1. **Input de ID:** lupa a la izquierda, ✕ interno (`ICON_BTN_XS`) con
@@ -1210,7 +1220,8 @@ todas las tablas del ABM.
    placeholder más largo completo en todos los tiers y no se achica con el
    desborde. Aplica con Enter o a los 500 ms de dejar de tipear; busca
    "contiene" sin distinguir mayúsculas.
-2. **Chips visibles** (siempre en la barra, hasta 5): `FilterTriggerButton` `md`
+2. **Chips visibles** (hasta 5, en su orden de prioridad; los que no entran
+   pasan a "Más filtros", ver Overflow): `FilterTriggerButton` `md`
    (`chevronConValor={false}`). Vacío = trigger sin borde, **texto +
    chevron, sin ✕**; con valor = pintado (`primary-tint`, `border-primary`,
    `text-secondary`), "chipLabel: **valor**" (valor en semibold) o solo
@@ -1219,16 +1230,17 @@ todas las tablas del ABM.
    ella, nunca se superponen.
 3. **Separador vertical** (solo con agregados) + **chips agregados**, mismo
    aspecto (un agregado vacío solo existe con su editor abierto).
-4. **"+N filtros"** (solo con desborde): chip pintado, mismo aspecto que un
-   chip con valor.
-5. **"Agregar filtro"** (solo si hay agregables; sin agregables no se
-   renderiza): `ghostBtnCls("neutral")` a `--control-md`, ícono + y texto
-   (sin borde punteado). Menú con los campos agregables que no están en la
-   barra. Elegir uno agrega su chip y abre su editor; si el
-   editor se cierra sin valor, el chip se quita.
-6. **"Limpiar filtros":** link (`text-label text-secondary
-   hover:underline`, `ml-auto`), solo con algún filtro o ID cargado. Limpia
-   todo, incluidos los chips agregados.
+4. **Botón final**, un solo disparador con dos nombres:
+   - **"Más filtros"** (`SlidersHorizontal` + chevron) cuando hay chips
+     ocultos. Popover de 300px (ver Overflow).
+   - **"Agregar filtro"** (`ghostBtnCls("neutral")` a `--control-md`, ícono
+     +) cuando no se oculta ninguno y hay agregables (sin agregables no se
+     renderiza). Menú solo con los agregables que no están en la barra.
+   Elegir un agregable agrega su chip y abre su editor; si el editor se
+   cierra sin valor, el chip se quita.
+5. **"Limpiar filtros":** link (`text-label text-secondary
+   hover:underline`, `ml-auto`), solo con algún filtro o ID cargado. Borra
+   **todo**: el ID y todos los filtros, visibles, agregados u ocultos.
 
 **Etiquetas:** cada filtro (`ChipFiltroDef`) tiene `label` (nombre
 completo: menú "Agregar filtro", editor, `title` y `aria-label`),
@@ -1283,24 +1295,31 @@ disparador: el chip, o "+N" si el chip está oculto):
   - Texto del chip: "dd/mm hh:mm – dd/mm hh:mm", "desde …" o "hasta …",
     sin la hora si no se cargó.
 
-**Valores largos:** cada chip mide como máximo 200px (150px en modo
-compacto); el valor trunca con "…" antes de la ✕ y el texto completo va en
+**Valores largos:** cada chip mide como máximo 200px; el valor trunca con "…" antes de la ✕ y el texto completo va en
 el `title` del chip.
 
-**Desborde** (la barra nunca pasa de una línea). Si no entra todo, en este
-orden: (a) los chips agregados, de derecha a izquierda, pasan a "+N
-filtros"; (b) modo compacto: "Agregar filtro" solo ícono (`ICON_BTN_MD`,
-`aria-label`) y chips a 150px como máximo. El input de ID es de ancho fijo:
-no se achica. Los visibles
-nunca se ocultan. Los anchos naturales salen de una fila de medición
-invisible e inerte; se recalcula al agregar o quitar filtros y con el ancho
-de la barra (`ResizeObserver`).
-- **Menú "+N":** una fila por filtro oculto — etiqueta en `text-text-muted`
-  + valor en `text-text`, truncado con `title`. Clic abre el editor de ese
-  filtro, anclado al "+N". A la derecha, ✕ ghost (`ICON_BTN_XS`,
-  `text-icon`, hover `bg-fill-muted`, `aria-label` "Quitar filtro X"),
-  discreta en reposo (opacidad 60%) y plena en la fila con hover o foco.
-  Nada de botones con borde dentro del menú.
+**Overflow** (el mismo en el ABM y en Consulta de interrupciones; la barra
+nunca pasa de una línea):
+- Se muestran el input de ID (ancho fijo, no se achica) y los chips en su
+  orden de prioridad (los visibles y después los agregados) **mientras
+  entren** en el ancho disponible.
+- Los que no entran se ocultan **empezando por el último** y pasan al botón
+  final **"Más filtros"**. Su popover (300px, anclado al botón) lista
+  primero los ocultos —fila: nombre del chip a la izquierda y valor
+  (`text-secondary font-semibold`) o "Todos" (`text-muted`) a la derecha,
+  con ✕ ghost (`ICON_BTN_XS`) si tiene valor—, luego un separador, el
+  rótulo "Más campos" y los agregables. Clic en una fila abre **el mismo
+  editor** que su chip, anclado a "Más filtros".
+- Sin ocultos, el botón se llama **"Agregar filtro"** y abre solo los
+  agregables.
+- Con algún filtro oculto con valor, el botón toma el estilo seleccionado
+  (`primary-tint` + `chip-border` + `text-secondary`) y muestra un
+  **contador** de ocultos activos (círculo `bg-secondary`, texto blanco,
+  18px).
+- **Medición:** los anchos naturales salen de una fila invisible e inerte.
+  Se recalcula con `ResizeObserver` sobre la barra y cuando cambia un filtro
+  (un chip con valor cambia de ancho), pero **no mientras hay un popover
+  abierto**: los chips no se mueven debajo del cursor.
 
 **Accesibilidad:** el input de ID lleva `aria-label`; cada chip, un botón
 con `aria-haspopup` y `aria-expanded` (con valor, `aria-label` "label
@@ -1313,39 +1332,9 @@ listas). Escape cierra y devuelve el foco al disparador (con la lista de
 horas abierta, cierra solo esa lista); clic afuera cierra.
 
 **Qué no hacer:** anclar un editor al borde de la barra; dejar que la
-barra pase a dos líneas; ocultar un chip fijo; agregar un botón Buscar;
+barra pase a dos líneas; agregar un botón Buscar;
 mostrar chevron y ✕ juntos; usar `soloValor` en un campo de códigos,
 números o Sí/No.
-
-### Variante compacta (`variant="compact"`)
-
-**Para qué:** paneles angostos, donde la barra completa desbordaría en
-seguida (hoy, el maestro de Consultas de interrupción). Mismos props, mismos
-filtros y misma aplicación instantánea; cambia solo cómo se agrupan.
-
-```
-[🔍 Código de interrupción  ✕]  Fecha ▾  [⚙ Filtros ② ⌄]            Limpiar
-```
-
-- **Siempre una sola fila**, sin cálculo de desborde: no hay chips
-  agregados, "+N filtros" ni "Agregar filtro".
-- **Input de ID:** el mismo de la completa, pero de **ancho flexible**
-  entre 160 y 260px (`flex-1 min-w-[160px] max-w-[260px]`).
-- **Chip Fecha:** los visibles con editor "fecha", iguales a la completa
-  (con "Período completo").
-- **Botón "Filtros"** (`SlidersHorizontal` + chevron, alto `--control-md`):
-  abre un popover anclado de **300px** con **todos los demás filtros**:
-  primero los visibles que no son fecha (en Tabla 2: Nivel de tensión, Fase
-  eléctrica, Origen, Tipo) y, debajo del rótulo "Más campos", los
-  agregables. Cada fila: nombre del chip a la izquierda y el valor a la
-  derecha ("Todos" en `text-muted`, o el valor en `text-secondary
-  font-semibold`), con ✕ para quitarlo si tiene valor. La fila abre **el
-  mismo editor** que el chip de ese filtro, anclado al botón "Filtros".
-- **Con filtros activos en el popover:** el botón toma el estilo
-  seleccionado (`primary-tint` + `chip-border` + `text-secondary`) y
-  muestra un contador (círculo `bg-secondary`, texto blanco, 18px), y
-  aparece el link **"Limpiar"**, que limpia solo esos filtros (ID y fecha
-  tienen su ✕).
 
 **Archivo:** `src/components/ui/ChipFilterBar.tsx`.
 
@@ -1592,7 +1581,7 @@ fila.
 ## FilterBar
 
 **Sin uso desde el 08/10/2026:** Consultas de interrupción pasó a
-`ChipFilterBar` compacta. El componente se conserva.
+`ChipFilterBar`. El componente se conserva.
 
 **Para qué:** la barra de búsqueda general con botón Buscar y flyout "Más
 filtros". Para la búsqueda principal
@@ -2278,7 +2267,7 @@ dividido en franjas por líneas `border-border` a todo el ancho.
 - **Gap entre cards:** `gap-(--cards-gap)`, un único valor por pantalla.
 - **Búsqueda sin contenedor:** en Consultas de interrupción la fila de
   filtros no es una card: se apoya directo en el fondo de la página,
-  debajo del `TopBar` ("Búsqueda de interrupciones"), con
+  debajo del `TopBar` ("Consulta de interrupciones"), con
   `pt-(--page-pt)` y `px-(--page-px)`.
 - **Acciones del registro** (Desarmes, Lotes, Nivel/Tipo, Replicar,
   Cambia fases, Alta clientes, Intercambio) no viven en la pantalla: son
@@ -2359,8 +2348,7 @@ consulta y se refina), con [`ChipFilterBar`](#chipfilterbar):
 - **Estado inicial:** sin filtros, la tabla muestra todos los registros del
   período (paginados). Sin resultados: "No hay registros con estos
   filtros" + "Limpiar filtros" dentro de la caja de la tabla.
-- **Una línea:** nunca hace wrap; el desborde se resuelve con "+N filtros" y
-  modo compacto.
+- **Una línea:** nunca hace wrap; lo que no entra pasa a "Más filtros".
 - **Regla:** un popover se ancla a su disparador
   ([`AnchoredPopover`](#anchoredpopover)), nunca al borde de la barra.
 
@@ -2385,7 +2373,7 @@ reposiciones y sus reclamos).
 │ │▌BFZ…   │ …                              › │◀────│ [Tabla 4] Reposiciones │
 │ │ …                                          │     │ ● ◉ ○ línea de tiempo  │
 │ └ Anterior · Pág. 1 de 2.284 · Siguiente ────┘     │───────────────────────│
-│                                                    │ Reclamos   [Ver detalle]│
+│                                                    │ Reclamos   [Ver reclamos]│
 └────────────────────────────────────────────────────┴───────────────────────┘
 ```
 
@@ -2394,7 +2382,8 @@ reposiciones y sus reclamos).
   scrollea** en ningún tier.
 - **Maestro sobre el fondo de la app** (`bg-app`, padding `--page-px` /
   `--page-pt`): título de sección (`TablaChip` + nombre en `heading-sm`,
-  estático), [`ChipFilterBar` compacta](#variante-compacta-variantcompact),
+  estático), [`ChipFilterBar`](#chipfilterbar) estándar (los filtros de
+  Tabla 2),
   toolbar de tabla con **solo el contexto** ("Período 08/2026 · Actualizado
   hh:mm"; sin Exportar, Auditoría ni modo selección) y la tabla en su caja
   (estilo de los ABM, pocas columnas, paginación al pie).
@@ -2418,8 +2407,20 @@ reposiciones y sus reclamos).
     ancho (container query) pasa a 2×2.
   - **Cuerpo** (scroll propio, `4px 24px 24px`): **secciones con título**
     (`heading-xs`, con `TablaChip` si muestran una tabla) separadas por
-    `border-t`. Acciones de sección (ej. "Ver detalle") ghost `sm` a la
+    `border-t`. Acciones de sección (ej. "Ver reclamos") ghost `sm` a la
     derecha del título.
+  - **Sección Reclamos:** no repite la franja de cifras (inicio, fin y
+    duración ya están en la hoja). Es una **frase** (`text-body-sm
+    neutral-700`, con los datos en `neutral-900 semibold tabular-nums`: "N
+    reclamos mientras duró la interrupción. El primero llegó a las hh:mm y
+    el pico fue cerca de las hh:mm."; con 1, "…, a las hh:mm."; con 0, "Sin
+    reclamos durante la interrupción." y sin gráfico) y un **mini gráfico de
+    barras** de 44px de alto y ancho completo: los reclamos agrupados en 18
+    intervalos iguales entre el inicio y la última reposición, barras
+    `--color-chip-border` y la máxima `--color-primary`, radio 2px arriba;
+    debajo, un eje con `border-t` y `text-caption neutral-500` ("hh:mm
+    inicio" / "hh:mm última reposición"). "Ver reclamos" abre un modal con
+    la línea de tiempo de reclamos (`ReclamosTimeline`).
   - Al cambiar de registro, el contenido hace un **fade de 140ms**
     (`animate-[hoja-fade_140ms_ease-out]`; directo con movimiento
     reducido).
@@ -2431,7 +2432,7 @@ reposiciones y sus reclamos).
 
 **Archivos:** `src/features/consultas-interrupcion/ModificarContent.tsx`
 (estado y modales), `InterrupcionesMaestro.tsx`, `InterrupcionHoja.tsx`,
-`ReposicionesTimeline.tsx`.
+`ReposicionesTimeline.tsx`, `ReclamosResumen.tsx`, `ReclamosModal.tsx`.
 
 ## Registro seleccionado y detalle
 
@@ -2559,8 +2560,8 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   como título](#abmtableselector). Con `hasInsertar`, **Insertar** (botón
   primario `md`, ícono +) a la derecha de esa fila.
 - **Barra de filtros:** [`ChipFilterBar`](#chipfilterbar) con la config de
-  la tabla (ver abajo): aplica al instante, "Limpiar filtros", desborde con
-  "+N" y modo compacto, popovers anclados, chevron o ✕. Estado propio por
+  la tabla (ver abajo): aplica al instante, "Limpiar filtros", desborde hacia
+  "Más filtros", popovers anclados, chevron o ✕. Estado propio por
   nombre de campo (no comparte valores con el modal); cada filtro se
   traduce a su columna de `rows` con `mapeoFilaACampos` y se aplica con
   `filtrarFilas` (`src/features/abm/filtrarFilas.ts`): filtros con valor en
@@ -2664,7 +2665,7 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   - **Prioridad** para elegir los visibles (y su orden): 1) la fecha; 2)
     los campos de lista cerrada (toggle, select, combobox con opciones); 3)
     el orden del formulario.
-  - El desborde responsive ("+N", modo compacto) sigue igual. Sin chips
+  - El desborde responsive (hacia "Más filtros") sigue igual. Sin chips
     vacíos ni placeholders inventados.
 - **El editor sale del tipo actual del campo:** texto / readonly → input
   "contiene"; toggle / select → lista; combobox → lista con búsqueda;

@@ -563,8 +563,8 @@ export default function AbmScreen({
             <button
               type="button"
               onClick={onVolver}
-              title="Volver a Consultas de interrupción"
-              aria-label="Volver a Consultas de interrupción"
+              title="Volver a Consulta de interrupciones"
+              aria-label="Volver a Consulta de interrupciones"
               className={`flex items-center justify-center ${ICON_BTN_SM} rounded-sm text-icon hover:text-secondary hover:bg-fill-muted transition-colors shrink-0 ${FOCUS_RING}`}
             >
               ←

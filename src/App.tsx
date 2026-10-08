@@ -54,7 +54,7 @@ const HERRAMIENTAS_ITEMS: { key: HerramientaKey; label: string; pendiente?: bool
 // encabezado con el selector de tabla).
 const TITULOS_PANTALLA: Partial<Record<Screen, string>> = {
   welcome: "Inicio",
-  modificar: "Búsqueda de interrupciones",
+  modificar: "Consulta de interrupciones",
   generaciontxt: "Generación de txt",
   planillaconsolidada: "Planilla consolidada",
   gestornotas: "Gestor de notas",
@@ -310,7 +310,7 @@ export default function App() {
               onClick={irAInicio}
             />
             <NavItem
-              label="Consultas de interrupción"
+              label="Consulta de interrupciones"
               icon={<Search size={ICON.md} strokeWidth={1.5} />}
               active={screen === "modificar"}
               collapsed={collapsed}
@@ -402,7 +402,7 @@ export default function App() {
                   label={item.label}
                   collapsed={collapsed}
                   disabled={item.pendiente}
-                  disabledTitle="Pendiente: depende de la interrupción seleccionada en Consultas de interrupción"
+                  disabledTitle="Pendiente: depende de la interrupción seleccionada en Consulta de interrupciones"
                   onClick={item.pendiente ? undefined : () => setHerramientaAbierta(item.key)}
                 />
               ))}

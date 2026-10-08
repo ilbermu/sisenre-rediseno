@@ -19,7 +19,7 @@ const COLUMNAS_MAESTRO = ["REF", "FECHA", "TE", "FAS", "ORIGEN", "TIPO"];
 // "Maestro-detalle"): columna izquierda (52%), sobre el fondo de la app, con
 // padding de página. De arriba abajo:
 //   título de sección (chip "Tabla 2" + "Interrupciones", estático) →
-//   ChipFilterBar compacta (ID + Fecha + "Filtros"; los filtros de Tabla 2,
+//   ChipFilterBar estándar (los filtros de Tabla 2,
 //   los mismos que en su ABM) → toolbar con solo el contexto ("Período
 //   08/2026 · Actualizado hh:mm"; sin Exportar, Auditoría ni modo selección:
 //   acá seleccionar es ver el detalle) → la tabla en su caja (mismo estilo
@@ -111,7 +111,6 @@ export default function InterrupcionesMaestro({
       </h2>
 
       <ChipFilterBar
-        variant="compact"
         id={id}
         onIdChange={setId}
         idPlaceholder={columnas[0]?.label ?? "Código de interrupción"}

@@ -25,10 +25,10 @@ import {
   SAMPLE_ROWS,
 } from "@/data/sinteticos";
 import { AbmDeepLink } from "@/data/types";
-import DatosInterrupcionModal from "@/features/consultas-interrupcion/DatosInterrupcionModal";
 import FaseReposicionFicha from "@/features/consultas-interrupcion/FaseReposicionFicha";
 import InterrupcionesMaestro from "@/features/consultas-interrupcion/InterrupcionesMaestro";
 import InterrupcionHoja from "@/features/consultas-interrupcion/InterrupcionHoja";
+import ReclamosModal from "@/features/consultas-interrupcion/ReclamosModal";
 import { parseFechaHora, VALOR_VACIO } from "@/lib/format";
 
 // ─── Consultas de interrupción ─────────────────────────────────────────────
@@ -44,8 +44,8 @@ import { parseFechaHora, VALOR_VACIO } from "@/lib/format";
 // interrupción (índice de SAMPLE_ROWS = fila de Tabla 2) y la fase de
 // reposición (su nro). Al cambiar de interrupción se selecciona su primera
 // fase. Los chips de Tablas relacionadas de la fase abren el modal de
-// siempre ("Tablas relacionadas"), y "Ver detalle" de Reclamos abre "Datos
-// de la interrupción".
+// siempre ("Tablas relacionadas"), y "Ver reclamos" abre la línea de
+// tiempo de reclamos de la interrupción.
 export default function ModificarContent({
   periodo,
   onIrAAbm,
@@ -74,7 +74,7 @@ export default function ModificarContent({
   // resultados.
   const [seleccionada, setSeleccionada] = useState<number | null>(initialRowIndex >= 0 ? initialRowIndex : null);
   const [relTab, setRelTab] = useState<string | null>(initialRelTab);
-  const [datosInterrupcionOpen, setDatosInterrupcionOpen] = useState(false);
+  const [reclamosOpen, setReclamosOpen] = useState(false);
   const registro = seleccionada !== null ? SAMPLE_ROWS[seleccionada] : null;
   const activeTabData = DRAWER_TABS.find((t) => t.key === relTab);
   // Tabla ABM equivalente al tab activo del modal "Tablas relacionadas"
@@ -200,15 +200,13 @@ export default function ModificarContent({
         valoresRelacionadas={valoresRelacionadas}
         onAbrirTabla={setRelTab}
         reclamos={reclamos}
-        onVerDetalle={() => setDatosInterrupcionOpen(true)}
+        onVerReclamos={() => setReclamosOpen(true)}
       />
 
-      <DatosInterrupcionModal
-        open={datosInterrupcionOpen}
-        onClose={() => setDatosInterrupcionOpen(false)}
+      <ReclamosModal
+        open={reclamosOpen}
+        onClose={() => setReclamosOpen(false)}
         referencia={registro?.referencia ?? ""}
-        fechaInicio={registro?.fecha ?? ""}
-        fechaUltRepo={filaFaseSeleccionada?.horaRep ?? ""}
         reclamos={reclamos}
       />
 

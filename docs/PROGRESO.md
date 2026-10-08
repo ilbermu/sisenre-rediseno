@@ -607,9 +607,9 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
       `components/ui/Timeline.tsx`, nuevos): inicio + una fase por ítem; la
       fase seleccionada muestra sus chips de Tablas relacionadas, que abren
       el modal de siempre en ese tab.
-  - `ChipFilterBar`: variante `compact` (ID flexible 160–260px + Fecha +
-    "Filtros" con popover de 300px, contador y "Limpiar"). La variante
-    completa no cambia (se extrajeron piezas compartidas).
+  - `ChipFilterBar`: se probó una variante `compact` (ID + Fecha +
+    "Filtros"); se eliminó después en favor de un único overflow (ver los
+    ajustes más abajo).
   - `TablaChip` pasa a `components/ui` (lo usan `AbmTableSelector` y las
     secciones de Consultas).
   - El período del TopBar de Consultas pasa a estar controlado en `App.tsx`
@@ -627,6 +627,37 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
     `ChipFilterBar` (variante compacta), `Timeline` y `TablaChip`
     (nuevos); notas de "sin uso" en `FilterBar`, "Card con secciones" y
     "Lista de filas".
+
+- **Consulta de interrupciones — ajustes** (maqueta de referencia:
+  https://claude.ai/artifact/5RCqnneDfFQCnyRsJGZogh).
+  - **Título:** el TopBar y el ítem del menú dicen "Consulta de
+    interrupciones" (`TITULOS_PANTALLA` y el `NavItem` en `App.tsx`); también
+    el tooltip del "←" de `AbmScreen` y el `disabledTitle` de Herramientas.
+    Inicio no mencionaba la pantalla. Sin renombrar archivos ni carpetas.
+  - **`ChipFilterBar`: un solo overflow, igual en ABM y Consulta.** Se
+    elimina la variante compacta y el overflow anterior ("+N filtros" y modo
+    compacto). Una sola fila; los chips que no entran se ocultan del último
+    al primero y pasan al botón final "Más filtros" (popover: ocultos con
+    valor o "Todos" y ✕, separador, "Más campos" y agregables); sin ocultos
+    es "Agregar filtro" como antes. Con ocultos activos: contador (círculo
+    `bg-secondary`, 18px) y estilo seleccionado. Medición con
+    `ResizeObserver` y al cambiar un filtro, congelada mientras hay un
+    popover abierto. "Limpiar filtros" borra todo (ID, fecha y filtros,
+    ocultos o no). Los chips pueden ocultarse ahora: antes los visibles
+    nunca.
+  - **Hoja, sección Reclamos:** sale `ReclamosResumenCompacto` (repetía
+    inicio, fin y duración). Ahora una frase + mini gráfico de 18 barras
+    (`ReclamosResumen.tsx`) sobre el tramo inicio → última reposición, con
+    "Ver reclamos".
+  - **"Ver detalle" abría `DatosInterrupcionModal`**, que NO es solo la
+    línea de tiempo: tiene título "Datos de la interrupción", la grilla de
+    campos generales (Repos, Usu_BT, SAIFI, SAIDI…), el botón "Procesar" y
+    la línea de tiempo arriba. Por eso "Ver reclamos" abre un modal nuevo
+    (`ReclamosModal.tsx`) solo con `ReclamosTimeline` de la interrupción.
+    `DatosInterrupcionModal` queda sin uso.
+  - `DESIGN_SYSTEM.md`: `ChipFilterBar` (una fila, overflow, contador,
+    "Limpiar" borra todo; sin variante compacta) y Maestro-detalle (sección
+    Reclamos).
 
 ### Pendientes abiertos
 
@@ -662,11 +693,17 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
 - **Supuestos de cifras sin validar con negocio** (`TODO` en
   `InterrupcionHoja.tsx`): Duración = FEC de la última fase − FECHA de
   inicio; Clientes repuestos = suma de CLI de las fases.
-- **Título del TopBar:** el pedido lo nombra "Consultas de interrupción"; se
-  dejó "Búsqueda de interrupciones" (`TITULOS_PANTALLA` en `App.tsx`) para
-  no cambiar el TopBar. Confirmar cuál va.
+- **Overflow nuevo de `ChipFilterBar` sin probar:** en ABM y Consulta,
+  cuántos chips entran en cada tier y ancho (en Consulta, con ~52% del
+  ancho, se espera que oculte Origen/Tipo/Fase eléctrica); que no haya
+  saltos al abrir un popover (la medición se congela) ni al cerrar uno.
+- **Mini gráfico de reclamos:** el pico es el centro del intervalo con más
+  reclamos (el primero si hay empate); con muy pocos reclamos las barras
+  quedan finas. Falta verlo con 1, 2 y cientos de reclamos.
 - **Componentes sin uso tras el rediseño** (no se borraron):
-  `ReposicionesLista.tsx`, `SubtituloEtiquetado.tsx` (ya estaba sin uso),
+  `ReposicionesLista.tsx`, `ReclamosResumenCompacto.tsx`,
+  `DatosInterrupcionModal.tsx`, `SubtituloEtiquetado.tsx` (ya estaba sin
+  uso),
   `components/ui/FilterBar.tsx`, y los modales de
   `consultas-interrupcion/herramientas/` (`DesarmeModal`,
   `NivelTipoModal`, `ReplicarModal`, `CambiaFasesModal`,
