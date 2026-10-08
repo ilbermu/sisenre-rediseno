@@ -59,20 +59,19 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     // campoId va siempre primero.
     ordenTablaReal: ["REF", "TE", "ORIGEN", "TIPO", "FECHA", "FAS", "DIVI_RED", "ID_ELEM", "TIPO_ELE", "SSEE", "ALIM", "CMTBT"],
     filtrosBarra: {
-      idPlaceholder: "ID de interrupción",
       visibles: [
         { campo: "fecha", chipLabel: "Fecha" },
-        { campo: "nivelTension", chipLabel: "Nivel" },
-        { campo: "faseElectrica", chipLabel: "Fase" },
+        { campo: "nivelTension", chipLabel: "Nivel de tensión" },
+        { campo: "faseElectrica", chipLabel: "Fase eléctrica" },
         { campo: "origen", chipLabel: "Origen" },
         { campo: "tipo", chipLabel: "Tipo" },
       ],
       agregables: [
         { campo: "codigoEquipoOperado", chipLabel: "Código equipo" },
-        { campo: "descEquipoOperado", soloValor: true },
+        { campo: "descEquipoOperado", chipLabel: "Descripción equipo", soloValor: true },
         { campo: "divisionRedNormal", chipLabel: "División red normal" },
         { campo: "cadenaElectricaAguasArriba", chipLabel: "Cadena eléctrica" },
-        { campo: "alimentadorMT", chipLabel: "Alim. MT" },
+        { campo: "alimentadorMT", chipLabel: "Alimentador MT" },
         { campo: "ctMtBtEquipoOperado", chipLabel: "CT MT/BT" },
       ],
     },
@@ -166,7 +165,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       // 2 filtros (≤ 5): todos visibles, sin "Agregar filtro".
       visibles: [
         { campo: "causa", chipLabel: "Causa" },
-        { campo: "faseReposicion", chipLabel: "Fase rep." },
+        { campo: "faseReposicion", chipLabel: "Fase de reposición" },
       ],
       agregables: [],
     },
@@ -208,14 +207,14 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       // cerradas); el resto en "Agregar filtro".
       visibles: [
         { campo: "fecha", chipLabel: "Fecha" },
-        { campo: "faseReposicion", chipLabel: "Fase rep." },
-        { campo: "faseElectrica", chipLabel: "Fase eléc." },
+        { campo: "faseReposicion", chipLabel: "Fase de reposición" },
+        { campo: "faseElectrica", chipLabel: "Fase eléctrica" },
         { campo: "codigoEquipoManiobrado", chipLabel: "Código equipo" },
-        { campo: "descEquipoManiobrado", soloValor: true },
+        { campo: "descEquipoManiobrado", chipLabel: "Descripción equipo", soloValor: true },
       ],
       agregables: [
         { campo: "cadenaElectricaAguasArriba", chipLabel: "Cadena eléctrica" },
-        { campo: "alimentadorMT", chipLabel: "Alim. MT" },
+        { campo: "alimentadorMT", chipLabel: "Alimentador MT" },
         { campo: "cantidadClientesBt", chipLabel: "Cant. clientes" },
         { campo: "ctMtBtManiobrado", chipLabel: "CT MT/BT" },
       ],
@@ -293,10 +292,10 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
     filtrosBarra: {
       // 5 filtros (≤ 5): todos visibles, sin "Agregar filtro".
       visibles: [
-        { campo: "faseReposicion", chipLabel: "Fase rep." },
+        { campo: "faseReposicion", chipLabel: "Fase de reposición" },
         { campo: "cadenaElectrica", chipLabel: "Cadena eléctrica" },
         { campo: "potenciaKva", chipLabel: "Potencia" },
-        { campo: "faseElectrica", chipLabel: "Fase eléc." },
+        { campo: "faseElectrica", chipLabel: "Fase eléctrica" },
         { campo: "cantidadClientesBt", chipLabel: "Cant. clientes" },
       ],
       agregables: [],
@@ -363,7 +362,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       // cerradas); el resto en "Agregar filtro".
       visibles: [
         { campo: "fase", chipLabel: "Fase de reposición" },
-        { campo: "idComercialCliente", chipLabel: "Cliente" },
+        { campo: "idComercialCliente", chipLabel: "Nro. cuenta" },
         { campo: "consumo", chipLabel: "Consumo" },
         { campo: "ctTabla9", chipLabel: "CT T9" },
         { campo: "ctTabla10", chipLabel: "CT T10" },
@@ -371,7 +370,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       agregables: [
         { campo: "demandaMedia", chipLabel: "Potencia" },
         { campo: "tarifa", chipLabel: "Tarifa" },
-        { campo: "nivelTension", chipLabel: "Nivel" },
+        { campo: "nivelTension", chipLabel: "Nivel de tensión" },
       ],
     },
     secciones: [
@@ -459,7 +458,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         { campo: "sumaPotenciaTrafos", chipLabel: "Potencia trafos" },
       ],
       agregables: [
-        { campo: "demandaMaxima", chipLabel: "Dem. máx." },
+        { campo: "demandaMaxima", chipLabel: "Demanda máxima" },
         { campo: "sumaPotenciaClientesMT", chipLabel: "Potencia clientes MT" },
         { campo: "capacidadAlimentador", chipLabel: "Capacidad" },
         { campo: "tensionAlimentador", chipLabel: "Tensión" },
@@ -554,8 +553,8 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
         { campo: "reclamos", chipLabel: "Reclamos" },
       ],
       agregables: [
-        { campo: "codigoFalla", chipLabel: "Cód. falla" },
-        { campo: "nroPoliza", chipLabel: "Póliza" },
+        { campo: "codigoFalla", chipLabel: "Código falla" },
+        { campo: "nroPoliza", chipLabel: "Nro. cuenta" },
         { campo: "nombre", soloValor: true },
         { campo: "tarifa", chipLabel: "Tarifa" },
         { campo: "calle", chipLabel: "Calle" },
@@ -660,7 +659,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       visibles: [
         { campo: "tarifa", chipLabel: "Tarifa" },
         { campo: "fase", chipLabel: "Fase de reposición" },
-        { campo: "cliente", chipLabel: "Cliente" },
+        { campo: "cliente", chipLabel: "Nro. cuenta" },
         { campo: "ct", chipLabel: "CT" },
       ],
       agregables: [],
@@ -723,7 +722,7 @@ export const ABM_TABLE_CONFIGS: Record<AbmTableKey, AbmTableConfig> = {
       visibles: [
         { campo: "tarifa", chipLabel: "Tarifa" },
         { campo: "fase", chipLabel: "Fase de reposición" },
-        { campo: "cliente", chipLabel: "Cliente" },
+        { campo: "cliente", chipLabel: "Nro. cuenta" },
       ],
       agregables: [],
     },

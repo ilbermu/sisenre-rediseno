@@ -20,7 +20,9 @@ export type ChipFiltroDef = {
   campo: string;
   // Nombre completo: "Agregar filtro", editor, title / aria-label del chip.
   label: string;
-  // Nombre corto del chip (máx. ~10 caracteres). Sin chipLabel, `label`.
+  // Texto del chip. En el ABM: el encabezado de la columna del campo
+  // (regla verificada en desarrollo, ver encabezadosInconsistentes). Sin
+  // chipLabel, `label`.
   chipLabel?: string;
   // El chip con valor muestra solo el valor — únicamente para campos cuyos
   // valores se explican solos (descripciones, nombres); nunca para Sí/No,
@@ -80,9 +82,8 @@ const ID_DEBOUNCE_MS = 500;
 // Ancho máximo de un chip: el valor trunca con "…" y el texto completo va
 // en el `title` del chip.
 const CHIP_MAX = 200;
-// Modo compacto (desborde, paso c): chips más angostos.
+// Modo compacto (desborde, paso b): chips más angostos.
 const CHIP_MAX_COMPACTO = 150;
-const ID_MIN = 150;
 
 // Ítem de menú/lista de los popovers — el de la lista de FilterTrigger.
 const itemCls = (sel: boolean) =>
@@ -253,13 +254,14 @@ export default function ChipFilterBar({
   const hayAgregar = agregables.length > 0;
 
   // ── Desborde: la barra nunca pasa de una línea. Si no entra todo, en
-  // orden: (a) el ID se achica hasta su mínimo (lo hace el flex); (b) los
-  // agregados, de derecha a izquierda, pasan a "+N filtros"; (c) modo
-  // compacto: "Agregar filtro" solo ícono y chips a 150px. Los visibles nunca
+  // orden: (a) los agregados, de derecha a izquierda, pasan a "+N filtros";
+  // (b) modo compacto: "Agregar filtro" solo ícono y chips a 150px. El ID es
+  // de ancho fijo (--filter-id-w): no se achica. Los visibles nunca
   // se ocultan. Los anchos naturales salen de una fila de medición
   // invisible; se recalcula al cambiar filtros y con el ancho de la barra
   // (ResizeObserver).
   const barraRef = useRef<HTMLDivElement>(null);
+  const idRef = useRef<HTMLDivElement>(null);
   const medidasRef = useRef(new Map<string, HTMLElement>());
   const refMedida = (clave: string) => (el: HTMLElement | null) => {
     if (el) medidasRef.current.set(clave, el);
@@ -285,7 +287,7 @@ export default function ChipFilterBar({
     const total = (n: number, compacto: boolean) => {
       const cap = compacto ? CHIP_MAX_COMPACTO : CHIP_MAX;
       const anchos = [
-        ID_MIN,
+        idRef.current?.offsetWidth ?? 0,
         ...visibles.map((d) => chipAncho(d.campo, cap)),
         ...(agregados.length > 0 ? [1] : []),
         ...agregados.slice(0, n).map((c) => chipAncho(c, cap)),
@@ -427,8 +429,9 @@ export default function ChipFilterBar({
         <span ref={refMedida("limpiar")} className="text-label">Limpiar filtros</span>
       </div>
 
-      {/* 1. ID — se achica antes que nada (base 220px, mínimo 150px). */}
-      <div className="relative" style={{ flex: "0 1 220px", minWidth: 150 }}>
+      {/* 1. ID — ancho fijo (--filter-id-w): entra el placeholder más largo
+          (el encabezado de la columna del ID) en todos los tiers. */}
+      <div ref={idRef} className="relative shrink-0 w-(--filter-id-w)">
         <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-icon">
           <Search size={ICON.sm} strokeWidth={1.5} />
         </span>
@@ -440,7 +443,7 @@ export default function ChipFilterBar({
           }}
           placeholder={idPlaceholder}
           aria-label={idPlaceholder}
-          className={MOD_FIELD_CLS + " pl-8 pr-8 text-code! font-mono"}
+          className={MOD_FIELD_CLS + " pl-8 pr-8 text-code! font-mono placeholder:font-sans"}
         />
         {borradorId && (
           <button

@@ -36,14 +36,20 @@ const EXCEPCIONES: { tabla: string; nombreReal: string }[] = [
 
 // Verificación de consistencia de encabezados: agrupando por nombreReal,
 // todas las columnas de todas las tablas llevan el mismo encabezado (salvo
-// las EXCEPCIONES), y ninguna tabla repite un encabezado. Devuelve la lista
-// de problemas (vacía = ok); AbmScreen la reporta en desarrollo.
+// las EXCEPCIONES), y ninguna tabla repite un encabezado. Además, el chip de
+// cada filtro que tiene columna se llama como su encabezado. Devuelve la
+// lista de problemas (vacía = ok); AbmScreen la reporta en desarrollo.
 export function encabezadosInconsistentes(configs: Record<string, AbmTableConfig>): string[] {
   const problemas: string[] = [];
   const porReal = new Map<string, Map<string, string[]>>();
   for (const [tabla, config] of Object.entries(configs)) {
     const columnas = columnasDeResultados(config);
     const vistos = new Map<string, string>();
+    for (const f of [...config.filtrosBarra.visibles, ...config.filtrosBarra.agregables]) {
+      const c = columnas.find((col) => col.campo.nombre === f.campo);
+      const chip = f.chipLabel ?? f.label ?? c?.campo.label;
+      if (c && chip !== c.label) problemas.push(`${tabla}: el chip "${chip}" debería llamarse "${c.label}" (encabezado de ${f.campo})`);
+    }
     for (const c of columnas) {
       const previo = vistos.get(c.label);
       if (previo) problemas.push(`${tabla}: "${c.label}" repetido (${previo} y ${c.nombreReal})`);

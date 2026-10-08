@@ -134,15 +134,15 @@ export type AbmFiltroBarra = {
   // Nombre completo (menú "Agregar filtro", editor, title del chip). Default:
   // el label del campo.
   label?: string;
-  // Nombre corto del chip (máx. ~10 caracteres). Default: `label`.
+  // Texto del chip: EXACTAMENTE el encabezado de la columna del campo en
+  // Resultados (labelColumna o label) — se verifica en desarrollo
+  // (encabezadosInconsistentes). Default: `label`.
   chipLabel?: string;
   // El chip muestra solo el valor (valores que se explican solos).
   soloValor?: boolean;
 };
 
 export type AbmFiltrosBarra = {
-  // Placeholder del input de ID. Default: el label de `campoId`.
-  idPlaceholder?: string;
   // Chips siempre en la barra (hasta 5). Regla (ver DESIGN_SYSTEM.md,
   // Patrones → "ABM"): se cuentan los campos filtrables sin el campoId; con
   // 5 o menos, todos son visibles y no hay agregables; con más, 5 visibles

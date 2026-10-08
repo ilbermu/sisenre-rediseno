@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useMemo } from "react";
-import { Inbox, Plus, X } from "lucide-react";
+import { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
+import { Plus, X } from "lucide-react";
 import {
   BTN_MD,
   BTN_SM,
@@ -16,9 +16,7 @@ import {
   modalNeutralBtnCls,
   modalPrimaryBtnCls,
   READONLY_FIELD_CLS,
-  SelectionActionBar,
   SortableHeaderCell,
-  TableCounter,
   useTableToolbar,
 } from "@/components/ui";
 import TopBar from "@/components/layout/TopBar";
@@ -63,9 +61,9 @@ function editorDeCampo(c: CampoBusqueda): ChipFiltroDef["editor"] {
 
 // Pantalla única de ABM (ver DESIGN_SYSTEM.md, Patrones → "ABM"): el mismo
 // patrón para todas las tablas — TopBar, selector de tabla como título (+
-// Insertar si la tabla lo permite), barra de filtros híbrida, barra de la
-// tabla (contador / registro seleccionado) y la tabla en su caja; Modificar
-// e Insertar en el modal de edición de registro. Todo el contenido
+// Insertar si la tabla lo permite), barra de filtros híbrida y la tabla en
+// su caja (con un registro seleccionado, la barra de acciones cubre el
+// encabezado); Modificar e Insertar en el modal de edición de registro. Todo el contenido
 // (campos, tipos, opciones, dependencias, qué se bloquea) sale de
 // ABM_TABLE_CONFIGS[tableKey]: nada de una tabla puntual vive acá.
 // `onChangeTable` es el mismo setScreen de App — así el selector y el ítem
@@ -253,17 +251,40 @@ export default function AbmScreen({
       ?.scrollIntoView({ block: "nearest" });
   }, [selectedRow]);
 
+  // Barra de selección (cubre el encabezado): si al deseleccionar el foco
+  // estaba adentro, vuelve a la lista de Resultados — la barra pasa a inert y
+  // el foco se perdería.
+  const barraSeleccionRef = useRef<HTMLDivElement>(null);
+  function deseleccionar() {
+    if (barraSeleccionRef.current?.contains(document.activeElement)) resultadosListRef.current?.focus();
+    setSelectedRow(null);
+  }
+
   // Escape con una fila seleccionada la deselecciona (las acciones de
-  // registro viven en la barra de la tabla solo con selección). No actúa con
-  // un modal abierto.
+  // registro viven en la barra de selección, solo con selección). No actúa
+  // con un modal abierto.
   useEffect(() => {
     if (selectedRow === null || mode !== "buscar" || filaABorrar !== null) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelectedRow(null);
+      if (e.key === "Escape") deseleccionar();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRow, mode, filaABorrar]);
+
+  // Alto del thead: la barra de selección lo copia para que la tabla no
+  // salte (cambia con los tiers de --spacing, por eso se mide).
+  const theadRef = useRef<HTMLTableSectionElement>(null);
+  const [altoEncabezado, setAltoEncabezado] = useState<number | undefined>(undefined);
+  useLayoutEffect(() => {
+    const el = theadRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setAltoEncabezado(el.offsetHeight));
+    ro.observe(el);
+    setAltoEncabezado(el.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
 
   function handleResultadosKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (mode !== "buscar" || visibleIndices.length === 0) return;
@@ -378,201 +399,192 @@ export default function AbmScreen({
   // AbmCampo en modo "alta").
   const esNoEditable = (c: CampoBusqueda) => c.tipo === "readonly" || camposLocked.includes(c.nombre);
 
-  // ── Resultados: barra de la tabla + caja ────────────────────────────────
-  // Debajo de la barra de filtros (gap --page-gap):
-  //   1. barra de la tabla — sobre el fondo, alto fijo (--control-md): sin
-  //      selección, el contador; con selección, SelectionActionBar +
-  //      Modificar / Borrar (ghost) + ✕;
-  //   2. a gap-2, la tabla en su caja (borde, radio md, surface, shadow-sm;
-  //      thead fill-subtle-solid sticky; paginación al pie con fill-subtle).
-  //      Sin overflow-hidden en la caja: el radio lo resuelven el wrapper
-  //      con scroll (rounded-t-md) y el pie (rounded-b-md).
-  // Sin columna de acciones por fila. Auditoría y Exportar no se renderizan
-  // (pendientes de reubicar).
-  const registrosVisibles = rows.length - filasBorradas.size;
+  // ── Resultados: la caja de la tabla ─────────────────────────────────────
+  // Debajo de la barra de filtros (gap-3), la tabla en su caja (borde, radio
+  // md, surface, shadow-sm; thead fill-subtle-solid sticky; paginación al
+  // pie con fill-subtle). Sin overflow-hidden en la caja: el radio lo
+  // resuelven el wrapper con scroll (rounded-t-md) y el pie (rounded-b-md).
+  // Sin contador ni franja reservada. Sin filas, el thead sigue y el estado
+  // vacío va debajo, dentro de la caja.
+  // Con un registro seleccionado, la barra de selección se superpone al
+  // thead (mismo alto, así no salta nada): hermana del wrapper con scroll,
+  // no adentro, para ocupar siempre el ancho visible de la caja sin
+  // desplazarse con el scroll horizontal. Los títulos quedan aria-hidden e
+  // inert (ni foco ni tag de ColumnHeaderHint). Sin columna de acciones por
+  // fila. Auditoría y Exportar no se renderizan (pendientes de reubicar).
   const hayResultados = visibleIndices.length > 0;
   // Con algún filtro aplicado, el pie cuenta las filas encontradas; sin
   // filtros, el total de la tabla.
   const registrosEncontrados = hayFiltrosBarra ? visibleIndices.length : config.totalRegistros;
   const paginas = Math.max(1, Math.ceil(registrosEncontrados / 25));
   const resultados = (
-    <div className="flex-1 min-h-0 flex flex-col gap-2">
-      {/* Barra de la tabla — afuera de la caja, alto fijo. */}
-      <div className="shrink-0 h-(--control-md) flex items-center gap-3">
-        {hasSelection ? (
-          <SelectionActionBar
-            bare
-            recordLabel={rows[selectedRow!][columnKeys[0]]}
-            actions={
-              <>
-                {/* Acciones de registro: sm, ghost (no compiten con la
-                    barra de filtros, que es de página). */}
-                <button type="button" onClick={() => handleAbrirModificar(selectedRow!)} className={ghostBtnCls("neutral")}>
-                  Modificar
-                </button>
-                <button type="button" onClick={() => handleAbrirBorrar(selectedRow!)} className={ghostBtnCls("destructive")}>
-                  Borrar
-                </button>
-                <div className="w-px h-4 bg-border shrink-0" />
-                <button
-                  type="button"
-                  onClick={() => setSelectedRow(null)}
-                  aria-label="Deseleccionar"
-                  title="Deseleccionar"
-                  className={`${ICON_BTN_SM} flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors`}
+    <div className="relative shadow-sm flex-1 min-h-0 min-w-0 flex flex-col border border-border rounded-md bg-surface">
+      <div
+        ref={resultadosListRef}
+        tabIndex={0}
+        onKeyDown={handleResultadosKeyDown}
+        onScroll={(e) => setDesplazado(e.currentTarget.scrollLeft > 0)}
+        className={`flex-1 min-h-0 overflow-auto rounded-t-md ${hayResultados ? "" : "rounded-b-md"} ${FOCUS_RING_INSET}`}
+      >
+        {/* border-separate (spacing 0): bajo border-collapse los bordes de
+            una celda sticky quedan en la capa de la tabla y se pintan
+            encima o debajo mal al scrollear. Celdas y encabezados en
+            nowrap: ningún valor se trunca; si no entran, scroll horizontal
+            adentro de la caja (la paginación queda fuera). */}
+        <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
+          <thead ref={theadRef} aria-hidden={hasSelection || undefined} inert={hasSelection}>
+            <tr>
+              {columnas.map((c, ci) => (
+                <th
+                  key={c.key}
+                  className={`sticky top-0 bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left border-b border-border ${
+                    ci === 0 ? `left-0 border-r ${desplazado ? "border-r-border" : "border-r-transparent"}` : "z-(--z-sticky)"
+                  }`}
+                  // Esquina (ID fijo + encabezado fijo): sobre las demás
+                  // celdas sticky.
+                  style={ci === 0 ? { zIndex: "calc(var(--z-sticky) + 1)" } : undefined}
                 >
-                  <X size={ICON.sm} strokeWidth={1.5} />
-                </button>
-              </>
-            }
-          />
-        ) : (
-          // "N de M registros", o "0 registros" si los filtros no dejan
-          // ninguno.
-          <div className="shrink-0">
-            {hayResultados
-              ? <TableCounter visibles={visibleIndices.length} total={registrosVisibles} />
-              : <TableCounter visibles={0} />}
-          </div>
-        )}
-      </div>
-
-      {/* Caja de la tabla. */}
-      <div className="shadow-sm flex-1 min-h-0 min-w-0 flex flex-col border border-border rounded-md bg-surface">
-        <div
-          ref={resultadosListRef}
-          tabIndex={0}
-          onKeyDown={handleResultadosKeyDown}
-          onScroll={(e) => setDesplazado(e.currentTarget.scrollLeft > 0)}
-          className={`flex-1 min-h-0 overflow-auto rounded-t-md ${hayResultados ? "" : "rounded-b-md"} ${FOCUS_RING_INSET}`}
-        >
-          {!hayResultados ? (
-            // Los filtros no dejan filas — "Limpiar filtros" hace lo mismo
-            // que el de la barra.
-            <div className="h-full flex flex-col items-center justify-center gap-2 text-center px-8">
-              <span className="text-text-faint scale-90"><Inbox size={ICON.xl} strokeWidth={1.25} /></span>
-              <p className="text-label text-text-muted">No hay registros con estos filtros</p>
-              <button type="button" onClick={handleLimpiarFiltrosBarra} className="text-label text-secondary hover:underline">
-                Limpiar filtros
-              </button>
-            </div>
-          ) : (
-            // border-separate (spacing 0): bajo border-collapse los bordes de
-            // una celda sticky quedan en la capa de la tabla y se pintan
-            // encima o debajo mal al scrollear. Celdas y encabezados en
-            // nowrap: ningún valor se trunca; si no entran, scroll
-            // horizontal adentro de la caja (la paginación queda fuera).
-            <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
-              <thead>
-                <tr>
-                  {columnas.map((c, ci) => (
-                    <th
-                      key={c.key}
-                      className={`sticky top-0 bg-fill-subtle-solid w-[1%] whitespace-nowrap px-4 py-2 text-left border-b border-border ${
-                        ci === 0 ? `left-0 border-r ${desplazado ? "border-r-border" : "border-r-transparent"}` : "z-(--z-sticky)"
-                      }`}
-                      // Esquina (ID fijo + encabezado fijo): sobre las demás
-                      // celdas sticky.
-                      style={ci === 0 ? { zIndex: "calc(var(--z-sticky) + 1)" } : undefined}
-                    >
-                      <SortableHeaderCell
-                        label={c.label}
-                        active={sortIdx === ci}
-                        dir={sortDir}
-                        onClick={() => toggleSort(ci)}
-                        hint={c.nombreReal}
-                      />
-                    </th>
-                  ))}
-                  {/* Spacer — absorbe el sobrante de la fila. */}
-                  <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid border-b border-border" />
+                  <SortableHeaderCell
+                    label={c.label}
+                    active={sortIdx === ci}
+                    dir={sortDir}
+                    onClick={() => toggleSort(ci)}
+                    hint={c.nombreReal}
+                  />
+                </th>
+              ))}
+              {/* Spacer — absorbe el sobrante de la fila. */}
+              <th className="sticky top-0 z-(--z-sticky) bg-fill-subtle-solid border-b border-border" />
+            </tr>
+          </thead>
+          <tbody>
+            {visibleIndices.map((i) => {
+              const row = rows[i];
+              const isSelected = selectedRow === i;
+              const isHovered = hoveredRow === i;
+              const fondoFila = isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined;
+              return (
+                <tr
+                  key={i}
+                  data-row-index={i}
+                  onClick={() => setSelectedRow(isSelected ? null : i)}
+                  onMouseEnter={() => setHoveredRow(i)}
+                  onMouseLeave={() => setHoveredRow(null)}
+                  className="cursor-pointer transition-colors duration-(--duration-fast)"
+                  style={{ backgroundColor: fondoFila }}
+                >
+                  {columnas.map((c, ci) => {
+                    // Mono SOLO en el valor del identificador del
+                    // registro (la columna del campoId); el resto, fuente
+                    // de texto. Todas con tabular-nums: las cifras
+                    // (números, fechas, horas) alinean en columna.
+                    const esId = c.campo.nombre === config.campoId;
+                    return (
+                      <td
+                        key={c.key}
+                        className={`w-[1%] whitespace-nowrap px-4 py-2.5 tabular-nums border-b border-border-subtle ${
+                          esId ? "text-code font-mono" : "text-body"
+                        } ${isSelected ? `text-secondary ${esId ? "font-semibold" : "font-medium"}` : "text-text"} ${
+                          ci === 0
+                            ? `sticky left-0 z-(--z-sticky) border-r ${desplazado ? "border-r-border" : "border-r-transparent"} ${isSelected ? "inset-shadow-row-selected" : ""}`
+                            : ""
+                        }`}
+                        // La celda fija necesita fondo OPACO (la fila
+                        // pasa por detrás al scrollear): surface + el
+                        // color de hover o selección encima (fill-muted
+                        // es translúcido).
+                        style={
+                          ci === 0
+                            ? {
+                                backgroundColor: isSelected ? "var(--color-primary-tint)" : "var(--color-surface)",
+                                backgroundImage: !isSelected && isHovered ? "linear-gradient(var(--color-fill-muted), var(--color-fill-muted))" : undefined,
+                              }
+                            : undefined
+                        }
+                      >
+                        {celda(row, c)}
+                      </td>
+                    );
+                  })}
+                  <td className="border-b border-border-subtle" />
                 </tr>
-              </thead>
-              <tbody>
-                {visibleIndices.map((i) => {
-                  const row = rows[i];
-                  const isSelected = selectedRow === i;
-                  const isHovered = hoveredRow === i;
-                  const fondoFila = isSelected ? "var(--color-primary-tint)" : isHovered ? "var(--color-fill-muted)" : undefined;
-                  return (
-                    <tr
-                      key={i}
-                      data-row-index={i}
-                      onClick={() => setSelectedRow(isSelected ? null : i)}
-                      onMouseEnter={() => setHoveredRow(i)}
-                      onMouseLeave={() => setHoveredRow(null)}
-                      className="cursor-pointer transition-colors duration-(--duration-fast)"
-                      style={{ backgroundColor: fondoFila }}
-                    >
-                      {columnas.map((c, ci) => {
-                        // Mono SOLO en el valor del identificador del
-                        // registro (la columna del campoId); el resto, fuente
-                        // de texto. Todas con tabular-nums: las cifras
-                        // (números, fechas, horas) alinean en columna.
-                        const esId = c.campo.nombre === config.campoId;
-                        return (
-                          <td
-                            key={c.key}
-                            className={`w-[1%] whitespace-nowrap px-4 py-2.5 tabular-nums border-b border-border-subtle ${
-                              esId ? "text-code font-mono" : "text-body"
-                            } ${isSelected ? `text-secondary ${esId ? "font-semibold" : "font-medium"}` : "text-text"} ${
-                              ci === 0
-                                ? `sticky left-0 z-(--z-sticky) border-r ${desplazado ? "border-r-border" : "border-r-transparent"} ${isSelected ? "inset-shadow-row-selected" : ""}`
-                                : ""
-                            }`}
-                            // La celda fija necesita fondo OPACO (la fila
-                            // pasa por detrás al scrollear): surface + el
-                            // color de hover o selección encima (fill-muted
-                            // es translúcido).
-                            style={
-                              ci === 0
-                                ? {
-                                    backgroundColor: isSelected ? "var(--color-primary-tint)" : "var(--color-surface)",
-                                    backgroundImage: !isSelected && isHovered ? "linear-gradient(var(--color-fill-muted), var(--color-fill-muted))" : undefined,
-                                  }
-                                : undefined
-                            }
-                          >
-                            {celda(row, c)}
-                          </td>
-                        );
-                      })}
-                      <td className="border-b border-border-subtle" />
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Paginación — al pie, dentro de la caja. */}
-        {hayResultados && (
-          <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-md shrink-0 flex items-center justify-between">
-            <span className="text-body-sm text-text tabular-nums">
-              Registros encontrados:{" "}
-              <span className="font-semibold text-secondary">
-                {formatNumero(registrosEncontrados)}
-              </span>
-            </span>
-            <div className="flex items-center gap-2 text-body-sm text-text-muted tabular-nums">
-              <button className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`} disabled>
-                Anterior
-              </button>
-              <span>
-                Pág. <span className="font-medium text-text">1</span> de{" "}
-                <span className="font-medium text-text">{formatNumero(paginas)}</span>
-              </span>
-              <button
-                className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`}
-                disabled={paginas <= 1}
-              >
-                Siguiente
-              </button>
-            </div>
+              );
+            })}
+          </tbody>
+        </table>
+        {!hayResultados && (
+          // Los filtros no dejan filas — "Limpiar filtros" hace lo mismo que
+          // el de la barra.
+          <div className="py-10 flex flex-col items-center gap-2 text-center px-8">
+            <p className="text-body-sm text-neutral-600">No hay registros con estos filtros</p>
+            <button type="button" onClick={handleLimpiarFiltrosBarra} className={`text-label text-secondary hover:underline ${FOCUS_RING}`}>
+              Limpiar filtros
+            </button>
           </div>
         )}
       </div>
+
+      {/* Barra de selección — encima del thead, mismo alto. Siempre montada
+          (para que la opacidad transicione); sin selección, inert + invisible:
+          sin foco ni lectura. El foco no se mueve al aparecer; Modificar y
+          Borrar quedan en el orden de tabulación, después de la lista. */}
+      <div
+        ref={barraSeleccionRef}
+        role="toolbar"
+        aria-label="Acciones del registro seleccionado"
+        inert={!hasSelection}
+        style={{ height: altoEncabezado, zIndex: "calc(var(--z-sticky) + 2)" }}
+        className={`absolute top-0 inset-x-0 flex items-center gap-3 px-4 rounded-t-md bg-primary-tint border-b border-chip-border transition-opacity duration-120 ${
+          hasSelection ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <span className="text-body-sm font-semibold text-secondary whitespace-nowrap select-none">1 registro seleccionado</span>
+        <div className="w-px h-4 bg-chip-border shrink-0" />
+        {/* Acciones de registro: sm, ghost (no compiten con la barra de
+            filtros, que es de página). */}
+        <button type="button" onClick={() => handleAbrirModificar(selectedRow!)} className={ghostBtnCls("neutral")}>
+          Modificar
+        </button>
+        <button type="button" onClick={() => handleAbrirBorrar(selectedRow!)} className={ghostBtnCls("destructive")}>
+          Borrar
+        </button>
+        <button
+          type="button"
+          onClick={deseleccionar}
+          aria-label="Deseleccionar"
+          title="Deseleccionar"
+          className={`${ICON_BTN_SM} ml-auto shrink-0 flex items-center justify-center rounded-sm text-icon hover:bg-fill-muted hover:text-text transition-colors ${FOCUS_RING}`}
+        >
+          <X size={ICON.sm} strokeWidth={1.5} />
+        </button>
+      </div>
+
+      {/* Paginación — al pie, dentro de la caja. */}
+      {hayResultados && (
+        <div className="px-4 py-2 border-t border-border bg-fill-subtle rounded-b-md shrink-0 flex items-center justify-between">
+          <span className="text-body-sm text-text tabular-nums">
+            Registros encontrados:{" "}
+            <span className="font-semibold text-secondary">
+              {formatNumero(registrosEncontrados)}
+            </span>
+          </span>
+          <div className="flex items-center gap-2 text-body-sm text-text-muted tabular-nums">
+            <button className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`} disabled>
+              Anterior
+            </button>
+            <span>
+              Pág. <span className="font-medium text-text">1</span> de{" "}
+              <span className="font-medium text-text">{formatNumero(paginas)}</span>
+            </span>
+            <button
+              className={`${BTN_SM} border border-border-strong bg-surface hover:bg-fill-muted disabled:opacity-40 transition-colors`}
+              disabled={paginas <= 1}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -617,18 +629,22 @@ export default function AbmScreen({
             </button>
           )}
         </div>
-        <ChipFilterBar
-          id={idBarra}
-          onIdChange={setIdBarra}
-          idPlaceholder={config.filtrosBarra.idPlaceholder ?? campoDe(config.campoId)?.label ?? config.campoId}
-          visibles={chipsVisibles}
-          agregables={chipsAgregables}
-          valores={filtrosBarraValores}
-          onChange={cambiarFiltro}
-          onLimpiar={handleLimpiarFiltrosBarra}
-          periodo={periodo}
-        />
-        {resultados}
+        {/* Filtros + tabla: gap-3 entre sí (--page-gap solo separa el header
+            de página de este bloque). */}
+        <div className="flex-1 min-h-0 flex flex-col gap-3">
+          <ChipFilterBar
+            id={idBarra}
+            onIdChange={setIdBarra}
+            idPlaceholder={columnas[0]?.label ?? campoDe(config.campoId)?.label ?? config.campoId}
+            visibles={chipsVisibles}
+            agregables={chipsAgregables}
+            valores={filtrosBarraValores}
+            onChange={cambiarFiltro}
+            onLimpiar={handleLimpiarFiltrosBarra}
+            periodo={periodo}
+          />
+          {resultados}
+        </div>
       </div>
 
       {/* Modal de edición de registro (ver DESIGN_SYSTEM.md, "Modal de

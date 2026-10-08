@@ -30,7 +30,6 @@ export * from "./RangoFechaCalendario";
 export { default as ReadOnlyField } from "./ReadOnlyField";
 export { default as SegmentadoSoloLectura } from "./SegmentadoSoloLectura";
 export { default as SelectWrap } from "./SelectWrap";
-export { default as SelectionActionBar } from "./SelectionActionBar";
 export * from "./SortableHeader";
 export { default as TableCounter } from "./TableCounter";
 export { default as TableToolbar } from "./TableToolbar";

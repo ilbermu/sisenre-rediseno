@@ -253,6 +253,12 @@
   /* Ancho de la columna de controles de un formulario horizontal (FormRow):
      inputs, fecha, select y combobox, todos iguales. */
   --form-control-w: 280px;
+  /* Ancho del input de ID de la barra de filtros (ChipFilterBar): fijo, para
+     que el placeholder más largo — el encabezado de la columna del ID,
+     "Código de interrupción", en font-sans 12px (~145px) — entre completo
+     entre el ícono de búsqueda y la ✕ (pl-8 + pr-8 = 64px en el tier más
+     grande) y el borde. Sin redefinir por tier: el texto no escala. */
+  --filter-id-w: 224px;
   /* Ancho del Modal size "form" (modal de edición de registro, los dos
      pasos): el que necesitan los chips de Motivo (NOTA_OPCIONES, BTN_SM con
      gap-1.5) en una sola línea — ~642px medidos con Inter 500 12px — + el
