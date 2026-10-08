@@ -385,6 +385,28 @@ Vigesimosexta pasada (también 06/10/2026):
   (`campos`); se eliminan `seccionesBarra`, `seccionesMasFiltros`, `anchos`
   y la prop `controlado` de `AbmCampo`.
 
+**08/10/2026**
+
+- **ABM — título de la tabla:** "Tabla N" pasa a ser un chip (píldora de
+  22px, `primary-tint` / `chip-border` / `text-secondary`) delante del
+  nombre en `heading-md text-neutral-900`, sin "·"; chip, nombre y chevron
+  siguen siendo un único botón. Las opciones del dropdown repiten el formato.
+- **ABM — sin contador:** se elimina "N de M registros" y la franja entre la
+  barra de filtros y la tabla; el estado vacío va dentro de la caja, debajo
+  del `thead`. Espaciados: `--page-gap` entre el header y los filtros, `gap-3`
+  entre los filtros y la tabla.
+- **ABM — selección sobre el encabezado:** la barra de selección se
+  superpone al `thead` (mismo alto, hermana del contenedor con scroll,
+  opacidad 120ms) y reemplaza a la toolbar de selección; se elimina
+  `SelectionActionBar` (sin uso).
+- **`ChipFilterBar` — input de ID:** ancho fijo (`--filter-id-w`, 224px);
+  placeholder en fuente de texto = encabezado de la columna del ID (se
+  elimina `idPlaceholder` de la config); el valor tipeado sigue en mono.
+- **Chips = encabezado de columna:** los `chipLabel` de las 9 tablas son
+  exactamente el encabezado de su columna ("Fase de reposición", "Nro.
+  cuenta", "Alimentador MT"…); `encabezadosInconsistentes` también lo
+  verifica.
+
 ## Índice
 
 **1. Fundamentos**
@@ -427,7 +449,6 @@ Vigesimosexta pasada (también 06/10/2026):
 [PeriodSelector](#periodselector) ·
 [ReadOnlyField](#readonlyfield) ·
 [SegmentadoSoloLectura](#segmentadosololectura) ·
-[SelectionActionBar](#selectionactionbar) ·
 [SelectWrap](#selectwrap) ·
 [SortableHeaderCell / SortableTh](#sortableheadercell--sortableth) ·
 [Tabla de resultados](#tabla-de-resultados) ·
@@ -952,23 +973,30 @@ permite cambiarla. Es el título de la pantalla de ABM (no hay otro título
 de tabla), primer elemento del contenido debajo del `TopBar`, en todos los
 layouts.
 
-**Anatomía:** texto "Tabla 2 · Interrupciones" (`nombre · titulo`) en
-`text-heading-md text-text` + chevron (`ICON.md`, `text-icon`) a la
-derecha. Sin borde ni fondo en reposo; alto mínimo `--control-md`,
-`px-1.5` y `-ml-1.5` para que el texto quede alineado con el borde de la
-página. A la izquierda, solo con un deep-link, el "←" para volver a
-Consultas. Panel: "Cambiar de tabla" con la lista de tablas (titulo +
-"Tabla N"), la activa en tint.
+**Anatomía:** un único botón con, de izquierda a derecha, el **chip "Tabla
+2"**, 8px (`gap-2`) y el **nombre** ("Interrupciones", sin "·") en
+`text-heading-md text-neutral-900`, y un chevron (`ICON.md`, `text-icon`).
+El chip es una píldora de 22px de alto (`h-5.5`, `px-2`, `rounded-full`,
+`bg-primary-tint`, `border border-chip-border`, `text-secondary text-caption
+font-semibold`): el mismo idioma visual que los chips de "Tablas
+relacionadas". Sin borde ni fondo en reposo del botón; alto mínimo
+`--control-md`, `px-1.5` y `-ml-1.5` para que el chip quede alineado con el
+borde de la página. A la izquierda, solo con un deep-link, el "←" para
+volver a Consultas. Panel: "Cambiar de tabla" con la lista de tablas; cada
+opción repite el formato (chip "Tabla N" con ancho mínimo común, para que
+los nombres alineen + nombre en `text-body`), la activa en tint.
 
-**Estados:** reposo (título plano); hover `bg-fill-muted` `rounded-sm`;
-abierto = seleccionado persistente (`bg-primary-tint` + `border-primary`,
-texto y chevron `text-secondary`, chevron rotado). Foco `FOCUS_RING`.
+**Estados:** reposo (título plano); hover `bg-fill-muted` `rounded-sm`
+sobre todo el bloque (chip, nombre y chevron); abierto = seleccionado
+persistente (`bg-primary-tint` + `border-primary`, nombre y chevron
+`text-secondary`, chevron rotado). Foco `FOCUS_RING`.
 
 **Accesibilidad:** `<button>` con `aria-haspopup` y `aria-expanded`;
 `title` con el código interno ("Tabla 2 · Interrupciones (CDS2)").
 
-**Qué no hacer:** darle borde o fondo en reposo (no es un botón); sumar
-otro título de tabla en la pantalla.
+**Qué no hacer:** darle borde o fondo al botón en reposo (no es un botón);
+separar el chip del nombre en dos controles; sumar otro título de tabla en
+la pantalla.
 
 **Archivo:** `src/features/abm/AbmTableSelector.tsx`.
 
@@ -1147,14 +1175,18 @@ todas las tablas del ABM.
 `--control-md`, en este orden:
 
 ```
-[🔍 ID de interrupción     ✕] Fecha ▾  Nivel: MT ✕  Fase ▾  Origen ▾  Tipo ▾ │ Cód. equipo: @27… ✕  PROTECCION DE SUM… ✕  +2 filtros  [+ Agregar filtro]      Limpiar filtros
+[🔍 Código de interrupción ✕] Fecha ▾  Nivel de tensión: MT ✕  Fase eléctrica ▾  Origen ▾  Tipo ▾ │ Código equipo: @27… ✕  PROTECCION DE SUM… ✕  +2 filtros  [+ Agregar filtro]      Limpiar filtros
 ```
 
-1. **Input de ID:** lupa a la izquierda, placeholder del ID, texto
-   `text-code font-mono`, ✕ interno (`ICON_BTN_XS`) con valor. Ancho
-   flexible: base 220px, mínimo 150px (es lo primero que se achica).
-   Aplica con Enter o a los 500 ms de dejar de tipear; busca "contiene"
-   sin distinguir mayúsculas.
+1. **Input de ID:** lupa a la izquierda, ✕ interno (`ICON_BTN_XS`) con
+   valor. El **valor tipeado** va en `text-code font-mono` (es el
+   identificador); el **placeholder**, en fuente de texto
+   (`placeholder:font-sans`), y es el encabezado de la columna del ID
+   ("Código de interrupción", "Alimentador MT", "Nro. reclamo"). **Ancho
+   fijo** (`--filter-id-w`, 224px, sin redefinir por tier): entra el
+   placeholder más largo completo en todos los tiers y no se achica con el
+   desborde. Aplica con Enter o a los 500 ms de dejar de tipear; busca
+   "contiene" sin distinguir mayúsculas.
 2. **Chips visibles** (siempre en la barra, hasta 5): `FilterTriggerButton` `md`
    (`chevronConValor={false}`). Vacío = trigger sin borde, **texto +
    chevron, sin ✕**; con valor = pintado (`primary-tint`, `border-primary`,
@@ -1177,14 +1209,18 @@ todas las tablas del ABM.
 
 **Etiquetas:** cada filtro (`ChipFiltroDef`) tiene `label` (nombre
 completo: menú "Agregar filtro", editor, `title` y `aria-label`),
-`chipLabel` (nombre corto del chip, máx. ~10 caracteres: "Cód. equipo",
-"Alim. MT", "CT") y opcionalmente `soloValor`. El `title` y el
-`aria-label` del chip son **siempre** "label completo: valor". **Regla:**
-el chip usa la etiqueta corta; solo-valor únicamente para campos cuyos
-valores se explican solos (descripciones, nombres) — nunca para Sí/No,
-códigos o números.
+`chipLabel` (el texto del chip) y opcionalmente `soloValor`. El `title` y
+el `aria-label` del chip son **siempre** "label completo: valor".
+**Regla:** en el ABM, el `chipLabel` es **exactamente el encabezado de la
+columna** del campo ("Fase de reposición", no "Fase rep."; "Nro. cuenta",
+no "Cliente" ni "Póliza"), así el chip y la columna se llaman igual. Los
+chips pueden ser largos: miden como máximo 200px y truncan el valor, no la
+etiqueta. Solo-valor únicamente para campos cuyos valores se explican solos
+(descripciones, nombres) — nunca para Sí/No, códigos o números — y también
+lleva `chipLabel` (es el texto del chip vacío).
 
-**Props:** `id`, `onIdChange`, `idPlaceholder`, `visibles` y `agregables`
+**Props:** `id`, `onIdChange`, `idPlaceholder` (el encabezado de la
+columna del ID), `visibles` y `agregables`
 (`ChipFiltroDef[]`: `campo`, `label`, `chipLabel?`, `soloValor?`,
 `editor`, `opciones?`), `valores` (campo → valor, `""` = sin filtro),
 `onChange(campo, valor)`, `onLimpiar`, `periodo?` (el del
@@ -1229,9 +1265,10 @@ compacto); el valor trunca con "…" antes de la ✕ y el texto completo va en
 el `title` del chip.
 
 **Desborde** (la barra nunca pasa de una línea). Si no entra todo, en este
-orden: (a) el ID se achica hasta 150px; (b) los chips agregados, de derecha
-a izquierda, pasan a "+N filtros"; (c) modo compacto: "Agregar filtro" solo
-ícono (`ICON_BTN_MD`, `aria-label`) y chips a 150px como máximo. Los visibles
+orden: (a) los chips agregados, de derecha a izquierda, pasan a "+N
+filtros"; (b) modo compacto: "Agregar filtro" solo ícono (`ICON_BTN_MD`,
+`aria-label`) y chips a 150px como máximo. El input de ID es de ancho fijo:
+no se achica. Los visibles
 nunca se ocultan. Los anchos naturales salen de una fila de medición
 invisible e inerte; se recalcula al agregar o quitar filtros y con el ancho
 de la barra (`ResizeObserver`).
@@ -1820,22 +1857,6 @@ segmento); usarlo para un toggle deshabilitado.
 
 **Archivo:** `src/components/ui/SegmentadoSoloLectura.tsx`.
 
-## SelectionActionBar
-
-**Para qué:** confirmar qué registro está seleccionado en el ABM
-("REGISTRO SELECCIONADO `<id>`").
-
-**Anatomía:** punto `bg-primary`, overline `text-heading-xs uppercase
-text-secondary`, id en `text-code font-mono`; `border-b border-border`.
-
-**Props:** `recordLabel`, `actions?` (slot a la derecha, `ml-auto`), `bare?`
-(sin padding ni `border-b` propios, para vivir dentro de otra barra).
-
-**Qué no hacer:** acciones por fila en la tabla. En el ABM, `bare` dentro
-de la barra de la tabla, con `actions`: Modificar, Borrar y Deseleccionar.
-
-**Archivo:** `src/components/ui/SelectionActionBar.tsx`.
-
 ## SelectWrap
 
 **Para qué:** envoltorio de un `<select>` nativo que le agrega el chevron
@@ -1894,10 +1915,39 @@ border-border-subtle`) van en cada `<td>`.
 - **Indicador:** mientras haya contenido desplazado a la izquierda
   (`scrollLeft > 0`), la columna fija muestra un borde derecho
   (`border-border`); sin scroll el borde es transparente (sin borde extra).
-- Barra de la tabla (contador / selección) y paginación **fijas** al ancho
-  de la caja.
+- La barra de selección y la paginación son **fijas** al ancho de la caja
+  (no scrollean).
 - El tag de [`ColumnHeaderHint`](#columnheaderhint) va en un portal (fixed),
   así que el `overflow` no lo recorta.
+
+**Barra de selección superpuesta al `thead`:** al seleccionar una fila, la
+fila de encabezados se cubre con una barra del **mismo alto que el `thead`**
+(medido con `ResizeObserver`, porque cambia con los tiers de `--spacing`):
+la tabla no salta.
+- **Contenido**, de izquierda a derecha: "1 registro seleccionado"
+  (`text-body-sm font-semibold text-secondary`), un separador, **Modificar**
+  y **Borrar** (`ghostBtnCls`, `sm`; Borrar destructivo) y, a la derecha
+  (`ml-auto`), ✕ (`ICON_BTN_SM`, "Deseleccionar"). Fondo `bg-primary-tint`,
+  `border-b border-chip-border`.
+- **Posición:** `absolute top-0 inset-x-0` en la caja (`relative`), **hermana
+  del contenedor con scroll y no hija**: ocupa siempre el ancho visible de
+  la caja y no se desplaza con el scroll horizontal. Capa por encima de las
+  celdas sticky (`--z-sticky` + 2).
+- **Encabezados:** mientras la barra está visible, el `thead` queda
+  `aria-hidden` e `inert` (sin foco, y el tag de `ColumnHeaderHint` no
+  aparece).
+- **Teclado:** Escape deselecciona y vuelven los encabezados. Al aparecer
+  la barra el foco **no se mueve**; Modificar y Borrar quedan alcanzables
+  con Tab (después de la tabla). Si el foco estaba en la barra al
+  deseleccionar, vuelve a la tabla.
+- **Movimiento:** la barra siempre está montada y transiciona la opacidad
+  (120ms, `duration-120`); sin selección es `inert` e invisible. Con
+  `prefers-reduced-motion` la transición queda en ~0ms (regla global).
+
+**Estado vacío:** con filtros que no dejan filas, el `thead` sigue y, dentro
+de la caja y debajo de él, va "No hay registros con estos filtros"
+(`text-body-sm text-neutral-600`) + el link "Limpiar filtros" (`py-10`,
+centrado). Sin pie de paginación.
 
 **Tipografía:** mono solo en la columna del ID; el resto en fuente de texto
 con `tabular-nums` (ver [Tipografía](#tipografía)).
@@ -2277,15 +2327,13 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
 
 ```
 ┌ TopBar: Alta, baja y modificación                          [Período ▾] ┐
-│ Tabla 3 · Interrupciones no computables ▾                  [+ Insertar] │  selector-título (+ Insertar si hasInsertar)
+│ (Tabla 3) Interrupciones no computables ▾                  [+ Insertar] │  selector-título: chip + nombre (+ Insertar si hasInsertar)
 │                                                                (gap --page-gap)
 │ [🔍 Código de interrupción ] Causa ▾ │ (agregados) [+ Agregar filtro]  Limpiar filtros │  ChipFilterBar
-│                                                                (gap --page-gap)
-│ 40 de 40 registros                                                     │  barra de la tabla (sin selección)
-│ • REGISTRO SELECCIONADO BPR…        [Modificar] [Borrar] [✕]            │  … o con un registro seleccionado
-│                                                                (gap-2)
+│                                                                (gap-3)
 │ ┌───────────────────────────────────────────────────────────────────┐   │  caja de la tabla (borde, md, surface, shadow-sm)
-│ │ CÓDIGO DE INTERRUPCIÓN   CAUSA   FASE DE REPOSICIÓN                │   │  thead fill-subtle-solid, sticky
+│ │ CÓDIGO DE INTERRUPCIÓN   CAUSA   FASE DE REPOSICIÓN                │   │  thead fill-subtle-solid, sticky …
+│ │ 1 registro seleccionado │ Modificar Borrar                    ✕    │   │  … cubierto por la barra de selección con una fila elegida
 │ │ fila…                                                              │   │
 │ │ Registros encontrados: N           Anterior  Pág. 1 de N  Siguiente │   │  paginación fill-subtle, border-t
 │ └───────────────────────────────────────────────────────────────────┘   │
@@ -2306,26 +2354,31 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
   AND; el ID y los de texto por "contiene" sin distinguir mayúsculas; lista
   y lista con búsqueda por igualdad; fecha por rango (extremos inclusivos,
   sin hora = día completo). Sin filtros se ven todos los registros.
-  Vuelve a la página 1, actualiza "N de M registros" y deselecciona el
-  registro si quedó afuera. Nunca se bloquea (no hay estado
+  Vuelve a la página 1 y deselecciona el registro si quedó afuera. Nunca se bloquea (no hay estado
   "consultando").
-- **Barra de la tabla**, afuera de la caja, sobre el fondo, alto fijo
-  (`--control-md`): sin selección, `TableCounter` ("N de M registros" o "0
-  registros"); con un registro seleccionado, `SelectionActionBar` (`bare`)
-  con Modificar y Borrar (`ghostBtnCls` neutral y destructivo, `sm`), un
-  separador y ✕ (`ICON_BTN_SM`, "Deseleccionar"); Escape también
+- **Sin contador ni franja reservada:** no hay "N de M registros" ni una
+  barra entre la de filtros y la tabla (el pie de la caja ya cuenta los
+  "Registros encontrados"). Ningún espacio se reserva para un estado que no
+  está visible.
+- **Espaciado vertical:** header de página (selector + Insertar) → barra de
+  filtros: `--page-gap`; barra de filtros → caja de la tabla: `gap-3` (escala
+  con los tiers de `--spacing`).
+- **Tabla en su caja:** `border border-border rounded-md bg-surface
+  shadow-sm`, `thead` sticky `bg-fill-subtle-solid`, filas con hover
+  `fill-muted` y seleccionada `primary-tint` + `inset-shadow-row-selected`,
+  paginación al pie dentro de la caja ("Registros encontrados" cuenta las
+  filas encontradas con algún filtro; sin filtros, el total de la tabla). Sin
+  `overflow-hidden`: el radio lo resuelven el wrapper con scroll
+  (`rounded-t-md`) y el pie.
+- **Selección sobre el encabezado:** con un registro seleccionado, una barra
+  ("1 registro seleccionado" · Modificar · Borrar · ✕) **cubre la fila de
+  encabezados** con su mismo alto, así la tabla no salta; Escape también
   deselecciona y las flechas mueven la selección. Sin columna de acciones
-  por fila.
-- **Tabla en su caja**, a `gap-2`: `border border-border rounded-md
-  bg-surface shadow-sm`, `thead` sticky `bg-fill-subtle-solid`, filas con
-  hover `fill-muted` y seleccionada `primary-tint` +
-  `inset-shadow-row-selected`, paginación al pie dentro de la caja
-  ("Registros encontrados" cuenta las filas encontradas con algún filtro;
-  sin filtros, el total de la tabla). Sin `overflow-hidden`: el radio lo
-  resuelven el wrapper con scroll (`rounded-t-md`) y el pie. Sin
-  resultados: "No hay registros con estos filtros" + link "Limpiar
-  filtros", sin pie. Un solo buscador: la tabla no lleva `TableToolbar` ni
-  `FilterTrigger`; el orden por columna se mantiene.
+  por fila. Detalle en [Tabla de resultados](#tabla-de-resultados).
+- **Estado vacío dentro de la tabla:** sin resultados, el `thead` sigue y
+  debajo, dentro de la caja, va "No hay registros con estos filtros" +
+  "Limpiar filtros" (sin pie). Un solo buscador: la tabla no lleva
+  `TableToolbar` ni `FilterTrigger`; el orden por columna se mantiene.
 - **Columnas: la estructura de la tabla real.** Se **derivan** de la config
   (`columnasDeResultados`, `src/features/abm/columnasDeResultados.ts`), no
   se declaran a mano por tabla:
@@ -2359,21 +2412,27 @@ dependencias (`limpiaAlCambiar`, opciones en función de otro campo),
     eléctrica de "Cadena eléctrica" en Tablas 2 y 4) y POT / POTENCIA de
     Tabla 7 ("Potencia trafos" / "Potencia clientes MT", porque ambas
     serían "Potencia").
-  - Los **chips** de esos campos usan el mismo texto (`chipLabel`); el label
-    largo queda solo en el formulario, el modal y el menú "Agregar filtro".
+  - Los **chips** de esos campos usan **exactamente el mismo texto**
+    (`chipLabel` = encabezado de la columna); el label largo queda solo en el
+    formulario, el modal y el menú "Agregar filtro". Lo mismo el
+    placeholder del input de ID (el encabezado de la columna del `campoId`;
+    ya no hay `idPlaceholder` en la config). Un filtro de un campo sin
+    columna (Consumo y los CT de Tabla 6, Reclamos de Tabla 8) queda fuera de
+    la regla.
   - **Verificación de desarrollo:** `encabezadosInconsistentes`
     (`columnasDeResultados.ts`) agrupa por nombre real y falla (se reporta
     con `console.error` al cargar `AbmScreen` en DEV) si dos tablas titulan
     distinto un mismo nombre real fuera de las excepciones, o si una tabla
-    repite un título.
+    repite un título, o si el chip de un filtro no se llama como el
+    encabezado de su columna.
   - El nombre real va en la pista del encabezado
     ([`ColumnHeaderHint`](#columnheaderhint)). Una columna de toggle,
     select o combobox muestra la etiqueta de la opción.
 - **Ancho:** celdas y encabezados en `whitespace-nowrap`, ningún valor se
   trunca. Solo si las columnas no entran en la caja hay **scroll horizontal
   dentro de la caja**, con la columna del ID fija (ver [Tabla de
-  resultados](#tabla-de-resultados)); la barra de la tabla y la paginación
-  no scrollean. Nunca scroll horizontal de la página.
+  resultados](#tabla-de-resultados)); la barra de selección y la
+  paginación no scrollean. Nunca scroll horizontal de la página.
 - **Auditoría y Exportar** no se renderizan (pendientes de reubicar).
 - **Borrar** abre `ConfirmarBorrarModal`.
 

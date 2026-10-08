@@ -492,12 +492,6 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   (10 y 5 de 40): son valores legítimos (casa, sin depto), no se completaron.
 - **Tabla 9 NM:** la tabla real tiene CT pero el formulario no; sin columna
   ni chip de CT.
-- **Chips con etiqueta larga:** con los encabezados unificados, algunos
-  chips superan los ~10 caracteres previstos ("Potencia clientes MT",
-  "Código de interrupción" en Tabla 8) y truncan a 200px.
-- **Chips y columnas con nombres distintos:** Tabla 8 (chip "Póliza" /
-  columna "Nro. cuenta"), Tablas 6 y 9 (chip "Cliente"), Tabla 6 (chip
-  "Potencia" / campo "Demanda media del cliente (KW)").
 - **Paginación del ABM fija** (siempre página 1) y filas nuevas de Insertar
   solo en la sesión.
 - **Pista de nombre real sin probar:** el tag va en un portal (fixed), así
@@ -515,6 +509,74 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   `exportFilename` queda en la config sin uso.
 - **No hay script `lint`** en `package.json`: se verificó con
   `tsc --noEmit` y `pnpm build`.
+
+## 2026-10-08
+
+### Qué se hizo
+
+- **ABM — encabezado, filtros y selección** (`433ce29`): mismo componente
+  para las 9 tablas.
+  - `AbmTableSelector`: "Tabla N" pasa a chip (píldora de 22px, `primary-tint`
+    / `chip-border`) delante del nombre en `heading-md`, sin "·"; chip,
+    nombre y chevron siguen siendo un único botón; las opciones del
+    dropdown repiten el formato.
+  - Se elimina el contador "N de M registros" y la franja entre filtros y
+    tabla; el estado vacío ("No hay registros con estos filtros" + "Limpiar
+    filtros") va dentro de la caja, debajo del `thead`. Espaciados:
+    `--page-gap` entre header y filtros, `gap-3` entre filtros y tabla.
+  - Barra de selección superpuesta al `thead` (mismo alto, medido con
+    `ResizeObserver`; hermana del contenedor con scroll; opacidad 120ms;
+    `thead` `aria-hidden` + `inert` mientras está visible; Escape
+    deselecciona; el foco no se mueve al aparecer). Reemplaza a la toolbar
+    de selección; se elimina `SelectionActionBar` (sin uso).
+  - `ChipFilterBar`: input de ID de ancho fijo (`--filter-id-w`, 224px);
+    placeholder en fuente de texto = encabezado de la columna del ID
+    ("Código de interrupción", "Alimentador MT", "Nro. reclamo"); el valor
+    tipeado sigue en mono. Se quita `idPlaceholder` de la config.
+  - `chipLabel` = encabezado de la columna en las 9 tablas. Corregidos:
+    - Tabla 2: "Nivel" → "Nivel de tensión", "Fase" → "Fase eléctrica",
+      "Alim. MT" → "Alimentador MT", y el chip solo-valor de Descripción
+      equipo suma "Descripción equipo".
+    - Tabla 3: "Fase rep." → "Fase de reposición".
+    - Tabla 4: "Fase rep." → "Fase de reposición", "Fase eléc." → "Fase
+      eléctrica", "Alim. MT" → "Alimentador MT", y "Descripción equipo" en
+      el solo-valor.
+    - Tabla 5: "Fase rep." → "Fase de reposición", "Fase eléc." → "Fase
+      eléctrica".
+    - Tabla 6: "Cliente" → "Nro. cuenta", "Nivel" → "Nivel de tensión".
+    - Tabla 7: "Dem. máx." → "Demanda máxima".
+    - Tabla 8: "Cód. falla" → "Código falla", "Póliza" → "Nro. cuenta".
+    - Tablas 9 y 9 NM: "Cliente" → "Nro. cuenta".
+    - `encabezadosInconsistentes` ahora también verifica esta regla (script
+      de comprobación contra las 9 configs: sin problemas).
+- `DESIGN_SYSTEM.md`: Patrones → "ABM" (chip + nombre, sin contador,
+  selección sobre el encabezado, estado vacío dentro de la tabla,
+  espaciados), "Tabla de resultados" (barra de selección superpuesta),
+  `AbmTableSelector`, `ChipFilterBar`; se elimina la sección
+  `SelectionActionBar`.
+
+### Pendientes abiertos
+
+- **Sin probar en el navegador** (no se abrió, por pedido): el chip del
+  título y su hover; que la barra de selección tape el `thead` sin saltos en
+  los tres tiers de `--spacing` y quede por encima de las celdas sticky
+  (`src/features/abm/AbmScreen.tsx`, barra `role="toolbar"`); la transición
+  de 120ms; Tab hasta Modificar / Borrar; Escape con el foco en la barra.
+- **`--filter-id-w` (224px) estimado, no medido:** se calculó para
+  "Código de interrupción" en Inter 12px (~145px) + `pl-8` / `pr-8`. Falta
+  confirmar que el placeholder entra completo en los tres tiers.
+- **Chips más largos:** con los chips = encabezado, "Potencia clientes MT",
+  "Descripción equipo" o "Código de interrupción" (Tabla 8) pueden empujar
+  el desborde ("+N filtros") antes que antes; falta verlo con 5 chips en un
+  notebook.
+- **Filtros sin columna:** Consumo, CT T9 y CT T10 (Tabla 6) y Reclamos
+  (Tabla 8) conservan su `chipLabel` propio, porque el campo no tiene
+  `nombreReal` y no se muestra como columna.
+- **Estado vacío con scroll horizontal:** el mensaje está centrado en el
+  ancho visible, pero no es sticky; si las columnas desbordan y se hace
+  scroll sin filas, se desplaza con la tabla.
+- **La barra de selección tapa el tramo superior de la barra de scroll
+  vertical** de la caja (ocupa todo el ancho de la caja).
 
 ## Historia de decisiones del DS
 
