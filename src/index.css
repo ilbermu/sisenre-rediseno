@@ -265,6 +265,7 @@
      p-5 del body (40px) = ~682px, + margen para una barra de scroll clásica
      (~17px) = ~699px, redondeado a múltiplo de 8. */
   --modal-form-w: 704px;
+  --modal-lg-w: 880px;
 }
 
 @media (max-height: 900px) {

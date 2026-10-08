@@ -12,16 +12,19 @@ export type FaseReposicion = {
   usuariosBT: number;
 };
 
+// Reclamo de la interrupción (Tabla 8): REC es el identificador del registro,
+// POL el Nro. de cuenta; `minuto` = minutos desde el inicio de la
+// interrupción (FECHA = inicio + minuto).
+export type ReclamoDetalle = { minuto: number; fecha: string; rec: string; pol: string; partido: string; codFalla: string };
+
 // Reclamos recibidos durante la interrupción seleccionada — mismo criterio
-// de semilla = referencia. Devuelve inicio/fin de la interrupción y el
-// instante de cada reclamo, en minutos desde el inicio (ver
-// ReclamosTimeline). Duración sesgada a pocas horas, con cortes largos
-// (días) ocasionales. Cantidad según la distribución real (agosto 2026:
-// 54% 1 reclamo, 40% 2, 4,8% 3-15, 1,5% 16-337), con las colas un poco
-// infladas para que las 40 filas de muestra cubran los cuatro casos del
-// gráfico: ~10% sin reclamos; del resto 50% 1, 35% 2, 10% 3-15, 5% 16-400.
-// La curva típica: arranca rápido, pica al rato y decae.
-export type ReclamosInterrupcion = { inicio: Date; fin: Date; minutos: number[] };
+// de semilla = referencia. Devuelve inicio/fin de la interrupción, el
+// instante de cada reclamo en minutos desde el inicio (`minutos`, ver
+// ReclamosTimeline) y su detalle (`detalle`, ordenado por hora, uno por
+// minuto de `minutos`). Duración sesgada a pocas horas, con cortes largos
+// (días) ocasionales. Cantidad de 0 a 8, con más peso entre 2 y 5; las
+// horas caen entre el inicio y el fin, cargadas hacia el comienzo.
+export type ReclamosInterrupcion = { inicio: Date; fin: Date; minutos: number[]; detalle: ReclamoDetalle[] };
 
 export type AbmTableKey = "cds2" | "cds3" | "cds4" | "cds5" | "cds6" | "cds7" | "cds8" | "cds9" | "cds9nm";
 

@@ -389,6 +389,13 @@ Vigesimosexta pasada (también 06/10/2026):
 
 **08/10/2026**
 
+- **Reclamos — modal de detalle, rótulos y datos:** nuevo
+  `ReclamosInterrupcionModal` (ancho `--modal-lg-w` 880px, `Modal
+  size="detalle"`) para "Ver detalle"; `ReclamosConcentracion` gana
+  `size="expanded"` y la regla de rótulos de fase sin superposición;
+  `FranjaCifras` se extrae de la hoja y se comparte. Reclamos sintéticos:
+  0 a 8 por interrupción, cargados hacia el comienzo, con REC/POL/PARTIDO/
+  COD_FALLA.
 - **ABM — título de la tabla:** "Tabla N" pasa a ser un chip (píldora de
   22px, `primary-tint` / `chip-border` / `text-secondary`) delante del
   nombre en `heading-md text-neutral-900`, sin "·"; chip, nombre y chevron
@@ -480,6 +487,7 @@ Vigesimosexta pasada (también 06/10/2026):
 [SegmentadoSoloLectura](#segmentadosololectura) ·
 [SelectWrap](#selectwrap) ·
 [ReclamosConcentracion](#reclamosconcentracion) ·
+[ReclamosInterrupcionModal](#reclamosinterrupcionmodal) ·
 [SortableHeaderCell / SortableTh](#sortableheadercell--sortableth) ·
 [TablaChip](#tablachip) ·
 [Tabla de resultados](#tabla-de-resultados) ·
@@ -1763,7 +1771,7 @@ con el contenido y scrollea hasta el tope de alto. Footer con botones a la
 derecha (`modalNeutralBtnCls` + `modalPrimaryBtnCls`).
 
 **Props:** `title`, `subtitle?`, `open`, `onClose`, `size?` (`"sm"` 480 /
-`"form"` `--modal-form-w` 704 / `"lg"` 920 / `"xl"` 1120), `footer?`, `children`, y para
+`"form"` `--modal-form-w` 704 / `"detalle"` `--modal-lg-w` 880 / `"lg"` 920 / `"xl"` 1120), `footer?`, `children`, y para
 extenderlo sin tocar a los demás:
 - **`paso`** (`{ actual, total }`): indicador "Paso N de M" junto al título,
   para un modal de varios pasos (ver [Nunca un modal sobre
@@ -2096,7 +2104,31 @@ nombra (ver [Toolbar de tabla y filtros](#toolbar-de-tabla-y-filtros)).
 interrupción, anclado a la interrupción y con sus reposiciones marcadas.
 Es el gráfico de la sección Reclamos de la hoja de [Consulta de
 interrupciones](#maestro-detalle). `ReclamosTimeline` sigue siendo solo el
-gráfico completo del modal "Datos de la interrupción".
+gráfico completo de `DatosInterrupcionModal` (hoy sin uso). El modal que abre
+"Ver detalle" usa este mismo gráfico en tamaño `expanded`
+([ReclamosInterrupcionModal](#reclamosinterrupcionmodal)).
+
+**Tamaños** (prop `size`):
+
+| | `compact` (default, la hoja) | `expanded` (modal de reclamos) |
+|---|---|---|
+| Área de trazado | 84px | 170px |
+| Rótulo de fase | "F2" | "F2 · 07:04" (con la hora) |
+| Líneas guía | no | verticales cada 30 min, 1px `fill-muted`, detrás de la curva |
+| Reclamos | solo la curva | además un **rug**: una marca por reclamo bajo la base (2×10px, `--color-secondary` al 55%); la resaltada, 3×12px al 100% |
+| Tooltip | hora, "N de M…", reposiciones | además los **Nro. reclamo** a ±(duración/30) del cursor (hasta 3 y "y N más") |
+| Eje | horas en punto entre 14% y 86% | cada 1 h (30 min si dura < 2 h); si no entran, el paso sube (2 h, 3 h…) |
+
+En `expanded` el hover informa los reclamos cercanos (`onResaltar`) y
+recibe los resaltados desde afuera (`resaltados`) para sincronizar las
+filas de la tabla del modal con las marcas.
+
+**Rótulos de fase sin superposición** (los dos tamaños): las líneas
+punteadas se dibujan **siempre**; los rótulos se ubican de izquierda a
+derecha y uno que quede a menos de **24px** del anterior no se dibuja (en
+`expanded`, a menos del ancho real medido del rótulo + 8px). El rótulo de la
+fase seleccionada se dibuja siempre y, si choca con un vecino, se oculta el
+del vecino. Pasado el 92% del ancho, el rótulo va a la izquierda de la línea.
 
 **Anatomía** (SVG medido con `ResizeObserver` en px reales, sin
 `preserveAspectRatio="none"`):
@@ -2144,6 +2176,42 @@ Solo tokens de color (`--color-primary`, `--color-secondary`, escala
 neutral, `--color-border`).
 
 **Archivo:** `src/features/consultas-interrupcion/ReclamosConcentracion.tsx`.
+
+## ReclamosInterrupcionModal
+
+**Para qué:** el detalle de los reclamos de una interrupción. Lo abre
+"Ver detalle" de la sección Reclamos de la hoja (Consulta de interrupciones);
+solo se abre con al menos 1 reclamo. Reemplaza a `DatosInterrupcionModal` en
+ese botón.
+
+`Modal` con `size="detalle"` (ancho `--modal-lg-w`, 880px), título
+"Reclamos de la interrupción" (sin el código) y `bodyPadding={false}`. Cuerpo,
+de arriba hacia abajo, separado por `border-b`, sin cards:
+
+1. **La interrupción** (padding 18/24/14): "Interrupción" (`text-caption
+   neutral-500`) + el código en mono 18px, igual que el header de la hoja; a la
+   derecha, abajo, "dd/mm/aaaa · hh:mm → hh:mm · X h YY min" (`text-caption
+   neutral-600`, `tabular-nums`). El fin y la duración son los de la franja
+   de cifras de la hoja (última reposición).
+2. **Franja de cifras** (`FranjaCifras`, el mismo componente y estilo que la
+   de la hoja): Reclamos · Primer reclamo (hh:mm + "+X min" en 12px
+   `neutral-500`) · Mayor concentración (hora del pico de la curva) · 80%
+   llegó en (del primer reclamo al que completa el 80%). Con 1 reclamo: solo
+   Reclamos y "Reclamo" (hh:mm + delta), en 2 columnas.
+3. **Concentración de reclamos:** título a la izquierda y una leyenda chica a
+   la derecha (muestra del área "Reclamos" y línea punteada "Reposiciones");
+   debajo, [`ReclamosConcentracion size="expanded"`](#reclamosconcentracion).
+4. **Reclamos** + contador (`text-caption neutral-500`): tabla con el estilo
+   de las de la app, ordenada por hora. Columnas Hora, Desde el inicio ("+X
+   min", `neutral-500`), Nro. reclamo (mono; es el identificador del
+   registro), Nro. cuenta, Partido, Código falla; encabezados con
+   `ColumnHeaderHint` (FECHA, —, REC, POL, PARTIDO, COD_FALLA).
+
+**Sincronización** (estado `resaltados` dentro del modal): hover en una fila
+resalta su marca del gráfico; hover en el gráfico resalta las marcas y las
+filas (fondo `primary-tint`) de los reclamos cercanos al cursor.
+
+**Archivo:** `src/features/consultas-interrupcion/ReclamosInterrupcionModal.tsx`.
 
 ## Timeline
 
@@ -2474,8 +2542,7 @@ reposiciones y sus reclamos).
     interrupción**, con las reposiciones marcadas
     ([`ReclamosConcentracion`](#reclamosconcentracion)). Título a la
     izquierda y, a la derecha, "Ver detalle" (ghost `sm`, solo si hay
-    reclamos) que abre "Datos de la interrupción" (el gráfico completo y
-    sus KPIs). **Sin KPIs ni frase** debajo del título: la cantidad ya está
+    reclamos) que abre [`ReclamosInterrupcionModal`](#reclamosinterrupcionmodal). **Sin KPIs ni frase** debajo del título: la cantidad ya está
     en la franja de cifras. Sin reclamos: una línea con ícono, sin gráfico
     ni "Ver detalle".
   - Al cambiar de registro, el contenido hace un **fade de 140ms**

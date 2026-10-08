@@ -1,5 +1,5 @@
 import { crearRng, elegir, enteroEntre, hashSemilla } from "@/data/rng";
-import { FaseReposicion, ReclamosInterrupcion } from "@/data/types";
+import { FaseReposicion, ReclamoDetalle, ReclamosInterrupcion } from "@/data/types";
 import { ceros, formatFechaHora } from "@/lib/format";
 
 export function filasSinteticas<T>(n: number, gen: () => T): T[] {
@@ -281,17 +281,24 @@ export function generarReclamosSinteticos(referencia: string, fechaInicio: strin
     : enteroEntre(rng, 2881, 7200);
   const inicio = parseFechaHora(fechaInicio);
   const fin = new Date(inicio.getTime() + duracionMin * 60000);
-  const dadoCantidad = rng();
-  const cantidad =
-    dadoCantidad < 0.1 ? 0
-    : dadoCantidad < 0.55 ? 1
-    : dadoCantidad < 0.865 ? 2
-    : dadoCantidad < 0.955 ? enteroEntre(rng, 3, 15)
-    : enteroEntre(rng, 16, 400);
-  const minutos = Array.from({ length: cantidad }, () =>
-    Math.min(duracionMin - 1, Math.floor(duracionMin * (0.02 + rng() * 0.12 + Math.pow(rng(), 2.2) * 0.86))),
-  );
-  return { inicio, fin, minutos };
+  const cantidad = elegir(rng, [0, 1, 2, 2, 3, 3, 4, 5, 6, 8]);
+  // Horas entre el inicio y el fin (minuto 1 a duración − 1), cargadas hacia
+  // el comienzo: rng² concentra los reclamos al principio.
+  const minutos = Array.from({ length: cantidad }, () => 1 + Math.floor(rng() ** 2 * (duracionMin - 1))).sort((a, b) => a - b);
+  // REC "R-2026-08-NNNNN" (creciente, único), POL de 10 dígitos.
+  let rec = enteroEntre(rng, 10000, 80000);
+  const detalle: ReclamoDetalle[] = minutos.map((minuto) => {
+    rec += enteroEntre(rng, 1, 900);
+    return {
+      minuto,
+      fecha: formatFechaHora(new Date(inicio.getTime() + minuto * 60000)),
+      rec: `R-2026-08-${ceros(rec, 5)}`,
+      pol: String(enteroEntre(rng, 1000000000, 9999999999)),
+      partido: elegir(rng, PARTIDOS),
+      codFalla: elegir(rng, CODIGOS_FALLA_SINTETICOS),
+    };
+  });
+  return { inicio, fin, minutos, detalle };
 }
 
 // Filas de cada tab del drawer "Tablas relacionadas" (5/6/8/9) — misma

@@ -30,8 +30,8 @@ export default function Modal({
   subtitle?: string;
   open: boolean;
   onClose: () => void;
-  // sm 480 · form --modal-form-w (704, formularios de edición de registro) · lg 920 · xl 1120
-  size?: "sm" | "form" | "lg" | "xl";
+  // sm 480 · form --modal-form-w (704, formularios de edición de registro) · detalle --modal-lg-w (880, modales de detalle con gráfico y tabla) · lg 920 · xl 1120
+  size?: "sm" | "form" | "detalle" | "lg" | "xl";
   footer?: React.ReactNode;
   children: React.ReactNode;
   // Modal de varios pasos (ej. Editar → Revisar): indicador "Paso N de M"
@@ -110,7 +110,7 @@ export default function Modal({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: size === "sm" ? 480 : size === "form" ? "var(--modal-form-w)" : size === "xl" ? 1120 : 920,
+          width: size === "sm" ? 480 : size === "form" ? "var(--modal-form-w)" : size === "detalle" ? "var(--modal-lg-w)" : size === "xl" ? 1120 : 920,
           maxWidth: "calc(100vw - 40px)",
           maxHeight: "calc(100vh - 40px)",
           height,

@@ -1,6 +1,7 @@
 import { ghostBtnCls, TablaChip } from "@/components/ui";
 import { ABM_TABLE_CONFIGS } from "@/data/abmTables";
 import { FaseReposicion, ReclamosInterrupcion } from "@/data/types";
+import FranjaCifras from "@/features/consultas-interrupcion/FranjaCifras";
 import ReclamosConcentracion from "@/features/consultas-interrupcion/ReclamosConcentracion";
 import ReposicionesTimeline, { minutosEntre } from "@/features/consultas-interrupcion/ReposicionesTimeline";
 import { fmtHorasMin, formatHora, formatNumero, parseFechaHora, VALOR_VACIO } from "@/lib/format";
@@ -24,7 +25,7 @@ const horaDe = (texto: string) => {
 //        hh:mm → hh:mm y la línea de tiempo (ReposicionesTimeline);
 //     b) "Reclamos durante la interrupción" (ReclamosConcentracion: curva de
 //        concentración sobre la interrupción, con las reposiciones
-//        marcadas; "Ver detalle" abre "Datos de la interrupción").
+//        marcadas; "Ver detalle" abre "Reclamos de la interrupción").
 // Al cambiar de interrupción el contenido hace un fade de 140ms (directo
 // con prefers-reduced-motion, regla global). Sin interrupción (los filtros
 // no dejan ninguna), un estado vacío centrado.
@@ -47,7 +48,7 @@ export default function InterrupcionHoja({
   valoresRelacionadas: Record<string, string> | null;
   onAbrirTabla: (tabKey: string) => void;
   reclamos: ReclamosInterrupcion | null;
-  // Abre "Datos de la interrupción" (gráfico completo y KPIs).
+  // Abre "Reclamos de la interrupción".
   onVerDetalle: () => void;
 }) {
   if (!interrupcion) {
@@ -90,19 +91,7 @@ export default function InterrupcionHoja({
         </div>
 
         {/* Franja de cifras — fija. */}
-        <dl className="shrink-0 grid grid-cols-4 @max-[440px]:grid-cols-2 px-[24px] py-[12px] border-b border-border">
-          {cifras.map((c, i) => (
-            <div
-              key={c.label}
-              className={`min-w-0 ${i === 0 ? "pr-4" : "px-4 border-l border-border"} ${
-                i === 2 ? "@max-[440px]:pl-0 @max-[440px]:border-l-0" : ""
-              } ${i >= 2 ? "@max-[440px]:mt-3" : ""}`}
-            >
-              <dt className="text-[11px] leading-4 font-medium text-neutral-500 truncate">{c.label}</dt>
-              <dd className="text-[17px] leading-6 font-semibold tabular-nums text-neutral-900 whitespace-nowrap">{c.valor}</dd>
-            </div>
-          ))}
-        </dl>
+        <FranjaCifras cifras={cifras} />
 
         {/* Cuerpo — scroll propio. */}
         <div className="flex-1 min-h-0 overflow-y-auto pt-[4px] px-[24px] pb-[24px]">

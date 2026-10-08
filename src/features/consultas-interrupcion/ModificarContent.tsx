@@ -25,7 +25,7 @@ import {
   SAMPLE_ROWS,
 } from "@/data/sinteticos";
 import { AbmDeepLink } from "@/data/types";
-import DatosInterrupcionModal from "@/features/consultas-interrupcion/DatosInterrupcionModal";
+import ReclamosInterrupcionModal from "@/features/consultas-interrupcion/ReclamosInterrupcionModal";
 import FaseReposicionFicha from "@/features/consultas-interrupcion/FaseReposicionFicha";
 import InterrupcionesMaestro from "@/features/consultas-interrupcion/InterrupcionesMaestro";
 import InterrupcionHoja from "@/features/consultas-interrupcion/InterrupcionHoja";
@@ -74,7 +74,7 @@ export default function ModificarContent({
   // resultados.
   const [seleccionada, setSeleccionada] = useState<number | null>(initialRowIndex >= 0 ? initialRowIndex : null);
   const [relTab, setRelTab] = useState<string | null>(initialRelTab);
-  const [datosInterrupcionOpen, setDatosInterrupcionOpen] = useState(false);
+  const [reclamosModalOpen, setReclamosModalOpen] = useState(false);
     const registro = seleccionada !== null ? SAMPLE_ROWS[seleccionada] : null;
   const activeTabData = DRAWER_TABS.find((t) => t.key === relTab);
   // Tabla ABM equivalente al tab activo del modal "Tablas relacionadas"
@@ -200,15 +200,17 @@ export default function ModificarContent({
         valoresRelacionadas={valoresRelacionadas}
         onAbrirTabla={setRelTab}
         reclamos={reclamos}
-        onVerDetalle={() => setDatosInterrupcionOpen(true)}
+        onVerDetalle={() => setReclamosModalOpen(true)}
       />
 
-      <DatosInterrupcionModal
-        open={datosInterrupcionOpen}
-        onClose={() => setDatosInterrupcionOpen(false)}
+      <ReclamosInterrupcionModal
+        open={reclamosModalOpen}
+        onClose={() => setReclamosModalOpen(false)}
         referencia={registro?.referencia ?? ""}
         fechaInicio={registro?.fecha ?? ""}
-        fechaUltRepo={filaFaseSeleccionada?.horaRep ?? ""}
+        fases={fases}
+        faseSeleccionada={nroFase}
+        onSeleccionarFase={seleccionarFase}
         reclamos={reclamos}
       />
 

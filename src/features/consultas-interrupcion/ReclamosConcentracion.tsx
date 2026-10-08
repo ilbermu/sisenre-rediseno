@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CircleCheck } from "lucide-react";
 import { FOCUS_RING } from "@/components/ui";
 import { FaseReposicion, ReclamosInterrupcion } from "@/data/types";
-import { formatHora, formatNumero, parseFechaHora } from "@/lib/format";
+import { fmtHoraCorta, formatHora, formatNumero, parseFechaHora } from "@/lib/format";
 
 // Gráfico de concentración de reclamos (sección "Reclamos durante la
 // interrupción" de la hoja de Consulta de interrupciones; ver
@@ -25,15 +25,50 @@ import { formatHora, formatNumero, parseFechaHora } from "@/lib/format";
 //   - Hover: línea vertical + tooltip oscuro con la hora, "N de M reclamos
 //     hasta acá" y las fases repuestas. Es focusable: ←/→ mueven la línea de
 //     a 5% del ancho, Escape la oculta.
+// Dos tamaños (prop `size`): "compact" (la hoja; área de 84px) y "expanded"
+// (modal "Reclamos de la interrupción"; área de 170px, líneas guía cada 30
+// min, rótulos "F2 · 07:04", una marca por reclamo bajo la base —rug— y los
+// Nro. de reclamo cercanos en el tooltip; eje cada 1 h, o cada 30 min si dura
+// menos de 2 h). Las marcas de reposición se dibujan siempre; los rótulos van
+// de izquierda a derecha y uno que quede a menos de 24px del anterior no se
+// dibuja (expanded: ancho real del rótulo + 8px); el de la fase seleccionada
+// se dibuja siempre y, si choca, se oculta el del vecino.
 // El SVG usa el ancho real medido (ResizeObserver): sin preserveAspectRatio
 // "none", nada se deforma.
 // Sin reclamos: una línea con ícono y "No hubo reclamos durante la
 // interrupción." (sin gráfico).
 const PUNTOS = 72;
-const ALTO_AREA = 84;
 const ALTO_ROTULOS = 16;
-const ALTO_SVG = ALTO_ROTULOS + ALTO_AREA + 1;
-const BASE_Y = ALTO_ROTULOS + ALTO_AREA;
+const ALTO_RUG = 16;
+const GAP_ROTULOS_COMPACT = 24;
+const GAP_ROTULOS_EXPANDED = 8;
+const PASOS_EJE = [30, 60, 120, 180, 360, 720, 1440];
+
+// Ancho real de un rótulo de fase (10.5px semibold), medido con canvas; sin
+// canvas, una estimación por caracteres.
+let ctxMedir: CanvasRenderingContext2D | null | undefined;
+function anchoRotulo(texto: string) {
+  if (ctxMedir === undefined) ctxMedir = typeof document !== "undefined" ? document.createElement("canvas").getContext("2d") : null;
+  if (!ctxMedir) return texto.length * 6.4;
+  ctxMedir.font = `600 10.5px ${getComputedStyle(document.body).fontFamily}`;
+  return ctxMedir.measureText(texto).width;
+}
+
+// Minuto (desde el inicio) del pico de la curva de densidad: el mismo que
+// dibuja el gráfico. Lo usa la franja de cifras del modal.
+export function minutoDelPico(minutos: number[], duracion: number) {
+  const h = Math.max(duracion / 14, 6);
+  let mejor = 0;
+  let idx = 0;
+  for (let i = 0; i < PUNTOS; i++) {
+    const v = densidad(minutos, (i / (PUNTOS - 1)) * duracion, h);
+    if (v > mejor) {
+      mejor = v;
+      idx = i;
+    }
+  }
+  return Math.round((idx / (PUNTOS - 1)) * duracion);
+}
 
 // Densidad gaussiana de los reclamos (minutos) en el minuto t, sin normalizar.
 function densidad(minutos: number[], t: number, h: number) {
@@ -68,6 +103,9 @@ export default function ReclamosConcentracion({
   fases,
   faseSeleccionada,
   onSeleccionarFase,
+  size = "compact",
+  resaltados,
+  onResaltar,
 }: {
   datos: ReclamosInterrupcion;
   // Inicio y fin de la interrupción (fin = última reposición, como en la
@@ -78,7 +116,16 @@ export default function ReclamosConcentracion({
   // nro de la fase seleccionada en la línea de tiempo.
   faseSeleccionada: number | null;
   onSeleccionarFase: (nro: number) => void;
+  size?: "compact" | "expanded";
+  // expanded: Nro. de reclamo (REC) resaltados —marca del rug—, compartidos
+  // con quien lo aloja; el hover sobre el gráfico los informa por onResaltar.
+  resaltados?: string[];
+  onResaltar?: (ids: string[]) => void;
 }) {
+  const expanded = size === "expanded";
+  const ALTO_AREA = expanded ? 170 : 84;
+  const BASE_Y = ALTO_ROTULOS + ALTO_AREA;
+  const ALTO_SVG = BASE_Y + 1 + (expanded ? ALTO_RUG : 0);
   const inicio = inicioProp ?? datos.inicio;
   const fin = finProp ?? datos.fin;
   const duracion = Math.max(1, Math.round((fin.getTime() - inicio.getTime()) / 60000));
@@ -141,9 +188,28 @@ export default function ReclamosConcentracion({
     return { nro: f.nro, min: t ? (t.getTime() - inicio.getTime()) / 60000 : null };
   });
 
-  // Eje: horas en punto entre el 14% y el 86% del ancho; si hay muchas, de a
+  // Rótulos de fase visibles (de izquierda a derecha; ver el comentario de
+  // arriba). La marca se dibuja siempre, el rótulo solo si no choca.
+  const marcas = fasesMin
+    .filter((f): f is { nro: number; min: number } => f.min !== null)
+    .map((f) => {
+      const x = xDe(Math.min(duracion, Math.max(0, f.min)));
+      const aLaIzq = W > 0 && x / W > 0.92;
+      const texto = expanded ? `F${f.nro} · ${hora(Math.round(f.min))}` : `F${f.nro}`;
+      const w = expanded ? anchoRotulo(texto) : 0;
+      return { nro: f.nro, x, aLaIzq, texto, desde: aLaIzq ? x - 4 - w : x + 4, hasta: aLaIzq ? x - 4 : x + 4 + w };
+    })
+    .sort((a, b) => a.x - b.x);
+  const chocan = (a: (typeof marcas)[number], b: (typeof marcas)[number]) =>
+    expanded ? Math.max(a.desde, b.desde) - Math.min(a.hasta, b.hasta) < GAP_ROTULOS_EXPANDED : Math.abs(a.x - b.x) < GAP_ROTULOS_COMPACT;
+  const conRotulo: typeof marcas = [];
+  const sel = marcas.find((m) => m.nro === faseSeleccionada);
+  if (sel) conRotulo.push(sel);
+  for (const m of marcas) if (m !== sel && !conRotulo.some((o) => chocan(m, o))) conRotulo.push(m);
+
+  // Eje compact: horas en punto entre el 14% y el 86% del ancho; si hay muchas, de a
   // varias horas (alineadas al reloj) para que no se amontonen.
-  const horasEje = (() => {
+  const horasEje = expanded ? [] : (() => {
     const todas: { min: number; h: number }[] = [];
     const t0 = new Date(inicio);
     t0.setMinutes(0, 0, 0);
@@ -156,25 +222,61 @@ export default function ReclamosConcentracion({
     return todas.filter((x) => x.h % paso === 0);
   })();
 
+  // Eje expanded: horas cada 1 h (cada 30 min si dura menos de 2 h), alineadas
+  // al reloj; si no entran, el paso sube (1 h → 2 h → 3 h…). Compact: las
+  // horas en punto de arriba.
+  const etiquetasEje: { min: number; texto: string }[] = expanded
+    ? (() => {
+        const base = duracion < 120 ? 30 : 60;
+        const ancho = conDia ? 96 : 54;
+        const paso = PASOS_EJE.find((p) => p >= base && W / (duracion / p) >= ancho) ?? 1440;
+        const enDia = inicio.getHours() * 60 + inicio.getMinutes();
+        const margen = conDia ? 96 : 70; // lugar para "Inicio hh:mm" / "Fin hh:mm"
+        const res: { min: number; texto: string }[] = [];
+        for (let m = Math.ceil((enDia + 0.001) / paso) * paso - enDia; m < duracion; m += paso) {
+          const x = xDe(m);
+          if (x >= margen && x <= W - margen) res.push({ min: m, texto: fmtHoraCorta(new Date(inicio.getTime() + m * 60000), conDia) });
+        }
+        return res;
+      })()
+    : horasEje.map((h) => ({ min: h.min, texto: `${String(h.h).padStart(2, "0")}:00` }));
+  // Líneas guía (expanded): cada 30 min alineadas al reloj (más espaciadas
+  // si la interrupción es muy larga: máx. ~40).
+  const guias: number[] = [];
+  if (expanded) {
+    const paso = PASOS_EJE.find((p) => duracion / p <= 40) ?? 1440;
+    const enDia = inicio.getHours() * 60 + inicio.getMinutes();
+    for (let m = Math.ceil((enDia + 0.001) / paso) * paso - enDia; m < duracion; m += paso) guias.push(m);
+  }
+
   // Hover: minuto bajo el cursor y lo que había pasado hasta ahí.
   const tHover = hoverX !== null && W > 0 ? (hoverX / W) * duracion : null;
+  const cercanos = expanded && tHover !== null ? datos.detalle.filter((r) => Math.abs(r.minuto - tHover) <= duracion / 30) : [];
   const hasta = tHover !== null ? minutos.filter((m) => m <= tHover).length : 0;
   const repuestas = tHover !== null ? fasesMin.filter((f) => f.min !== null && f.min <= tHover).length : 0;
 
   const resumen = `${formatNumero(total)} ${total === 1 ? "reclamo" : "reclamos"} entre ${hora(0)} y ${hora(duracion)}, mayor concentración cerca de ${hora(Math.round((curva.pico / (PUNTOS - 1)) * duracion))}`;
 
+  // Mueve la línea de hover y, en expanded, informa los reclamos cercanos
+  // (±duración/30) para que el modal resalte sus filas.
+  function moverHover(x: number | null) {
+    setHoverX(x);
+    if (!expanded || !onResaltar) return;
+    const t = x !== null && W > 0 ? (x / W) * duracion : null;
+    onResaltar(t === null ? [] : datos.detalle.filter((r) => Math.abs(r.minuto - t) <= duracion / 30).map((r) => r.rec));
+  }
   function onMouseMove(e: React.MouseEvent) {
     const r = cajaRef.current?.getBoundingClientRect();
-    if (r) setHoverX(Math.min(W, Math.max(0, e.clientX - r.left)));
+    if (r) moverHover(Math.min(W, Math.max(0, e.clientX - r.left)));
   }
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Escape" && hoverX !== null) {
       e.stopPropagation();
-      setHoverX(null);
+      moverHover(null);
     } else if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
       e.preventDefault();
       const paso = W * 0.05 * (e.key === "ArrowRight" ? 1 : -1);
-      setHoverX((x) => Math.min(W, Math.max(0, (x ?? (paso > 0 ? 0 : W)) + paso)));
+      moverHover(Math.min(W, Math.max(0, (hoverX ?? (paso > 0 ? 0 : W)) + paso)));
     }
   }
 
@@ -187,9 +289,9 @@ export default function ReclamosConcentracion({
         role="group"
         aria-label={resumen}
         onMouseMove={onMouseMove}
-        onMouseLeave={() => setHoverX(null)}
+        onMouseLeave={() => moverHover(null)}
         onKeyDown={onKeyDown}
-        onBlur={() => setHoverX(null)}
+        onBlur={() => moverHover(null)}
         className={`relative w-full rounded-sm ${FOCUS_RING}`}
         style={{ height: ALTO_SVG }}
       >
@@ -202,34 +304,38 @@ export default function ReclamosConcentracion({
               </linearGradient>
             </defs>
 
-            {/* Marcas de reposición */}
-            {fasesMin.map((f) => {
-              if (f.min === null) return null;
-              const x = xDe(Math.min(duracion, Math.max(0, f.min)));
+            {/* Líneas guía (expanded): cada 30 min, detrás de la curva. */}
+            {guias.map((m) => (
+              <rect key={m} x={Math.round(xDe(m))} y={ALTO_ROTULOS} width={1} height={ALTO_AREA} style={{ fill: "var(--color-fill-muted)" }} />
+            ))}
+
+            {/* Marcas de reposición: siempre; el rótulo, si no choca. */}
+            {marcas.map((f) => {
               const sel = f.nro === faseSeleccionada;
-              const aLaIzq = x / W > 0.92;
               return (
                 <g key={f.nro}>
-                  <line x1={x} x2={x} y1={0} y2={BASE_Y} strokeWidth={1} strokeDasharray="2 3" className={sel ? "stroke-secondary" : "stroke-neutral-300"} />
-                  <text
-                    x={aLaIzq ? x - 4 : x + 4}
-                    y={11}
-                    textAnchor={aLaIzq ? "end" : "start"}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Seleccionar la fase ${f.nro}`}
-                    onClick={() => onSeleccionarFase(f.nro)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onSeleccionarFase(f.nro);
-                      }
-                    }}
-                    className={`cursor-pointer select-none text-[10.5px] font-semibold ${sel ? "fill-secondary" : "fill-neutral-500"}`}
-                  >
-                    F{f.nro}
-                  </text>
+                  <line x1={f.x} x2={f.x} y1={0} y2={BASE_Y} strokeWidth={1} strokeDasharray="2 3" className={sel ? "stroke-secondary" : "stroke-neutral-300"} />
+                  {conRotulo.includes(f) && (
+                    <text
+                      x={f.aLaIzq ? f.x - 4 : f.x + 4}
+                      y={11}
+                      textAnchor={f.aLaIzq ? "end" : "start"}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Seleccionar la fase ${f.nro}`}
+                      onClick={() => onSeleccionarFase(f.nro)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onSeleccionarFase(f.nro);
+                        }
+                      }}
+                      className={`cursor-pointer select-none text-[10.5px] font-semibold ${sel ? "fill-secondary" : "fill-neutral-500"}`}
+                    >
+                      {f.texto}
+                    </text>
+                  )}
                 </g>
               );
             })}
@@ -238,6 +344,24 @@ export default function ReclamosConcentracion({
             <rect x={0} y={BASE_Y} width={W} height={1} style={{ fill: "var(--color-border)" }} />
             <path d={area} fill={`url(#${idBase}-area)`} />
             <path d={linea} fill="none" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" style={{ stroke: "var(--color-primary)" }} />
+
+            {/* Rug (expanded): una marca por reclamo bajo la base. */}
+            {expanded &&
+              datos.detalle.map((r) => {
+                const hl = resaltados?.includes(r.rec) ?? false;
+                const w = hl ? 3 : 2;
+                return (
+                  <rect
+                    key={r.rec}
+                    x={xDe(Math.min(duracion, r.minuto)) - w / 2}
+                    y={BASE_Y + 3}
+                    width={w}
+                    height={hl ? 12 : 10}
+                    rx={1}
+                    style={{ fill: "var(--color-secondary)", opacity: hl ? 1 : 0.55 }}
+                  />
+                );
+              })}
 
             {/* Primer reclamo */}
             <circle cx={primeroX} cy={primeroY} r={3.5} strokeWidth={2} className="fill-surface stroke-secondary" />
@@ -265,6 +389,12 @@ export default function ReclamosConcentracion({
             <p className="tabular-nums">
               {formatNumero(hasta)} de {formatNumero(total)} reclamos hasta acá
             </p>
+            {cercanos.length > 0 && (
+              <p className="tabular-nums">
+                Nro. reclamo: {cercanos.slice(0, 3).map((r) => r.rec).join(", ")}
+                {cercanos.length > 3 ? ` y ${cercanos.length - 3} más` : ""}
+              </p>
+            )}
             {fases.length > 0 && (
               <p className="tabular-nums">
                 {repuestas > 0 ? `Repuestas ${repuestas} de ${fases.length} ${fases.length === 1 ? "fase" : "fases"}` : "Sin reposiciones todavía"}
@@ -279,9 +409,9 @@ export default function ReclamosConcentracion({
         <span className="absolute left-0 top-0 whitespace-nowrap">
           <span className="text-neutral-500">Inicio</span> <span className="font-medium text-neutral-700">{horaConDia(0)}</span>
         </span>
-        {horasEje.map((h) => (
+        {etiquetasEje.map((h) => (
           <span key={h.min} className="absolute top-0 -translate-x-1/2 whitespace-nowrap text-neutral-500" style={{ left: `${(h.min / duracion) * 100}%` }}>
-            {String(h.h).padStart(2, "0")}:00
+            {h.texto}
           </span>
         ))}
         <span className="absolute right-0 top-0 whitespace-nowrap">

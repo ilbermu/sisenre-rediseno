@@ -675,8 +675,32 @@ paquete se llama `sisenre` y el código ya no vive todo en `src/App.tsx`
   - `DESIGN_SYSTEM.md`: `ReclamosConcentracion` (nuevo), botón único en
     `ChipFilterBar` y la sección Reclamos de Maestro-detalle.
 
+- **Consulta de interrupciones — reclamos realistas, rótulos y modal**
+  (maqueta: https://claude.ai/artifact/5RCqnneDfFQCnyRsJGZogh).
+  - **Datos:** `generarReclamosSinteticos` ahora da 0 a 8 reclamos por
+    interrupción (`elegir` de `[0,1,2,2,3,3,4,5,6,8]`), con horas entre el
+    inicio y el fin cargadas hacia el comienzo (`rng²`). Cada reclamo trae
+    `detalle` (Tabla 8): REC "R-2026-08-NNNNN" (único), POL de 10 dígitos,
+    PARTIDO y COD_FALLA de los catálogos sintéticos, FECHA. Determinista por
+    interrupción. `ReclamosInterrupcion` gana `detalle`; `minutos` se mantiene.
+  - **`ReclamosConcentracion`:** rótulos de fase sin superposición (líneas
+    siempre; rótulo a ≥24px del anterior, o ancho real + 8px en `expanded`;
+    la fase seleccionada siempre, el vecino se oculta) y `size="expanded"`
+    (170px, guías cada 30 min, "F2 · 07:04", rug, Nro. reclamo en el
+    tooltip, eje cada 1 h / 30 min).
+  - **`ReclamosInterrupcionModal`** (nuevo; `Modal size="detalle"`, token
+    `--modal-lg-w` 880px) reemplaza a `DatosInterrupcionModal` en "Ver
+    detalle": interrupción, franja de cifras, concentración y tabla de
+    reclamos, con hover sincronizado. `FranjaCifras` extraída de la hoja.
+  - **Sin uso ahora:** `DatosInterrupcionModal` y `ReclamosTimeline` (no se
+    borraron), además de `ReclamosResumenCompacto`.
+
 ### Pendientes abiertos
 
+- **Modal de reclamos sin probar en el navegador:** el hover sincronizado,
+  el rug con muchos reclamos juntos, el eje con interrupciones de varios
+  días y los rótulos "F2 · 07:04" con fases muy juntas. "80% llegó en" se
+  mide desde el primer reclamo (como en la maqueta).
 - **Sin probar en el navegador** (no se abrió, por pedido): el chip del
   título y su hover; la toolbar de tabla (`src/features/abm/AbmScreen.tsx`):
   que la tabla no se mueva al seleccionar, el crossfade de 120ms, el
